@@ -1,0 +1,166 @@
+# TaskMatch.ai
+
+AI-powered freelance task matching platform that intelligently connects clients with the right developers based on skills, availability, budget, and project requirements.
+
+---
+
+## Architecture Overview
+
+```
+┌────────────┐      ┌────────────────┐      ┌──────────────┐
+│  Next.js   │─────▶│  FastAPI        │─────▶│  PostgreSQL  │
+│  Frontend  │ REST │  Backend        │ SQL  │  16          │
+│  :3000     │◀─────│  :8000         │◀─────│  :5432       │
+└────────────┘      │                │      └──────────────┘
+                    │  - Auth (JWT)  │
+                    │  - AI Matching │      ┌──────────────┐
+                    │  - Payments    │─────▶│  Redis 7     │
+                    │  - REST API    │ cache│  :6379       │
+                    └────────────────┘      └──────────────┘
+```
+
+The system follows a standard client-server architecture:
+
+- **Frontend** serves the web UI and communicates with the backend over REST.
+- **Backend** handles authentication, business logic, AI-powered matching, and payment processing.
+- **PostgreSQL** stores all persistent data (users, tasks, matches, payments).
+- **Redis** provides caching, rate-limiting, and session storage.
+
+## Tech Stack
+
+| Layer      | Technology                                            |
+|------------|-------------------------------------------------------|
+| Frontend   | Next.js 14, React 18, TypeScript, Tailwind CSS        |
+| Backend    | FastAPI, SQLAlchemy 2 (async), Pydantic v2, Alembic   |
+| Database   | PostgreSQL 16                                         |
+| Cache      | Redis 7                                               |
+| AI         | OpenAI API (GPT-4) for task-developer matching        |
+| Payments   | Stripe                                                |
+| Infra      | Docker Compose, Make                                  |
+| Data Viz   | Recharts, TanStack React Query                        |
+
+## Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose v2+
+- [Make](https://www.gnu.org/software/make/) (included on most Linux/macOS systems)
+- (Optional) Node.js 20+ and Python 3.12+ for local development outside containers
+
+## Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/your-org/taskmatch.git
+cd taskmatch
+```
+
+### 2. Create your environment file
+
+```bash
+cp .env.example .env
+# Edit .env and set real values for SECRET_KEY, OPENAI_API_KEY, and STRIPE_SECRET_KEY
+```
+
+### 3. Start all services
+
+```bash
+make dev
+```
+
+This builds the Docker images and starts PostgreSQL, Redis, the backend, and the frontend. On first run, the build may take a couple of minutes.
+
+### 4. Run migrations and seed data
+
+In a second terminal:
+
+```bash
+make migrate
+make seed
+```
+
+### 5. Open the app
+
+| Service          | URL                              |
+|------------------|----------------------------------|
+| Frontend         | http://localhost:3000             |
+| Backend API      | http://localhost:8000             |
+| API Docs (Swagger) | http://localhost:8000/api/v1/docs  |
+| API Docs (ReDoc) | http://localhost:8000/api/v1/redoc   |
+
+## Seed Credentials
+
+After running `make seed`, the following accounts are available:
+
+| Role       | Email                   | Password      |
+|------------|-------------------------|---------------|
+| Admin      | admin@taskmatch.ai      | admin123      |
+| Client     | client1@example.com     | password123   |
+| Developer  | dev1@example.com        | password123   |
+
+## Common Commands
+
+```bash
+make dev              # Start all services (docker-compose up --build)
+make down             # Stop all containers
+make logs             # Tail logs from all services
+make migrate          # Run Alembic database migrations
+make seed             # Seed the database with sample data
+make test             # Run backend test suite
+make shell-backend    # Open a shell in the backend container
+make shell-frontend   # Open a shell in the frontend container
+make reset-db         # Drop, recreate, migrate, and seed the database
+```
+
+## Project Structure
+
+```
+taskmatch/
+├── backend/
+│   ├── app/
+│   │   ├── api/v1/endpoints/   # Route handlers
+│   │   ├── core/               # Config, security, database
+│   │   ├── middleware/          # CORS, logging, rate-limiting
+│   │   ├── models/             # SQLAlchemy ORM models
+│   │   ├── schemas/            # Pydantic request/response schemas
+│   │   └── services/           # Business logic & AI matching
+│   ├── migrations/             # Alembic migration scripts
+│   ├── tests/                  # Pytest test suite
+│   ├── Dockerfile
+│   ├── pyproject.toml
+│   └── requirements.txt
+├── frontend/
+│   ├── Dockerfile
+│   └── package.json
+├── docker-compose.yml
+├── Makefile
+├── .env.example
+└── README.md
+```
+
+## API Documentation
+
+Interactive API documentation is auto-generated by FastAPI and available at:
+
+- **Swagger UI**: http://localhost:8000/api/v1/docs
+- **ReDoc**: http://localhost:8000/api/v1/redoc
+
+All endpoints are versioned under `/api/v1/`.
+
+## Next Steps (V2 Roadmap)
+
+- **WebSocket notifications** for real-time task updates and match alerts
+- **GitHub/GitLab OAuth** login for developer portfolio verification
+- **Advanced AI matching** with embeddings-based skill vector similarity
+- **Escrow payments** via Stripe Connect for secure milestone-based billing
+- **Admin dashboard** with analytics, user management, and dispute resolution
+- **File uploads** (S3/R2) for project briefs and deliverables
+- **Email notifications** via SendGrid/SES for task lifecycle events
+- **CI/CD pipeline** with GitHub Actions (lint, test, build, deploy)
+- **Kubernetes manifests** for production-grade container orchestration
+- **Rate limiting** and API key management for public API access
+- **Multi-tenancy** support for agency and team accounts
+- **Internationalization (i18n)** for global market reach
+
+## License
+
+Proprietary. All rights reserved.
