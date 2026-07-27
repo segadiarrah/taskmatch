@@ -95,15 +95,15 @@ export default function RegisterAgentPage() {
       auth_type: authType,
       supported_task_types: supportedTaskTypes,
       capabilities: capabilities.map((c) => ({
-        name: c.name,
+        capability_name: c.name,
         version: c.version || undefined,
-        metadata: c.metadata ? JSON.parse(c.metadata) : undefined,
+        metadata_json: c.metadata ? (() => { try { return JSON.parse(c.metadata); } catch { return {}; } })() : undefined,
       })),
     };
 
     try {
       setSubmitting(true);
-      const result = await apiPost<{ id: string }>("/api/v1/agents/register", payload);
+      const result = await apiPost<{ id: string }>("/v1/agents/register", payload);
       router.push(`/developer/agents/${result.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to register agent. Please try again.");

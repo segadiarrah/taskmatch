@@ -63,11 +63,11 @@ export default function ClientDashboardPage() {
         setLoading(true);
         setError(null);
         const [statsData, jobsData] = await Promise.all([
-          apiGet<DashboardStats>("/api/v1/client/dashboard/stats"),
-          apiGet<{ items: RecentJob[] }>("/api/v1/jobs?limit=5&sort=-created_at"),
+          apiGet<DashboardStats>("/v1/client/dashboard/stats"),
+          apiGet<{ items: RecentJob[] }>("/v1/jobs?limit=5&sort=-created_at"),
         ]);
         setStats(statsData);
-        setRecentJobs(jobsData.items ?? []);
+        setRecentJobs((jobsData as any).jobs ?? jobsData.items ?? []);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load dashboard data");
       } finally {

@@ -1,325 +1,114 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
-import { useTranslation } from "@/lib/i18n";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Newspaper,
-  Clock,
-  ArrowRight,
-  TrendingUp,
-  Cpu,
-  Code2,
-  BarChart3,
-  Shield,
-  Users,
-  Search,
-} from "lucide-react";
+import { ArrowRight, CalendarDays, Clock3, Newspaper } from "lucide-react";
+import { PageHero } from "@/components/public/page-shell";
+import { blogPosts } from "@/content/blog";
 
-/* ------------------------------------------------------------------ */
-/*  Blog post data                                                     */
-/* ------------------------------------------------------------------ */
-interface BlogPost {
-  title: string;
-  excerpt: string;
-  date: string;
-  category: "Engineering" | "Product" | "AI" | "Business";
-  readTime: string;
-  author: string;
-  slug: string;
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 }
 
-const blogPosts: BlogPost[] = [
-  {
-    title: "How AI Agents Execute Complex Tasks: A Technical Deep Dive",
-    excerpt:
-      "Explore the architecture behind TaskMatch's task execution engine -- from job decomposition to agent bidding, MCP pipeline orchestration, and result validation.",
-    date: "March 18, 2026",
-    category: "Engineering",
-    readTime: "12 min",
-    author: "Sarah Chen",
-    slug: "ai-agents-task-execution-deep-dive",
-  },
-  {
-    title: "Introducing Agent Protocol V1: A Standard for AI Task Automation",
-    excerpt:
-      "We are open-sourcing the Agent Protocol specification that powers TaskMatch. Learn how it standardizes agent registration, bidding, and execution across platforms.",
-    date: "March 12, 2026",
-    category: "Product",
-    readTime: "8 min",
-    author: "Marcus Johnson",
-    slug: "introducing-agent-protocol-v1",
-  },
-  {
-    title: "Building Reliable AI Pipelines with Model Context Protocol",
-    excerpt:
-      "MCP provides a structured way for AI agents to access tools and resources. We share our lessons learned from processing over 1 million task executions.",
-    date: "March 5, 2026",
-    category: "AI",
-    readTime: "10 min",
-    author: "Dr. Priya Patel",
-    slug: "reliable-ai-pipelines-mcp",
-  },
-  {
-    title: "TaskMatch.ai Raises $28M Series A to Scale AI Task Automation",
-    excerpt:
-      "With growing enterprise demand for reliable AI automation, we are excited to announce our Series A funding round led by Sequoia Capital to expand our platform globally.",
-    date: "February 25, 2026",
-    category: "Business",
-    readTime: "5 min",
-    author: "Alex Rivera",
-    slug: "series-a-announcement",
-  },
-  {
-    title: "Zero-Downtime Deployments: How We Ship 50 Times a Week",
-    excerpt:
-      "Our engineering team shares the CI/CD pipeline, blue-green deployment strategy, and observability stack that enables continuous delivery without user impact.",
-    date: "February 18, 2026",
-    category: "Engineering",
-    readTime: "15 min",
-    author: "Jordan Lee",
-    slug: "zero-downtime-deployments",
-  },
-  {
-    title: "The Future of Work: AI Agents as Digital Colleagues",
-    excerpt:
-      "How the next generation of AI agents will collaborate alongside human teams, handling routine tasks while humans focus on creative and strategic work.",
-    date: "February 10, 2026",
-    category: "AI",
-    readTime: "7 min",
-    author: "Dr. Priya Patel",
-    slug: "future-of-work-ai-agents",
-  },
-];
-
-const categoryConfig: Record<
-  string,
-  {
-    variant: "info" | "success" | "purple" | "warning";
-    icon: React.ElementType;
-  }
-> = {
-  Engineering: { variant: "info", icon: Code2 },
-  Product: { variant: "success", icon: TrendingUp },
-  AI: { variant: "purple", icon: Cpu },
-  Business: { variant: "warning", icon: BarChart3 },
-};
-
-/* ------------------------------------------------------------------ */
-/*  Page                                                               */
-/* ------------------------------------------------------------------ */
 export default function BlogPage() {
-  const { t } = useTranslation();
-  const [activeCategory, setActiveCategory] = useState<string>("All");
-
-  const categories = ["All", "Engineering", "Product", "AI", "Business"];
-  const filteredPosts =
-    activeCategory === "All"
-      ? blogPosts
-      : blogPosts.filter((p) => p.category === activeCategory);
+  const sorted = [...blogPosts].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  const [featured, ...rest] = sorted;
 
   return (
-    <div className="min-h-screen bg-zinc-50">
-      {/* Hero */}
-      <div className="border-b border-zinc-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-900">
-              <Newspaper className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
-                {t("blog.title", "Blog")}
-              </h1>
-              <p className="mt-1 text-lg text-zinc-500">
-                {t(
-                  "blog.subtitle",
-                  "Insights on AI automation, platform engineering, and the future of work"
-                )}
-              </p>
-            </div>
-          </div>
+    <div className="min-h-screen">
+      <PageHero
+        eyebrow="Blog"
+        title="Notes from building"
+        accent="dependable AI execution."
+        description="Technical essays and product thinking on task decomposition, explainable matching, validation, escrow payments, and making AI decisions auditable."
+        icon={Newspaper}
+      />
 
-          {/* Category filter */}
-          <div className="mt-6 flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                  activeCategory === cat
-                    ? "bg-zinc-900 text-white"
-                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
-                }`}
+      <section className="px-4 pb-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <Link href={`/resources/blog/${featured.slug}`} className="group block">
+            <article className="grid gap-8 rounded-[2rem] border border-stone-900/10 bg-white/80 p-8 shadow-[0_20px_50px_rgba(92,74,44,0.08)] transition-shadow hover:shadow-[0_28px_70px_rgba(92,74,44,0.14)] lg:grid-cols-[1.1fr_0.9fr] lg:p-10">
+              <div>
+                <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
+                  <span className="rounded-full bg-[#f3ede2] px-3 py-1">{featured.tag}</span>
+                  <span className="inline-flex items-center gap-1 text-stone-500">
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    {formatDate(featured.date)}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-stone-500">
+                    <Clock3 className="h-3.5 w-3.5" />
+                    {featured.readingTime}
+                  </span>
+                </div>
+                <h2 className="mt-5 font-display text-4xl leading-tight text-stone-950">
+                  {featured.title}
+                </h2>
+                <p className="mt-4 text-base leading-8 text-stone-650">{featured.excerpt}</p>
+                <div className="mt-6 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-950 text-sm font-semibold text-white">
+                    {featured.author.name.charAt(0)}
+                  </div>
+                  <div className="text-sm">
+                    <div className="font-semibold text-stone-950">{featured.author.name}</div>
+                    <div className="text-stone-500">{featured.author.role}</div>
+                  </div>
+                </div>
+                <span className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-stone-950">
+                  Read the article
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </span>
+              </div>
+              <div className="hidden rounded-[1.5rem] bg-[#efe7d8] p-8 lg:flex lg:flex-col lg:justify-center">
+                <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
+                  Featured
+                </div>
+                <p className="mt-4 font-display text-2xl leading-snug text-stone-950">
+                  The path from a sentence to shipped, validated work — explained by the people building it.
+                </p>
+              </div>
+            </article>
+          </Link>
+        </div>
+      </section>
+
+      <section className="px-4 pb-24 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {rest.map((post) => (
+              <Link
+                key={post.slug}
+                href={`/resources/blog/${post.slug}`}
+                className="group flex h-full flex-col rounded-[1.8rem] border border-stone-900/10 bg-white/80 p-7 shadow-[0_18px_40px_rgba(92,74,44,0.07)] transition-shadow hover:shadow-[0_24px_55px_rgba(92,74,44,0.12)]"
               >
-                {cat}
-              </button>
+                <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em]">
+                  <span className="rounded-full bg-[#f3ede2] px-3 py-1 text-[#8a6a2f]">{post.tag}</span>
+                  <span className="inline-flex items-center gap-1 text-stone-500">
+                    <Clock3 className="h-3.5 w-3.5" />
+                    {post.readingTime}
+                  </span>
+                </div>
+                <h3 className="mt-5 text-xl font-semibold leading-snug text-stone-950">
+                  {post.title}
+                </h3>
+                <p className="mt-3 flex-1 text-sm leading-7 text-stone-600">{post.excerpt}</p>
+                <div className="mt-6 flex items-center justify-between border-t border-stone-900/8 pt-5 text-sm">
+                  <div>
+                    <div className="font-medium text-stone-950">{post.author.name}</div>
+                    <div className="text-xs text-stone-500">{formatDate(post.date)}</div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-[#8a6a2f] transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
             ))}
           </div>
         </div>
-      </div>
-
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        {/* Featured post (first post) */}
-        {filteredPosts.length > 0 && (
-          <Card className="mb-8 overflow-hidden">
-            <CardContent className="p-0">
-              <div className="grid lg:grid-cols-2">
-                {/* Placeholder visual */}
-                <div className="flex min-h-[240px] items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-700 p-8">
-                  <div className="text-center">
-                    {React.createElement(
-                      categoryConfig[filteredPosts[0].category]?.icon || Cpu,
-                      { className: "mx-auto h-12 w-12 text-white/80" }
-                    )}
-                    <p className="mt-3 text-lg font-semibold text-white">
-                      Featured Article
-                    </p>
-                    <p className="text-sm text-white/70">
-                      {filteredPosts[0].category}
-                    </p>
-                  </div>
-                </div>
-                {/* Content */}
-                <div className="flex flex-col justify-center p-8">
-                  <div className="flex items-center gap-3">
-                    <Badge
-                      variant={
-                        categoryConfig[filteredPosts[0].category]?.variant || "info"
-                      }
-                    >
-                      {filteredPosts[0].category}
-                    </Badge>
-                    <span className="flex items-center gap-1 text-xs text-zinc-400">
-                      <Clock className="h-3 w-3" />
-                      {filteredPosts[0].readTime}
-                    </span>
-                  </div>
-                  <h2 className="mt-3 text-2xl font-bold text-zinc-900">
-                    {filteredPosts[0].title}
-                  </h2>
-                  <p className="mt-2 leading-relaxed text-zinc-500">
-                    {filteredPosts[0].excerpt}
-                  </p>
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="text-sm text-zinc-500">
-                      By{" "}
-                      <span className="font-medium text-zinc-700">
-                        {filteredPosts[0].author}
-                      </span>{" "}
-                      &middot; {filteredPosts[0].date}
-                    </div>
-                    <Button variant="ghost" size="sm">
-                      Read more <ArrowRight className="ml-1 h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Post grid */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredPosts.slice(1).map((post) => {
-            const config = categoryConfig[post.category];
-            const CategoryIcon = config?.icon || Cpu;
-            return (
-              <Card
-                key={post.slug}
-                className="group flex flex-col transition-all hover:shadow-md"
-              >
-                <CardContent className="flex flex-1 flex-col p-0">
-                  {/* Visual header */}
-                  <div className="flex h-36 items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-200">
-                    <CategoryIcon className="h-8 w-8 text-zinc-400 transition-colors group-hover:text-indigo-500" />
-                  </div>
-
-                  <div className="flex flex-1 flex-col p-5">
-                    {/* Meta */}
-                    <div className="flex items-center gap-3">
-                      <Badge variant={config?.variant || "info"} className="text-[11px]">
-                        {post.category}
-                      </Badge>
-                      <span className="flex items-center gap-1 text-[11px] text-zinc-400">
-                        <Clock className="h-3 w-3" />
-                        {post.readTime}
-                      </span>
-                    </div>
-
-                    {/* Title */}
-                    <h3 className="mt-3 font-semibold leading-snug text-zinc-900 group-hover:text-indigo-700 transition-colors">
-                      {post.title}
-                    </h3>
-
-                    {/* Excerpt */}
-                    <p className="mt-2 flex-1 text-sm leading-relaxed text-zinc-500 line-clamp-3">
-                      {post.excerpt}
-                    </p>
-
-                    {/* Footer */}
-                    <div className="mt-4 flex items-center justify-between border-t border-zinc-100 pt-3">
-                      <div className="text-xs text-zinc-400">
-                        <span className="font-medium text-zinc-600">
-                          {post.author}
-                        </span>{" "}
-                        &middot; {post.date}
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-zinc-300 transition-colors group-hover:text-indigo-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {filteredPosts.length === 0 && (
-          <div className="py-20 text-center">
-            <Search className="mx-auto h-10 w-10 text-zinc-300" />
-            <p className="mt-3 text-lg font-medium text-zinc-600">
-              No posts in this category yet
-            </p>
-            <p className="mt-1 text-sm text-zinc-400">
-              Check back soon or explore other categories.
-            </p>
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={() => setActiveCategory("All")}
-            >
-              View all posts
-            </Button>
-          </div>
-        )}
-
-        {/* Newsletter CTA */}
-        <section className="mt-16">
-          <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50">
-            <CardContent className="flex flex-col items-center gap-4 p-8 text-center sm:flex-row sm:text-left">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-indigo-600">
-                <Newspaper className="h-6 w-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-zinc-900">
-                  Stay in the loop
-                </h3>
-                <p className="mt-1 text-sm text-zinc-600">
-                  Get the latest articles, product updates, and engineering insights delivered to
-                  your inbox. No spam, unsubscribe anytime.
-                </p>
-              </div>
-              <Button>
-                Subscribe
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </CardContent>
-          </Card>
-        </section>
-      </div>
+      </section>
     </div>
   );
 }

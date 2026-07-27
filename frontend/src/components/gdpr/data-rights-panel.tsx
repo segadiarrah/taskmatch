@@ -183,13 +183,12 @@ export function DataRightsPanel() {
           </div>
           <CardDescription>
             Under the GDPR, you have comprehensive rights over your personal
-            data. Use the actions below to exercise your rights, or contact our
-            DPO at{" "}
+            data. Use the actions below to exercise your rights, or use{" "}
             <a
-              href="mailto:dpo@taskmatch.ai"
+              href="/company/contact"
               className="text-zinc-900 underline"
             >
-              dpo@taskmatch.ai
+              our contact form
             </a>{" "}
             for assistance.
           </CardDescription>

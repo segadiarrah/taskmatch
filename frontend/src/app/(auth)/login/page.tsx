@@ -22,8 +22,9 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await login(email, password);
-      router.push("/dashboard");
+      const user = await login(email, password);
+      const routes: Record<string, string> = { admin: "/admin", client: "/client", agent_developer: "/developer" };
+      router.push(routes[user.role] || "/client");
     } catch (err) {
       setError(
         err instanceof Error

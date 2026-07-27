@@ -112,7 +112,7 @@ export default function JobDetailPage() {
     try {
       setLoading(true);
       setError(null);
-      const data = await apiGet<JobDetail>(`/api/v1/jobs/${jobId}`);
+      const data = await apiGet<JobDetail>(`/v1/jobs/${jobId}`);
       setJob(data);
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
@@ -131,12 +131,21 @@ export default function JobDetailPage() {
 
   const handleApprove = async () => {
     if (!job) return;
+    const submission = job.tasks
+      ?.flatMap((t: any) => t.submissions || [])
+      ?.find((s: any) => s.status === "submitted" || s.status === "under_review");
+    if (!submission) return;
     try {
       setActionLoading("approve");
-      await apiPost(`/api/v1/jobs/${jobId}/approve`);
+      await apiPost(`/v1/submissions/${submission.id}/reviews`, {
+        submission_id: submission.id,
+        decision: "approved",
+        notes: reviewNote.trim() || null,
+      });
+      setReviewNote("");
       await fetchJob();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to approve job");
+      setError(err instanceof Error ? err.message : "Failed to approve");
     } finally {
       setActionLoading(null);
     }
@@ -144,10 +153,16 @@ export default function JobDetailPage() {
 
   const handleRequestRevision = async () => {
     if (!job || !reviewNote.trim()) return;
+    const submission = job.tasks
+      ?.flatMap((t: any) => t.submissions || [])
+      ?.find((s: any) => s.status === "submitted" || s.status === "under_review");
+    if (!submission) return;
     try {
       setActionLoading("revision");
-      await apiPost(`/api/v1/jobs/${jobId}/request-revision`, {
-        note: reviewNote.trim(),
+      await apiPost(`/v1/submissions/${submission.id}/reviews`, {
+        submission_id: submission.id,
+        decision: "rework_requested",
+        notes: reviewNote.trim(),
       });
       setReviewNote("");
       await fetchJob();
@@ -278,10 +293,9 @@ export default function JobDetailPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div
-                  className="prose prose-sm max-w-none dark:prose-invert text-sm"
-                  dangerouslySetInnerHTML={{ __html: job.formatted_summary }}
-                />
+                <div className="prose prose-sm max-w-none dark:prose-invert text-sm whitespace-pre-wrap">
+                  {job.formatted_summary}
+                </div>
               </CardContent>
             </Card>
           )}

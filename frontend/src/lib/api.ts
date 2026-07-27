@@ -17,6 +17,11 @@ function getAuthToken(): string | null {
   return localStorage.getItem("auth_token");
 }
 
+function clearAuthToken() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("auth_token");
+}
+
 async function request<T>(
   method: string,
   path: string,
@@ -42,17 +47,26 @@ async function request<T>(
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      clearAuthToken();
+      if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+        window.location.href = "/login";
+      }
+    }
+
     let errorBody: unknown;
     try {
       errorBody = await response.json();
     } catch {
-      errorBody = await response.text();
+      errorBody = undefined;
     }
-    throw new ApiError(
-      `Request failed: ${response.status} ${response.statusText}`,
-      response.status,
-      errorBody
-    );
+
+    const detail =
+      errorBody && typeof errorBody === "object" && "detail" in errorBody
+        ? String((errorBody as { detail: unknown }).detail)
+        : `Request failed: ${response.status}`;
+
+    throw new ApiError(detail, response.status, errorBody);
   }
 
   if (response.status === 204) {

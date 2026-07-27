@@ -64,8 +64,8 @@ export default function DeveloperDashboardPage() {
         setLoading(true);
         setError(null);
         const [statsData, assignmentsData] = await Promise.all([
-          apiGet<DashboardStats>("/api/v1/developer/dashboard/stats"),
-          apiGet<{ items: ActiveAssignment[] }>("/api/v1/developer/assignments?status=active&limit=5"),
+          apiGet<DashboardStats>("/v1/developer/dashboard/stats"),
+          apiGet<{ items: ActiveAssignment[] }>("/v1/developer/assignments?status=active&limit=5"),
         ]);
         setStats(statsData);
         setAssignments(assignmentsData.items ?? []);

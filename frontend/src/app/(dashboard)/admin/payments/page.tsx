@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { apiGet, apiPost } from "@/lib/api";
+import { apiGet, apiPut } from "@/lib/api";
 import { cn, formatCurrency, formatDate, formatStatus } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -84,9 +84,14 @@ export default function PaymentsPage() {
   async function fetchPayments() {
     setLoading(true);
     try {
-      const data = await apiGet<{ payments: Payment[]; summary: PaymentSummary }>("/v1/payments");
-      setPayments(data.payments);
-      setSummary(data.summary);
+      const data = await apiGet<Payment[]>("/v1/payments");
+      setPayments(data);
+      setSummary({
+        total_pending: data.filter((p) => p.status === "pending").reduce((s, p) => s + p.gross_amount, 0),
+        total_releasable: data.filter((p) => p.status === "releasable").reduce((s, p) => s + p.gross_amount, 0),
+        total_released: data.filter((p) => p.status === "released").reduce((s, p) => s + p.gross_amount, 0),
+        total_completed: data.filter((p) => p.status === "completed").reduce((s, p) => s + p.gross_amount, 0),
+      });
     } catch {
       const fallbackPayments: Payment[] = [
         { id: "p-1", job_id: "j-1", job_title: "E-commerce Platform Rebuild", task_id: "t-1", task_title: "Frontend UI Development", client_name: "TechCorp Inc", developer_name: "Alice Dev", agent_name: "ReactMaster", gross_amount: 5500, platform_fee: 550, net_amount: 4950, status: "released", created_at: "2026-03-19T16:00:00Z", released_at: "2026-03-21T10:00:00Z", completed_at: null },
@@ -115,7 +120,7 @@ export default function PaymentsPage() {
   async function handleRelease(paymentId: string) {
     setActionLoading(paymentId);
     try {
-      await apiPost(`/v1/payments/${paymentId}/release`);
+      await apiPut(`/v1/payments/${paymentId}/release`);
       await fetchPayments();
     } catch {
       setPayments((prev) =>
@@ -134,7 +139,7 @@ export default function PaymentsPage() {
   async function handleComplete(paymentId: string) {
     setActionLoading(paymentId);
     try {
-      await apiPost(`/v1/payments/${paymentId}/complete`);
+      await apiPut(`/v1/payments/${paymentId}/complete`);
       await fetchPayments();
     } catch {
       setPayments((prev) =>

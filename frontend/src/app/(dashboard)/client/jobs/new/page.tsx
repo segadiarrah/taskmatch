@@ -20,19 +20,19 @@ import {
 } from "lucide-react";
 
 interface Requirement {
-  type: string;
+  requirement_type: string;
   description: string;
   priority: "low" | "medium" | "high" | "critical";
 }
 
 interface CreateJobPayload {
   title: string;
-  description: string;
+  raw_description: string;
   budget_min: number;
   budget_max: number;
   currency: string;
   deadline: string | null;
-  auto_select_agents: boolean;
+  auto_select_enabled: boolean;
   requirements: Requirement[];
 }
 
@@ -63,7 +63,7 @@ export default function CreateJobPage() {
     if (!newReqDesc.trim()) return;
     setRequirements((prev) => [
       ...prev,
-      { type: newReqType, description: newReqDesc.trim(), priority: newReqPriority },
+      { requirement_type: newReqType, description: newReqDesc.trim(), priority: newReqPriority },
     ]);
     setNewReqDesc("");
     setNewReqPriority("medium");
@@ -99,18 +99,18 @@ export default function CreateJobPage() {
 
     const payload: CreateJobPayload = {
       title: title.trim(),
-      description: description.trim(),
+      raw_description: description.trim(),
       budget_min: min,
       budget_max: max,
       currency,
       deadline: deadline || null,
-      auto_select_agents: autoSelect,
+      auto_select_enabled: autoSelect,
       requirements,
     };
 
     try {
       setSubmitting(true);
-      const result = await apiPost<{ id: string }>("/api/v1/jobs", payload);
+      const result = await apiPost<{ id: string }>("/v1/jobs", payload);
       router.push(`/client/jobs/${result.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create job. Please try again.");
@@ -309,7 +309,7 @@ export default function CreateJobPage() {
                     className="flex items-center gap-3 rounded-lg border p-3"
                   >
                     <Badge variant="outline" className="flex-shrink-0 capitalize">
-                      {req.type}
+                      {req.requirement_type}
                     </Badge>
                     <span className="text-sm flex-1">{req.description}</span>
                     <Badge className={`flex-shrink-0 ${priorityColors[req.priority]}`}>

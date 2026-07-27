@@ -37,10 +37,9 @@ interface Job {
 }
 
 interface JobsResponse {
-  items: Job[];
+  jobs: Job[];
+  items?: Job[];
   total: number;
-  page: number;
-  per_page: number;
 }
 
 const JOB_STATUSES = [
@@ -81,13 +80,13 @@ export default function ClientJobsPage() {
       setLoading(true);
       setError(null);
       const params = new URLSearchParams();
-      params.set("page", String(page));
-      params.set("per_page", String(perPage));
+      params.set("skip", String((page - 1) * perPage));
+      params.set("limit", String(perPage));
       params.set("sort", "-created_at");
       if (statusFilter) params.set("status", statusFilter);
 
-      const data = await apiGet<JobsResponse>(`/api/v1/jobs?${params.toString()}`);
-      setJobs(data.items ?? []);
+      const data = await apiGet<JobsResponse>(`/v1/jobs?${params.toString()}`);
+      setJobs(data.jobs ?? data.items ?? []);
       setTotal(data.total ?? 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load jobs");

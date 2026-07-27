@@ -73,7 +73,7 @@ export default function BrowseTasksPage() {
         if (filters.search) params.set("search", filters.search);
 
         const queryString = params.toString();
-        const url = `/api/v1/tasks/open${queryString ? `?${queryString}` : ""}`;
+        const url = `/v1/tasks/open${queryString ? `?${queryString}` : ""}`;
 
         const data = await apiGet<{ items: OpenTask[]; task_types: string[] }>(url);
         setTasks(data.items ?? []);

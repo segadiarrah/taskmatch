@@ -39,7 +39,8 @@ interface AuditEntry {
   entity_type: string;
   entity_id: string;
   details: string;
-  payload_json: Record<string, unknown> | null;
+  payload_json?: Record<string, unknown> | null;
+  payload?: Record<string, unknown> | null;
   created_at: string;
 }
 
@@ -99,7 +100,7 @@ export default function AuditLogPage() {
   async function fetchAuditLog() {
     setLoading(true);
     try {
-      const data = await apiGet<AuditEntry[]>("/v1/audit-log");
+      const data = await apiGet<AuditEntry[]>("/v1/dashboard/audit-logs");
       setEntries(data);
     } catch {
       setEntries([
@@ -237,7 +238,8 @@ export default function AuditLogPage() {
                 {filteredEntries.map((entry) => {
                   const ActorIcon = actorIcons[entry.actor_type] || Activity;
                   const isExpanded = expandedRow === entry.id;
-                  const hasPayload = entry.payload_json && Object.keys(entry.payload_json).length > 0;
+                  const payloadData = entry.payload_json ?? entry.payload ?? null;
+                  const hasPayload = payloadData != null && Object.keys(payloadData).length > 0;
 
                   return (
                     <React.Fragment key={entry.id}>
@@ -295,7 +297,7 @@ export default function AuditLogPage() {
                           </p>
                         </TableCell>
                       </TableRow>
-                      {isExpanded && entry.payload_json && (
+                      {isExpanded && (entry.payload_json ?? entry.payload) && (
                         <TableRow className="bg-zinc-50/80">
                           <TableCell colSpan={6}>
                             <div className="px-4 py-3">
@@ -306,7 +308,7 @@ export default function AuditLogPage() {
                                 </span>
                               </div>
                               <pre className="rounded-lg bg-zinc-900 p-4 text-xs text-zinc-300 overflow-x-auto">
-                                {JSON.stringify(entry.payload_json, null, 2)}
+                                {JSON.stringify((entry.payload_json ?? entry.payload), null, 2)}
                               </pre>
                             </div>
                           </TableCell>

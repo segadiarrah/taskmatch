@@ -27,8 +27,23 @@ from app.models.job import Job, JobStatus
 from app.models.review import ReviewDecision, ReviewerType, ValidationReview
 from app.models.submission import Submission, SubmissionStatus
 from app.models.task import Task, TaskStatus
+from app.services import llm_service
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
+
+# Valid task types the LLM is allowed to assign (kept in sync with _infer_task_type).
+_TASK_TYPES = [
+    "coding",
+    "design",
+    "data_analysis",
+    "writing",
+    "testing",
+    "research",
+    "planning",
+    "review",
+    "execution",
+    "general",
+]
 
 
 # ---------------------------------------------------------------------------
@@ -117,6 +132,95 @@ def _split_on_conjunctions(text: str) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
+# LLM-backed helpers (each returns None on any failure -> deterministic path)
+# ---------------------------------------------------------------------------
+
+
+async def _llm_format_job(job: Job) -> dict[str, Any] | None:
+    """Ask the LLM to structure a raw brief. Returns None if unavailable/invalid."""
+    budget = None
+    if job.budget_min is not None and job.budget_max is not None:
+        budget = f"{job.currency} {job.budget_min}-{job.budget_max}"
+
+    system = (
+        "You are the intake analyst for TaskMatch.ai, an AI task-orchestration "
+        "marketplace. Turn a client's plain-language brief into a precise, "
+        "structured job specification. Be concrete and concise."
+    )
+    user = (
+        f"Title: {job.title or '(untitled)'}\n"
+        f"Budget: {budget or 'unspecified'}\n"
+        f"Deadline: {job.deadline.isoformat() if job.deadline else 'unspecified'}\n\n"
+        f"Raw brief:\n{(job.raw_description or '')[:4000]}\n\n"
+        "Return a JSON object with EXACTLY these keys:\n"
+        '{\n'
+        '  "objective": "one-sentence primary goal",\n'
+        '  "deliverables": ["concrete output 1", "concrete output 2"],\n'
+        '  "constraints": ["technical/scope constraints"],\n'
+        '  "success_criteria": ["measurable acceptance criteria"]\n'
+        "}"
+    )
+    result = await llm_service.call_llm_json(system, user, max_tokens=1200)
+    if not isinstance(result, dict):
+        return None
+    if not result.get("objective") and not result.get("deliverables"):
+        return None
+    return result
+
+
+async def _llm_decompose_job(
+    job: Job, formatted: dict[str, Any]
+) -> list[dict[str, Any]] | None:
+    """Ask the LLM to split a job into tasks. Returns None if unavailable/invalid."""
+    system = (
+        "You are the planning engine for TaskMatch.ai. Decompose a structured "
+        "job into a small set (1-6) of independent, biddable tasks. Each task "
+        "must be self-contained and assignable to a single agent."
+    )
+    user = (
+        f"Job title: {job.title or ''}\n"
+        f"Structured spec:\n{json.dumps(formatted)[:3000]}\n\n"
+        f"Allowed task_type values: {', '.join(_TASK_TYPES)}.\n"
+        "Return a JSON object: {\"tasks\": [ {\"title\": str, \"description\": str, "
+        "\"task_type\": one of the allowed values, \"priority\": int (1=highest)} ]}. "
+        "Prefer fewer, larger tasks over many trivial ones."
+    )
+    result = await llm_service.call_llm_json(system, user, max_tokens=1600)
+    tasks: Any = None
+    if isinstance(result, dict):
+        tasks = result.get("tasks")
+    elif isinstance(result, list):
+        tasks = result
+    if not isinstance(tasks, list) or not tasks:
+        return None
+
+    cleaned: list[dict[str, Any]] = []
+    for idx, t in enumerate(tasks[:6]):
+        if not isinstance(t, dict):
+            continue
+        title = str(t.get("title") or "").strip()
+        desc = str(t.get("description") or "").strip()
+        if not title and not desc:
+            continue
+        task_type = str(t.get("task_type") or "").strip().lower()
+        if task_type not in _TASK_TYPES:
+            task_type = _infer_task_type(desc or title)
+        try:
+            priority = int(t.get("priority", idx + 1))
+        except (TypeError, ValueError):
+            priority = idx + 1
+        cleaned.append(
+            {
+                "title": (title or desc)[:250],
+                "description": desc or title,
+                "task_type": task_type,
+                "priority": priority,
+            }
+        )
+    return cleaned or None
+
+
+# ---------------------------------------------------------------------------
 # (a) format_job
 # ---------------------------------------------------------------------------
 
@@ -158,19 +262,25 @@ async def format_job(db: AsyncSession, job_id: UUID) -> dict[str, Any]:
     raw = job.raw_description or ""
     title = job.title or ""
 
-    # --- deterministic parsing ---
-    sentences = _extract_sentences(raw)
-
-    objective = sentences[0] if sentences else title
-    deliverables = sentences[1:3] if len(sentences) > 1 else [f"Complete: {title}"]
-    constraints: list[str] = []
+    # --- deterministic constraints (always applied) ---
+    base_constraints: list[str] = []
     if job.budget_min is not None and job.budget_max is not None:
-        constraints.append(
+        base_constraints.append(
             f"Budget range: {job.currency} {job.budget_min} - {job.budget_max}"
         )
     if job.deadline:
-        constraints.append(f"Deadline: {job.deadline.isoformat()}")
-    success_criteria = sentences[3:5] if len(sentences) > 3 else ["Deliver all listed deliverables on time and within budget"]
+        base_constraints.append(f"Deadline: {job.deadline.isoformat()}")
+
+    # --- deterministic parsing (fallback) ---
+    sentences = _extract_sentences(raw)
+    objective = sentences[0] if sentences else title
+    deliverables = sentences[1:3] if len(sentences) > 1 else [f"Complete: {title}"]
+    constraints = list(base_constraints)
+    success_criteria = (
+        sentences[3:5]
+        if len(sentences) > 3
+        else ["Deliver all listed deliverables on time and within budget"]
+    )
 
     # Incorporate explicit requirements if present (loaded via selectin)
     if job.requirements:
@@ -186,6 +296,36 @@ async def format_job(db: AsyncSession, job_id: UUID) -> dict[str, Any]:
         "constraints": constraints,
         "success_criteria": success_criteria,
     }
+    method = "deterministic"
+    confidence = 0.7
+
+    # --- LLM enhancement (graceful fallback to the deterministic result) ---
+    llm_result = await _llm_format_job(job)
+    if llm_result is not None:
+        # Merge: LLM handles language understanding; we guarantee budget/
+        # deadline constraints are present regardless of what the model said.
+        merged_constraints = list(llm_result.get("constraints") or [])
+        for c in base_constraints:
+            if c not in merged_constraints:
+                merged_constraints.append(c)
+        if job.requirements:
+            for req in job.requirements:
+                tag = f"[{req.requirement_type}] {req.description}"
+                if req.priority == "high":
+                    if tag not in llm_result.get("deliverables", []):
+                        llm_result.setdefault("deliverables", []).append(tag)
+                elif tag not in merged_constraints:
+                    merged_constraints.append(tag)
+        formatted = {
+            "objective": str(llm_result.get("objective") or objective),
+            "deliverables": [str(d) for d in (llm_result.get("deliverables") or deliverables)],
+            "constraints": [str(c) for c in merged_constraints],
+            "success_criteria": [
+                str(s) for s in (llm_result.get("success_criteria") or success_criteria)
+            ],
+        }
+        method = "llm"
+        confidence = 0.9
 
     # Persist
     job.formatted_summary = json.dumps(formatted)
@@ -202,10 +342,17 @@ async def format_job(db: AsyncSession, job_id: UUID) -> dict[str, Any]:
             "raw_description": raw[:2000],
             "title": title,
             "requirements_count": len(job.requirements) if job.requirements else 0,
+            "method": method,
         },
         output_snapshot=formatted,
-        reasoning="Deterministic parsing: first sentence as objective, next sentences as deliverables, budget/deadline as constraints.",
-        confidence=0.7,
+        reasoning=(
+            "LLM structured the raw brief into objective, deliverables, constraints, "
+            "and success criteria; budget/deadline constraints enforced deterministically."
+            if method == "llm"
+            else "Deterministic parsing: first sentence as objective, next sentences as "
+            "deliverables, budget/deadline as constraints (LLM unavailable)."
+        ),
+        confidence=confidence,
     )
 
     await _log_audit(
@@ -270,11 +417,18 @@ async def decompose_job(db: AsyncSession, job_id: UUID) -> list[dict[str, Any]]:
     objective: str = formatted.get("objective", job.title)
     raw = job.raw_description or ""
 
-    # --- heuristic decomposition ---
+    # --- decomposition ---
     task_specs: list[dict[str, Any]] = []
+    method = "heuristic"
 
-    # Strategy 1: use deliverables directly
-    if deliverables and len(deliverables) >= 2:
+    # Strategy 0 (preferred): LLM-driven decomposition, with graceful fallback.
+    llm_specs = await _llm_decompose_job(job, formatted)
+    if llm_specs:
+        task_specs = llm_specs
+        method = "llm"
+
+    # Strategy 1: use deliverables directly (only if LLM produced nothing)
+    if not task_specs and deliverables and len(deliverables) >= 2:
         for idx, d in enumerate(deliverables):
             task_specs.append({
                 "title": f"Phase {idx + 1}: {d[:120]}",
@@ -282,8 +436,9 @@ async def decompose_job(db: AsyncSession, job_id: UUID) -> list[dict[str, Any]]:
                 "task_type": _infer_task_type(d),
                 "priority": idx + 1,
             })
-    else:
-        # Strategy 2: split raw description on conjunctions
+
+    # Strategy 2: split raw description on conjunctions (only if still empty)
+    if not task_specs:
         parts = _split_on_conjunctions(raw)
         if len(parts) >= 2:
             for idx, part in enumerate(parts):
@@ -382,11 +537,11 @@ async def decompose_job(db: AsyncSession, job_id: UUID) -> list[dict[str, Any]]:
             "tasks": created_tasks,
         },
         reasoning=(
-            f"Decomposed into {len(created_tasks)} task(s) using "
-            f"{'deliverables' if deliverables and len(deliverables) >= 2 else 'heuristic'} strategy. "
+            f"Decomposed into {len(created_tasks)} task(s) using the "
+            f"{'LLM planner' if method == 'llm' else 'deterministic heuristic'} strategy. "
             f"Budget per task: {per_task_budget}."
         ),
-        confidence=0.65,
+        confidence=0.85 if method == "llm" else 0.65,
     )
 
     await _log_audit(

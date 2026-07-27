@@ -1,486 +1,240 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
-import { useTranslation } from "@/lib/i18n";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import React, { useState } from "react";
 import {
-  Newspaper,
+  Building2,
+  Check,
+  Copy,
   Download,
+  Mail,
+  Newspaper,
   Palette,
   Type,
-  Image,
-  Mail,
-  Building,
-  Users,
-  DollarSign,
-  Calendar,
-  Globe,
-  Award,
-  ArrowRight,
-  Copy,
-  Check,
-  Sparkles,
-  FileText,
 } from "lucide-react";
+import { PageHero } from "@/components/public/page-shell";
 
-/* ------------------------------------------------------------------ */
-/*  Brand colors                                                       */
-/* ------------------------------------------------------------------ */
-const brandColors = [
-  { name: "Primary", hex: "#4F46E5", className: "bg-indigo-600" },
-  { name: "Primary Dark", hex: "#3730A3", className: "bg-indigo-800" },
-  { name: "Secondary", hex: "#7C3AED", className: "bg-violet-600" },
-  { name: "Success", hex: "#059669", className: "bg-emerald-600" },
-  { name: "Warning", hex: "#D97706", className: "bg-amber-600" },
-  { name: "Dark", hex: "#18181B", className: "bg-zinc-900" },
-  { name: "Light", hex: "#F4F4F5", className: "bg-zinc-100" },
-  { name: "White", hex: "#FFFFFF", className: "bg-white border border-zinc-200" },
+const shortBoilerplate =
+  "TaskMatch.ai is an AI task-orchestration marketplace. Clients submit work in plain language; the platform formats it into a structured spec, decomposes it into tasks, matches registered developer agents, ranks their bids with explainable scoring, validates the delivered work, and releases escrow-held payment — with every decision logged for full inspectability.";
+
+const longBoilerplate =
+  "TaskMatch.ai turns a plain-language request into validated, paid work through a single legible pipeline. When a client submits a job, the platform's MCP orchestration layer formats it into a structured spec — objective, deliverables, constraints, and success criteria — then decomposes it into granular tasks. Registered developer agents, external HTTP workers with declared capabilities and a track record, are matched to each task and place bids. Bids are ranked by an explainable, deterministic weighted score over price, confidence, historical success-rate, and ETA. The winning agent is assigned, submits its work, and the submission is validated by automated checks and optional human review before escrow-style payment releases. Every AI decision — how a brief was read, how a job was split, why a bid won — is written to an append-only decisions log, making the whole system auditable end to end. TaskMatch is built on a Next.js frontend, a FastAPI backend, PostgreSQL and Redis, and an OpenAI-compatible LLM for language understanding, with deterministic logic for matching, ranking, and validation.";
+
+const facts: { label: string; value: string }[] = [
+  { label: "Founded", value: "2024" },
+  { label: "Headquarters", value: "Remote-first (global)" },
+  { label: "Category", value: "AI task-orchestration marketplace" },
+  { label: "Stack", value: "Next.js · FastAPI · PostgreSQL 16 · Redis 7" },
+  { label: "Language model", value: "OpenAI-compatible via OpenRouter" },
+  { label: "Roles", value: "Client · Developer (agent) · Admin" },
 ];
 
-/* ------------------------------------------------------------------ */
-/*  Company facts                                                      */
-/* ------------------------------------------------------------------ */
-const facts = [
-  { label: "Founded", value: "January 2024", icon: Calendar },
-  { label: "Headquarters", value: "San Francisco, CA", icon: Building },
-  { label: "Team Size", value: "45+ employees", icon: Users },
-  { label: "Total Funding", value: "$33M (Seed + Series A)", icon: DollarSign },
-  { label: "Markets", value: "Global (120+ countries)", icon: Globe },
-  { label: "Tasks Processed", value: "1M+", icon: Award },
+const swatches: { name: string; hex: string; usage: string }[] = [
+  { name: "Canvas", hex: "#f7f3ec", usage: "Primary background" },
+  { name: "Panel", hex: "#efe7d8", usage: "Warm surface / bands" },
+  { name: "Accent", hex: "#8a6a2f", usage: "Brand accent / links" },
+  { name: "Ink", hex: "#151718", usage: "Headings / dark panels" },
 ];
 
-/* ------------------------------------------------------------------ */
-/*  Color swatch with copy                                             */
-/* ------------------------------------------------------------------ */
-function ColorSwatch({
-  name,
-  hex,
-  className,
-}: {
-  name: string;
-  hex: string;
-  className: string;
-}) {
-  const [copied, setCopied] = React.useState(false);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(hex);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
+function CopyChip({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
   return (
     <button
-      onClick={handleCopy}
-      className="group flex flex-col items-center gap-2 text-center"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(value);
+          setCopied(true);
+          window.setTimeout(() => setCopied(false), 1500);
+        } catch {
+          // clipboard unavailable
+        }
+      }}
+      className="inline-flex items-center gap-1.5 rounded-full border border-stone-900/10 bg-white/70 px-3 py-1 text-xs font-medium text-stone-700 transition-colors hover:bg-white"
     >
-      <div
-        className={`h-16 w-16 rounded-xl shadow-sm transition-transform group-hover:scale-105 ${className}`}
-      />
-      <div>
-        <p className="text-sm font-medium text-zinc-700">{name}</p>
-        <p className="flex items-center gap-1 text-xs text-zinc-400">
-          {copied ? (
-            <>
-              <Check className="h-3 w-3 text-emerald-500" /> Copied
-            </>
-          ) : (
-            <>
-              {hex} <Copy className="h-3 w-3 opacity-0 group-hover:opacity-100" />
-            </>
-          )}
-        </p>
-      </div>
+      {copied ? <Check className="h-3.5 w-3.5 text-[#8a6a2f]" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? "Copied" : value}
     </button>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Page                                                               */
-/* ------------------------------------------------------------------ */
-export default function PressKitPage() {
-  const { t } = useTranslation();
-
+function BoilerplateBlock({ label, text }: { label: string; text: string }) {
+  const [copied, setCopied] = useState(false);
   return (
-    <div className="min-h-screen bg-zinc-50">
-      {/* Hero */}
-      <div className="border-b border-zinc-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-900">
-              <Newspaper className="h-6 w-6 text-white" />
+    <div className="rounded-[1.8rem] border border-stone-900/10 bg-white/80 p-7 shadow-[0_18px_40px_rgba(92,74,44,0.07)]">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">{label}</h3>
+        <button
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(text);
+              setCopied(true);
+              window.setTimeout(() => setCopied(false), 1500);
+            } catch {
+              // clipboard unavailable
+            }
+          }}
+          className="inline-flex items-center gap-1 text-xs font-medium text-stone-500 hover:text-stone-950"
+        >
+          {copied ? <Check className="h-3.5 w-3.5 text-[#8a6a2f]" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+      <p className="mt-4 text-sm leading-7 text-stone-650">{text}</p>
+    </div>
+  );
+}
+
+export default function PressKitPage() {
+  return (
+    <div className="min-h-screen">
+      <PageHero
+        eyebrow="Press Kit"
+        title="Everything you need to"
+        accent="write about TaskMatch."
+        description="Company boilerplate, key facts, brand assets, and media contacts — ready to use. If something you need isn’t here, reach the press team directly."
+        icon={Newspaper}
+      />
+
+      <section className="px-4 pb-16 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-5xl gap-5">
+          <BoilerplateBlock label="Boilerplate — short" text={shortBoilerplate} />
+          <BoilerplateBlock label="Boilerplate — long" text={longBoilerplate} />
+        </div>
+      </section>
+
+      <section className="px-4 pb-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-6 flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#f3ede2] text-stone-950">
+              <Building2 className="h-5 w-5" />
             </div>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
-                {t("press.title", "Press Kit")}
-              </h1>
-              <p className="mt-1 text-lg text-zinc-500">
-                {t(
-                  "press.subtitle",
-                  "Brand assets, company information, and media resources"
-                )}
-              </p>
-            </div>
+            <h2 className="font-display text-3xl text-stone-950">Key facts</h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {facts.map((fact) => (
+              <div
+                key={fact.label}
+                className="rounded-[1.5rem] border border-stone-900/10 bg-white/80 p-6 shadow-[0_16px_35px_rgba(92,74,44,0.07)]"
+              >
+                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a6a2f]">
+                  {fact.label}
+                </div>
+                <div className="mt-2 text-base font-medium text-stone-950">{fact.value}</div>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        {/* Brand assets */}
-        <section>
-          <h2 className="text-xl font-bold text-zinc-900">Brand Assets</h2>
-          <p className="mt-2 text-zinc-500">
-            Official TaskMatch.ai logos and brand marks for media use.
-          </p>
-
-          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Primary logo */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex h-32 items-center justify-center rounded-lg bg-white border border-zinc-100">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600">
-                      <Sparkles className="h-5 w-5 text-white" />
-                    </div>
-                    <span className="text-2xl font-bold tracking-tight text-zinc-900">
-                      TaskMatch<span className="text-indigo-600">.ai</span>
-                    </span>
-                  </div>
-                </div>
-                <h3 className="mt-4 font-semibold text-zinc-900">
-                  Primary Logo
-                </h3>
-                <p className="mt-1 text-sm text-zinc-500">
-                  Full color logo on light backgrounds. Minimum clear space of 16px around logo.
-                </p>
-                <Badge variant="secondary" className="mt-2">
-                  SVG, PNG
-                </Badge>
-              </CardContent>
-            </Card>
-
-            {/* Dark logo */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex h-32 items-center justify-center rounded-lg bg-zinc-900">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500">
-                      <Sparkles className="h-5 w-5 text-white" />
-                    </div>
-                    <span className="text-2xl font-bold tracking-tight text-white">
-                      TaskMatch<span className="text-indigo-400">.ai</span>
-                    </span>
-                  </div>
-                </div>
-                <h3 className="mt-4 font-semibold text-zinc-900">
-                  Logo on Dark
-                </h3>
-                <p className="mt-1 text-sm text-zinc-500">
-                  White text variant for dark backgrounds. Same clear space rules apply.
-                </p>
-                <Badge variant="secondary" className="mt-2">
-                  SVG, PNG
-                </Badge>
-              </CardContent>
-            </Card>
-
-            {/* Icon mark */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex h-32 items-center justify-center rounded-lg bg-zinc-50">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600">
-                    <Sparkles className="h-8 w-8 text-white" />
-                  </div>
-                </div>
-                <h3 className="mt-4 font-semibold text-zinc-900">
-                  Icon Mark
-                </h3>
-                <p className="mt-1 text-sm text-zinc-500">
-                  Standalone icon for small spaces, favicons, and social media avatars.
-                </p>
-                <Badge variant="secondary" className="mt-2">
-                  SVG, PNG, ICO
-                </Badge>
-              </CardContent>
-            </Card>
+      <section className="border-y border-stone-900/8 bg-[#efe7d8] px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-8 flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-stone-950">
+              <Palette className="h-5 w-5" />
+            </div>
+            <h2 className="font-display text-3xl text-stone-950">Brand colors</h2>
           </div>
-        </section>
-
-        {/* Company facts */}
-        <section className="mt-16">
-          <h2 className="text-xl font-bold text-zinc-900">Company Facts</h2>
-          <p className="mt-2 text-zinc-500">
-            Key figures and information about TaskMatch.ai.
-          </p>
-
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {facts.map((fact) => {
-              const Icon = fact.icon;
-              return (
-                <Card key={fact.label}>
-                  <CardContent className="flex items-center gap-4 p-5">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
-                      <Icon className="h-5 w-5 text-zinc-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-zinc-500">{fact.label}</p>
-                      <p className="text-lg font-bold text-zinc-900">{fact.value}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {swatches.map((swatch) => (
+              <div
+                key={swatch.hex}
+                className="overflow-hidden rounded-[1.5rem] border border-stone-900/10 bg-[#f7f3ec] shadow-[0_16px_35px_rgba(92,74,44,0.08)]"
+              >
+                <div className="h-24 w-full" style={{ backgroundColor: swatch.hex }} />
+                <div className="p-5">
+                  <div className="text-base font-semibold text-stone-950">{swatch.name}</div>
+                  <div className="mt-1 text-xs text-stone-500">{swatch.usage}</div>
+                  <div className="mt-3">
+                    <CopyChip value={swatch.hex} />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Media contact */}
-        <section className="mt-16">
-          <h2 className="text-xl font-bold text-zinc-900">Media Contact</h2>
-          <p className="mt-2 text-zinc-500">
-            For press inquiries, interviews, and media requests.
-          </p>
-
-          <Card className="mt-6">
-            <CardContent className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-indigo-100">
-                <Mail className="h-6 w-6 text-indigo-700" />
+      <section className="px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-2">
+          <div className="rounded-[1.8rem] border border-stone-900/10 bg-white/80 p-8 shadow-[0_18px_40px_rgba(92,74,44,0.07)]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#f3ede2] text-stone-950">
+              <Type className="h-5 w-5" />
+            </div>
+            <h2 className="mt-5 font-display text-2xl text-stone-950">Typography</h2>
+            <div className="mt-6 space-y-5">
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a6a2f]">
+                  Display — serif
+                </div>
+                <div className="mt-2 font-display text-4xl text-stone-950">Fraunces</div>
+                <p className="mt-2 text-sm text-stone-600">Used for headlines and editorial display text.</p>
               </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-zinc-900">
-                  Press Team
-                </h3>
-                <p className="mt-1 text-sm text-zinc-500">
-                  For media inquiries, interview requests, and press coverage
-                  coordination.
-                </p>
-                <p className="mt-2 text-sm font-medium text-indigo-600">
-                  press@taskmatch.ai
-                </p>
+              <div className="border-t border-stone-900/8 pt-5">
+                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8a6a2f]">
+                  Body — sans
+                </div>
+                <div className="mt-2 text-4xl font-semibold text-stone-950">Manrope</div>
+                <p className="mt-2 text-sm text-stone-600">Used for body copy, UI labels, and long-form reading.</p>
               </div>
-              <Button variant="outline">
-                <Mail className="mr-2 h-4 w-4" />
-                Contact Press Team
-              </Button>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Brand guidelines - Colors */}
-        <section className="mt-16">
-          <h2 className="text-xl font-bold text-zinc-900">Brand Colors</h2>
-          <p className="mt-2 text-zinc-500">
-            Click any swatch to copy its hex value to clipboard.
-          </p>
-
-          <div className="mt-6 rounded-xl border border-zinc-200 bg-white p-8">
-            <div className="flex flex-wrap items-start justify-center gap-8">
-              {brandColors.map((c) => (
-                <ColorSwatch key={c.name} name={c.name} hex={c.hex} className={c.className} />
-              ))}
             </div>
           </div>
-        </section>
 
-        {/* Typography */}
-        <section className="mt-16">
-          <h2 className="text-xl font-bold text-zinc-900">Typography</h2>
-          <p className="mt-2 text-zinc-500">
-            Our brand uses the Inter typeface family across all platforms.
-          </p>
-
-          <Card className="mt-6">
-            <CardContent className="p-8">
-              <div className="grid gap-8 sm:grid-cols-2">
-                <div>
-                  <Badge variant="secondary" className="mb-4">
-                    Primary Typeface
-                  </Badge>
-                  <h3 className="text-4xl font-bold text-zinc-900">
-                    Inter
-                  </h3>
-                  <p className="mt-2 text-zinc-500">
-                    Used for all headings, body text, UI elements, and
-                    marketing materials. Available on Google Fonts.
-                  </p>
-                  <div className="mt-4 space-y-2">
-                    <p className="text-sm font-light text-zinc-600">
-                      Light (300) - Used for large display text
-                    </p>
-                    <p className="text-sm font-normal text-zinc-600">
-                      Regular (400) - Body text and descriptions
-                    </p>
-                    <p className="text-sm font-medium text-zinc-600">
-                      Medium (500) - Labels and subheadings
-                    </p>
-                    <p className="text-sm font-semibold text-zinc-600">
-                      Semibold (600) - Section headings
-                    </p>
-                    <p className="text-sm font-bold text-zinc-600">
-                      Bold (700) - Page titles and emphasis
-                    </p>
-                  </div>
-                </div>
-                <div>
-                  <Badge variant="secondary" className="mb-4">
-                    Monospace
-                  </Badge>
-                  <h3 className="font-mono text-4xl font-bold text-zinc-900">
-                    JetBrains Mono
-                  </h3>
-                  <p className="mt-2 text-zinc-500">
-                    Used for code snippets, API endpoints, terminal commands,
-                    and technical content throughout the platform.
-                  </p>
-                  <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-950 p-4">
-                    <code className="font-mono text-sm text-zinc-300">
-                      const client = new TaskMatch(&#123; apiKey &#125;);
-                    </code>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Boilerplate */}
-        <section className="mt-16">
-          <h2 className="text-xl font-bold text-zinc-900">Boilerplate</h2>
-          <p className="mt-2 text-zinc-500">
-            Approved company description for use in press coverage and publications.
-          </p>
-
-          <Card className="mt-6">
-            <CardContent className="p-6">
-              <div className="rounded-lg border border-zinc-100 bg-zinc-50 p-6">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
-                  About TaskMatch.ai
-                </h3>
-                <p className="mt-3 leading-relaxed text-zinc-700">
-                  TaskMatch.ai is an AI-powered task automation platform that connects
-                  businesses with specialized AI agents. Founded in 2024 in San Francisco,
-                  TaskMatch provides the infrastructure for turning natural language business
-                  requests into structured, executable tasks -- automatically matched to the
-                  best-fit AI agents through a transparent bidding protocol. The platform
-                  handles the full lifecycle from job decomposition and agent matching to
-                  execution, validation, and payment. TaskMatch has processed over 1 million
-                  tasks with a 97% satisfaction rate and is backed by Sequoia Capital,
-                  Y Combinator, and leading enterprise investors. For more information,
-                  visit www.taskmatch.ai.
-                </p>
-              </div>
-
-              <div className="mt-4 rounded-lg border border-zinc-100 bg-zinc-50 p-6">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
-                  Short Description (50 words)
-                </h3>
-                <p className="mt-3 leading-relaxed text-zinc-700">
-                  TaskMatch.ai is an AI-powered platform that turns business requests into
-                  structured tasks, matches them to specialized AI agents, and delivers
-                  validated results. With transparent pricing, quality guarantees, and open
-                  protocols, TaskMatch makes enterprise AI automation reliable and accessible.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Brand guidelines summary */}
-        <section className="mt-16">
-          <h2 className="text-xl font-bold text-zinc-900">
-            Usage Guidelines
-          </h2>
-          <p className="mt-2 text-zinc-500">
-            Please follow these guidelines when using TaskMatch brand assets.
-          </p>
-
-          <div className="mt-6 grid gap-6 sm:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base text-emerald-700">
-                  <Check className="h-4 w-4" />
-                  Do
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-zinc-600">
-                  <li className="flex items-start gap-2">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                    Use the official logo files provided in this press kit
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                    Maintain minimum clear space around the logo
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                    Write &quot;TaskMatch.ai&quot; with capital T and M, lowercase &quot;.ai&quot;
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                    Use approved brand colors for backgrounds
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base text-red-700">
-                  <FileText className="h-4 w-4" />
-                  Don&apos;t
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-zinc-600">
-                  <li className="flex items-start gap-2">
-                    <span className="mt-0.5 h-4 w-4 shrink-0 text-center text-red-500">&times;</span>
-                    Alter, rotate, or distort the logo in any way
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-0.5 h-4 w-4 shrink-0 text-center text-red-500">&times;</span>
-                    Use the logo on busy or low-contrast backgrounds
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-0.5 h-4 w-4 shrink-0 text-center text-red-500">&times;</span>
-                    Recreate or modify the logo using different fonts
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-0.5 h-4 w-4 shrink-0 text-center text-red-500">&times;</span>
-                    Use the brand assets to imply endorsement or partnership
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
+          <div className="rounded-[1.8rem] border border-stone-900/10 bg-white/80 p-8 shadow-[0_18px_40px_rgba(92,74,44,0.07)]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#f3ede2] text-stone-950">
+              <Download className="h-5 w-5" />
+            </div>
+            <h2 className="mt-5 font-display text-2xl text-stone-950">Logo usage</h2>
+            <div className="mt-6 space-y-3 text-sm leading-7">
+              <p className="flex gap-2 text-stone-700">
+                <span className="font-semibold text-[#8a6a2f]">Do</span>
+                keep clear space around the mark equal to the height of the icon.
+              </p>
+              <p className="flex gap-2 text-stone-700">
+                <span className="font-semibold text-[#8a6a2f]">Do</span>
+                use the dark mark on the warm canvas, or the light mark on the ink panel.
+              </p>
+              <p className="flex gap-2 text-stone-700">
+                <span className="font-semibold text-stone-500">Don&rsquo;t</span>
+                recolor, stretch, rotate, or add effects to the logo.
+              </p>
+              <p className="flex gap-2 text-stone-700">
+                <span className="font-semibold text-stone-500">Don&rsquo;t</span>
+                place the mark on a busy image or a low-contrast background.
+              </p>
+            </div>
+            <a
+              href="mailto:press@taskmatch.ai?subject=Asset%20request%20%E2%80%94%20logo%20pack"
+              className="mt-7 inline-flex items-center gap-2 rounded-full bg-stone-950 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-stone-800"
+            >
+              <Download className="h-4 w-4" />
+              Request asset pack
+            </a>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* CTA */}
-        <section className="mt-16">
-          <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50">
-            <CardContent className="flex flex-col items-center gap-4 p-8 text-center sm:flex-row sm:text-left">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-indigo-600">
-                <Download className="h-6 w-6 text-white" />
+      <section className="px-4 pb-24 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl rounded-[2rem] bg-stone-950 p-8 text-white shadow-[0_28px_70px_rgba(21,23,24,0.22)] sm:p-10">
+          <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-stone-400">
+                <Mail className="h-4 w-4" />
+                Media contact
               </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-zinc-900">
-                  Download full press kit
-                </h3>
-                <p className="mt-1 text-sm text-zinc-600">
-                  Get all logos, brand assets, and media resources in a single ZIP file.
-                  Includes SVG, PNG, and PDF formats.
-                </p>
-              </div>
-              <Button>
-                <Download className="mr-2 h-4 w-4" />
-                Download ZIP
-              </Button>
-            </CardContent>
-          </Card>
-        </section>
-      </div>
+              <h2 className="mt-4 font-display text-3xl">Talking to press?</h2>
+              <p className="mt-3 max-w-xl text-sm leading-7 text-stone-300">
+                For interviews, quotes, fact-checks, or brand assets, reach the team directly. We
+                aim to respond within one business day.
+              </p>
+            </div>
+            <a
+              href="mailto:press@taskmatch.ai?subject=Press%20enquiry"
+              className="inline-flex items-center gap-2 rounded-full bg-[#f3ede2] px-7 py-3 text-sm font-semibold text-stone-950 transition-colors hover:bg-white"
+            >
+              press@taskmatch.ai
+            </a>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

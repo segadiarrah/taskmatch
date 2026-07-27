@@ -7,10 +7,13 @@ from collections.abc import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from app.core.config import settings
 from app.core.logging import get_logger, setup_logging
 from app.api.v1.router import router as api_v1_router
+
+_is_prod = settings.ENV == "production"
 
 
 @asynccontextmanager
@@ -18,7 +21,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan: runs setup on startup and teardown on shutdown."""
     setup_logging()
     logger = get_logger("app.main")
-    logger.info("TaskMatch.ai API started", version=app.version)
+    logger.info("TaskMatch.ai API started", version=app.version, env=settings.ENV)
     yield
     logger.info("TaskMatch.ai API shutting down")
 
@@ -26,21 +29,27 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 app = FastAPI(
     title="TaskMatch.ai API",
     version="1.0.0",
-    openapi_url=f"{settings.API_V1_PREFIX}/openapi.json",
-    docs_url=f"{settings.API_V1_PREFIX}/docs",
-    redoc_url=f"{settings.API_V1_PREFIX}/redoc",
+    openapi_url=None if _is_prod else f"{settings.API_V1_PREFIX}/openapi.json",
+    docs_url=None if _is_prod else f"{settings.API_V1_PREFIX}/docs",
+    redoc_url=None if _is_prod else f"{settings.API_V1_PREFIX}/redoc",
     lifespan=lifespan,
 )
 
 # ---------------------------------------------------------------------------
 # Middleware
 # ---------------------------------------------------------------------------
+if _is_prod:
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=["taskmatch.ai", "www.taskmatch.ai", "*.taskmatch.ai"],
+    )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # ---------------------------------------------------------------------------

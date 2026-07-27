@@ -15,14 +15,18 @@ class ReviewCreate(BaseModel):
     )
     decision: str = Field(
         ...,
-        pattern=r"^(approved|rejected|needs_revision)$",
+        pattern=r"^(approved|rejected|rework_requested)$",
         description="Review verdict",
     )
     notes: Optional[str] = Field(
         None, max_length=4096, description="Reviewer notes or feedback"
     )
     score: Optional[float] = Field(
-        None, ge=0.0, le=1.0, description="Quality score assigned by the reviewer (0-1)"
+        None,
+        ge=0.0,
+        le=100.0,
+        description="Quality score assigned by the reviewer, on a 0-100 scale "
+        "(matches the MCP validation engine and the dashboard).",
     )
 
 

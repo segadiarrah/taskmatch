@@ -102,8 +102,8 @@ export default function LearningPage() {
     setLoading(true);
     try {
       const [notes, decisions] = await Promise.all([
-        apiGet<FeedbackNote[]>("/v1/feedback-notes"),
-        apiGet<MCPDecision[]>("/v1/mcp-decisions"),
+        apiGet<FeedbackNote[]>("/v1/dashboard/feedback-notes"),
+        apiGet<MCPDecision[]>("/v1/dashboard/mcp-decisions"),
       ]);
       setFeedbackNotes(notes);
       setMCPDecisions(decisions);
@@ -137,7 +137,7 @@ export default function LearningPage() {
     if (!newNote.trim()) return;
     setAddingNote(true);
     try {
-      await apiPost("/v1/feedback-notes", {
+      await apiPost("/v1/dashboard/feedback-notes", {
         category: newCategory,
         note: newNote,
         task_id: linkTaskId || null,

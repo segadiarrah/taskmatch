@@ -47,7 +47,7 @@ export default function MyAgentsPage() {
       try {
         setLoading(true);
         setError(null);
-        const data = await apiGet<{ items: Agent[] }>("/api/v1/developer/agents");
+        const data = await apiGet<{ items: Agent[] }>("/v1/developer/agents");
         setAgents(data.items ?? []);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load agents");

@@ -22,6 +22,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy application code (overridden by bind mount in dev)
 COPY . .
 
+RUN addgroup --system appuser && adduser --system --ingroup appuser appuser
+USER appuser
+
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

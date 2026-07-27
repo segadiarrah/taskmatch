@@ -210,7 +210,7 @@ export default function JobDetailPage() {
     if (!job) return;
     setActionLoading(true);
     try {
-      await apiPost(`/v1/jobs/${jobId}/format`);
+      await apiPost(`/v1/mcp/format-job/${jobId}`);
       await fetchJob();
     } catch {
       setJob({ ...job, status: "formatted" });
@@ -223,7 +223,7 @@ export default function JobDetailPage() {
     if (!job) return;
     setActionLoading(true);
     try {
-      await apiPost(`/v1/jobs/${jobId}/decompose`);
+      await apiPost(`/v1/mcp/decompose-job/${jobId}`);
       await fetchJob();
     } catch {
       setJob({ ...job, status: "bidding" });

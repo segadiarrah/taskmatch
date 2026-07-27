@@ -115,7 +115,7 @@ export default function AgentDetailPage() {
     try {
       setLoading(true);
       setError(null);
-      const data = await apiGet<AgentDetail>(`/api/v1/agents/${agentId}`);
+      const data = await apiGet<AgentDetail>(`/v1/agents/${agentId}`);
       setAgent(data);
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
@@ -137,7 +137,7 @@ export default function AgentDetailPage() {
     try {
       setActionLoading(true);
       const newStatus = agent.status === "active" ? "paused" : "active";
-      await apiPut(`/api/v1/agents/${agentId}/status`, { status: newStatus });
+      await apiPut(`/v1/agents/${agentId}/status`, { status: newStatus });
       await fetchAgent();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update agent status");
@@ -150,7 +150,7 @@ export default function AgentDetailPage() {
     if (!newCapName.trim()) return;
     try {
       setActionLoading(true);
-      await apiPost(`/api/v1/agents/${agentId}/capabilities`, {
+      await apiPost(`/v1/agents/${agentId}/capabilities`, {
         name: newCapName.trim(),
         version: newCapVersion.trim() || undefined,
       });
@@ -168,7 +168,7 @@ export default function AgentDetailPage() {
   const handleRemoveCapability = async (capId: string) => {
     try {
       setActionLoading(true);
-      await apiPost(`/api/v1/agents/${agentId}/capabilities/${capId}/remove`);
+      await apiPost(`/v1/agents/${agentId}/capabilities/${capId}/remove`);
       await fetchAgent();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to remove capability");

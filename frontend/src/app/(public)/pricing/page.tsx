@@ -3,480 +3,348 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableHead,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
-import { useTranslation } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
 import {
   ArrowRight,
-  Check,
-  X,
-  Zap,
-  Shield,
+  BadgeCheck,
+  Banknote,
   Building2,
   ChevronDown,
   ChevronUp,
-  Star,
-  Sparkles,
-  Crown,
-  HelpCircle,
-  DollarSign,
-  Clock,
-  Users,
-  Bot,
+  Check,
+  Clock3,
   Lock,
-  BarChart3,
-  Globe,
-  Headphones,
-  FileText,
+  ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 
-/* -------------------------------------------------------------------------- */
-/*  Pricing Cards                                                              */
-/* -------------------------------------------------------------------------- */
+const plans = [
+  {
+    name: "Starter",
+    price: "Free",
+    cadence: "for evaluation",
+    description:
+      "For teams evaluating the platform with a small flow of work.",
+    features: [
+      "5 tasks per month",
+      "Core task structuring",
+      "Standard validation",
+      "Shared agent pool",
+      "Email support",
+    ],
+    cta: "Start free",
+    href: "/register",
+  },
+  {
+    name: "Pro",
+    price: "$99",
+    cadence: "/month",
+    description:
+      "For teams running production workloads with stronger control and throughput.",
+    features: [
+      "Unlimited tasks",
+      "Advanced task decomposition",
+      "Priority agent matching",
+      "Audit log and analytics",
+      "Validation and security layers",
+      "Team access",
+    ],
+    cta: "Start Pro",
+    href: "/register",
+    featured: true,
+  },
+  {
+    name: "Enterprise",
+    price: "Custom",
+    cadence: "commercial terms",
+    description:
+      "For organizations that need dedicated capacity, governance, and commercial guarantees.",
+    features: [
+      "Dedicated agent pools",
+      "Custom validation pipelines",
+      "SSO and advanced access control",
+      "Commercial SLA",
+      "White-glove onboarding",
+      "Deployment options",
+    ],
+    cta: "Talk to sales",
+    href: "/company/contact",
+  },
+];
 
-interface PricingTier {
-  name: string;
-  price: string;
-  period: string;
-  description: string;
-  icon: React.ElementType;
-  features: string[];
-  cta: string;
-  popular?: boolean;
-  gradient: string;
-  iconBg: string;
-}
+const comparisonRows = [
+  ["Task volume", "5 / month", "Unlimited", "Unlimited"],
+  ["Task decomposition", "Core", "Advanced", "Custom"],
+  ["Audit trail", "Basic", "Full", "Full"],
+  ["Security layers", "Standard", "Extended", "Custom"],
+  ["Team seats", "1", "10", "Unlimited"],
+  ["Support", "Email", "Priority", "Dedicated"],
+  ["Commercial SLA", "No", "No", "Yes"],
+];
 
-function PricingCards() {
-  const { t } = useTranslation();
+const faqItems = [
+  {
+    q: "What changes between Starter and Pro?",
+    a: "Pro is designed for production use. The biggest differences are unlimited task volume, stronger validation, better routing priority, and full audit visibility into execution.",
+  },
+  {
+    q: "When should I consider Enterprise?",
+    a: "Enterprise is for organizations that need governance, procurement alignment, security review, and operational controls as much as speed. It is not just a bigger seat count.",
+  },
+  {
+    q: "Do I pay before work is validated?",
+    a: "No. You are only charged for work that passes validation. Scoped tasks, matched agents, and delivery validation protect your spend at every stage.",
+  },
+  {
+    q: "Can I upgrade my plan later?",
+    a: "Yes. As your needs grow, you can upgrade at any time. Enterprise terms are customized during onboarding to match your specific requirements.",
+  },
+];
 
-  const tiers: PricingTier[] = [
-    {
-      name: t("pricing.starter.name", "Starter"),
-      price: t("pricing.starter.price", "Free"),
-      period: t("pricing.starter.period", "forever"),
-      description: t("pricing.starter.desc", "Perfect for trying out TaskMatch with small projects and exploring the platform capabilities."),
-      icon: Zap,
-      features: [
-        t("pricing.starter.f1", "5 tasks per month"),
-        t("pricing.starter.f2", "Basic AI structuring"),
-        t("pricing.starter.f3", "Community agent pool"),
-        t("pricing.starter.f4", "Standard validation"),
-        t("pricing.starter.f5", "Email support"),
-        t("pricing.starter.f6", "Public API access"),
-      ],
-      cta: t("pricing.starter.cta", "Get Started Free"),
-      gradient: "from-gray-50 to-white",
-      iconBg: "bg-gray-100 text-gray-600",
-    },
-    {
-      name: t("pricing.pro.name", "Pro"),
-      price: "$99",
-      period: t("pricing.pro.period", "/month"),
-      description: t("pricing.pro.desc", "For teams running production workloads. Unlimited tasks, priority agents, and advanced features."),
-      icon: Star,
-      features: [
-        t("pricing.pro.f1", "Unlimited tasks"),
-        t("pricing.pro.f2", "Advanced AI structuring + decomposition"),
-        t("pricing.pro.f3", "Priority agent matching"),
-        t("pricing.pro.f4", "Multi-layer validation + security scans"),
-        t("pricing.pro.f5", "Priority email & chat support"),
-        t("pricing.pro.f6", "Full API + Webhooks"),
-        t("pricing.pro.f7", "Team management (up to 10 seats)"),
-        t("pricing.pro.f8", "Analytics dashboard"),
-      ],
-      cta: t("pricing.pro.cta", "Start Pro Trial"),
-      popular: true,
-      gradient: "from-indigo-50 via-white to-white",
-      iconBg: "bg-indigo-100 text-indigo-600",
-    },
-    {
-      name: t("pricing.enterprise.name", "Enterprise"),
-      price: t("pricing.enterprise.price", "Custom"),
-      period: t("pricing.enterprise.period", "pricing"),
-      description: t("pricing.enterprise.desc", "For organizations requiring dedicated infrastructure, custom SLAs, and white-glove onboarding."),
-      icon: Crown,
-      features: [
-        t("pricing.enterprise.f1", "Everything in Pro"),
-        t("pricing.enterprise.f2", "Dedicated agent pool"),
-        t("pricing.enterprise.f3", "Custom SLA with 99.99% uptime"),
-        t("pricing.enterprise.f4", "SSO / SAML integration"),
-        t("pricing.enterprise.f5", "Dedicated account manager"),
-        t("pricing.enterprise.f6", "Custom validation pipelines"),
-        t("pricing.enterprise.f7", "Unlimited team seats"),
-        t("pricing.enterprise.f8", "On-premise deployment option"),
-        t("pricing.enterprise.f9", "SOC 2 compliance reports"),
-      ],
-      cta: t("pricing.enterprise.cta", "Contact Sales"),
-      gradient: "from-violet-50 via-white to-white",
-      iconBg: "bg-violet-100 text-violet-600",
-    },
-  ];
+function FAQBlock() {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      {tiers.map((tier) => {
-        const Icon = tier.icon;
+    <div id="faq" className="space-y-4">
+      {faqItems.map((item, index) => {
+        const isOpen = openIndex === index;
         return (
-          <Card
-            key={tier.name}
-            className={cn(
-              "relative overflow-hidden border-0 shadow-lg transition-shadow hover:shadow-xl",
-              tier.popular && "ring-2 ring-indigo-500"
-            )}
+          <div
+            key={item.q}
+            className="rounded-[1.6rem] border border-stone-900/10 bg-white/78 px-6 py-5 shadow-[0_16px_35px_rgba(92,74,44,0.07)]"
           >
-            {tier.popular && (
-              <div className="absolute right-4 top-4">
-                <Badge className="bg-indigo-600 text-white">
-                  {t("pricing.popular", "Most Popular")}
-                </Badge>
-              </div>
-            )}
-            <div className={cn("bg-gradient-to-b p-1", tier.gradient)}>
-              <CardHeader className="p-6 pb-4">
-                <div className={cn("mb-4 flex h-12 w-12 items-center justify-center rounded-xl", tier.iconBg)}>
-                  <Icon className="h-6 w-6" />
-                </div>
-                <CardTitle className="text-xl">{tier.name}</CardTitle>
-                <div className="mt-2 flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-gray-900">{tier.price}</span>
-                  <span className="text-sm text-gray-500">{tier.period}</span>
-                </div>
-                <p className="mt-3 text-sm leading-relaxed text-gray-600">{tier.description}</p>
-              </CardHeader>
-              <CardContent className="p-6 pt-2">
-                <Link href={tier.name === "Enterprise" ? "/contact" : "/register"}>
-                  <Button
-                    className={cn(
-                      "mb-6 w-full",
-                      tier.popular
-                        ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                        : tier.name === "Enterprise"
-                        ? "bg-violet-600 text-white hover:bg-violet-700"
-                        : ""
-                    )}
-                    variant={tier.popular || tier.name === "Enterprise" ? "default" : "outline"}
-                  >
-                    {tier.cta}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-                <ul className="space-y-3">
-                  {tier.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2.5 text-sm text-gray-600">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </div>
-          </Card>
+            <button
+              className="flex w-full items-center justify-between gap-6 text-left"
+              onClick={() => setOpenIndex(isOpen ? null : index)}
+            >
+              <span className="text-base font-semibold text-stone-950 sm:text-lg">
+                {item.q}
+              </span>
+              {isOpen ? (
+                <ChevronUp className="h-5 w-5 shrink-0 text-stone-500" />
+              ) : (
+                <ChevronDown className="h-5 w-5 shrink-0 text-stone-500" />
+              )}
+            </button>
+            {isOpen ? (
+              <p className="mt-4 text-sm leading-7 text-stone-600 sm:text-base">{item.a}</p>
+            ) : null}
+          </div>
         );
       })}
     </div>
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Feature Comparison Table                                                   */
-/* -------------------------------------------------------------------------- */
-
-function FeatureComparisonTable() {
-  const { t } = useTranslation();
-
-  interface FeatureRow {
-    feature: string;
-    starter: string | boolean;
-    pro: string | boolean;
-    enterprise: string | boolean;
-  }
-
-  const categories: { name: string; rows: FeatureRow[] }[] = [
-    {
-      name: t("pricing.cat.tasks", "Tasks & Execution"),
-      rows: [
-        { feature: t("pricing.f.monthlyTasks", "Monthly Tasks"), starter: "5", pro: t("pricing.f.unlimited", "Unlimited"), enterprise: t("pricing.f.unlimited", "Unlimited") },
-        { feature: t("pricing.f.parallelExec", "Parallel Execution"), starter: "2", pro: "20", enterprise: t("pricing.f.unlimited", "Unlimited") },
-        { feature: t("pricing.f.aiStructuring", "AI Structuring"), starter: t("pricing.f.basic", "Basic"), pro: t("pricing.f.advanced", "Advanced"), enterprise: t("pricing.f.custom", "Custom") },
-        { feature: t("pricing.f.taskDecomp", "Task Decomposition"), starter: false, pro: true, enterprise: true },
-        { feature: t("pricing.f.priorityMatch", "Priority Agent Matching"), starter: false, pro: true, enterprise: true },
-      ],
-    },
-    {
-      name: t("pricing.cat.quality", "Quality & Validation"),
-      rows: [
-        { feature: t("pricing.f.autoValidation", "Automated Validation"), starter: true, pro: true, enterprise: true },
-        { feature: t("pricing.f.securityScans", "Security Scanning"), starter: false, pro: true, enterprise: true },
-        { feature: t("pricing.f.customPipeline", "Custom Validation Pipelines"), starter: false, pro: false, enterprise: true },
-        { feature: t("pricing.f.humanReview", "Human Review Add-on"), starter: false, pro: true, enterprise: true },
-      ],
-    },
-    {
-      name: t("pricing.cat.platform", "Platform & Integration"),
-      rows: [
-        { feature: t("pricing.f.api", "API Access"), starter: true, pro: true, enterprise: true },
-        { feature: t("pricing.f.webhooks", "Webhooks"), starter: false, pro: true, enterprise: true },
-        { feature: t("pricing.f.sso", "SSO / SAML"), starter: false, pro: false, enterprise: true },
-        { feature: t("pricing.f.teamSeats", "Team Seats"), starter: "1", pro: "10", enterprise: t("pricing.f.unlimited", "Unlimited") },
-        { feature: t("pricing.f.analytics", "Analytics Dashboard"), starter: false, pro: true, enterprise: true },
-        { feature: t("pricing.f.auditLog", "Audit Log"), starter: false, pro: true, enterprise: true },
-      ],
-    },
-    {
-      name: t("pricing.cat.support", "Support & SLA"),
-      rows: [
-        { feature: t("pricing.f.support", "Support Channel"), starter: t("pricing.f.email", "Email"), pro: t("pricing.f.emailChat", "Email + Chat"), enterprise: t("pricing.f.dedicated", "Dedicated AM") },
-        { feature: t("pricing.f.sla", "SLA Guarantee"), starter: "99.5%", pro: "99.9%", enterprise: "99.99%" },
-        { feature: t("pricing.f.onprem", "On-Premise Deployment"), starter: false, pro: false, enterprise: true },
-        { feature: t("pricing.f.soc2", "SOC 2 Reports"), starter: false, pro: false, enterprise: true },
-      ],
-    },
-  ];
-
-  function renderValue(val: string | boolean) {
-    if (val === true) return <Check className="mx-auto h-5 w-5 text-emerald-500" />;
-    if (val === false) return <X className="mx-auto h-5 w-5 text-gray-300" />;
-    return <span className="text-sm font-medium text-gray-700">{val}</span>;
-  }
-
-  return (
-    <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow className="border-b-2 border-gray-200">
-            <TableHead className="w-2/5" />
-            <TableHead className="text-center">
-              <span className="text-sm font-bold text-gray-600">{t("pricing.starter.name", "Starter")}</span>
-            </TableHead>
-            <TableHead className="text-center">
-              <Badge variant="info" className="font-bold">{t("pricing.pro.name", "Pro")}</Badge>
-            </TableHead>
-            <TableHead className="text-center">
-              <span className="text-sm font-bold text-gray-600">{t("pricing.enterprise.name", "Enterprise")}</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {categories.map((cat) => (
-            <React.Fragment key={cat.name}>
-              <TableRow className="bg-gray-50">
-                <TableCell colSpan={4} className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  {cat.name}
-                </TableCell>
-              </TableRow>
-              {cat.rows.map((row) => (
-                <TableRow key={row.feature}>
-                  <TableCell className="font-medium text-gray-900">{row.feature}</TableCell>
-                  <TableCell className="text-center">{renderValue(row.starter)}</TableCell>
-                  <TableCell className="bg-indigo-50/30 text-center">{renderValue(row.pro)}</TableCell>
-                  <TableCell className="text-center">{renderValue(row.enterprise)}</TableCell>
-                </TableRow>
-              ))}
-            </React.Fragment>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/*  FAQ                                                                        */
-/* -------------------------------------------------------------------------- */
-
-function FAQ() {
-  const { t } = useTranslation();
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  const questions = [
-    {
-      q: t("pricing.faq.q1", "How does billing work?"),
-      a: t("pricing.faq.a1", "Starter is free forever with a 5-task monthly limit. Pro is billed monthly or annually (save 20% with annual billing). Enterprise is custom-quoted based on your needs. All plans include the task execution costs -- there are no surprise add-ons."),
-    },
-    {
-      q: t("pricing.faq.q2", "Can I upgrade or downgrade at any time?"),
-      a: t("pricing.faq.a2", "Yes. You can upgrade instantly and your new plan takes effect immediately. Downgrades take effect at the end of your current billing period. Any unused credit is prorated."),
-    },
-    {
-      q: t("pricing.faq.q3", "What counts as a 'task'?"),
-      a: t("pricing.faq.a3", "A task is one unit of work submitted to the platform. When AI decomposes a job into subtasks, each subtask counts individually. For example, a code review job that gets split into 3 file reviews counts as 3 tasks."),
-    },
-    {
-      q: t("pricing.faq.q4", "How does the escrow system work?"),
-      a: t("pricing.faq.a4", "When you submit a task, funds are held in escrow. Payment is only released to the agent after the work passes validation. If validation fails and the agent cannot fix it, you receive a full refund."),
-    },
-    {
-      q: t("pricing.faq.q5", "What happens if I exceed my task limit?"),
-      a: t("pricing.faq.a5", "On the Starter plan, additional tasks are queued until the next month or you upgrade. Pro and Enterprise plans have no task limits. We will notify you when you approach your limit."),
-    },
-    {
-      q: t("pricing.faq.q6", "Is there a money-back guarantee?"),
-      a: t("pricing.faq.a6", "Yes. We offer a 30-day money-back guarantee on all paid plans. If you are not satisfied within your first 30 days, contact support for a full refund, no questions asked."),
-    },
-    {
-      q: t("pricing.faq.q7", "Can I use TaskMatch for sensitive or proprietary code?"),
-      a: t("pricing.faq.a7", "Absolutely. All data is encrypted in transit and at rest. Enterprise plans include dedicated agent pools that only process your tasks, plus on-premise deployment options. We are SOC 2 Type II certified."),
-    },
-    {
-      q: t("pricing.faq.q8", "How do I scale from Pro to Enterprise?"),
-      a: t("pricing.faq.a8", "Contact our sales team. We will assess your needs, set up a dedicated environment, configure custom SLAs, and migrate your existing tasks and history seamlessly. Most Enterprise onboarding completes within a week."),
-    },
-    {
-      q: t("pricing.faq.q9", "Do you offer volume discounts?"),
-      a: t("pricing.faq.a9", "Yes. Enterprise plans include volume-based pricing that decreases per-task costs as your usage grows. Contact sales for a custom quote based on your expected monthly volume."),
-    },
-  ];
-
-  return (
-    <div id="faq" className="space-y-3">
-      {questions.map((item, i) => (
-        <div
-          key={i}
-          className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm"
-        >
-          <button
-            className="flex w-full items-center justify-between p-5 text-left"
-            onClick={() => setOpenIndex(openIndex === i ? null : i)}
-          >
-            <span className="pr-4 text-sm font-semibold text-gray-900">{item.q}</span>
-            {openIndex === i ? (
-              <ChevronUp className="h-5 w-5 shrink-0 text-gray-400" />
-            ) : (
-              <ChevronDown className="h-5 w-5 shrink-0 text-gray-400" />
-            )}
-          </button>
-          {openIndex === i && (
-            <div className="border-t border-gray-100 px-5 pb-5 pt-3">
-              <p className="text-sm leading-relaxed text-gray-600">{item.a}</p>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/*  Page                                                                       */
-/* -------------------------------------------------------------------------- */
-
 export default function PricingPage() {
-  const { t } = useTranslation();
-
   return (
     <div className="min-h-screen">
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 via-white to-white px-4 pb-20 pt-24 sm:px-6 lg:px-8">
-        <div className="gradient-mesh pointer-events-none absolute inset-0" />
+      <section className="relative overflow-hidden px-4 pb-20 pt-24 sm:px-6 lg:px-8">
+        <div className="absolute inset-0 premium-radial" />
+        <div className="absolute inset-x-0 top-0 h-[440px] premium-grid opacity-35" />
         <div className="relative mx-auto max-w-4xl text-center">
-          <Badge variant="info" className="mb-6 px-4 py-1.5 text-sm">
-            <DollarSign className="mr-1.5 h-3.5 w-3.5" />
-            {t("pricing.hero.badge", "Simple Pricing")}
-          </Badge>
-          <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-            {t("pricing.hero.title", "Plans that Scale with You")}
+          <div className="inline-flex items-center gap-2 rounded-full border border-stone-900/10 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-stone-600">
+            <Banknote className="h-3.5 w-3.5 text-[#8a6a2f]" />
+            Pricing
+          </div>
+          <h1 className="mt-8 font-display text-5xl leading-[1] text-stone-950 sm:text-6xl">
+            Clear plans for every
+            <span className="block text-[#8a6a2f]">stage of execution.</span>
           </h1>
-          <p className="mx-auto max-w-2xl text-lg leading-relaxed text-gray-600 sm:text-xl">
-            {t("pricing.hero.subtitle", "Start free, upgrade when you are ready. Transparent pricing with no hidden fees.")}
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-stone-650">
+            Choose the plan that matches your execution needs — from evaluation
+            to enterprise-grade operations.
           </p>
         </div>
       </section>
 
-      {/* Pricing Cards */}
-      <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
-        <PricingCards />
+      <section className="px-4 pb-20 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-3">
+          {plans.map((plan) => (
+            <div
+              key={plan.name}
+              className={`rounded-[2rem] border p-8 shadow-[0_24px_55px_rgba(92,74,44,0.08)] ${
+                plan.featured
+                  ? "border-stone-950 bg-stone-950 text-white"
+                  : "border-stone-900/10 bg-white/80 text-stone-950"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p
+                    className={`text-sm font-semibold uppercase tracking-[0.22em] ${
+                      plan.featured ? "text-[#dcc28a]" : "text-[#8a6a2f]"
+                    }`}
+                  >
+                    {plan.name}
+                  </p>
+                  <div className="mt-4 flex items-end gap-2">
+                    <span className="text-5xl font-semibold">{plan.price}</span>
+                    <span className={plan.featured ? "text-stone-400" : "text-stone-500"}>
+                      {plan.cadence}
+                    </span>
+                  </div>
+                </div>
+                {plan.featured ? (
+                  <div className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs text-stone-200">
+                    Recommended
+                  </div>
+                ) : null}
+              </div>
+
+              <p className={`mt-5 text-sm leading-7 ${plan.featured ? "text-stone-300" : "text-stone-600"}`}>
+                {plan.description}
+              </p>
+
+              <div className="mt-8">
+                <Link href={plan.href}>
+                  <Button
+                    className={`h-12 w-full rounded-full ${
+                      plan.featured
+                        ? "bg-[#f3ede2] text-stone-950 hover:bg-white"
+                        : "bg-stone-950 text-white hover:bg-stone-800"
+                    }`}
+                  >
+                    {plan.cta}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="mt-8 space-y-3">
+                {plan.features.map((feature) => (
+                  <div key={feature} className="flex items-start gap-3">
+                    <Check
+                      className={`mt-1 h-4 w-4 shrink-0 ${
+                        plan.featured ? "text-[#dcc28a]" : "text-[#8a6a2f]"
+                      }`}
+                    />
+                    <span className={`text-sm leading-6 ${plan.featured ? "text-stone-200" : "text-stone-700"}`}>
+                      {feature}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </section>
 
-      {/* Money-back Guarantee */}
-      <section className="px-4 pb-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl">
-          <div className="flex items-center gap-4 rounded-xl border-2 border-emerald-200 bg-emerald-50 p-6">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-emerald-100">
-              <Shield className="h-7 w-7 text-emerald-600" />
+      <section className="px-4 pb-20 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl rounded-[2rem] border border-[#c7b591] bg-[#efe7d8] p-6 shadow-[0_18px_40px_rgba(92,74,44,0.08)] sm:p-8">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[#8a6a2f]">
+              <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-emerald-900">
-                {t("pricing.guarantee.title", "30-Day Money-Back Guarantee")}
-              </h3>
-              <p className="text-sm text-emerald-700">
-                {t("pricing.guarantee.desc", "Try any paid plan risk-free. If you are not completely satisfied within your first 30 days, we will refund your payment in full. No questions asked.")}
+              <h2 className="text-xl font-semibold text-stone-950">
+                Pricing built around execution trust.
+              </h2>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-650">
+                Each tier adds more control, stronger validation, better routing
+                priority, and greater commercial readiness — not just a bigger
+                seat count.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Feature Comparison */}
-      <section className="bg-gray-50 px-4 py-20 sm:px-6 lg:px-8">
+      <section id="enterprise" className="border-y border-stone-900/8 bg-[#efe7d8] px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-extrabold text-gray-900">
-              {t("pricing.compare.title", "Detailed Feature Comparison")}
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-stone-900/10 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-stone-600">
+              <Sparkles className="h-3.5 w-3.5 text-[#8a6a2f]" />
+              Compare plans
+            </div>
+            <h2 className="mt-6 font-display text-4xl text-stone-950 sm:text-5xl">
+              See what each plan includes.
             </h2>
-            <p className="text-gray-600">
-              {t("pricing.compare.subtitle", "Everything included in each plan at a glance.")}
-            </p>
           </div>
-          <Card className="border-0 shadow-lg">
-            <CardContent className="p-2 sm:p-6">
-              <FeatureComparisonTable />
-            </CardContent>
-          </Card>
+
+          <div className="mt-10 overflow-hidden rounded-[2rem] border border-stone-900/10 bg-white/80 shadow-[0_20px_50px_rgba(92,74,44,0.08)]">
+            <div className="grid grid-cols-4 border-b border-stone-900/10 bg-[#f3ede2] text-sm font-semibold text-stone-700">
+              <div className="px-5 py-4">Capability</div>
+              <div className="px-5 py-4 text-center">Starter</div>
+              <div className="bg-stone-950 px-5 py-4 text-center text-white">Pro</div>
+              <div className="px-5 py-4 text-center">Enterprise</div>
+            </div>
+            {comparisonRows.map((row) => (
+              <div
+                key={row[0]}
+                className="grid grid-cols-4 border-b border-stone-900/8 text-sm text-stone-600 last:border-b-0"
+              >
+                <div className="px-5 py-4 font-medium text-stone-950">{row[0]}</div>
+                <div className="px-5 py-4 text-center">{row[1]}</div>
+                <div className="bg-stone-950/4 px-5 py-4 text-center font-medium text-stone-950">{row[2]}</div>
+                <div className="px-5 py-4 text-center">{row[3]}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* FAQ */}
       <section className="px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl">
-          <div className="mb-12 text-center">
-            <Badge variant="secondary" className="mb-4 px-4 py-1.5 text-sm">
-              <HelpCircle className="mr-1.5 h-3.5 w-3.5" />
-              {t("pricing.faq.badge", "FAQ")}
-            </Badge>
-            <h2 className="mb-4 text-3xl font-extrabold text-gray-900">
-              {t("pricing.faq.title", "Frequently Asked Questions")}
-            </h2>
-            <p className="text-gray-600">
-              {t("pricing.faq.subtitle", "Everything you need to know about billing, scaling, and getting started.")}
-            </p>
+        <div className="mx-auto max-w-5xl rounded-[2rem] border border-stone-900/10 bg-white/80 p-8 shadow-[0_20px_50px_rgba(92,74,44,0.08)]">
+          <h2 className="font-display text-3xl text-stone-950">What each tier unlocks</h2>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {[
+              "Starter lets you evaluate the task-to-delivery flow with real work before committing.",
+              "Pro is the first tier that feels operationally complete for live production use.",
+              "Enterprise adds dedicated capacity, governance controls, and custom execution pipelines.",
+            ].map((item) => (
+              <div key={item} className="rounded-[1.3rem] bg-[#f3ede2] p-5 text-sm leading-7 text-stone-700">
+                {item}
+              </div>
+            ))}
           </div>
-          <FAQ />
         </div>
       </section>
 
-      {/* Enterprise CTA */}
-      <section id="enterprise" className="px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 p-12 text-center shadow-2xl">
-          <Building2 className="mx-auto mb-4 h-8 w-8 text-white/80" />
-          <h2 className="mb-4 text-3xl font-extrabold text-white">
-            {t("pricing.enterprise.cta.title", "Need Enterprise-Grade?")}
-          </h2>
-          <p className="mx-auto mb-8 max-w-md text-lg text-white/80">
-            {t("pricing.enterprise.cta.subtitle", "Dedicated infrastructure, custom SLAs, and white-glove onboarding for organizations with advanced requirements.")}
-          </p>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link href="/contact">
-              <Button size="lg" className="bg-white text-violet-700 hover:bg-gray-100">
-                {t("pricing.enterprise.cta.contact", "Talk to Sales")}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/how-it-works">
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10">
-                {t("pricing.enterprise.cta.learn", "Learn More")}
-              </Button>
-            </Link>
+      <section className="px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-3">
+          {[
+            {
+              icon: Lock,
+              title: "Governance",
+              body: "Enterprise buyers get security controls, SSO, and process governance built into every task lifecycle.",
+            },
+            {
+              icon: Clock3,
+              title: "Speed",
+              body: "Start free, prove the value with real tasks, then scale to Pro when you are ready.",
+            },
+            {
+              icon: BadgeCheck,
+              title: "Confidence",
+              body: "Pricing reflects the quality of validated delivery you actually receive.",
+            },
+          ].map((item) => (
+            <div
+              key={item.title}
+              className="rounded-[1.75rem] border border-stone-900/10 bg-white/80 p-6 shadow-[0_18px_40px_rgba(92,74,44,0.07)]"
+            >
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#f3ede2] text-stone-950">
+                <item.icon className="h-5 w-5" />
+              </div>
+              <h3 className="mt-5 text-xl font-semibold text-stone-950">{item.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-stone-600">{item.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="px-4 pb-20 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-10 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-stone-900/10 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-stone-600">
+              <Building2 className="h-3.5 w-3.5 text-[#8a6a2f]" />
+              FAQ
+            </div>
+            <h2 className="mt-6 font-display text-4xl text-stone-950 sm:text-5xl">
+              Pricing questions answered.
+            </h2>
           </div>
+          <FAQBlock />
         </div>
       </section>
     </div>

@@ -48,3 +48,4 @@ tsconfig.tsbuildinfo
 next-env.d.ts
 frontend/package-lock.json
 .ssh/
+.env.bak*

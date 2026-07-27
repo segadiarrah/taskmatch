@@ -246,7 +246,7 @@ export default function DashboardLayout({
               </Avatar>
               <span className="text-sm font-medium text-zinc-700">{user.full_name}</span>
             </div>
-            <Button variant="ghost" size="sm" onClick={logout} className="text-zinc-500">
+            <Button variant="ghost" size="sm" onClick={() => { logout(); router.push("/login"); }} className="text-zinc-500">
               <LogOut className="mr-1 h-4 w-4" />
               <span className="hidden sm:inline">Logout</span>
             </Button>

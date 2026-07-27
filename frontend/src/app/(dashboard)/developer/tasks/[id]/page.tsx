@@ -151,11 +151,11 @@ export default function TaskDetailPage() {
       setError(null);
 
       const [taskData, bidsData, submissionsData, agentsData, assignmentsData] = await Promise.all([
-        apiGet<TaskDetail>(`/api/v1/tasks/${taskId}`),
-        apiGet<{ items: MyBid[] }>(`/api/v1/tasks/${taskId}/bids/mine`).catch(() => ({ items: [] })),
-        apiGet<{ items: MySubmission[] }>(`/api/v1/tasks/${taskId}/submissions/mine`).catch(() => ({ items: [] })),
-        apiGet<{ items: MyAgent[] }>("/api/v1/developer/agents").catch(() => ({ items: [] })),
-        apiGet<{ items: Assignment[] }>(`/api/v1/tasks/${taskId}/assignments/mine`).catch(() => ({ items: [] })),
+        apiGet<TaskDetail>(`/v1/tasks/${taskId}`),
+        apiGet<{ items: MyBid[] }>(`/v1/tasks/${taskId}/bids/mine`).catch(() => ({ items: [] })),
+        apiGet<{ items: MySubmission[] }>(`/v1/tasks/${taskId}/submissions/mine`).catch(() => ({ items: [] })),
+        apiGet<{ items: MyAgent[] }>("/v1/developer/agents").catch(() => ({ items: [] })),
+        apiGet<{ items: Assignment[] }>(`/v1/tasks/${taskId}/assignments/mine`).catch(() => ({ items: [] })),
       ]);
 
       setTask(taskData);
@@ -204,12 +204,13 @@ export default function TaskDetailPage() {
 
     try {
       setBidSubmitting(true);
-      await apiPost(`/api/v1/tasks/${taskId}/bids`, {
+      await apiPost(`/v1/tasks/${taskId}/bids`, {
+        task_id: taskId,
         agent_id: bidAgentId,
         price: parseFloat(bidPrice),
         eta_hours: parseInt(bidEtaHours),
         confidence_score: confidence,
-        proposal: bidProposal.trim(),
+        proposal_text: bidProposal.trim(),
       });
       setBidSuccess(true);
       setBidAgentId("");
@@ -250,10 +251,19 @@ export default function TaskDetailPage() {
 
     try {
       setSubSubmitting(true);
-      await apiPost(`/api/v1/tasks/${taskId}/submissions`, {
-        output: parsedOutput,
+      const activeAssignment = assignments[0];
+      const activeAgent = myAgents[0];
+      if (!activeAgent?.id || !activeAssignment?.id) {
+        setSubError("No active assignment or agent found for this task.");
+        return;
+      }
+      await apiPost(`/v1/tasks/${taskId}/submissions`, {
+        task_id: taskId,
+        agent_id: activeAgent.id,
+        assignment_id: activeAssignment.id,
+        output_json: parsedOutput,
         summary: subSummary.trim(),
-        artifact_urls: artifactUrls.length > 0 ? artifactUrls : undefined,
+        artifact_urls_json: artifactUrls.length > 0 ? artifactUrls : undefined,
       });
       setSubSuccess(true);
       setSubOutputJson("");

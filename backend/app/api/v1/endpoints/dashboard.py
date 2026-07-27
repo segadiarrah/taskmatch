@@ -5,7 +5,8 @@ from __future__ import annotations
 import uuid
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
+from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,7 +14,7 @@ from app.core.database import get_db
 from app.core.deps import require_role
 from app.middleware.audit import AuditLog, log_audit
 from app.models.agent import Agent, AgentCapability, AgentStatus
-from app.models.audit import FeedbackNote, MCPDecision
+from app.models.audit import FeedbackCategory, FeedbackNote, MCPDecision
 from app.models.job import Job
 from app.models.payment import PaymentRecord, PaymentStatus
 from app.models.submission import Submission, SubmissionStatus
@@ -22,6 +23,18 @@ from app.models.user import User
 from app.schemas.dashboard import AgentMatchResult, DashboardOverview
 
 router = APIRouter()
+
+
+class FeedbackNoteBody(BaseModel):
+    """Request body for creating a feedback note (frontend sends category/note)."""
+
+    category: Optional[str] = Field(None, description="Feedback category")
+    note: Optional[str] = Field(None, description="Note text")
+    # Backwards-compatible aliases.
+    note_type: Optional[str] = None
+    content: Optional[str] = None
+    task_id: Optional[uuid.UUID] = None
+    agent_id: Optional[uuid.UUID] = None
 
 
 @router.get(
@@ -197,15 +210,31 @@ async def list_mcp_decisions(
     result = await db.execute(query)
     decisions = result.scalars().all()
 
+    def _summarize(snapshot: object) -> str:
+        if not isinstance(snapshot, dict):
+            return ""
+        parts = []
+        for k, v in snapshot.items():
+            if isinstance(v, (str, int, float, bool)):
+                parts.append(f"{k}={v}")
+            elif isinstance(v, list):
+                parts.append(f"{k}=[{len(v)} items]")
+            if len(parts) >= 4:
+                break
+        return ", ".join(parts)
+
     return [
         {
             "id": str(d.id),
-            "decision_type": d.decision_type,
-            "related_resource_type": d.related_resource_type,
-            "related_resource_id": d.related_resource_id,
-            "input_data": d.input_data,
-            "output_data": d.output_data,
-            "reasoning": d.reasoning,
+            "decision_type": d.decision_type.value if hasattr(d.decision_type, "value") else str(d.decision_type),
+            "entity_type": (d.entity_type or "").capitalize(),
+            "entity_id": d.entity_id,
+            "entity_name": f"{(d.entity_type or 'entity').capitalize()} {str(d.entity_id)[:8]}",
+            "input_snapshot": d.input_snapshot_json,
+            "input_data_summary": _summarize(d.input_snapshot_json),
+            "output_snapshot": d.output_snapshot_json,
+            "reasoning": d.reasoning_summary,
+            "confidence": d.confidence_score,
             "created_at": d.created_at.isoformat() if d.created_at else None,
         }
         for d in decisions
@@ -243,12 +272,12 @@ async def list_audit_logs(
     return [
         {
             "id": str(log.id),
-            "actor_type": log.actor_type,
+            "actor_type": log.actor_type.value if hasattr(log.actor_type, "value") else str(log.actor_type),
             "actor_id": log.actor_id,
             "action": log.action,
             "entity_type": log.entity_type,
             "entity_id": log.entity_id,
-            "payload": log.payload,
+            "payload": log.payload_json,
             "created_at": log.created_at.isoformat() if log.created_at else None,
         }
         for log in logs
@@ -274,7 +303,7 @@ async def list_feedback_notes(
     if agent_id:
         query = query.where(FeedbackNote.agent_id == agent_id)
     if note_type:
-        query = query.where(FeedbackNote.note_type == note_type)
+        query = query.where(FeedbackNote.category == note_type)
 
     query = query.order_by(FeedbackNote.created_at.desc()).offset(skip).limit(limit)
     result = await db.execute(query)
@@ -283,11 +312,14 @@ async def list_feedback_notes(
     return [
         {
             "id": str(n.id),
-            "created_by_user_id": str(n.created_by_user_id),
+            "created_by_user_id": str(n.created_by_user_id) if n.created_by_user_id else None,
+            "author": "Admin" if n.created_by_user_id else "MCP",
             "agent_id": str(n.agent_id) if n.agent_id else None,
-            "note_type": n.note_type,
-            "content": n.content,
-            "metadata_json": n.metadata_json,
+            "agent_name": n.agent.name if getattr(n, "agent", None) else None,
+            "task_id": str(n.task_id) if n.task_id else None,
+            "task_title": None,
+            "category": n.category.value if hasattr(n.category, "value") else str(n.category),
+            "note": n.note,
             "created_at": n.created_at.isoformat() if n.created_at else None,
         }
         for n in notes
@@ -301,19 +333,27 @@ async def list_feedback_notes(
     dependencies=[Depends(require_role("admin"))],
 )
 async def create_feedback_note(
-    content: str = Query(..., description="Note content"),
-    note_type: str = Query("general", description="Note type"),
-    agent_id: Optional[uuid.UUID] = Query(None, description="Related agent ID"),
+    payload: "FeedbackNoteBody" = Body(...),
     current_user: User = Depends(require_role("admin")),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Create a new feedback/learning note.  Restricted to administrators."""
+    # Accept either "category" or legacy "note_type"; either "note" or "content".
+    raw_category = payload.category or payload.note_type or "quality"
+    try:
+        category = FeedbackCategory(raw_category)
+    except ValueError:
+        category = FeedbackCategory.quality
+
+    text = payload.note or payload.content or ""
+
     note = FeedbackNote(
         id=uuid.uuid4(),
         created_by_user_id=current_user.id,
-        agent_id=agent_id,
-        note_type=note_type,
-        content=content,
+        agent_id=payload.agent_id,
+        task_id=payload.task_id,
+        category=category,
+        note=text,
     )
     db.add(note)
     await db.flush()
@@ -330,9 +370,13 @@ async def create_feedback_note(
 
     return {
         "id": str(note.id),
-        "created_by_user_id": str(note.created_by_user_id),
+        "created_by_user_id": str(note.created_by_user_id) if note.created_by_user_id else None,
+        "author": "Admin",
         "agent_id": str(note.agent_id) if note.agent_id else None,
-        "note_type": note.note_type,
-        "content": note.content,
+        "agent_name": None,
+        "task_id": str(note.task_id) if note.task_id else None,
+        "task_title": None,
+        "category": note.category.value if hasattr(note.category, "value") else str(note.category),
+        "note": note.note,
         "created_at": note.created_at.isoformat() if note.created_at else None,
     }

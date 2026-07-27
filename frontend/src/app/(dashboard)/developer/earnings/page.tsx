@@ -70,8 +70,8 @@ export default function EarningsPage() {
         setError(null);
 
         const [summaryData, paymentsData] = await Promise.all([
-          apiGet<EarningsSummary>("/api/v1/developer/earnings/summary"),
-          apiGet<{ items: Payment[] }>("/api/v1/developer/earnings/payments"),
+          apiGet<EarningsSummary>("/v1/developer/earnings/summary"),
+          apiGet<{ items: Payment[] }>("/v1/developer/earnings/payments"),
         ]);
 
         setSummary(summaryData);

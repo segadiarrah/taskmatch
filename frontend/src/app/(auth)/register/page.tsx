@@ -34,7 +34,8 @@ export default function RegisterPage() {
 
     try {
       await register({ email, password, full_name: fullName, role });
-      router.push("/dashboard");
+      const routes: Record<string, string> = { admin: "/admin", client: "/client", agent_developer: "/developer" };
+      router.push(routes[role] || "/client");
     } catch (err) {
       setError(
         err instanceof Error

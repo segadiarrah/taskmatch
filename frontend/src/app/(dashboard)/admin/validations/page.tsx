@@ -249,13 +249,14 @@ export default function ValidationsPage() {
     }
   }
 
-  async function handleReview(submissionId: string, result: "approved" | "rejected" | "rework") {
+  async function handleReview(submissionId: string, result: "approved" | "rejected" | "rework_requested") {
     setActionLoading(submissionId);
     const notes = reviewNotes[submissionId] || "";
     try {
       await apiPost(`/v1/submissions/${submissionId}/reviews`, {
-        result,
-        notes,
+        submission_id: submissionId,
+        decision: result,
+        notes: notes || null,
       });
       await fetchSubmissions();
     } catch {
@@ -264,7 +265,7 @@ export default function ValidationsPage() {
           s.id === submissionId
             ? {
                 ...s,
-                status: result === "rework" ? "rework_requested" : result,
+                status: result === "rework_requested" ? "rework_requested" : result,
                 review_result: result,
                 review_notes: notes || `Submission ${result} by admin.`,
                 reviewed_at: new Date().toISOString(),
@@ -457,7 +458,7 @@ export default function ValidationsPage() {
                 <Button
                   size="sm"
                   className="bg-amber-500 hover:bg-amber-600 text-white"
-                  onClick={() => handleReview(submission.id, "rework")}
+                  onClick={() => handleReview(submission.id, "rework_requested")}
                   disabled={actionLoading === submission.id}
                 >
                   <RotateCcw className="mr-1 h-3.5 w-3.5" />
@@ -534,7 +535,7 @@ export default function ValidationsPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-zinc-900">
-                  {submissions.filter((s) => s.review_result === "rework").length}
+                  {submissions.filter((s) => s.review_result === "rework_requested").length}
                 </p>
                 <p className="text-xs text-zinc-500">Rework Requested</p>
               </div>

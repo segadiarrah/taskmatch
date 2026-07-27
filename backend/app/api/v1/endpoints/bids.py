@@ -72,7 +72,7 @@ async def create_bid(
         select(Bid).where(
             Bid.task_id == task_id,
             Bid.agent_id == body.agent_id,
-            Bid.status.in_([BidStatus.submitted.value, BidStatus.shortlisted.value]),
+            Bid.status.in_(["submitted", "shortlisted"]),
         )
     )
     if existing_bid_result.scalar_one_or_none() is not None:
@@ -190,7 +190,7 @@ async def select_bid(
         select(Bid).where(
             Bid.task_id == bid.task_id,
             Bid.id != bid.id,
-            Bid.status.in_([BidStatus.submitted.value, BidStatus.shortlisted.value]),
+            Bid.status.in_(["submitted", "shortlisted"]),
         )
     )
     for other_bid in other_bids_result.scalars().all():

@@ -131,7 +131,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     (key: string, fallback?: string): any => {
       const value = resolve(dictionaries[locale], key);
       /* If resolve returned the key itself (not found), use fallback if provided. */
-      return value === key && fallback !== undefined ? fallback : value;
+      const resolved = value === key && fallback !== undefined ? fallback : value;
+      /* Lightweight token interpolation for dynamic values (e.g. {year}). */
+      if (typeof resolved === "string" && resolved.includes("{year}")) {
+        return resolved.replace(/\{year\}/g, String(new Date().getFullYear()));
+      }
+      return resolved;
     },
     [locale],
   );

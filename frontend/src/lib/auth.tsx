@@ -20,7 +20,7 @@ interface AuthState {
 }
 
 interface AuthActions {
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
 }
@@ -63,14 +63,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [fetchUser]);
 
   const login = async (email: string, password: string) => {
-    const response = await apiPost<{ access_token: string; token_type: string }>(
-      "/v1/auth/login",
-      { email, password }
-    );
-    const newToken = response.access_token;
-    localStorage.setItem("auth_token", newToken);
-    setToken(newToken);
-    await fetchUser();
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "/api";
+    const formData = new URLSearchParams();
+    formData.append("username", email);
+    formData.append("password", password);
+
+    const res = await fetch(`${baseUrl}/v1/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: "Login failed" }));
+      throw new Error(err.detail || "Login failed");
+    }
+
+    const data = await res.json();
+    localStorage.setItem("auth_token", data.access_token);
+    setToken(data.access_token);
+    const userData = await apiGet<User>("/v1/auth/me");
+    setUser(userData);
+    return userData;
   };
 
   const register = async (data: RegisterData) => {

@@ -25,13 +25,15 @@ import {
 
 interface DashboardOverview {
   total_jobs: number;
-  active_tasks: number;
+  total_tasks: number;
   active_agents: number;
-  pending_reviews: number;
-  revenue_pipeline: number;
+  pending_validations: number;
+  failed_tasks: number;
+  total_payments_pending: number;
+  total_payments_completed: number;
   jobs_by_status: Record<string, number>;
   tasks_by_status: Record<string, number>;
-  recent_activity: AuditEntry[];
+  recent_activity?: AuditEntry[];
 }
 
 interface AuditEntry {
@@ -165,10 +167,12 @@ export default function AdminOverviewPage() {
         // Use placeholder data when API is not available
         setData({
           total_jobs: 47,
-          active_tasks: 128,
+          total_tasks: 128,
           active_agents: 34,
-          pending_reviews: 12,
-          revenue_pipeline: 284500,
+          pending_validations: 12,
+          failed_tasks: 3,
+          total_payments_pending: 284500,
+          total_payments_completed: 156000,
           jobs_by_status: {
             draft: 5,
             submitted: 8,
@@ -251,7 +255,7 @@ export default function AdminOverviewPage() {
         />
         <KPICard
           title="Active Tasks"
-          value={data.active_tasks}
+          value={data.total_tasks}
           description="currently in pipeline"
           icon={ListChecks}
           trend="+8%"
@@ -264,13 +268,13 @@ export default function AdminOverviewPage() {
         />
         <KPICard
           title="Pending Reviews"
-          value={data.pending_reviews}
+          value={data.pending_validations}
           description="awaiting validation"
           icon={ClipboardCheck}
         />
         <KPICard
           title="Revenue Pipeline"
-          value={formatCurrency(data.revenue_pipeline)}
+          value={formatCurrency(data.total_payments_pending)}
           description="total in-flight value"
           icon={DollarSign}
           trend="+23%"
@@ -327,7 +331,7 @@ export default function AdminOverviewPage() {
             <CardDescription>Latest platform events</CardDescription>
           </CardHeader>
           <CardContent>
-            {data.recent_activity.length === 0 ? (
+            {!data.recent_activity || data.recent_activity.length === 0 ? (
               <div className="flex h-32 items-center justify-center text-sm text-zinc-400">
                 No recent activity
               </div>

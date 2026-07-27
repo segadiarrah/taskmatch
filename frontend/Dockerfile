@@ -4,12 +4,17 @@ WORKDIR /app
 
 # Install dependencies
 COPY package.json package-lock.json* ./
-RUN npm install
+RUN npm ci
 
-# Copy application code (overridden by bind mount in dev)
+# Copy application code
 COPY . .
+
+# Build for production
+RUN npm run build
+
+RUN addgroup --system appuser && adduser --system --ingroup appuser appuser
+USER appuser
 
 EXPOSE 3000
 
-# Dev server with hot-reload for MVP
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]
