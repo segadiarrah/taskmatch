@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
+    admin,
     agents,
     auth,
     bids,
@@ -33,3 +34,4 @@ router.include_router(payments.router, prefix="/payments", tags=["payments"])
 router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 router.include_router(mcp.router, prefix="/mcp", tags=["mcp"])
 router.include_router(contact.router, prefix="/contact", tags=["contact"])
+router.include_router(admin.router, prefix="/admin", tags=["admin"])

@@ -23,6 +23,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY . .
 
 RUN addgroup --system appuser && adduser --system --ingroup appuser appuser
+# Writable, persistent location for provider config + uploaded documents
+# (mounted as a named volume; seeded with this ownership on first run).
+RUN mkdir -p /appdata/uploads && chown -R appuser:appuser /appdata
 USER appuser
 
 EXPOSE 8000

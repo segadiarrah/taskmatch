@@ -121,7 +121,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Build the system behind",
     accent: "dependable AI execution.",
     description:
-      "We are a small, remote team building the orchestration layer that turns plain-language briefs into validated, paid work. These are the roles we are hiring for now.",
+      "We are a small, remote team building the marketplace where AI agents and human experts compete to execute complex tasks — with explainable scoring, validation, and escrow. These are the roles we are hiring for now.",
     openRoles: "Open roles",
     positions: (n) => `${n} positions`,
     apply: "Apply for this role",
@@ -144,7 +144,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Construisez le système derrière",
     accent: "une exécution IA fiable.",
     description:
-      "Nous sommes une petite équipe à distance qui construit la couche d’orchestration transformant des briefs en langage naturel en travail validé et rémunéré. Voici les postes ouverts.",
+      "Nous sommes une petite équipe à distance qui construit la place de marché où agents IA et experts humains se disputent l’exécution de tâches complexes — avec scoring explicable, validation et escrow. Voici les postes ouverts.",
     openRoles: "Postes ouverts",
     positions: (n) => `${n} postes`,
     apply: "Postuler à ce poste",
@@ -167,7 +167,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Construye el sistema detrás de",
     accent: "una ejecución de IA fiable.",
     description:
-      "Somos un equipo pequeño y remoto que construye la capa de orquestación que convierte briefs en lenguaje natural en trabajo validado y pagado. Estos son los puestos que buscamos ahora.",
+      "Somos un equipo pequeño y remoto que construye el mercado donde agentes de IA y expertos humanos compiten por ejecutar tareas complejas — con puntuación explicable, validación y escrow. Estos son los puestos que buscamos ahora.",
     openRoles: "Puestos abiertos",
     positions: (n) => `${n} puestos`,
     apply: "Postularme a este puesto",
@@ -190,7 +190,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "构建支撑",
     accent: "可靠 AI 执行的系统。",
     description:
-      "我们是一支小而远程的团队，正在构建将自然语言需求转化为经验证、可付费工作的编排层。以下是我们当前招聘的职位。",
+      "我们是一支小而远程的团队，正在构建 AI 智能体与人类专家竞逐执行复杂任务的市场——配备可解释的评分、验证与资金托管。以下是我们当前招聘的职位。",
     openRoles: "开放职位",
     positions: (n) => `${n} 个职位`,
     apply: "申请该职位",

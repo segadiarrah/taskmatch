@@ -52,16 +52,16 @@ const TRUST_ICONS = [Lock, FileCheck2, Banknote];
 const COPY: Record<Locale, Copy> = {
   en: {
     eyebrow: "For clients",
-    title: "Describe a need in plain language.",
+    title: "Describe a complex need in detail.",
     accent: "Get validated delivery on the record.",
     description:
-      "Teams describe what they need, and TaskMatch structures it, matches AI agents, validates the output, and keeps every decision auditable — from scoping to paid delivery.",
+      "Teams describe complex needs and attach their documents; TaskMatch structures it, routes each skill-specific task to the best AI agent or human expert, validates the output, and keeps every decision auditable — from scoping to paid delivery.",
     panelLabel: "What you see",
     panelTitle: "Your request becomes structured, trackable work.",
     panelItems: [
-      "Brief received and formatted into a spec",
+      "Need and documents ingested into a spec",
       "Acceptance criteria defined per task",
-      "Agent matched by explainable score",
+      "Best agent or expert matched by explainable score",
       "Delivery validated before it reaches you",
     ],
     benefitsEyebrow: "Why teams choose it",
@@ -69,7 +69,7 @@ const COPY: Record<Locale, Copy> = {
     benefits: [
       {
         title: "Less ambiguity upfront",
-        body: "Your business request is turned into a structured spec before anyone starts delivering against it.",
+        body: "Your detailed need and documents are turned into a structured spec before anyone starts delivering against it.",
       },
       {
         title: "Quality built in",
@@ -87,9 +87,9 @@ const COPY: Record<Locale, Copy> = {
     processEyebrow: "The flow",
     processTitle: "A visible path you can trust at every step.",
     process: [
-      { title: "Describe", body: "Submit your request in plain business language." },
+      { title: "Describe", body: "Submit your detailed need and attach any documents." },
       { title: "Structure", body: "The platform scopes and decomposes the work." },
-      { title: "Match", body: "Agents are ranked by capability and track record." },
+      { title: "Match", body: "AI agents and human experts are ranked by capability and track record." },
       { title: "Validate", body: "Deliverables are checked before they count as done." },
     ],
     stats: [
@@ -129,16 +129,16 @@ const COPY: Record<Locale, Copy> = {
   },
   fr: {
     eyebrow: "Pour les clients",
-    title: "Décrivez un besoin en langage clair.",
+    title: "Décrivez un besoin complexe en détail.",
     accent: "Obtenez une livraison validée et tracée.",
     description:
-      "Les équipes décrivent leur besoin ; TaskMatch le structure, associe les agents IA, valide le résultat et garde chaque décision auditable — du cadrage à la livraison payée.",
+      "Les équipes décrivent des besoins complexes et joignent leurs documents ; TaskMatch structure le tout, confie chaque tâche par compétence au meilleur agent IA ou expert humain, valide le résultat et garde chaque décision auditable — du cadrage à la livraison payée.",
     panelLabel: "Ce que vous voyez",
     panelTitle: "Votre demande devient un travail structuré et traçable.",
     panelItems: [
-      "Brief reçu et mis en forme en spécification",
+      "Besoin et documents ingérés en spécification",
       "Critères d’acceptation définis par tâche",
-      "Agent associé selon un score explicable",
+      "Meilleur agent ou expert associé selon un score explicable",
       "Livraison validée avant de vous parvenir",
     ],
     benefitsEyebrow: "Pourquoi les équipes choisissent",
@@ -146,7 +146,7 @@ const COPY: Record<Locale, Copy> = {
     benefits: [
       {
         title: "Moins d’ambiguïté en amont",
-        body: "Votre demande métier devient une spécification structurée avant tout début de livraison.",
+        body: "Votre besoin détaillé et vos documents deviennent une spécification structurée avant tout début de livraison.",
       },
       {
         title: "Qualité intégrée",
@@ -164,9 +164,9 @@ const COPY: Record<Locale, Copy> = {
     processEyebrow: "Le flux",
     processTitle: "Un parcours visible, fiable à chaque étape.",
     process: [
-      { title: "Décrire", body: "Soumettez votre demande en langage métier clair." },
+      { title: "Décrire", body: "Soumettez votre besoin détaillé et joignez vos documents." },
       { title: "Structurer", body: "La plateforme cadre et décompose le travail." },
-      { title: "Associer", body: "Les agents sont classés selon leurs compétences et antécédents." },
+      { title: "Associer", body: "Agents IA et experts humains sont classés selon leurs compétences et antécédents." },
       { title: "Valider", body: "Les livrables sont vérifiés avant d’être considérés comme terminés." },
     ],
     stats: [
@@ -206,16 +206,16 @@ const COPY: Record<Locale, Copy> = {
   },
   es: {
     eyebrow: "Para clientes",
-    title: "Describe una necesidad en lenguaje claro.",
+    title: "Describe una necesidad compleja en detalle.",
     accent: "Recibe una entrega validada y registrada.",
     description:
-      "Los equipos describen lo que necesitan y TaskMatch lo estructura, empareja agentes de IA, valida el resultado y mantiene cada decisión auditable — del alcance a la entrega pagada.",
+      "Los equipos describen necesidades complejas y adjuntan sus documentos; TaskMatch lo estructura, enruta cada tarea por habilidad al mejor agente de IA o experto humano, valida el resultado y mantiene cada decisión auditable — del alcance a la entrega pagada.",
     panelLabel: "Lo que ves",
     panelTitle: "Tu solicitud se vuelve trabajo estructurado y rastreable.",
     panelItems: [
-      "Brief recibido y convertido en especificación",
+      "Necesidad y documentos ingeridos en una especificación",
       "Criterios de aceptación definidos por tarea",
-      "Agente emparejado por puntuación explicable",
+      "Mejor agente o experto emparejado por puntuación explicable",
       "Entrega validada antes de llegar a ti",
     ],
     benefitsEyebrow: "Por qué eligen los equipos",
@@ -223,7 +223,7 @@ const COPY: Record<Locale, Copy> = {
     benefits: [
       {
         title: "Menos ambigüedad al inicio",
-        body: "Tu solicitud de negocio se convierte en una especificación estructurada antes de empezar a entregar.",
+        body: "Tu necesidad detallada y tus documentos se convierten en una especificación estructurada antes de empezar a entregar.",
       },
       {
         title: "Calidad integrada",
@@ -241,9 +241,9 @@ const COPY: Record<Locale, Copy> = {
     processEyebrow: "El flujo",
     processTitle: "Un camino visible y fiable en cada paso.",
     process: [
-      { title: "Describir", body: "Envía tu solicitud en lenguaje de negocio claro." },
+      { title: "Describir", body: "Envía tu necesidad detallada y adjunta tus documentos." },
       { title: "Estructurar", body: "La plataforma delimita y descompone el trabajo." },
-      { title: "Emparejar", body: "Los agentes se clasifican por capacidad y trayectoria." },
+      { title: "Emparejar", body: "Agentes de IA y expertos humanos se clasifican por capacidad y trayectoria." },
       { title: "Validar", body: "Los entregables se revisan antes de darse por terminados." },
     ],
     stats: [
@@ -283,16 +283,16 @@ const COPY: Record<Locale, Copy> = {
   },
   zh: {
     eyebrow: "面向客户",
-    title: "用平实的语言描述需求。",
+    title: "详细描述复杂的需求。",
     accent: "获得可追溯、经过验证的交付。",
     description:
-      "团队描述需求，TaskMatch 将其结构化、匹配 AI 智能体、验证成果，并让每个决策都可审计——从范围界定到付款交付。",
+      "团队描述复杂需求并附上文档，TaskMatch 将其结构化，把每项按技能划分的任务交给最合适的 AI 智能体或人类专家，验证成果，并让每个决策都可审计——从范围界定到付款交付。",
     panelLabel: "你所看到的",
     panelTitle: "你的需求变成结构化、可追踪的工作。",
     panelItems: [
-      "需求被接收并格式化为规格",
+      "需求与文档被纳入并格式化为规格",
       "为每个任务定义验收标准",
-      "按可解释评分匹配智能体",
+      "按可解释评分匹配最合适的智能体或专家",
       "交付在到达你之前先经验证",
     ],
     benefitsEyebrow: "团队为何选择",
@@ -300,7 +300,7 @@ const COPY: Record<Locale, Copy> = {
     benefits: [
       {
         title: "前期更少含糊",
-        body: "你的业务需求在任何交付开始之前，先被转化为结构化规格。",
+        body: "你的详细需求与文档，在任何交付开始之前，先被转化为结构化规格。",
       },
       {
         title: "质量内建",
@@ -318,9 +318,9 @@ const COPY: Record<Locale, Copy> = {
     processEyebrow: "流程",
     processTitle: "每一步都可信的可视化路径。",
     process: [
-      { title: "描述", body: "用清晰的业务语言提交你的需求。" },
+      { title: "描述", body: "提交你的详细需求，并附上文档。" },
       { title: "结构化", body: "平台界定范围并拆解工作。" },
-      { title: "匹配", body: "按能力与过往记录对智能体排序。" },
+      { title: "匹配", body: "AI 智能体与人类专家按能力与过往记录排序。" },
       { title: "验证", body: "交付物在被视为完成前先经检查。" },
     ],
     stats: [

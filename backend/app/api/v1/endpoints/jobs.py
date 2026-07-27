@@ -5,7 +5,18 @@ from __future__ import annotations
 import uuid
 from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+import os
+
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    HTTPException,
+    Query,
+    UploadFile,
+    status,
+)
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,9 +27,14 @@ import structlog
 from app.core.database import async_session_factory, get_db
 from app.core.deps import get_current_active_user, require_role
 from app.middleware.audit import log_audit
+from decimal import Decimal
+
+from app.models.agent import Agent, AgentStatus
+from app.models.assignment import Assignment, AssignmentStatus
 from app.models.audit import MCPDecision, MCPDecisionType
+from app.models.bid import Bid, BidStatus
 from app.models.job import Job, JobRequirement, JobStatus
-from app.models.task import Task
+from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.job import JobCreate, JobListResponse, JobResponse, JobUpdate
 from app.services import mcp_service
@@ -47,11 +63,105 @@ async def _generate_plan(job_id: uuid.UUID) -> None:
                     await mcp_service.match_agents(db, uuid.UUID(t["id"]))
                 except Exception as exc:  # noqa: BLE001
                     logger.warning("plan.match_failed", task_id=t["id"], error=str(exc))
+            # Immediate execution: enabled platform LLM agents auto-bid so work
+            # can start without waiting for developer agents to sign up.
+            try:
+                await _auto_execute(db, job, created_tasks)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("plan.autoexec_failed", job_id=str(job_id), error=str(exc))
             await db.commit()
             logger.info("plan.complete", job_id=str(job_id), task_count=len(created_tasks))
         except Exception as exc:  # noqa: BLE001
             await db.rollback()
             logger.warning("plan.failed", job_id=str(job_id), error=str(exc))
+
+
+async def _auto_execute(db: AsyncSession, job: Job, created_tasks: list[dict]) -> None:
+    """Have active platform LLM agents auto-bid on each task, and (if the job
+    has auto-select enabled) assign the strongest bid — so complex requests
+    start executing immediately, before any developer agent bids."""
+    platform_agents = list(
+        (
+            await db.execute(
+                select(Agent).where(
+                    Agent.status == AgentStatus.active,
+                    Agent.slug.like("llm-%"),
+                )
+            )
+        )
+        .scalars()
+        .all()
+    )
+    if not platform_agents:
+        return
+
+    for t in created_tasks:
+        task_id = uuid.UUID(t["id"])
+        task = (await db.execute(select(Task).where(Task.id == task_id))).scalar_one_or_none()
+        if task is None:
+            continue
+        budget = float(task.budget) if task.budget else 0.0
+        task_type = (task.task_type or "general").lower()
+
+        # Candidate platform agents that support this task type (or general).
+        candidates = [
+            a
+            for a in platform_agents
+            if not a.supported_task_types
+            or task_type in [str(x).lower() for x in a.supported_task_types]
+        ] or platform_agents
+
+        bids: list[Bid] = []
+        for idx, agent in enumerate(candidates[:3]):
+            # Slightly different prices/ETAs so ranking is meaningful.
+            price = round(budget * (0.62 + 0.06 * idx), 2) if budget else None
+            bid = Bid(
+                id=uuid.uuid4(),
+                task_id=task_id,
+                agent_id=agent.id,
+                price=Decimal(str(price)) if price is not None else Decimal("0"),
+                eta_hours=6.0 + 4.0 * idx,
+                confidence_score=min(0.99, (agent.success_rate or 0.85)),
+                proposal_text=f"{agent.name} can execute this {task_type} task immediately using its model.",
+                status=BidStatus.submitted,
+            )
+            db.add(bid)
+            bids.append(bid)
+        await db.flush()
+
+        if not bids:
+            continue
+
+        # Rank the bids (records an MCP decision + shortlists the top one).
+        try:
+            await mcp_service.rank_bids(db, task_id)
+        except Exception:  # noqa: BLE001
+            pass
+
+        # Auto-assign the strongest bid when the client opted in.
+        if job.auto_select_enabled:
+            shortlisted = (
+                await db.execute(
+                    select(Bid)
+                    .where(Bid.task_id == task_id, Bid.status == BidStatus.shortlisted)
+                    .limit(1)
+                )
+            ).scalar_one_or_none()
+            winner = shortlisted or bids[0]
+            winner.status = BidStatus.selected
+            db.add(
+                Assignment(
+                    id=uuid.uuid4(),
+                    task_id=task_id,
+                    agent_id=winner.agent_id,
+                    bid_id=winner.id,
+                    status=AssignmentStatus.active,
+                )
+            )
+            task.status = TaskStatus.assigned
+            await db.flush()
+
+    logger.info("plan.autoexec", job_id=str(job.id), platform_agents=len(platform_agents))
 
 
 @router.post(
@@ -415,4 +525,110 @@ async def get_job_plan(
             for t in tasks
         ],
         "stages": stages,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Document upload + ingestion
+# ---------------------------------------------------------------------------
+
+_UPLOAD_DIR = os.environ.get("UPLOAD_DIR", "/app/uploads")
+_MAX_INGEST_CHARS = 40_000
+
+
+def _extract_text(filename: str, data: bytes) -> str:
+    """Best-effort text extraction from an uploaded document."""
+    name = (filename or "").lower()
+    try:
+        if name.endswith(".pdf"):
+            import io
+
+            import pypdf  # type: ignore
+
+            reader = pypdf.PdfReader(io.BytesIO(data))
+            return "\n".join((p.extract_text() or "") for p in reader.pages)
+        if name.endswith(".docx"):
+            import io
+
+            import docx  # type: ignore
+
+            document = docx.Document(io.BytesIO(data))
+            return "\n".join(p.text for p in document.paragraphs)
+        # txt / md / csv / json / anything decodable as text
+        return data.decode("utf-8", errors="ignore")
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("ingest.extract_failed", filename=filename, error=str(exc))
+        return ""
+
+
+@router.post("/{job_id}/documents", summary="Attach & ingest documents for a job")
+async def upload_documents(
+    job_id: uuid.UUID,
+    files: list[UploadFile] = File(...),
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Upload one or more documents (specs, briefs, data, designs) for a job.
+
+    The text is extracted and ingested into the job description so the MCP
+    planning step understands the full context — not just a short summary.
+    Complex requests are the whole point of the platform.
+    """
+    result = await db.execute(select(Job).where(Job.id == job_id))
+    job = result.scalar_one_or_none()
+    if job is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
+
+    role = getattr(current_user.role, "value", str(current_user.role))
+    if job.client_user_id != current_user.id and role != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your job")
+    if job.status not in (JobStatus.draft, JobStatus.submitted):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Documents can only be attached before the job is planned.",
+        )
+
+    dest = os.path.join(_UPLOAD_DIR, str(job_id))
+    os.makedirs(dest, exist_ok=True)
+
+    ingested: list[dict] = []
+    appended = ""
+    for f in files:
+        data = await f.read()
+        # Persist the raw file.
+        safe = os.path.basename(f.filename or "document")
+        with open(os.path.join(dest, safe), "wb") as out:
+            out.write(data)
+        text = _extract_text(f.filename or "", data).strip()
+        ingested.append({"name": safe, "size": len(data), "chars": len(text)})
+        if text:
+            appended += f"\n\n--- Attached document: {safe} ---\n{text}"
+
+    # Ingest extracted text into the brief (bounded), so planning sees it.
+    if appended:
+        combined = (job.raw_description or "") + appended
+        job.raw_description = combined[:_MAX_INGEST_CHARS]
+
+    meta = dict(job.metadata_json or {})
+    docs = list(meta.get("documents") or [])
+    docs.extend(ingested)
+    meta["documents"] = docs
+    job.metadata_json = meta
+    await db.flush()
+
+    await log_audit(
+        db,
+        actor_type="user",
+        actor_id=str(current_user.id),
+        action="upload_documents",
+        entity_type="job",
+        entity_id=str(job.id),
+        payload={"count": len(ingested)},
+    )
+
+    return {
+        "job_id": str(job.id),
+        "documents": ingested,
+        "ingested_chars": len(appended),
+        "total_documents": len(docs),
     }

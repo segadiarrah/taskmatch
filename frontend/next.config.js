@@ -20,6 +20,15 @@ const nextConfig = {
           },
         ],
       },
+      {
+        // HTML documents (everything except Next's immutable hashed assets)
+        // must always revalidate so content updates show immediately. The
+        // hashed files under /_next/static keep their own long immutable cache.
+        source: "/:path((?!_next/static|_next/image).*)",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        ],
+      },
     ];
   },
   async rewrites() {

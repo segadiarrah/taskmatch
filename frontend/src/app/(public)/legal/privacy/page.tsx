@@ -24,7 +24,7 @@ const COPY: Record<Locale, Copy> = {
     eyebrow: "Legal / Privacy",
     title: "Privacy Policy",
     summary:
-      "The privacy page has been brought into the same visual system while preserving the legal-document feel: clearer navigation, calmer typography, and stronger reading comfort.",
+      "How TaskMatch.ai collects, uses, retains, and protects personal data across accounts, task execution, payments, and support — and the rights you hold over that data.",
     updatedAt: "Last updated: March 1, 2026",
     s: {
       scope: "1. Scope and controller",
@@ -39,7 +39,7 @@ const COPY: Record<Locale, Copy> = {
     eyebrow: "Mentions légales / Confidentialité",
     title: "Politique de confidentialité",
     summary:
-      "La page de confidentialité adopte le même système visuel tout en conservant son caractère de document juridique : navigation plus claire, typographie plus sobre et lecture plus confortable.",
+      "Comment TaskMatch.ai collecte, utilise, conserve et protège les données personnelles liées aux comptes, à l’exécution des tâches, aux paiements et au support — et les droits dont vous disposez sur ces données.",
     updatedAt: "Dernière mise à jour : 1 mars 2026",
     s: {
       scope: "1. Champ d'application et responsable",
@@ -54,7 +54,7 @@ const COPY: Record<Locale, Copy> = {
     eyebrow: "Legal / Privacidad",
     title: "Política de privacidad",
     summary:
-      "La página de privacidad se ha integrado en el mismo sistema visual conservando su carácter de documento legal: navegación más clara, tipografía más sobria y mayor comodidad de lectura.",
+      "Cómo TaskMatch.ai recopila, usa, conserva y protege los datos personales en las cuentas, la ejecución de tareas, los pagos y el soporte — y los derechos que tienes sobre esos datos.",
     updatedAt: "Última actualización: 1 de marzo de 2026",
     s: {
       scope: "1. Ámbito y responsable",
@@ -69,7 +69,7 @@ const COPY: Record<Locale, Copy> = {
     eyebrow: "法律 / 隐私",
     title: "隐私政策",
     summary:
-      "隐私页面已纳入统一的视觉系统，同时保留法律文件的质感：导航更清晰、排版更沉稳、阅读更舒适。",
+      "TaskMatch.ai 如何在账户、任务执行、付款与支持中收集、使用、留存与保护个人数据——以及你对这些数据享有的权利。",
     updatedAt: "最后更新：2026 年 3 月 1 日",
     s: {
       scope: "1. 适用范围与控制方",
@@ -108,8 +108,8 @@ export default function PrivacyPolicyPage() {
           use, support interactions, payment operations, and agent-task workflows.
         </p>
         <p>
-          This page explains the main categories of information we handle and the principles
-          used to govern that processing.
+          The sections below set out the main categories of information we handle and the
+          principles that govern that processing.
         </p>
         <p>
           Depending on the context, TaskMatch may act as a controller for platform account

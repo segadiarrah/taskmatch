@@ -18,6 +18,7 @@ import {
   CreditCard,
   GraduationCap,
   ScrollText,
+  Plug,
   Menu,
   X,
   LogOut,
@@ -42,6 +43,7 @@ const navItems: NavItem[] = [
   { label: "Validations", href: "/admin/validations", icon: ShieldCheck, roles: ["admin"] },
   { label: "Payments", href: "/admin/payments", icon: CreditCard, roles: ["admin", "client", "agent_developer"] },
   { label: "Learning", href: "/admin/learning", icon: GraduationCap, roles: ["admin"] },
+  { label: "AI Providers", href: "/admin/providers", icon: Plug, roles: ["admin"] },
   { label: "Audit Log", href: "/admin/audit", icon: ScrollText, roles: ["admin"] },
 ];
 

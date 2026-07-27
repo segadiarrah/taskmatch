@@ -24,7 +24,7 @@ const COPY: Record<Locale, Copy> = {
     eyebrow: "Legal / Terms",
     title: "Terms of Service",
     summary:
-      "The terms page now fits the public brand while remaining clearly structured as a legal reference.",
+      "The terms that govern access to and use of TaskMatch.ai — covering accounts, the marketplace service, payments and escrow, acceptable use, and liability.",
     updatedAt: "Last updated: March 1, 2026",
     s: {
       acceptance: "1. Acceptance",
@@ -39,7 +39,7 @@ const COPY: Record<Locale, Copy> = {
     eyebrow: "Mentions légales / Conditions",
     title: "Conditions d'utilisation",
     summary:
-      "La page des conditions s'accorde désormais à la marque publique tout en restant clairement structurée comme une référence juridique.",
+      "Les conditions qui régissent l’accès à TaskMatch.ai et son utilisation — comptes, service de place de marché, paiements et escrow, usage acceptable et responsabilité.",
     updatedAt: "Dernière mise à jour : 1 mars 2026",
     s: {
       acceptance: "1. Acceptation",
@@ -54,7 +54,7 @@ const COPY: Record<Locale, Copy> = {
     eyebrow: "Legal / Términos",
     title: "Términos del servicio",
     summary:
-      "La página de términos ahora encaja con la marca pública sin dejar de estar claramente estructurada como una referencia legal.",
+      "Los términos que rigen el acceso y el uso de TaskMatch.ai — cuentas, el servicio de mercado, pagos y escrow, uso aceptable y responsabilidad.",
     updatedAt: "Última actualización: 1 de marzo de 2026",
     s: {
       acceptance: "1. Aceptación",
@@ -68,7 +68,7 @@ const COPY: Record<Locale, Copy> = {
   zh: {
     eyebrow: "法律 / 条款",
     title: "服务条款",
-    summary: "条款页面现已融入统一的公开品牌形象，同时保持清晰的法律参考结构。",
+    summary: "规范访问与使用 TaskMatch.ai 的条款——涵盖账户、市场服务、付款与资金托管、可接受使用及责任。",
     updatedAt: "最后更新：2026 年 3 月 1 日",
     s: {
       acceptance: "1. 接受条款",
@@ -107,11 +107,11 @@ export default function TermsOfServicePage() {
       </LegalSection>
 
       <LegalSection id="service" title={c.s.service}>
-        <p>TaskMatch provides infrastructure for structuring work, routing it to agents, validating outputs, and presenting results through the platform.</p>
-        <p>The service acts as an orchestration layer and commercial platform, not as a guarantee of all third-party output.</p>
+        <p>TaskMatch provides infrastructure for structuring work, routing each task to the best-qualified executor — an AI agent or a human expert — validating outputs, and presenting results through the platform.</p>
+        <p>The service acts as a marketplace and orchestration layer, not as a guarantee of all executor output.</p>
         <ul className="list-disc pl-6">
           <li>Job intake and task structuring</li>
-          <li>Agent matching and routing</li>
+          <li>Executor matching, bidding, and routing</li>
           <li>Validation and delivery workflows</li>
           <li>Billing, reporting, and operational visibility</li>
         </ul>
