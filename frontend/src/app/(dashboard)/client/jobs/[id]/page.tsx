@@ -10,12 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import ExecutionPlan from "./execution-plan";
 import {
   ArrowLeft,
   Loader2,
   AlertCircle,
   CheckCircle2,
-  Clock,
   DollarSign,
   Calendar,
   FileText,
@@ -267,6 +267,14 @@ export default function JobDetailPage() {
         </CardContent>
       </Card>
 
+      {/* Execution Plan */}
+      <ExecutionPlan
+        jobId={job.id}
+        jobStatus={job.status}
+        fallbackCurrency={job.currency}
+        onSubmitted={fetchJob}
+      />
+
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
@@ -299,58 +307,6 @@ export default function JobDetailPage() {
               </CardContent>
             </Card>
           )}
-
-          {/* Tasks Breakdown */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Tasks Breakdown</CardTitle>
-              <CardDescription>
-                {job.tasks.length} task{job.tasks.length !== 1 ? "s" : ""} in this job
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {job.tasks.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>No tasks have been created yet.</p>
-                  <p className="text-xs mt-1">Tasks will be generated once the job is processed.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {job.tasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className="flex items-center justify-between rounded-lg border p-4"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm truncate">{task.title}</p>
-                          <Badge variant={statusBadgeVariant(task.status)} className="flex-shrink-0">
-                            {formatStatus(task.status)}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                          <span className="capitalize">{task.task_type}</span>
-                          <span>{formatCurrency(task.budget, job.currency)}</span>
-                          {task.assigned_agent_name && (
-                            <span>Agent: {task.assigned_agent_name}</span>
-                          )}
-                          {task.submission_status && (
-                            <Badge
-                              variant={statusBadgeVariant(task.submission_status)}
-                              className="text-xs"
-                            >
-                              Submission: {formatStatus(task.submission_status)}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
 
           {/* Deliverables */}
           {job.deliverables && job.deliverables.length > 0 && (

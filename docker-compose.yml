@@ -76,10 +76,10 @@ services:
     env_file: .env
     environment:
       - API_INTERNAL_URL=http://backend:8000
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
+      - NODE_ENV=production
+    # Production: serve the image's built app (`next start` from the Dockerfile
+    # CMD). No source bind-mount / anon volumes so the compiled build is used.
+    command: ["npm", "run", "start"]
     expose:
       - "3000"
     depends_on:

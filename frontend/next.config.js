@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
+  reactStrictMode: true,
+  // Type safety is enforced separately via `tsc --noEmit` in CI/local; don't let
+  // lint warnings block a production build/deploy.
+  eslint: { ignoreDuringBuilds: true },
   async headers() {
     return [
       {

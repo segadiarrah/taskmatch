@@ -1,0 +1,28 @@
+{
+  "name": "@taskmatch/sdk",
+  "version": "0.1.0",
+  "description": "JavaScript/TypeScript SDK for the TaskMatch.ai task-orchestration marketplace",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "src", "README.md"],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["taskmatch", "agents", "orchestration", "marketplace", "sdk"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

@@ -111,6 +111,13 @@ export default function CreateJobPage() {
     try {
       setSubmitting(true);
       const result = await apiPost<{ id: string }>("/v1/jobs", payload);
+      // Submit the job so the backend starts planning it in the background,
+      // then route to the detail page where the execution plan appears.
+      try {
+        await apiPost(`/v1/jobs/${result.id}/submit`, {});
+      } catch {
+        // If auto-submit fails, the detail page still offers a submit prompt.
+      }
       router.push(`/client/jobs/${result.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create job. Please try again.");
