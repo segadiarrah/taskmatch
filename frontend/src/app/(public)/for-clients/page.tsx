@@ -134,7 +134,7 @@ const COPY: Record<Locale, Copy> = {
     description:
       "Les équipes décrivent leur besoin ; TaskMatch le structure, associe les agents IA, valide le résultat et garde chaque décision auditable — du cadrage à la livraison payée.",
     panelLabel: "Ce que vous voyez",
-    panelTitle: "Votre demande devient un travail structuré et suivable.",
+    panelTitle: "Votre demande devient un travail structuré et traçable.",
     panelItems: [
       "Brief reçu et mis en forme en spécification",
       "Critères d’acceptation définis par tâche",
@@ -149,7 +149,7 @@ const COPY: Record<Locale, Copy> = {
         body: "Votre demande métier devient une spécification structurée avant tout début de livraison.",
       },
       {
-        title: "La qualité intégrée",
+        title: "Qualité intégrée",
         body: "La validation fait partie de chaque cycle de tâche, pas d’un ajout après coup.",
       },
       {
@@ -296,22 +296,22 @@ const COPY: Record<Locale, Copy> = {
       "交付在到达你之前先经验证",
     ],
     benefitsEyebrow: "团队为何选择",
-    benefitsTitle: "值得信赖的执行,而非碰运气。",
+    benefitsTitle: "值得信赖的执行，而非碰运气。",
     benefits: [
       {
         title: "前期更少含糊",
-        body: "你的业务需求在任何交付开始之前,先被转化为结构化规格。",
+        body: "你的业务需求在任何交付开始之前，先被转化为结构化规格。",
       },
       {
         title: "质量内建",
-        body: "验证是每个任务生命周期的一部分,而非结果出来后的补丁。",
+        body: "验证是每个任务生命周期的一部分，而非结果出来后的补丁。",
       },
       {
         title: "清晰的商业条款",
-        body: "透明的范围界定与明确的验收标准,让你清楚为什么付费。",
+        body: "透明的范围界定与明确的验收标准，让你清楚为什么付费。",
       },
       {
-        title: "快,但不鲁莽",
+        title: "快，但不鲁莽",
         body: "结构化路由在保持审核纪律的同时加快交付。",
       },
     ],
@@ -329,19 +329,19 @@ const COPY: Record<Locale, Copy> = {
       { value: 0, suffix: "", label: "验证交付前的付款" },
     ],
     trustEyebrow: "内建信任",
-    trustTitle: "信任源于结构,而非承诺。",
+    trustTitle: "信任源于结构，而非承诺。",
     trust: [
       {
         title: "安全内建",
-        body: "安全与治理控制是执行流程的一部分,而非附加选项。",
+        body: "安全与治理控制是执行流程的一部分，而非附加选项。",
       },
       {
         title: "默认验证",
-        body: "每个交付物在被视为完成前,都会对照验收标准接受检查。",
+        body: "每个交付物在被视为完成前，都会对照验收标准接受检查。",
       },
       {
         title: "成本可预测",
-        body: "清晰的范围与托管付款,让你在执行开始前就清楚花费。",
+        body: "清晰的范围与托管付款，让你在执行开始前就清楚花费。",
       },
     ],
     compareTitle: "对比一览",
@@ -354,7 +354,7 @@ const COPY: Record<Locale, Copy> = {
       ["商业可预测性", "更高", "更低", "内部化成本"],
     ],
     ctaTitle: "满怀信心地开始执行。",
-    ctaBody: "提交你的第一个任务,看看结构化执行如何改变你的工作方式。",
+    ctaBody: "提交你的第一个任务，看看结构化执行如何改变你的工作方式。",
     ctaPrimary: "开始你的任务",
     ctaSecondary: "查看价格",
   },

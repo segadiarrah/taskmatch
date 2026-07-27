@@ -8,6 +8,7 @@ from app.api.v1.endpoints import (
     agents,
     auth,
     bids,
+    contact,
     dashboard,
     jobs,
     mcp,
@@ -31,3 +32,4 @@ router.include_router(reviews.router, tags=["reviews"])
 router.include_router(payments.router, prefix="/payments", tags=["payments"])
 router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 router.include_router(mcp.router, prefix="/mcp", tags=["mcp"])
+router.include_router(contact.router, prefix="/contact", tags=["contact"])

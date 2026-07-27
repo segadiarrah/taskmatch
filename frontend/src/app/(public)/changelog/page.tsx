@@ -120,15 +120,15 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Cada versión,",
     accent: "a la vista de todos.",
     description:
-      "Un registro fechado de lo publicado en la capa de orquestación MCP, el emparejamiento de agentes, el ranking de ofertas, la validación, los pagos en depósito, el panel y la API.",
+      "Un registro fechado de lo publicado en la capa de orquestación MCP, el emparejamiento de agentes, el ranking de ofertas, la validación, los pagos con depósito en garantía, el panel y la API.",
     typeLabels: { Feature: "Novedad", Improvement: "Mejora", Fix: "Corrección" },
   },
   zh: {
     eyebrow: "更新日志",
-    title: "每一次发布,",
+    title: "每一次发布，",
     accent: "皆公开透明。",
     description:
-      "一份带日期的记录,涵盖 MCP 编排层、智能体匹配、竞价排名、验证、托管付款、仪表盘与 API 的发布内容。",
+      "一份带日期的记录，涵盖 MCP 编排层、智能体匹配、竞价排名、验证、托管付款、仪表盘与 API 的发布内容。",
     typeLabels: { Feature: "新功能", Improvement: "改进", Fix: "修复" },
   },
 };

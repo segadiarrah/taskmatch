@@ -52,7 +52,7 @@ type NavLabels = {
 const LABELS: Record<Locale, NavLabels> = {
   en: {
     resources: "Resources", company: "Company", legal: "Legal", pricing: "Pricing",
-    signIn: "Sign In", startTask: "Start your task",
+    signIn: "Sign In", startTask: "Post a task",
     howItWorks: "How It Works", howItWorksDesc: "See the four-step execution flow",
     changelog: "Changelog", changelogDesc: "Recent product updates",
     docs: "Documentation", docsDesc: "Technical docs and references",
@@ -68,7 +68,7 @@ const LABELS: Record<Locale, NavLabels> = {
   },
   fr: {
     resources: "Ressources", company: "Entreprise", legal: "Légal", pricing: "Tarifs",
-    signIn: "Se connecter", startTask: "Démarrer une tâche",
+    signIn: "Se connecter", startTask: "Publier une tâche",
     howItWorks: "Fonctionnement", howItWorksDesc: "Le flux d’exécution en quatre étapes",
     changelog: "Nouveautés", changelogDesc: "Dernières mises à jour produit",
     docs: "Documentation", docsDesc: "Docs techniques et références",
@@ -84,7 +84,7 @@ const LABELS: Record<Locale, NavLabels> = {
   },
   es: {
     resources: "Recursos", company: "Empresa", legal: "Legal", pricing: "Precios",
-    signIn: "Iniciar sesión", startTask: "Empezar una tarea",
+    signIn: "Iniciar sesión", startTask: "Publicar una tarea",
     howItWorks: "Cómo funciona", howItWorksDesc: "El flujo de ejecución en cuatro pasos",
     changelog: "Novedades", changelogDesc: "Últimas actualizaciones del producto",
     docs: "Documentación", docsDesc: "Documentación técnica y referencias",
@@ -100,7 +100,7 @@ const LABELS: Record<Locale, NavLabels> = {
   },
   zh: {
     resources: "资源", company: "公司", legal: "法律", pricing: "定价",
-    signIn: "登录", startTask: "开始任务",
+    signIn: "登录", startTask: "发布任务",
     howItWorks: "运作方式", howItWorksDesc: "查看四步执行流程",
     changelog: "更新日志", changelogDesc: "近期产品更新",
     docs: "文档", docsDesc: "技术文档与参考",

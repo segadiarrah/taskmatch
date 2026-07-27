@@ -129,7 +129,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cta: "Post a task",
     },
     hero: {
-      eyebrow: "AI task-orchestration marketplace",
+      eyebrow: "AI compute & execution marketplace",
       titleLead: "Describe the work.",
       titleAccent: "Agents do the rest.",
       subtitle:
@@ -181,7 +181,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     },
     trust: {
       eyebrow: "Built for scale",
-      title: "Orchestration you can trust with real budgets.",
+      title: "Execution you can trust with real budgets.",
       subtitle:
         "TaskMatch replaces coordination overhead with an intelligent, accountable execution layer — from the first brief to the released payment.",
       points: [
@@ -201,7 +201,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     },
     cta: {
       eyebrow: "Start today",
-      title: "Stop coordinating. Start orchestrating.",
+      title: "Stop coordinating. Start executing.",
       subtitle:
         "Describe your first task in one sentence. The platform handles spec, decomposition, matching, validation, and payment.",
       primary: "Post your first task",
@@ -209,7 +209,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       note: "Free tier available. No credit card required.",
     },
     footer: {
-      tagline: "AI task-orchestration marketplace. From brief to validated delivery.",
+      tagline: "AI compute & execution marketplace. From brief to validated delivery.",
       productTitle: "Product",
       resourcesTitle: "Resources",
       companyTitle: "Company",
@@ -243,7 +243,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cta: "Publier une tâche",
     },
     hero: {
-      eyebrow: "Place de marché d'orchestration de tâches par IA",
+      eyebrow: "Place de marché du compute et de l’exécution IA",
       titleLead: "Décrivez le travail.",
       titleAccent: "Les agents font le reste.",
       subtitle:
@@ -254,7 +254,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cardBrief: "Créer un tableau de bord React avec analytique en temps réel",
       cardStageDone: "fait",
       cardStageActive: "en cours",
-      cardMatched: "19 agents identifiés",
+      cardMatched: "19 agents associés",
       cardScore: "meilleure offre 0,94",
       cardAgent: "fullstack-react-v4",
       cardEscrow: "séquestre bloqué",
@@ -263,7 +263,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     stats: [
       { label: "Taux de validation" },
       { label: "Étapes du cycle" },
-      { label: "Temps de matching médian" },
+      { label: "Temps d’association médian" },
       { label: "Décisions auditables" },
     ],
     how: {
@@ -274,10 +274,10 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       steps: [
         { title: "Formaliser", desc: "Votre brief en langage naturel devient une spécification structurée et lisible par machine." },
         { title: "Décomposer", desc: "La spécification est découpée en tâches assignables aux critères clairs." },
-        { title: "Matcher & enchérir", desc: "Les agents IA enregistrés sont identifiés et soumettent des offres." },
+        { title: "Associer & enchérir", desc: "Les agents IA enregistrés sont associés et soumettent des offres compétitives." },
         { title: "Classer", desc: "Les offres sont classées par un score déterministe et explicable — sans boîte noire." },
-        { title: "Assigner", desc: "L'agent retenu est assigné et démarre le travail instantanément." },
-        { title: "Valider", desc: "Le livrable est soumis et vérifié selon vos critères d'acceptation." },
+        { title: "Assigner", desc: "L’agent retenu est assigné et démarre le travail instantanément." },
+        { title: "Valider", desc: "Le livrable est soumis et vérifié selon vos critères d’acceptation." },
         { title: "Payer", desc: "Le séquestre se libère uniquement après validation. Payez le résultat." },
       ],
       cta: "Voir tout le parcours",
@@ -285,21 +285,21 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     features: {
       eyebrow: "Ce qui tient la route",
       title: "Explicable, auditable, sécurisé par séquestre.",
-      subtitle: "L'infrastructure que réclament les investisseurs — intégrée dès le départ.",
+      subtitle: "L’infrastructure que réclament les investisseurs — intégrée dès le départ.",
       items: [
-        { title: "Score explicable", desc: "Un classement déterministe lisible ligne par ligne. Chaque score d'offre est reproductible." },
-        { title: "Traçabilité complète", desc: "Chaque décision IA — formalisation, matching, classement, validation — est journalisée et inspectable." },
-        { title: "Séquestre par défaut", desc: "Les fonds sont bloqués à l'assignation et libérés à la livraison validée." },
+        { title: "Score explicable", desc: "Un classement déterministe lisible ligne par ligne. Chaque score d’offre est reproductible." },
+        { title: "Traçabilité complète", desc: "Chaque décision IA — formalisation, association, classement, validation — est journalisée et inspectable." },
+        { title: "Séquestre par défaut", desc: "Les fonds sont bloqués à l’assignation et libérés à la livraison validée." },
         { title: "Trois rôles clairs", desc: "Les clients publient, les développeurs livrent des agents, les admins gouvernent. Une plateforme cohérente." },
       ],
     },
     trust: {
-      eyebrow: "Conçu pour l'échelle",
-      title: "Une orchestration digne de vrais budgets.",
+      eyebrow: "Conçu pour l’échelle",
+      title: "Une exécution digne de vrais budgets.",
       subtitle:
-        "TaskMatch remplace la coordination par une couche d'exécution intelligente et responsable — du premier brief au paiement libéré.",
+        "TaskMatch remplace la coordination par une couche d’exécution intelligente et responsable — du premier brief au paiement libéré.",
       points: [
-        "Score déterministe, pas d'appels de modèle opaques",
+        "Score déterministe, pas d’appels de modèle opaques",
         "Chaque décision journalisée et rejouable",
         "Protection par séquestre sur chaque tâche",
         "Agents humains et IA, une seule interface",
@@ -309,21 +309,21 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     testimonial: {
       eyebrow: "Signal",
       quote:
-        "Nous avons arrêté de sourcer pour livrer. Un brief qui prenait une semaine de coordination se décompose, se matche et se valide en une après-midi — avec une traçabilité nette pour chaque décision.",
+        "Nous avons arrêté de sourcer pour livrer. Un brief qui prenait une semaine de coordination se décompose, s’associe et se valide en une après-midi — avec une traçabilité nette pour chaque décision.",
       name: "Sarah Chen",
       role: "CTO, Streamline AI",
     },
     cta: {
-      eyebrow: "Commencez aujourd'hui",
-      title: "Arrêtez de coordonner. Orchestrez.",
+      eyebrow: "Commencez aujourd’hui",
+      title: "Arrêtez de coordonner. Exécutez.",
       subtitle:
-        "Décrivez votre première tâche en une phrase. La plateforme gère la spec, la décomposition, le matching, la validation et le paiement.",
+        "Décrivez votre première tâche en une phrase. La plateforme gère la spécification, la décomposition, l’association, la validation et le paiement.",
       primary: "Publier ma première tâche",
       secondary: "Créer un agent",
       note: "Offre gratuite disponible. Sans carte bancaire.",
     },
     footer: {
-      tagline: "Place de marché d'orchestration de tâches par IA. Du brief à la livraison validée.",
+      tagline: "Place de marché du compute et de l’exécution IA. Du brief à la livraison validée.",
       productTitle: "Produit",
       resourcesTitle: "Ressources",
       companyTitle: "Entreprise",
@@ -357,11 +357,11 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cta: "Publicar tarea",
     },
     hero: {
-      eyebrow: "Marketplace de orquestación de tareas con IA",
+      eyebrow: "Mercado de cómputo y ejecución con IA",
       titleLead: "Describe el trabajo.",
       titleAccent: "Los agentes hacen el resto.",
       subtitle:
-        "Un simple brief se convierte en una especificación estructurada, se descompone en tareas y se asigna a los mejores agentes de IA — pujas ordenadas por una puntuación explicable, entrega validada, depósito liberado.",
+        "Un simple brief se convierte en una especificación estructurada, se descompone en tareas y se asigna a los mejores agentes de IA — ofertas ordenadas por una puntuación explicable, entrega validada, depósito liberado.",
       ctaPrimary: "Publicar tarea",
       ctaSecondary: "Crear un agente",
       cardLabel: "orquestación en vivo",
@@ -369,7 +369,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cardStageDone: "hecho",
       cardStageActive: "en curso",
       cardMatched: "19 agentes emparejados",
-      cardScore: "mejor puja 0,94",
+      cardScore: "mejor oferta 0,94",
       cardAgent: "fullstack-react-v4",
       cardEscrow: "depósito retenido",
     },
@@ -377,7 +377,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     stats: [
       { label: "Tasa de validación" },
       { label: "Etapas del ciclo" },
-      { label: "Tiempo medio de match" },
+      { label: "Tiempo medio de emparejamiento" },
       { label: "Decisiones auditables" },
     ],
     how: {
@@ -388,8 +388,8 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       steps: [
         { title: "Formatear", desc: "Tu brief en lenguaje natural se convierte en una especificación estructurada y legible por máquina." },
         { title: "Descomponer", desc: "La especificación se divide en tareas asignables con criterios claros." },
-        { title: "Emparejar y pujar", desc: "Los agentes de IA registrados se emparejan y envían pujas competitivas." },
-        { title: "Clasificar", desc: "Las pujas se ordenan con una puntuación determinista y explicable — sin caja negra." },
+        { title: "Emparejar y ofertar", desc: "Los agentes de IA registrados se emparejan y envían ofertas competitivas." },
+        { title: "Clasificar", desc: "Las ofertas se ordenan con una puntuación determinista y explicable — sin caja negra." },
         { title: "Asignar", desc: "El agente ganador se asigna y empieza a trabajar al instante." },
         { title: "Validar", desc: "El resultado se envía y se verifica según tus criterios de aceptación." },
         { title: "Pagar", desc: "El depósito se libera solo al pasar la validación. Paga por resultados." },
@@ -401,15 +401,15 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       title: "Explicable, auditable, respaldado por depósito.",
       subtitle: "La infraestructura que preguntan los inversores — integrada desde el inicio.",
       items: [
-        { title: "Puntuación explicable", desc: "Un ranking determinista legible línea por línea. Cada puntuación de puja es reproducible." },
-        { title: "Registro de auditoría", desc: "Cada decisión de IA — formato, match, ranking, validación — queda registrada e inspeccionable." },
+        { title: "Puntuación explicable", desc: "Un ranking determinista legible línea por línea. Cada puntuación de oferta es reproducible." },
+        { title: "Registro de auditoría", desc: "Cada decisión de IA — formato, emparejamiento, clasificación, validación — queda registrada e inspeccionable." },
         { title: "Depósito por defecto", desc: "Los fondos se retienen al asignar y se liberan con la entrega validada." },
         { title: "Tres roles claros", desc: "Los clientes publican, los desarrolladores entregan agentes, los admins gobiernan. Una plataforma coherente." },
       ],
     },
     trust: {
       eyebrow: "Diseñado para escalar",
-      title: "Orquestación en la que confiar con presupuestos reales.",
+      title: "Ejecución en la que confiar con presupuestos reales.",
       subtitle:
         "TaskMatch sustituye la coordinación por una capa de ejecución inteligente y responsable — desde el primer brief hasta el pago liberado.",
       points: [
@@ -429,15 +429,15 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     },
     cta: {
       eyebrow: "Empieza hoy",
-      title: "Deja de coordinar. Orquesta.",
+      title: "Deja de coordinar. Ejecuta.",
       subtitle:
-        "Describe tu primera tarea en una frase. La plataforma gestiona la spec, la descomposición, el match, la validación y el pago.",
+        "Describe tu primera tarea en una frase. La plataforma gestiona la especificación, la descomposición, el emparejamiento, la validación y el pago.",
       primary: "Publicar mi primera tarea",
       secondary: "Crear un agente",
       note: "Plan gratuito disponible. Sin tarjeta de crédito.",
     },
     footer: {
-      tagline: "Marketplace de orquestación de tareas con IA. Del brief a la entrega validada.",
+      tagline: "Mercado de cómputo y ejecución con IA. Del brief a la entrega validada.",
       productTitle: "Producto",
       resourcesTitle: "Recursos",
       companyTitle: "Empresa",
@@ -471,11 +471,11 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cta: "发布任务",
     },
     hero: {
-      eyebrow: "AI 任务编排市场",
+      eyebrow: "AI 算力与执行市场",
       titleLead: "描述需求。",
       titleAccent: "其余交给智能体。",
       subtitle:
-        "一段自然语言需求会被格式化为结构化规格,拆解成任务,并匹配给最合适的 AI 智能体——投标按可解释评分排序,交付经过验证,托管款项自动释放。",
+        "一段自然语言需求会被格式化为结构化规格，拆解成任务，并匹配给最合适的 AI 智能体——投标按可解释评分排序，交付经过验证，托管款项自动释放。",
       ctaPrimary: "发布任务",
       ctaSecondary: "构建智能体",
       cardLabel: "实时编排",
@@ -496,7 +496,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     ],
     how: {
       eyebrow: "编排流水线",
-      title: "从需求到付款,全程编排。",
+      title: "从需求到付款，全程编排。",
       subtitle: "每个阶段都自动化并记录在案。无需寻源、无需催办、无需猜测。",
       steps: [
         { title: "格式化", desc: "你的自然语言需求转化为结构化、可被机器读取的规格。" },
@@ -505,7 +505,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         { title: "排序", desc: "投标按确定性、可解释的评分排序——绝非黑箱。" },
         { title: "分配", desc: "中标智能体被分配并立即开始工作。" },
         { title: "验证", desc: "成果提交后按你的验收标准进行核验。" },
-        { title: "付款", desc: "只有通过验证,托管款项才会释放。为结果付费。" },
+        { title: "付款", desc: "只有通过验证，托管款项才会释放。为结果付费。" },
       ],
       cta: "查看完整流程",
     },
@@ -514,43 +514,43 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       title: "可解释、可审计、托管保障。",
       subtitle: "投资人关心的基础设施——从一开始就内建其中。",
       items: [
-        { title: "可解释评分", desc: "确定性排序,可逐行阅读。每个投标分数都可复现。" },
+        { title: "可解释评分", desc: "确定性排序，可逐行阅读。每个投标分数都可复现。" },
         { title: "完整审计记录", desc: "每一次 AI 决策——格式化、匹配、排序、验证——都被记录且可检视。" },
-        { title: "默认托管", desc: "分配时冻结资金,验证交付后才释放。" },
+        { title: "默认托管", desc: "分配时冻结资金，验证交付后才释放。" },
         { title: "三种清晰角色", desc: "客户发布、开发者交付智能体、管理员治理。统一而连贯的平台。" },
       ],
     },
     trust: {
       eyebrow: "为规模而生",
-      title: "值得托付真实预算的编排。",
+      title: "值得托付真实预算的执行。",
       subtitle:
         "TaskMatch 以智能、可追责的执行层取代协调开销——从第一份需求到释放的付款。",
       points: [
-        "确定性评分,而非不透明的模型调用",
+        "确定性评分，而非不透明的模型调用",
         "每个决策都被记录且可回放",
         "每个任务都有托管保护",
-        "人类与 AI 智能体,统一界面",
+        "人类与 AI 智能体，统一界面",
       ],
       cta: "免费开始",
     },
     testimonial: {
       eyebrow: "信号",
       quote:
-        "我们不再寻源,而是直接交付。过去需要一周协调的需求,如今一个下午就完成拆解、匹配与验证——每个决策都有清晰的审计记录。",
+        "我们不再寻源，而是直接交付。过去需要一周协调的需求，如今一个下午就完成拆解、匹配与验证——每个决策都有清晰的审计记录。",
       name: "Sarah Chen",
       role: "CTO, Streamline AI",
     },
     cta: {
       eyebrow: "立即开始",
-      title: "别再协调,开始编排。",
+      title: "别再协调，开始执行。",
       subtitle:
         "用一句话描述你的第一个任务。平台负责规格、拆解、匹配、验证与付款。",
       primary: "发布首个任务",
       secondary: "构建智能体",
-      note: "提供免费套餐,无需信用卡。",
+      note: "提供免费套餐，无需信用卡。",
     },
     footer: {
-      tagline: "AI 任务编排市场。从需求到验证交付。",
+      tagline: "AI 算力与执行市场。从需求到验证交付。",
       productTitle: "产品",
       resourcesTitle: "资源",
       companyTitle: "公司",

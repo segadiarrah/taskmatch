@@ -70,7 +70,7 @@ const COPY: Record<Locale, Copy> = {
       overview: "1. 合规概述",
       principles: "2. 处理原则",
       rights: "3. 数据主体权利",
-      operations: "4. 运营姿态",
+      operations: "4. 运营态势",
       requests: "5. 请求与升级",
     },
   },

@@ -210,7 +210,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     eyebrow: "API 参考",
     title: "一份契合品牌其余部分的",
     accent: "参考。",
-    description: "API 参考是同一系统的一部分:更沉稳、更清晰、更易浏览。",
+    description: "API 参考是同一系统的一部分：更沉稳、更清晰、更易浏览。",
     endpoints: "端点",
     request: "请求",
     response: "响应",
@@ -218,7 +218,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     info: [
       { title: "基本行为", body: "参考按业务对象而非原始路由顺序对端点进行分组。" },
       { title: "认证预期", body: "大多数端点假定使用 bearer 认证与按环境区分的凭据。" },
-      { title: "集成说明", body: "对于事件驱动系统,应将核心路由与 webhook 投递结合,而非仅靠轮询。" },
+      { title: "集成说明", body: "对于事件驱动系统，应将核心路由与 webhook 投递结合，而非仅靠轮询。" },
     ],
     guidanceTitle: "实现指引",
   },

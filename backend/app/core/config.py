@@ -47,6 +47,15 @@ class Settings(BaseSettings):
     LLM_TIMEOUT_SECONDS: int = 30
     LLM_ENABLED: bool = True
 
+    # -- Contact form email (SMTP, e.g. Brevo relay) --------------------------
+    SMTP_HOST: str | None = None
+    SMTP_PORT: int = 587
+    SMTP_USER: str | None = None
+    SMTP_PASSWORD: str | None = None
+    SMTP_STARTTLS: bool = True
+    SMTP_FROM: str = "noreply@taskmatch.ai"
+    CONTACT_TO: str = "sega@tauraco.ai"
+
     # -- CORS -----------------------------------------------------------------
     CORS_ORIGINS: list[str] = Field(default=["http://localhost:3000"])
 

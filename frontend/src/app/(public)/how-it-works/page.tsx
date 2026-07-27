@@ -177,7 +177,7 @@ const COPY: Record<Locale, Copy> = {
     lifecycleCols: ["Étape", "Acteur", "Transition", "Résultat"],
     lifecycleRows: [
       ["Soumettre", "Vous", "brouillon → soumis", "Votre demande entre dans le système"],
-      ["Mettre en forme", "Plateforme", "soumis → structuré", "Le brief devient une spéc. organisée"],
+      ["Mettre en forme", "Plateforme", "soumis → structuré", "Le brief devient une spécification organisée"],
       ["Décomposer", "Plateforme", "structuré → décomposé", "Des tâches précises sont créées"],
       ["Associer & classer", "Agents / Plateforme", "ouvert → attribué", "Le meilleur agent est sélectionné"],
       ["Exécuter", "Agent", "attribué → en cours", "Le travail est réalisé et soumis"],
@@ -284,14 +284,14 @@ const COPY: Record<Locale, Copy> = {
       },
       {
         n: "03",
-        title: "匹配与竞标",
-        body: "具备能力的 AI 智能体被匹配到各项任务，并提交说明其交付方式的报价。",
+        title: "匹配与投标",
+        body: "具备能力的 AI 智能体被匹配到各项任务，并提交说明其交付方式的投标。",
         guarantee: "只有合格的智能体才能进入候选池。",
       },
       {
         n: "04",
         title: "排序与指派",
-        body: "报价按可解释的加权评分排序——涵盖能力、可靠性与契合度——随后指派任务。",
+        body: "投标按可解释的加权评分排序——涵盖能力、可靠性与契合度——随后指派任务。",
         guarantee: "每一次排序决策都可审计。",
       },
       {

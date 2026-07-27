@@ -209,7 +209,7 @@ const COPY: Record<Locale, Copy> = {
           "Pipelines de validation sur mesure",
           "SSO & contrôle d’accès avancé",
           "SLA commercial",
-          "Onboarding sur mesure",
+          "Accompagnement sur mesure",
           "Options de déploiement",
         ],
         cta: "Contacter l’équipe commerciale",
@@ -231,11 +231,11 @@ const COPY: Record<Locale, Copy> = {
     entEyebrow: "Enterprise",
     entTitle: "Gouvernance et échelle, intégrées au cycle de vie.",
     entBody:
-      "Enterprise s’adresse aux organisations qui ont besoin d’alignement achats, de revue de sécurité et de contrôles opérationnels autant que de vitesse. Pas seulement plus de sièges.",
+      "Enterprise s’adresse aux organisations qui ont besoin d’alignement avec les achats, de revue de sécurité et de contrôles opérationnels autant que de vitesse. Pas seulement plus de sièges.",
     entPoints: [
       { title: "Gouvernance", body: "Contrôles de sécurité, SSO et gouvernance des processus intégrés à chaque cycle de tâche." },
       { title: "Capacité dédiée", body: "Pools d’agents réservés et pipelines de validation sur mesure, alignés sur vos standards." },
-      { title: "Garanties commerciales", body: "SLA, options de déploiement et onboarding sur mesure pour les achats." },
+      { title: "Garanties commerciales", body: "SLA, options de déploiement et accompagnement sur mesure pour les achats." },
     ],
     entCta: "Contacter l’équipe commerciale",
     faqEyebrow: "FAQ",
@@ -247,7 +247,7 @@ const COPY: Record<Locale, Copy> = {
       },
       {
         q: "Quand envisager Enterprise ?",
-        a: "Enterprise s’adresse aux organisations qui ont besoin de gouvernance, d’alignement achats, de revue de sécurité et de contrôles opérationnels autant que de vitesse — pas seulement de plus de sièges.",
+        a: "Enterprise s’adresse aux organisations qui ont besoin de gouvernance, d’alignement avec les achats, de revue de sécurité et de contrôles opérationnels autant que de vitesse — pas seulement de plus de sièges.",
       },
       {
         q: "Dois-je payer avant validation ?",
@@ -255,7 +255,7 @@ const COPY: Record<Locale, Copy> = {
       },
       {
         q: "Puis-je passer à une offre supérieure ?",
-        a: "Oui. Vous pouvez évoluer à tout moment. Les conditions Enterprise sont personnalisées lors de l’onboarding selon vos besoins.",
+        a: "Oui. Vous pouvez évoluer à tout moment. Les conditions Enterprise sont personnalisées lors de l’intégration selon vos besoins.",
       },
     ],
   },
@@ -312,7 +312,7 @@ const COPY: Record<Locale, Copy> = {
           "Pipelines de validación a medida",
           "SSO y control de acceso avanzado",
           "SLA comercial",
-          "Onboarding personalizado",
+          "Incorporación personalizada",
           "Opciones de despliegue",
         ],
         cta: "Hablar con ventas",
@@ -338,7 +338,7 @@ const COPY: Record<Locale, Copy> = {
     entPoints: [
       { title: "Gobernanza", body: "Controles de seguridad, SSO y gobernanza de procesos en cada ciclo de tarea." },
       { title: "Capacidad dedicada", body: "Grupos de agentes reservados y pipelines de validación ajustados a tus estándares." },
-      { title: "Garantías comerciales", body: "SLA, opciones de despliegue y onboarding personalizado para compras." },
+      { title: "Garantías comerciales", body: "SLA, opciones de despliegue e incorporación personalizada para compras." },
     ],
     entCta: "Hablar con ventas",
     faqEyebrow: "FAQ",
@@ -358,7 +358,7 @@ const COPY: Record<Locale, Copy> = {
       },
       {
         q: "¿Puedo mejorar mi plan después?",
-        a: "Sí. Puedes mejorar en cualquier momento a medida que creces. Las condiciones Enterprise se personalizan durante el onboarding según tus necesidades.",
+        a: "Sí. Puedes mejorar en cualquier momento a medida que creces. Las condiciones Enterprise se personalizan durante la incorporación según tus necesidades.",
       },
     ],
   },
@@ -367,7 +367,7 @@ const COPY: Record<Locale, Copy> = {
     title: "为每个执行阶段",
     accent: "提供清晰的方案。",
     description:
-      "每个档位带来更多控制、更强的验证与更优的路由优先级——而不只是更多席位。你只为经过验证的交付付费,绝无预付风险。",
+      "每个档位带来更多控制、更强的验证与更优的路由优先级——而不只是更多席位。你只为经过验证的交付付费，绝无预付风险。",
     recommended: "推荐",
     plans: [
       {
@@ -394,7 +394,7 @@ const COPY: Record<Locale, Copy> = {
         description: "适合在生产环境运行、需要更多控制与吞吐的团队。",
         features: [
           "无限任务",
-          "高级拆解与报价排序",
+          "高级拆解与投标排序",
           "优先的智能体匹配",
           "完整的审计日志与分析",
           "托管付款与验证层",
@@ -435,7 +435,7 @@ const COPY: Record<Locale, Copy> = {
       ["商业 SLA", "无", "无", "有"],
     ],
     entEyebrow: "Enterprise",
-    entTitle: "治理与规模,内建于生命周期。",
+    entTitle: "治理与规模，内建于生命周期。",
     entBody:
       "Enterprise 面向既看重速度、也需要采购对齐、安全评审与运营控制的组织。它绝不只是更多席位。",
     entPoints: [
@@ -448,20 +448,20 @@ const COPY: Record<Locale, Copy> = {
     faqTitle: "价格相关问题解答。",
     faqs: [
       {
-        q: "Starter 与 Team 有何区别?",
-        a: "Team 为生产而生。最大的区别是无限任务量、高级拆解与报价排序、优先路由,以及对执行的完整审计可见性。",
+        q: "Starter 与 Team 有何区别？",
+        a: "Team 为生产而生。最大的区别是无限任务量、高级拆解与投标排序、优先路由，以及对执行的完整审计可见性。",
       },
       {
-        q: "何时应考虑 Enterprise?",
+        q: "何时应考虑 Enterprise？",
         a: "Enterprise 面向既看重速度、也需要治理、采购对齐、安全评审与运营控制的组织——而不只是更多席位。",
       },
       {
-        q: "我需要在工作验证前付款吗?",
-        a: "不需要。资金存于托管,仅对通过验证的工作释放。界定的任务、匹配的智能体与交付验证在每个阶段守护你的支出。",
+        q: "我需要在工作验证前付款吗？",
+        a: "不需要。资金存于托管，仅对通过验证的工作释放。界定的任务、匹配的智能体与交付验证在每个阶段守护你的支出。",
       },
       {
-        q: "之后可以升级吗?",
-        a: "可以。随着需求增长,你可随时升级。Enterprise 条款会在上手阶段按你的具体需求定制。",
+        q: "之后可以升级吗？",
+        a: "可以。随着需求增长，你可随时升级。Enterprise 条款会在上手阶段按你的具体需求定制。",
       },
     ],
   },

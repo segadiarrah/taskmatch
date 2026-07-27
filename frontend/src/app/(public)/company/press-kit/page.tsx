@@ -172,7 +172,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "撰写 TaskMatch 报道",
     accent: "所需的一切。",
     description:
-      "公司简介、关键事实、品牌素材与媒体联系方式——即取即用。如有缺漏,请直接联系媒体团队。",
+      "公司简介、关键事实、品牌素材与媒体联系方式——即取即用。如有缺漏，请直接联系媒体团队。",
     short: "公司简介 — 简版",
     long: "公司简介 — 详版",
     copy: "复制",
@@ -180,11 +180,11 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     factsTitle: "关键事实",
     facts: [
       { label: "成立于", value: "2024" },
-      { label: "总部", value: "远程优先(全球)" },
+      { label: "总部", value: "远程优先（全球）" },
       { label: "类别", value: "AI 任务编排市场平台" },
       { label: "技术栈", value: "Next.js · FastAPI · PostgreSQL 16 · Redis 7" },
       { label: "语言模型", value: "通过 OpenRouter 兼容 OpenAI" },
-      { label: "角色", value: "客户 · 开发者(智能体) · 管理员" },
+      { label: "角色", value: "客户 · 开发者（智能体） · 管理员" },
     ],
     colorsTitle: "品牌色彩",
     swatchNames: ["Canvas", "Surface", "Acid Lime", "墨色"],
@@ -193,18 +193,18 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     displayLabel: "标题",
     displayNote: "用于标题与展示性文字。",
     bodyLabel: "正文与等宽",
-    bodyNote: "正文使用 Manrope;标签与代码使用 JetBrains Mono。",
+    bodyNote: "正文使用 Manrope；标签与代码使用 JetBrains Mono。",
     logoTitle: "标志使用",
     do1: "在标志周围保留与图标高度相等的净空。",
-    do2: "在黑曜石 canvas 上使用浅色标志,或在青柠强调色上使用深色标志。",
+    do2: "在黑曜石 canvas 上使用浅色标志，或在青柠强调色上使用深色标志。",
     dont1: "不要给标志重新着色、拉伸、旋转或添加效果。",
     dont2: "不要将标志置于繁杂的图像或低对比度的背景上。",
     doWord: "应",
     dontWord: "勿",
     requestAssets: "索取素材包",
     mediaContact: "媒体联系",
-    pressTitle: "在与媒体沟通?",
-    pressBody: "如需采访、引用、事实核查或品牌素材,请直接联系团队。我们力争在一个工作日内回复。",
+    pressTitle: "在与媒体沟通？",
+    pressBody: "如需采访、引用、事实核查或品牌素材，请直接联系团队。我们力争在一个工作日内回复。",
   },
 };
 
@@ -388,7 +388,7 @@ export default function PressKitPage() {
               </p>
             </div>
             <a
-              href="mailto:press@taskmatch.ai?subject=Asset%20request%20%E2%80%94%20logo%20pack"
+              href="mailto:sega@tauraco.ai?subject=Asset%20request%20%E2%80%94%20logo%20pack"
               className="mt-7 inline-flex items-center gap-2 rounded-full bg-accent-lime px-6 py-3 text-sm font-semibold text-[var(--accent-ink)] transition-transform hover:scale-[1.03]"
             >
               <Download className="h-4 w-4" />
@@ -411,10 +411,10 @@ export default function PressKitPage() {
               <p className="mt-3 max-w-xl text-sm leading-7 text-ink-muted">{c.pressBody}</p>
             </div>
             <a
-              href="mailto:press@taskmatch.ai?subject=Press%20enquiry"
+              href="mailto:sega@tauraco.ai?subject=Press%20enquiry"
               className="inline-flex items-center gap-2 rounded-full bg-accent-lime px-7 py-3 text-sm font-semibold text-[var(--accent-ink)] transition-transform hover:scale-[1.03]"
             >
-              press@taskmatch.ai
+              sega@tauraco.ai
             </a>
           </div>
         </Reveal>

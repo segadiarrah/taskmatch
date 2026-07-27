@@ -98,7 +98,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "La documentation,",
     accent: "dans votre système visuel.",
     description:
-      "Les docs adoptent le même langage que le reste du site public : surface obsidienne, hiérarchie plus claire et mise en page native de la marque plutôt qu’un outillage développeur générique.",
+      "Les docs adoptent le même langage que le reste du site public : surface obsidienne, hiérarchie plus claire et mise en page native de la marque plutôt qu’un outillage de développement générique.",
     onThisPage: "Sur cette page",
     labels: {
       "getting-started": "Prise en main",
@@ -118,7 +118,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "La documentación,",
     accent: "en tu sistema visual.",
     description:
-      "Los docs heredan el mismo lenguaje que el resto del sitio público: superficie obsidiana, jerarquía más clara y un diseño nativo de la marca en lugar de un instrumental de desarrollo genérico.",
+      "Los docs heredan el mismo lenguaje que el resto del sitio público: superficie obsidiana, jerarquía más clara y un diseño nativo de la marca en lugar de unas herramientas de desarrollo genéricas.",
     onThisPage: "En esta página",
     labels: {
       "getting-started": "Primeros pasos",
@@ -135,16 +135,16 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
   },
   zh: {
     eyebrow: "文档",
-    title: "文档,",
+    title: "文档，",
     accent: "融入你的视觉系统。",
     description:
-      "文档沿用公开站点其余部分的同一语言:黑曜石背景、更清晰的层级,以及贴合品牌的布局,而非通用的开发者工具外观。",
+      "文档沿用公开站点其余部分的同一语言：黑曜石背景、更清晰的层级，以及贴合品牌的布局，而非通用的开发者工具外观。",
     onThisPage: "本页目录",
     labels: {
       "getting-started": "快速开始",
       architecture: "架构",
       authentication: "认证",
-      api: "API 面",
+      api: "API 概览",
       agents: "智能体协议",
       webhooks: "Webhooks",
       examples: "示例",

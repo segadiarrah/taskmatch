@@ -144,7 +144,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Construisez le système derrière",
     accent: "une exécution IA fiable.",
     description:
-      "Nous sommes une petite équipe distante qui construit la couche d’orchestration transformant des briefs en langage naturel en travail validé et rémunéré. Voici les postes ouverts.",
+      "Nous sommes une petite équipe à distance qui construit la couche d’orchestration transformant des briefs en langage naturel en travail validé et rémunéré. Voici les postes ouverts.",
     openRoles: "Postes ouverts",
     positions: (n) => `${n} postes`,
     apply: "Postuler à ce poste",
@@ -153,7 +153,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       "L’entreprise fonctionne selon les mêmes principes que le produit : structure claire, décisions ouvertes et priorité au travail digne de confiance.",
     culture: [
       { title: "Petite équipe, vraie autonomie", body: "Des rôles fondateurs à impact direct sur le produit public. Ce que vous livrez est ce que les clients utilisent — aucune couche entre vous et le résultat." },
-      { title: "Distant et asynchrone par défaut", body: "Répartis sur plusieurs fuseaux, nous privilégions le travail en profondeur et la clarté écrite plutôt que les réunions." },
+      { title: "À distance et asynchrone par défaut", body: "Répartis sur plusieurs fuseaux, nous privilégions le travail en profondeur et la clarté écrite plutôt que les réunions." },
       { title: "La transparence comme habitude", body: "Nous consignons les décisions de la plateforme et gérons l’entreprise de même : décisions écrites, raisonnements partagés, peu de surprises." },
       { title: "La qualité avant la seule vitesse", body: "La barre, c’est une livraison validée, pas l’agitation. Mieux vaut livrer une chose sûre que trois à corriger." },
     ],
@@ -190,20 +190,20 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "构建支撑",
     accent: "可靠 AI 执行的系统。",
     description:
-      "我们是一支小而远程的团队,正在构建将自然语言需求转化为经验证、可付费工作的编排层。以下是我们当前招聘的职位。",
+      "我们是一支小而远程的团队，正在构建将自然语言需求转化为经验证、可付费工作的编排层。以下是我们当前招聘的职位。",
     openRoles: "开放职位",
     positions: (n) => `${n} 个职位`,
     apply: "申请该职位",
     cultureTitle: "我们如何工作",
-    cultureBody: "公司遵循与产品相同的原则:结构清晰、决策公开,并倾向于值得信赖的工作。",
+    cultureBody: "公司遵循与产品相同的原则：结构清晰、决策公开，并倾向于值得信赖的工作。",
     culture: [
-      { title: "小团队,真正的主人翁", body: "创始角色对公开产品有直接影响。你交付的即是客户所用——你与结果之间没有任何隔层。" },
-      { title: "默认远程与异步", body: "我们分布在不同时区,重视深度工作与书面清晰,而非会议与状态表演。" },
-      { title: "把透明当作习惯", body: "我们记录平台的决策,也以同样方式经营公司:决策落于文字、推理共享、鲜有意外。" },
-      { title: "质量优先于单纯的速度", body: "标准是经验证的交付,而非忙碌。我们宁愿交付一件可信的,也不做三件要返工的。" },
+      { title: "小团队，真正的主人翁", body: "创始角色对公开产品有直接影响。你交付的即是客户所用——你与结果之间没有任何隔层。" },
+      { title: "默认远程与异步", body: "我们分布在不同时区，重视深度工作与书面清晰，而非会议与状态表演。" },
+      { title: "把透明当作习惯", body: "我们记录平台的决策，也以同样方式经营公司：决策落于文字、推理共享、鲜有意外。" },
+      { title: "质量优先于单纯的速度", body: "标准是经验证的交付，而非忙碌。我们宁愿交付一件可信的，也不做三件要返工的。" },
     ],
-    ctaTitle: "没有看到适合你的职位?",
-    ctaBody: "如果你契合团队但没有匹配的空缺,告诉我们你想在这里构建什么。",
+    ctaTitle: "没有看到适合你的职位？",
+    ctaBody: "如果你契合团队但没有匹配的空缺，告诉我们你想在这里构建什么。",
     ctaPrimary: "介绍你自己",
     ctaSecondary: "了解 TaskMatch",
   },
@@ -252,7 +252,7 @@ function RoleCard({ role, applyLabel }: { role: Role; applyLabel: string }) {
             ))}
           </ul>
           <a
-            href={`mailto:careers@taskmatch.ai?subject=${subject}`}
+            href={`mailto:sega@tauraco.ai?subject=${subject}`}
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-accent-lime px-6 py-3 text-sm font-semibold text-[var(--accent-ink)] transition-transform hover:scale-[1.03]"
           >
             {applyLabel}
@@ -329,7 +329,7 @@ export default function CareersPage() {
       <PageCta
         title={c.ctaTitle}
         body={c.ctaBody}
-        primaryHref="mailto:careers@taskmatch.ai?subject=General%20interest"
+        primaryHref="mailto:sega@tauraco.ai?subject=General%20interest"
         primaryLabel={c.ctaPrimary}
         secondaryHref="/company/about"
         secondaryLabel={c.ctaSecondary}

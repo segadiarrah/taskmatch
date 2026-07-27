@@ -33,106 +33,106 @@ type Copy = {
 const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
   en: {
     eyebrow: "Contact",
-    title: "A contact page that feels",
-    accent: "as polished as the rest.",
-    description: "Cleaner, sharper, and more credible — fewer generic UI patterns and a stronger brand fit.",
+    title: "Talk to the",
+    accent: "TaskMatch team.",
+    description: "Product, partnership, support, or enterprise — send a message and it reaches us directly. We usually reply within one business day.",
     cards: [
-      { title: "General", body: "Use the contact form for product, partnership, or general requests." },
-      { title: "Support", body: "Use the same form for support and operational issues." },
-      { title: "Enterprise", body: "Commercial and sales conversations are routed through the form." },
-      { title: "Documentation", body: "Technical resources and API reference remain available in the docs area." },
+      { title: "General", body: "Questions about the platform, the roadmap, or a partnership." },
+      { title: "Support", body: "Operational issues, account help, or anything that is blocking you." },
+      { title: "Enterprise", body: "Volume pricing, security reviews, SLAs, and custom deployments." },
+      { title: "Documentation", body: "Prefer to self-serve? The docs and API reference cover the essentials." },
     ],
-    asideTitle: "Useful contact framing",
-    asideBody1: "This page makes it clearer where a message should go and gives the interaction a more premium, higher-trust feel.",
-    asideBody2: "It also creates a clearer split between commercial, support, documentation, and broader company contact.",
+    asideTitle: "Where your message goes",
+    asideBody1: "Every message from this form lands straight in the team inbox — no ticket maze, no autoresponder loop.",
+    asideBody2: "Tell us what you are building and how you would put an execution layer to work — one that runs the job and returns a validated result, not one that only routes it.",
     formTitle: "Send a message",
     name: "Full name",
     email: "Email address",
     subject: "Subject",
     message: "How can we help?",
-    send: "Send inquiry",
+    send: "Send message",
     sending: "Sending…",
-    errorMsg: "Unable to send your message right now.",
+    errorMsg: "Could not send your message right now. You can also email sega@tauraco.ai directly.",
     sentTitle: "Message sent",
-    sentBody: "The confirmation state has been aligned with the same premium visual system.",
+    sentBody: "Thanks — it is on its way to the team. We will reply to the email address you provided.",
     another: "Send another message",
   },
   fr: {
     eyebrow: "Contact",
-    title: "Une page contact aussi",
-    accent: "soignée que le reste.",
-    description: "Plus nette, plus claire et plus crédible — moins de motifs d’interface génériques, une identité plus forte.",
+    title: "Parlez à l’équipe",
+    accent: "TaskMatch.",
+    description: "Produit, partenariat, support ou entreprise — envoyez un message, il nous parvient directement. Nous répondons généralement sous un jour ouvré.",
     cards: [
-      { title: "Général", body: "Utilisez le formulaire pour les demandes produit, partenariat ou générales." },
-      { title: "Support", body: "Utilisez le même formulaire pour le support et les problèmes opérationnels." },
-      { title: "Entreprise", body: "Les échanges commerciaux et ventes passent par le formulaire." },
-      { title: "Documentation", body: "Les ressources techniques et la référence API restent disponibles dans la section docs." },
+      { title: "Général", body: "Questions sur la plateforme, la feuille de route ou un partenariat." },
+      { title: "Support", body: "Problèmes opérationnels, aide sur votre compte, ou tout ce qui vous bloque." },
+      { title: "Entreprise", body: "Tarifs au volume, revues de sécurité, SLA et déploiements sur mesure." },
+      { title: "Documentation", body: "Vous préférez l’autonomie ? La doc et la référence API couvrent l’essentiel." },
     ],
-    asideTitle: "Cadrer votre message",
-    asideBody1: "Cette page clarifie où votre message doit aller et rend l’interaction plus premium et plus fiable.",
-    asideBody2: "Elle distingue aussi plus nettement le commercial, le support, la documentation et le contact général.",
+    asideTitle: "Où va votre message",
+    asideBody1: "Chaque message de ce formulaire arrive directement dans la boîte de l’équipe — pas de labyrinthe de tickets, pas de réponse automatique.",
+    asideBody2: "Dites-nous ce que vous construisez et comment vous mettriez à profit une couche d’exécution : celle qui réalise le travail et renvoie un résultat validé, pas celle qui se contente de l’aiguiller.",
     formTitle: "Envoyer un message",
     name: "Nom complet",
     email: "Adresse e-mail",
     subject: "Objet",
     message: "Comment pouvons-nous aider ?",
-    send: "Envoyer la demande",
+    send: "Envoyer le message",
     sending: "Envoi…",
-    errorMsg: "Impossible d’envoyer votre message pour le moment.",
+    errorMsg: "Impossible d’envoyer votre message pour le moment. Vous pouvez aussi écrire directement à sega@tauraco.ai.",
     sentTitle: "Message envoyé",
-    sentBody: "L’état de confirmation a été aligné sur le même système visuel premium.",
+    sentBody: "Merci — il est en route vers l’équipe. Nous répondrons à l’adresse e-mail indiquée.",
     another: "Envoyer un autre message",
   },
   es: {
     eyebrow: "Contacto",
-    title: "Una página de contacto tan",
-    accent: "pulida como el resto.",
-    description: "Más limpia, más nítida y más creíble — menos patrones de interfaz genéricos y una identidad más fuerte.",
+    title: "Habla con el equipo",
+    accent: "de TaskMatch.",
+    description: "Producto, alianzas, soporte o empresa — envía un mensaje y nos llega directamente. Solemos responder en un día hábil.",
     cards: [
-      { title: "General", body: "Usa el formulario para solicitudes de producto, alianzas o generales." },
-      { title: "Soporte", body: "Usa el mismo formulario para soporte y problemas operativos." },
-      { title: "Empresas", body: "Las conversaciones comerciales y de ventas se enrutan por el formulario." },
-      { title: "Documentación", body: "Los recursos técnicos y la referencia de la API siguen disponibles en la sección de docs." },
+      { title: "General", body: "Preguntas sobre la plataforma, la hoja de ruta o una alianza." },
+      { title: "Soporte", body: "Problemas operativos, ayuda con tu cuenta o cualquier cosa que te bloquee." },
+      { title: "Empresas", body: "Precios por volumen, revisiones de seguridad, SLA y despliegues a medida." },
+      { title: "Documentación", body: "¿Prefieres el autoservicio? La documentación y la referencia de la API cubren lo esencial." },
     ],
-    asideTitle: "Encuadrar tu mensaje",
-    asideBody1: "Esta página aclara a dónde debe ir tu mensaje y da a la interacción una sensación más premium y de mayor confianza.",
-    asideBody2: "También separa con más claridad lo comercial, el soporte, la documentación y el contacto general.",
+    asideTitle: "A dónde va tu mensaje",
+    asideBody1: "Cada mensaje de este formulario llega directo al buzón del equipo — sin laberinto de tickets ni respuestas automáticas.",
+    asideBody2: "Cuéntanos qué estás construyendo y cómo aprovecharías una capa de ejecución: la que realiza el trabajo y devuelve un resultado validado, no la que solo lo enruta.",
     formTitle: "Enviar un mensaje",
     name: "Nombre completo",
     email: "Correo electrónico",
     subject: "Asunto",
     message: "¿Cómo podemos ayudar?",
-    send: "Enviar consulta",
+    send: "Enviar mensaje",
     sending: "Enviando…",
-    errorMsg: "No se pudo enviar tu mensaje en este momento.",
+    errorMsg: "No se pudo enviar tu mensaje ahora mismo. También puedes escribir directamente a sega@tauraco.ai.",
     sentTitle: "Mensaje enviado",
-    sentBody: "El estado de confirmación se ha alineado con el mismo sistema visual premium.",
+    sentBody: "Gracias — va en camino al equipo. Responderemos al correo que indicaste.",
     another: "Enviar otro mensaje",
   },
   zh: {
     eyebrow: "联系",
-    title: "一个与其余部分同样",
-    accent: "精致的联系页面。",
-    description: "更干净、更利落、更可信——更少的通用界面套路,更强的品牌契合。",
+    title: "联系",
+    accent: "TaskMatch 团队。",
+    description: "产品、合作、支持或企业需求——发送信息，直达我们。我们通常在一个工作日内回复。",
     cards: [
-      { title: "综合", body: "产品、合作或一般咨询请使用联系表单。" },
-      { title: "支持", body: "支持与运营问题请使用同一表单。" },
-      { title: "企业", body: "商务与销售沟通均通过表单转接。" },
-      { title: "文档", body: "技术资源与 API 参考仍可在文档区查阅。" },
+      { title: "综合", body: "关于平台、路线图或合作的问题。" },
+      { title: "支持", body: "运营问题、账户帮助，或任何阻碍你的事情。" },
+      { title: "企业", body: "规模定价、安全评审、SLA 与定制部署。" },
+      { title: "文档", body: "更想自助？文档与 API 参考涵盖要点。" },
     ],
-    asideTitle: "如何组织你的信息",
-    asideBody1: "该页面让信息的去向更清晰,并让互动更具高端与可信之感。",
-    asideBody2: "它也更清晰地区分了商务、支持、文档与公司整体联系。",
+    asideTitle: "你的信息去向何处",
+    asideBody1: "本表单的每一条信息都直达团队邮箱——没有工单迷宫，没有自动回复循环。",
+    asideBody2: "告诉我们你在构建什么，以及你会如何运用一个执行层：它真正完成任务并返回经过验证的结果，而不仅仅是转发任务。",
     formTitle: "发送信息",
     name: "全名",
     email: "电子邮箱",
     subject: "主题",
-    message: "我们能为您做些什么?",
-    send: "发送咨询",
+    message: "我们能为您做些什么？",
+    send: "发送信息",
     sending: "发送中…",
-    errorMsg: "暂时无法发送您的信息。",
+    errorMsg: "暂时无法发送您的信息。您也可以直接发送邮件至 sega@tauraco.ai。",
     sentTitle: "信息已发送",
-    sentBody: "确认状态已与同一套高端视觉系统保持一致。",
+    sentBody: "谢谢——信息正在发往团队。我们会回复您填写的邮箱。",
     another: "再发一条信息",
   },
 };
@@ -193,25 +193,43 @@ export default function ContactPage() {
                   e.preventDefault();
                   setSubmitting(true);
                   setError(null);
+                  let ok = false;
+                  // Primary: our backend delivers to sega@tauraco.ai via SMTP (Brevo).
                   try {
-                    const response = await fetch("https://formsubmit.co/ajax/sega@tauraco.ai", {
+                    const response = await fetch("/api/v1/contact", {
                       method: "POST",
-                      headers: { "Content-Type": "application/json", Accept: "application/json" },
-                      body: JSON.stringify({
-                        ...form,
-                        _subject: `[TaskMatch Contact] ${form.subject}`,
-                        _template: "table",
-                        _captcha: "false",
-                      }),
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(form),
                     });
-                    if (!response.ok) throw new Error("send failed");
+                    ok = response.ok;
+                  } catch {
+                    ok = false;
+                  }
+                  // Fallback: FormSubmit (also delivers to sega@tauraco.ai).
+                  if (!ok) {
+                    try {
+                      const fallback = await fetch("https://formsubmit.co/ajax/sega@tauraco.ai", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", Accept: "application/json" },
+                        body: JSON.stringify({
+                          ...form,
+                          _subject: `[TaskMatch Contact] ${form.subject}`,
+                          _template: "table",
+                          _captcha: "false",
+                        }),
+                      });
+                      ok = fallback.ok;
+                    } catch {
+                      ok = false;
+                    }
+                  }
+                  if (ok) {
                     setSubmitted(true);
                     setForm({ name: "", email: "", subject: "", message: "" });
-                  } catch {
+                  } else {
                     setError(c.errorMsg);
-                  } finally {
-                    setSubmitting(false);
                   }
+                  setSubmitting(false);
                 }}
               >
                 <h2 className="font-display text-3xl font-semibold tracking-tight text-ink">{c.formTitle}</h2>

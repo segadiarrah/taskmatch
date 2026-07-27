@@ -41,10 +41,10 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
   },
   es: {
     eyebrow: "Blog",
-    title: "Notas de construir",
+    title: "Notas sobre construir",
     accent: "una ejecución de IA fiable.",
     description:
-      "Ensayos técnicos y reflexiones de producto sobre descomposición de tareas, emparejamiento explicable, validación, pagos en depósito y auditabilidad de las decisiones de IA.",
+      "Ensayos técnicos y reflexiones de producto sobre descomposición de tareas, emparejamiento explicable, validación, pagos con depósito en garantía y auditabilidad de las decisiones de IA.",
     featured: "Destacado",
     featuredTagline: "El camino de una frase a un trabajo entregado y validado — explicado por quienes lo construyen.",
     readArticle: "Leer el artículo",
@@ -54,7 +54,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "构建可靠 AI 执行的",
     accent: "手记。",
     description:
-      "关于任务拆解、可解释匹配、验证、托管付款,以及让 AI 决策可审计的技术随笔与产品思考。",
+      "关于任务拆解、可解释匹配、验证、托管付款，以及让 AI 决策可审计的技术随笔与产品思考。",
     featured: "精选",
     featuredTagline: "从一句话到交付并验证的工作——由正在构建它的人讲述。",
     readArticle: "阅读文章",
