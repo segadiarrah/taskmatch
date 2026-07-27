@@ -2,8 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { Reveal } from "@/components/public/motion";
 
 export function PageHero({
   eyebrow,
@@ -19,21 +19,23 @@ export function PageHero({
   icon?: React.ElementType;
 }) {
   return (
-    <section className="relative overflow-hidden px-4 pb-16 pt-24 sm:px-6 lg:px-8">
-      <div className="absolute inset-0 premium-radial" />
-      <div className="absolute inset-x-0 top-0 h-[360px] premium-grid opacity-30" />
+    <section className="relative overflow-hidden px-4 pb-16 pt-28 sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute inset-0 lime-radial" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] grid-bg" />
       <div className="relative mx-auto max-w-4xl text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-stone-900/10 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-stone-600">
-          {Icon ? <Icon className="h-3.5 w-3.5 text-[#8a6a2f]" /> : null}
+        <Reveal className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-white/5 px-4 py-1.5 tech-eyebrow text-ink-muted">
+          {Icon ? <Icon className="h-3.5 w-3.5 text-accent" /> : null}
           {eyebrow}
-        </div>
-        <h1 className="mt-8 font-display text-5xl leading-[1] text-stone-950 sm:text-6xl">
-          {title}
-          {accent ? <span className="block text-[#8a6a2f]">{accent}</span> : null}
-        </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-stone-650">
-          {description}
-        </p>
+        </Reveal>
+        <Reveal delay={80}>
+          <h1 className="mt-8 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
+            {title}
+            {accent ? <span className="block text-gradient-lime">{accent}</span> : null}
+          </h1>
+        </Reveal>
+        <Reveal delay={160}>
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-ink-muted">{description}</p>
+        </Reveal>
       </div>
     </section>
   );
@@ -42,27 +44,24 @@ export function PageHero({
 export function CardGrid({
   items,
 }: {
-  items: Array<{
-    title: string;
-    body: string;
-    icon?: React.ElementType;
-  }>;
+  items: Array<{ title: string; body: string; icon?: React.ElementType }>;
 }) {
   return (
-    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-      {items.map((item) => (
-        <div
+    <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      {items.map((item, i) => (
+        <Reveal
           key={item.title}
-          className="rounded-[1.8rem] border border-stone-900/10 bg-white/80 p-7 shadow-[0_18px_40px_rgba(92,74,44,0.07)]"
+          delay={i * 70}
+          className="hover-lift group rounded-2xl border border-line bg-surface p-7 hover:border-line-strong"
         >
           {item.icon ? (
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f3ede2] text-stone-950">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-white/5 text-accent transition-colors group-hover:border-[var(--accent-lime)]">
               <item.icon className="h-5 w-5" />
             </div>
           ) : null}
-          <h3 className="mt-5 text-xl font-semibold text-stone-950">{item.title}</h3>
-          <p className="mt-3 text-sm leading-7 text-stone-600">{item.body}</p>
-        </div>
+          <h3 className="mt-5 text-lg font-semibold text-ink">{item.title}</h3>
+          <p className="mt-3 text-sm leading-7 text-ink-muted">{item.body}</p>
+        </Reveal>
       ))}
     </div>
   );
@@ -78,18 +77,24 @@ export function HighlightBand({
   items: string[];
 }) {
   return (
-    <section className="border-y border-stone-900/8 bg-[#efe7d8] px-4 py-20 sm:px-6 lg:px-8">
+    <section className="border-y border-line bg-surface px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <h2 className="font-display text-4xl text-stone-950 sm:text-5xl">{title}</h2>
-        <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-650">{body}</p>
+        <Reveal>
+          <h2 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">{title}</h2>
+        </Reveal>
+        <Reveal delay={80}>
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-ink-muted">{body}</p>
+        </Reveal>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {items.map((item) => (
-            <div
+          {items.map((item, i) => (
+            <Reveal
               key={item}
-              className="rounded-[1.4rem] border border-stone-900/10 bg-[#f7f3ec] px-5 py-5 text-sm text-stone-700 shadow-[0_16px_35px_rgba(92,74,44,0.08)]"
+              delay={i * 80}
+              className="rounded-xl border border-line bg-canvas px-5 py-5 font-mono text-sm text-ink-muted"
             >
+              <span className="text-accent">→ </span>
               {item}
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -113,31 +118,31 @@ export function PageCta({
   secondaryLabel?: string;
 }) {
   return (
-    <section className="px-4 pb-20 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl rounded-[2.2rem] bg-stone-950 px-6 py-14 text-center text-white shadow-[0_34px_90px_rgba(21,23,24,0.24)] sm:px-10">
-        <h2 className="font-display text-4xl sm:text-5xl">{title}</h2>
-        <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-stone-300 sm:text-lg">
-          {body}
-        </p>
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link href={primaryHref}>
-            <Button className="h-12 rounded-full bg-[#f3ede2] px-7 text-stone-950 hover:bg-white">
+    <section className="px-4 pb-24 pt-4 sm:px-6 lg:px-8">
+      <Reveal className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl border border-line-strong bg-surface px-6 py-16 text-center sm:px-10">
+        <div className="pointer-events-none absolute inset-0 lime-radial opacity-70" />
+        <div className="relative">
+          <h2 className="font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">{title}</h2>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-ink-muted sm:text-lg">{body}</p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link
+              href={primaryHref}
+              className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-accent-lime px-7 text-sm font-semibold text-[var(--accent-ink)] transition-transform hover:scale-[1.03]"
+            >
               {primaryLabel}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-          {secondaryHref && secondaryLabel ? (
-            <Link href={secondaryHref}>
-              <Button
-                variant="outline"
-                className="h-12 rounded-full border-white/15 bg-white/5 px-7 text-white hover:bg-white/10"
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+            {secondaryHref && secondaryLabel ? (
+              <Link
+                href={secondaryHref}
+                className="inline-flex h-12 items-center justify-center rounded-full border border-line-strong px-7 text-sm font-medium text-ink transition-colors hover:bg-white/5"
               >
                 {secondaryLabel}
-              </Button>
-            </Link>
-          ) : null}
+              </Link>
+            ) : null}
+          </div>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }

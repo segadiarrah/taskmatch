@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
-import { Fraunces, Manrope } from "next/font/google";
+import { Space_Grotesk, Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/lib/query-provider";
 import { AuthProvider } from "@/lib/auth";
@@ -16,16 +16,21 @@ const manrope = Manrope({
   variable: "--font-sans",
 });
 
-const fraunces = Fraunces({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   variable: "--font-display",
 });
 
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
+
 export const metadata: Metadata = {
-  title: "TaskMatch.ai",
+  title: "TaskMatch.ai — AI task execution, made accountable",
   description:
-    "A modern task execution platform that helps teams describe a need, structure the request, and move work through a clearer delivery flow.",
-  keywords: ["task execution", "task platform", "workflow", "agents", "automation"],
+    "TaskMatch.ai turns a plain-language brief into structured, decomposed, matched, and validated work — with every AI decision on the record.",
+  keywords: ["task execution", "AI agents", "orchestration", "task platform", "workflow", "automation"],
 };
 
 export default function RootLayout({
@@ -35,7 +40,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${manrope.variable} ${fraunces.variable} font-sans antialiased`}>
+      <body
+        className={`${manrope.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+      >
         <QueryProvider>
           <AuthProvider>
             <LanguageProvider>

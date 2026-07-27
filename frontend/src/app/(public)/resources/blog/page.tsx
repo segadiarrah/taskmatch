@@ -4,107 +4,163 @@ import React from "react";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Clock3, Newspaper } from "lucide-react";
 import { PageHero } from "@/components/public/page-shell";
+import { Reveal } from "@/components/public/motion";
 import { blogPosts } from "@/content/blog";
+import { useTranslation, type Locale } from "@/lib/i18n";
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
+type Copy = {
+  eyebrow: string;
+  title: string;
+  accent: string;
+  description: string;
+  featured: string;
+  featuredTagline: string;
+  readArticle: string;
+};
+
+const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
+  en: {
+    eyebrow: "Blog",
+    title: "Notes from building",
+    accent: "dependable AI execution.",
+    description:
+      "Technical essays and product thinking on task decomposition, explainable matching, validation, escrow payments, and making AI decisions auditable.",
+    featured: "Featured",
+    featuredTagline: "The path from a sentence to shipped, validated work — explained by the people building it.",
+    readArticle: "Read the article",
+  },
+  fr: {
+    eyebrow: "Blog",
+    title: "Notes de construction",
+    accent: "d’une exécution IA fiable.",
+    description:
+      "Essais techniques et réflexions produit sur la décomposition des tâches, le matching explicable, la validation, les paiements sous séquestre et l’auditabilité des décisions IA.",
+    featured: "À la une",
+    featuredTagline: "Le chemin d’une phrase jusqu’à un travail livré et validé — expliqué par ceux qui le construisent.",
+    readArticle: "Lire l’article",
+  },
+  es: {
+    eyebrow: "Blog",
+    title: "Notas de construir",
+    accent: "una ejecución de IA fiable.",
+    description:
+      "Ensayos técnicos y reflexiones de producto sobre descomposición de tareas, emparejamiento explicable, validación, pagos en depósito y auditabilidad de las decisiones de IA.",
+    featured: "Destacado",
+    featuredTagline: "El camino de una frase a un trabajo entregado y validado — explicado por quienes lo construyen.",
+    readArticle: "Leer el artículo",
+  },
+  zh: {
+    eyebrow: "博客",
+    title: "构建可靠 AI 执行的",
+    accent: "手记。",
+    description:
+      "关于任务拆解、可解释匹配、验证、托管付款,以及让 AI 决策可审计的技术随笔与产品思考。",
+    featured: "精选",
+    featuredTagline: "从一句话到交付并验证的工作——由正在构建它的人讲述。",
+    readArticle: "阅读文章",
+  },
+};
+
+const dateLocales: Record<Locale, string> = { en: "en-US", fr: "fr-FR", es: "es-ES", zh: "zh-CN" };
 
 export default function BlogPage() {
-  const sorted = [...blogPosts].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+  const { locale } = useTranslation();
+  const c = COPY[locale] ?? COPY.en;
+
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString(dateLocales[locale] ?? "en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+  const sorted = [...blogPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const [featured, ...rest] = sorted;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-canvas">
       <PageHero
-        eyebrow="Blog"
-        title="Notes from building"
-        accent="dependable AI execution."
-        description="Technical essays and product thinking on task decomposition, explainable matching, validation, escrow payments, and making AI decisions auditable."
+        eyebrow={c.eyebrow}
+        title={c.title}
+        accent={c.accent}
+        description={c.description}
         icon={Newspaper}
       />
 
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
-          <Link href={`/resources/blog/${featured.slug}`} className="group block">
-            <article className="grid gap-8 rounded-[2rem] border border-stone-900/10 bg-white/80 p-8 shadow-[0_20px_50px_rgba(92,74,44,0.08)] transition-shadow hover:shadow-[0_28px_70px_rgba(92,74,44,0.14)] lg:grid-cols-[1.1fr_0.9fr] lg:p-10">
-              <div>
-                <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
-                  <span className="rounded-full bg-[#f3ede2] px-3 py-1">{featured.tag}</span>
-                  <span className="inline-flex items-center gap-1 text-stone-500">
-                    <CalendarDays className="h-3.5 w-3.5" />
-                    {formatDate(featured.date)}
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-stone-500">
-                    <Clock3 className="h-3.5 w-3.5" />
-                    {featured.readingTime}
-                  </span>
-                </div>
-                <h2 className="mt-5 font-display text-4xl leading-tight text-stone-950">
-                  {featured.title}
-                </h2>
-                <p className="mt-4 text-base leading-8 text-stone-650">{featured.excerpt}</p>
-                <div className="mt-6 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-950 text-sm font-semibold text-white">
-                    {featured.author.name.charAt(0)}
+          <Reveal>
+            <Link href={`/resources/blog/${featured.slug}`} className="group block">
+              <article className="hover-lift grid gap-8 rounded-3xl border border-line bg-surface p-8 hover:border-line-strong lg:grid-cols-[1.1fr_0.9fr] lg:p-10">
+                <div>
+                  <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
+                    <span className="rounded-full border border-line bg-white/5 px-3 py-1 tech-eyebrow text-accent">
+                      {featured.tag}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-ink-faint">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      {formatDate(featured.date)}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-ink-faint">
+                      <Clock3 className="h-3.5 w-3.5" />
+                      {featured.readingTime}
+                    </span>
                   </div>
-                  <div className="text-sm">
-                    <div className="font-semibold text-stone-950">{featured.author.name}</div>
-                    <div className="text-stone-500">{featured.author.role}</div>
+                  <h2 className="mt-5 font-display text-4xl font-semibold leading-tight text-ink">{featured.title}</h2>
+                  <p className="mt-4 text-base leading-8 text-ink-muted">{featured.excerpt}</p>
+                  <div className="mt-6 flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-lime text-sm font-semibold text-[var(--accent-ink)]">
+                      {featured.author.name.charAt(0)}
+                    </div>
+                    <div className="text-sm">
+                      <div className="font-semibold text-ink">{featured.author.name}</div>
+                      <div className="text-ink-faint">{featured.author.role}</div>
+                    </div>
                   </div>
+                  <span className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-ink">
+                    {c.readArticle}
+                    <ArrowRight className="h-4 w-4 text-accent transition-transform group-hover:translate-x-1" />
+                  </span>
                 </div>
-                <span className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-stone-950">
-                  Read the article
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </div>
-              <div className="hidden rounded-[1.5rem] bg-[#efe7d8] p-8 lg:flex lg:flex-col lg:justify-center">
-                <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
-                  Featured
+                <div className="hidden rounded-2xl border border-line bg-canvas p-8 lg:flex lg:flex-col lg:justify-center">
+                  <div className="tech-eyebrow text-accent">{c.featured}</div>
+                  <p className="mt-4 font-display text-2xl font-semibold leading-snug text-ink">{c.featuredTagline}</p>
                 </div>
-                <p className="mt-4 font-display text-2xl leading-snug text-stone-950">
-                  The path from a sentence to shipped, validated work — explained by the people building it.
-                </p>
-              </div>
-            </article>
-          </Link>
+              </article>
+            </Link>
+          </Reveal>
         </div>
       </section>
 
       <section className="px-4 pb-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {rest.map((post) => (
-              <Link
-                key={post.slug}
-                href={`/resources/blog/${post.slug}`}
-                className="group flex h-full flex-col rounded-[1.8rem] border border-stone-900/10 bg-white/80 p-7 shadow-[0_18px_40px_rgba(92,74,44,0.07)] transition-shadow hover:shadow-[0_24px_55px_rgba(92,74,44,0.12)]"
-              >
-                <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em]">
-                  <span className="rounded-full bg-[#f3ede2] px-3 py-1 text-[#8a6a2f]">{post.tag}</span>
-                  <span className="inline-flex items-center gap-1 text-stone-500">
-                    <Clock3 className="h-3.5 w-3.5" />
-                    {post.readingTime}
-                  </span>
-                </div>
-                <h3 className="mt-5 text-xl font-semibold leading-snug text-stone-950">
-                  {post.title}
-                </h3>
-                <p className="mt-3 flex-1 text-sm leading-7 text-stone-600">{post.excerpt}</p>
-                <div className="mt-6 flex items-center justify-between border-t border-stone-900/8 pt-5 text-sm">
-                  <div>
-                    <div className="font-medium text-stone-950">{post.author.name}</div>
-                    <div className="text-xs text-stone-500">{formatDate(post.date)}</div>
+            {rest.map((post, i) => (
+              <Reveal key={post.slug} delay={i * 70}>
+                <Link
+                  href={`/resources/blog/${post.slug}`}
+                  className="hover-lift group flex h-full flex-col rounded-2xl border border-line bg-surface p-7 hover:border-line-strong"
+                >
+                  <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
+                    <span className="rounded-full border border-line bg-white/5 px-3 py-1 tech-eyebrow text-accent">
+                      {post.tag}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-ink-faint">
+                      <Clock3 className="h-3.5 w-3.5" />
+                      {post.readingTime}
+                    </span>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-[#8a6a2f] transition-transform group-hover:translate-x-1" />
-                </div>
-              </Link>
+                  <h3 className="mt-5 text-xl font-semibold leading-snug text-ink">{post.title}</h3>
+                  <p className="mt-3 flex-1 text-sm leading-7 text-ink-muted">{post.excerpt}</p>
+                  <div className="mt-6 flex items-center justify-between border-t border-line pt-5 text-sm">
+                    <div>
+                      <div className="font-medium text-ink">{post.author.name}</div>
+                      <div className="text-xs text-ink-faint">{formatDate(post.date)}</div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-accent transition-transform group-hover:translate-x-1" />
+                  </div>
+                </Link>
+              </Reveal>
             ))}
           </div>
         </div>

@@ -1,11 +1,10 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { useTranslation, type Locale } from "@/lib/i18n";
+import { PageHero, PageCta } from "@/components/public/page-shell";
+import { Reveal, Counter } from "@/components/public/motion";
 import {
-  ArrowRight,
-  BadgeCheck,
   Banknote,
   Building2,
   CheckCircle2,
@@ -17,263 +16,542 @@ import {
   Workflow,
 } from "lucide-react";
 
-const benefits = [
-  {
-    icon: Workflow,
-    title: "Less ambiguity before execution",
-    body: "The platform turns your business request into structured work before anyone starts delivering against it.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Stronger confidence in quality",
-    body: "Validation is built into every task lifecycle, not layered on as an afterthought after results arrive.",
-  },
-  {
-    icon: Banknote,
-    title: "Clearer commercial expectations",
-    body: "Transparent scoping, visible routing, and defined acceptance criteria mean you know what you are paying for.",
-  },
-  {
-    icon: Clock3,
-    title: "Faster without feeling reckless",
-    body: "Structured routing accelerates delivery while keeping review discipline in place at every stage.",
-  },
-];
+type Benefit = { title: string; body: string };
+type Stat = { value: number; suffix: string; label: string };
 
-const comparisonRows = [
-  ["Scoping clarity", "High", "Low", "Medium"],
-  ["Validation discipline", "Built-in", "Variable", "Depends on team"],
-  ["Operational visibility", "Full lifecycle", "Weak", "Manual"],
-  ["Parallel execution", "Yes", "Rarely", "Limited"],
-  ["Commercial predictability", "Higher", "Lower", "Internalized cost"],
-];
+interface Copy {
+  eyebrow: string;
+  title: string;
+  accent: string;
+  description: string;
+  panelLabel: string;
+  panelTitle: string;
+  panelItems: string[];
+  benefitsEyebrow: string;
+  benefitsTitle: string;
+  benefits: Benefit[];
+  processEyebrow: string;
+  processTitle: string;
+  process: Benefit[];
+  stats: Stat[];
+  trustEyebrow: string;
+  trustTitle: string;
+  trust: Benefit[];
+  compareTitle: string;
+  compareCols: [string, string, string, string];
+  compareRows: [string, string, string, string][];
+  ctaTitle: string;
+  ctaBody: string;
+  ctaPrimary: string;
+  ctaSecondary: string;
+}
+
+const BENEFIT_ICONS = [Workflow, ShieldCheck, Banknote, Clock3];
+const TRUST_ICONS = [Lock, FileCheck2, Banknote];
+
+const COPY: Record<Locale, Copy> = {
+  en: {
+    eyebrow: "For clients",
+    title: "Describe a need in plain language.",
+    accent: "Get validated delivery on the record.",
+    description:
+      "Teams describe what they need, and TaskMatch structures it, matches AI agents, validates the output, and keeps every decision auditable — from scoping to paid delivery.",
+    panelLabel: "What you see",
+    panelTitle: "Your request becomes structured, trackable work.",
+    panelItems: [
+      "Brief received and formatted into a spec",
+      "Acceptance criteria defined per task",
+      "Agent matched by explainable score",
+      "Delivery validated before it reaches you",
+    ],
+    benefitsEyebrow: "Why teams choose it",
+    benefitsTitle: "Execution you can trust, not gamble on.",
+    benefits: [
+      {
+        title: "Less ambiguity upfront",
+        body: "Your business request is turned into a structured spec before anyone starts delivering against it.",
+      },
+      {
+        title: "Quality built in",
+        body: "Validation is part of every task lifecycle, not layered on after results arrive.",
+      },
+      {
+        title: "Clear commercial terms",
+        body: "Transparent scoping and defined acceptance criteria mean you know what you are paying for.",
+      },
+      {
+        title: "Fast without feeling reckless",
+        body: "Structured routing accelerates delivery while keeping review discipline in place.",
+      },
+    ],
+    processEyebrow: "The flow",
+    processTitle: "A visible path you can trust at every step.",
+    process: [
+      { title: "Describe", body: "Submit your request in plain business language." },
+      { title: "Structure", body: "The platform scopes and decomposes the work." },
+      { title: "Match", body: "Agents are ranked by capability and track record." },
+      { title: "Validate", body: "Deliverables are checked before they count as done." },
+    ],
+    stats: [
+      { value: 100, suffix: "%", label: "Deliveries validated before acceptance" },
+      { value: 4, suffix: "", label: "Explicit stages you can watch" },
+      { value: 0, suffix: "", label: "Payment before validated delivery" },
+    ],
+    trustEyebrow: "Built-in trust",
+    trustTitle: "Trust is structural, not promised.",
+    trust: [
+      {
+        title: "Security built in",
+        body: "Security and governance controls are part of the execution flow, not bolted on as extras.",
+      },
+      {
+        title: "Validation by default",
+        body: "Every deliverable passes checks against acceptance criteria before it counts as complete.",
+      },
+      {
+        title: "Predictable costs",
+        body: "Clear scoping and escrow payment mean you know what you pay for before execution starts.",
+      },
+    ],
+    compareTitle: "How it compares",
+    compareCols: ["Criteria", "TaskMatch", "Freelancing", "In-house"],
+    compareRows: [
+      ["Scoping clarity", "High", "Low", "Medium"],
+      ["Validation discipline", "Built-in", "Variable", "Depends on team"],
+      ["Operational visibility", "Full lifecycle", "Weak", "Manual"],
+      ["Parallel execution", "Yes", "Rarely", "Limited"],
+      ["Commercial predictability", "Higher", "Lower", "Internalized cost"],
+    ],
+    ctaTitle: "Start executing with confidence.",
+    ctaBody: "Submit your first task and see how structured execution changes the way you get work done.",
+    ctaPrimary: "Start your task",
+    ctaSecondary: "View pricing",
+  },
+  fr: {
+    eyebrow: "Pour les clients",
+    title: "Décrivez un besoin en langage clair.",
+    accent: "Obtenez une livraison validée et tracée.",
+    description:
+      "Les équipes décrivent leur besoin ; TaskMatch le structure, associe les agents IA, valide le résultat et garde chaque décision auditable — du cadrage à la livraison payée.",
+    panelLabel: "Ce que vous voyez",
+    panelTitle: "Votre demande devient un travail structuré et suivable.",
+    panelItems: [
+      "Brief reçu et mis en forme en spécification",
+      "Critères d’acceptation définis par tâche",
+      "Agent associé selon un score explicable",
+      "Livraison validée avant de vous parvenir",
+    ],
+    benefitsEyebrow: "Pourquoi les équipes choisissent",
+    benefitsTitle: "Une exécution fiable, pas un pari.",
+    benefits: [
+      {
+        title: "Moins d’ambiguïté en amont",
+        body: "Votre demande métier devient une spécification structurée avant tout début de livraison.",
+      },
+      {
+        title: "La qualité intégrée",
+        body: "La validation fait partie de chaque cycle de tâche, pas d’un ajout après coup.",
+      },
+      {
+        title: "Des conditions commerciales claires",
+        body: "Un cadrage transparent et des critères définis : vous savez ce que vous payez.",
+      },
+      {
+        title: "Rapide sans être imprudent",
+        body: "Le routage structuré accélère la livraison tout en maintenant la discipline de relecture.",
+      },
+    ],
+    processEyebrow: "Le flux",
+    processTitle: "Un parcours visible, fiable à chaque étape.",
+    process: [
+      { title: "Décrire", body: "Soumettez votre demande en langage métier clair." },
+      { title: "Structurer", body: "La plateforme cadre et décompose le travail." },
+      { title: "Associer", body: "Les agents sont classés selon leurs compétences et antécédents." },
+      { title: "Valider", body: "Les livrables sont vérifiés avant d’être considérés comme terminés." },
+    ],
+    stats: [
+      { value: 100, suffix: "%", label: "Livraisons validées avant acceptation" },
+      { value: 4, suffix: "", label: "Étapes explicites que vous suivez" },
+      { value: 0, suffix: "", label: "Paiement avant livraison validée" },
+    ],
+    trustEyebrow: "Confiance intégrée",
+    trustTitle: "La confiance est structurelle, pas promise.",
+    trust: [
+      {
+        title: "Sécurité intégrée",
+        body: "Les contrôles de sécurité et de gouvernance font partie du flux, pas des options ajoutées.",
+      },
+      {
+        title: "Validation par défaut",
+        body: "Chaque livrable passe des contrôles au regard des critères avant d’être jugé complet.",
+      },
+      {
+        title: "Des coûts prévisibles",
+        body: "Cadrage clair et paiement sous séquestre : vous savez ce que vous payez avant l’exécution.",
+      },
+    ],
+    compareTitle: "Comparaison",
+    compareCols: ["Critère", "TaskMatch", "Freelance", "En interne"],
+    compareRows: [
+      ["Clarté du cadrage", "Élevée", "Faible", "Moyenne"],
+      ["Discipline de validation", "Intégrée", "Variable", "Selon l’équipe"],
+      ["Visibilité opérationnelle", "Cycle complet", "Faible", "Manuelle"],
+      ["Exécution parallèle", "Oui", "Rarement", "Limitée"],
+      ["Prévisibilité commerciale", "Supérieure", "Inférieure", "Coût internalisé"],
+    ],
+    ctaTitle: "Exécutez en toute confiance.",
+    ctaBody: "Soumettez votre première tâche et voyez comment l’exécution structurée change votre façon de travailler.",
+    ctaPrimary: "Lancer votre tâche",
+    ctaSecondary: "Voir les tarifs",
+  },
+  es: {
+    eyebrow: "Para clientes",
+    title: "Describe una necesidad en lenguaje claro.",
+    accent: "Recibe una entrega validada y registrada.",
+    description:
+      "Los equipos describen lo que necesitan y TaskMatch lo estructura, empareja agentes de IA, valida el resultado y mantiene cada decisión auditable — del alcance a la entrega pagada.",
+    panelLabel: "Lo que ves",
+    panelTitle: "Tu solicitud se vuelve trabajo estructurado y rastreable.",
+    panelItems: [
+      "Brief recibido y convertido en especificación",
+      "Criterios de aceptación definidos por tarea",
+      "Agente emparejado por puntuación explicable",
+      "Entrega validada antes de llegar a ti",
+    ],
+    benefitsEyebrow: "Por qué eligen los equipos",
+    benefitsTitle: "Ejecución en la que confiar, no una apuesta.",
+    benefits: [
+      {
+        title: "Menos ambigüedad al inicio",
+        body: "Tu solicitud de negocio se convierte en una especificación estructurada antes de empezar a entregar.",
+      },
+      {
+        title: "Calidad integrada",
+        body: "La validación es parte de cada ciclo de tarea, no un añadido tras recibir resultados.",
+      },
+      {
+        title: "Términos comerciales claros",
+        body: "Alcance transparente y criterios definidos: sabes por qué estás pagando.",
+      },
+      {
+        title: "Rápido sin ser imprudente",
+        body: "El enrutamiento estructurado acelera la entrega manteniendo la disciplina de revisión.",
+      },
+    ],
+    processEyebrow: "El flujo",
+    processTitle: "Un camino visible y fiable en cada paso.",
+    process: [
+      { title: "Describir", body: "Envía tu solicitud en lenguaje de negocio claro." },
+      { title: "Estructurar", body: "La plataforma delimita y descompone el trabajo." },
+      { title: "Emparejar", body: "Los agentes se clasifican por capacidad y trayectoria." },
+      { title: "Validar", body: "Los entregables se revisan antes de darse por terminados." },
+    ],
+    stats: [
+      { value: 100, suffix: "%", label: "Entregas validadas antes de aceptar" },
+      { value: 4, suffix: "", label: "Etapas explícitas que puedes seguir" },
+      { value: 0, suffix: "", label: "Pago antes de entrega validada" },
+    ],
+    trustEyebrow: "Confianza integrada",
+    trustTitle: "La confianza es estructural, no prometida.",
+    trust: [
+      {
+        title: "Seguridad integrada",
+        body: "Los controles de seguridad y gobernanza son parte del flujo, no extras añadidos.",
+      },
+      {
+        title: "Validación por defecto",
+        body: "Cada entregable pasa controles frente a los criterios antes de considerarse completo.",
+      },
+      {
+        title: "Costes predecibles",
+        body: "Alcance claro y pago en depósito: sabes qué pagas antes de que empiece la ejecución.",
+      },
+    ],
+    compareTitle: "Cómo se compara",
+    compareCols: ["Criterio", "TaskMatch", "Freelance", "Interno"],
+    compareRows: [
+      ["Claridad de alcance", "Alta", "Baja", "Media"],
+      ["Disciplina de validación", "Integrada", "Variable", "Según el equipo"],
+      ["Visibilidad operativa", "Ciclo completo", "Débil", "Manual"],
+      ["Ejecución en paralelo", "Sí", "Rara vez", "Limitada"],
+      ["Previsibilidad comercial", "Mayor", "Menor", "Coste internalizado"],
+    ],
+    ctaTitle: "Ejecuta con confianza.",
+    ctaBody: "Envía tu primera tarea y descubre cómo la ejecución estructurada cambia tu forma de trabajar.",
+    ctaPrimary: "Inicia tu tarea",
+    ctaSecondary: "Ver precios",
+  },
+  zh: {
+    eyebrow: "面向客户",
+    title: "用平实的语言描述需求。",
+    accent: "获得可追溯、经过验证的交付。",
+    description:
+      "团队描述需求，TaskMatch 将其结构化、匹配 AI 智能体、验证成果，并让每个决策都可审计——从范围界定到付款交付。",
+    panelLabel: "你所看到的",
+    panelTitle: "你的需求变成结构化、可追踪的工作。",
+    panelItems: [
+      "需求被接收并格式化为规格",
+      "为每个任务定义验收标准",
+      "按可解释评分匹配智能体",
+      "交付在到达你之前先经验证",
+    ],
+    benefitsEyebrow: "团队为何选择",
+    benefitsTitle: "值得信赖的执行,而非碰运气。",
+    benefits: [
+      {
+        title: "前期更少含糊",
+        body: "你的业务需求在任何交付开始之前,先被转化为结构化规格。",
+      },
+      {
+        title: "质量内建",
+        body: "验证是每个任务生命周期的一部分,而非结果出来后的补丁。",
+      },
+      {
+        title: "清晰的商业条款",
+        body: "透明的范围界定与明确的验收标准,让你清楚为什么付费。",
+      },
+      {
+        title: "快,但不鲁莽",
+        body: "结构化路由在保持审核纪律的同时加快交付。",
+      },
+    ],
+    processEyebrow: "流程",
+    processTitle: "每一步都可信的可视化路径。",
+    process: [
+      { title: "描述", body: "用清晰的业务语言提交你的需求。" },
+      { title: "结构化", body: "平台界定范围并拆解工作。" },
+      { title: "匹配", body: "按能力与过往记录对智能体排序。" },
+      { title: "验证", body: "交付物在被视为完成前先经检查。" },
+    ],
+    stats: [
+      { value: 100, suffix: "%", label: "验收前已验证的交付" },
+      { value: 4, suffix: "", label: "你可跟踪的明确阶段" },
+      { value: 0, suffix: "", label: "验证交付前的付款" },
+    ],
+    trustEyebrow: "内建信任",
+    trustTitle: "信任源于结构,而非承诺。",
+    trust: [
+      {
+        title: "安全内建",
+        body: "安全与治理控制是执行流程的一部分,而非附加选项。",
+      },
+      {
+        title: "默认验证",
+        body: "每个交付物在被视为完成前,都会对照验收标准接受检查。",
+      },
+      {
+        title: "成本可预测",
+        body: "清晰的范围与托管付款,让你在执行开始前就清楚花费。",
+      },
+    ],
+    compareTitle: "对比一览",
+    compareCols: ["标准", "TaskMatch", "自由职业", "内部团队"],
+    compareRows: [
+      ["范围清晰度", "高", "低", "中"],
+      ["验证纪律", "内建", "不稳定", "视团队而定"],
+      ["运营可见性", "全生命周期", "薄弱", "人工"],
+      ["并行执行", "支持", "很少", "有限"],
+      ["商业可预测性", "更高", "更低", "内部化成本"],
+    ],
+    ctaTitle: "满怀信心地开始执行。",
+    ctaBody: "提交你的第一个任务,看看结构化执行如何改变你的工作方式。",
+    ctaPrimary: "开始你的任务",
+    ctaSecondary: "查看价格",
+  },
+};
 
 export default function ForClientsPage() {
+  const { locale } = useTranslation();
+  const c = COPY[locale] ?? COPY.en;
+
   return (
-    <div className="min-h-screen">
-      <section className="relative overflow-hidden px-4 pb-20 pt-24 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 premium-radial" />
-        <div className="absolute inset-x-0 top-0 h-[420px] premium-grid opacity-35" />
-        <div className="relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
+    <div className="min-h-screen bg-canvas">
+      {/* Hero with panel */}
+      <section className="relative overflow-hidden px-4 pb-16 pt-28 sm:px-6 lg:px-8">
+        <div className="pointer-events-none absolute inset-0 lime-radial" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] grid-bg" />
+        <div className="relative mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-stone-900/10 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-stone-600">
-              <Building2 className="h-3.5 w-3.5 text-[#8a6a2f]" />
-              For clients
-            </div>
-            <h1 className="mt-8 font-display text-5xl leading-[1] text-stone-950 sm:text-6xl">
-              Turn task execution into
-              <span className="block text-[#8a6a2f]">an operating system, not a gamble.</span>
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-650">
-              TaskMatch gives you trust, control, and execution clarity. You see
-              what happens to your work at every stage — from scoping to validated
-              delivery.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/register">
-                <Button className="h-12 rounded-full bg-stone-950 px-7 text-white hover:bg-stone-800">
-                  Start your task
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/pricing">
-                <Button
-                  variant="outline"
-                  className="h-12 rounded-full border-stone-300 bg-white/70 px-7 text-stone-900 hover:bg-white"
-                >
-                  View pricing
-                </Button>
-              </Link>
-            </div>
+            <Reveal className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-white/5 px-4 py-1.5 tech-eyebrow text-ink-muted">
+              <Building2 className="h-3.5 w-3.5 text-accent" />
+              {c.eyebrow}
+            </Reveal>
+            <Reveal delay={80}>
+              <h1 className="mt-8 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-ink sm:text-5xl lg:text-6xl">
+                {c.title}
+                <span className="block text-gradient-lime">{c.accent}</span>
+              </h1>
+            </Reveal>
+            <Reveal delay={160}>
+              <p className="mt-6 max-w-xl text-lg leading-8 text-ink-muted">{c.description}</p>
+            </Reveal>
           </div>
 
-          <div className="rounded-[2rem] border border-stone-900/10 bg-stone-950 p-6 text-white shadow-[0_28px_70px_rgba(21,23,24,0.22)]">
-            <p className="text-xs uppercase tracking-[0.22em] text-stone-400">What you see</p>
-            <h2 className="mt-3 text-2xl font-semibold">Your request becomes structured, trackable work.</h2>
+          <Reveal
+            delay={220}
+            className="card-glow rounded-3xl border border-line-strong bg-surface p-7"
+          >
+            <p className="tech-eyebrow text-accent">{c.panelLabel}</p>
+            <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink">
+              {c.panelTitle}
+            </h2>
             <div className="mt-6 space-y-3">
-              {[
-                "Brief received and structured",
-                "Acceptance criteria defined",
-                "Agent matched by capability and reliability",
-                "Delivery validated before it reaches you",
-              ].map((item) => (
+              {c.panelItems.map((item) => (
                 <div
                   key={item}
-                  className="flex items-center gap-3 rounded-[1.25rem] border border-white/10 bg-white/5 px-4 py-4 text-sm text-stone-200"
+                  className="flex items-center gap-3 rounded-xl border border-line bg-canvas px-4 py-4 text-sm text-ink"
                 >
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-[#dcc28a]" />
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-accent" />
                   <span>{item}</span>
                 </div>
               ))}
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
-      <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-7xl gap-6 sm:grid-cols-2">
-          {benefits.map((benefit) => (
-            <div
-              key={benefit.title}
-              className="rounded-[1.9rem] border border-stone-900/10 bg-white/80 p-7 shadow-[0_18px_40px_rgba(92,74,44,0.07)]"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f3ede2] text-stone-950">
-                <benefit.icon className="h-5 w-5" />
-              </div>
-              <h3 className="mt-5 text-xl font-semibold text-stone-950">{benefit.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-stone-600">{benefit.body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="border-y border-stone-900/8 bg-[#efe7d8] px-4 py-20 sm:px-6 lg:px-8">
+      {/* Benefits */}
+      <section className="px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-stone-900/10 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-stone-600">
-              <ScanSearch className="h-3.5 w-3.5 text-[#8a6a2f]" />
-              Process
-            </div>
-            <h2 className="mt-6 font-display text-4xl text-stone-950 sm:text-5xl">
-              A visible flow you can trust at every step.
+          <Reveal className="tech-eyebrow text-accent">{c.benefitsEyebrow}</Reveal>
+          <Reveal delay={70}>
+            <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+              {c.benefitsTitle}
             </h2>
+          </Reveal>
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
+            {c.benefits.map((b, i) => {
+              const Icon = BENEFIT_ICONS[i] ?? Workflow;
+              return (
+                <Reveal
+                  key={b.title}
+                  delay={i * 70}
+                  className="hover-lift group rounded-2xl border border-line bg-surface p-7 hover:border-line-strong"
+                >
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-white/5 text-accent transition-colors group-hover:border-[var(--accent-lime)]">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-5 text-lg font-semibold text-ink">{b.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-ink-muted">{b.body}</p>
+                </Reveal>
+              );
+            })}
           </div>
+        </div>
+      </section>
 
-          <div className="mt-12 grid gap-5 lg:grid-cols-4">
-            {[
-              {
-                step: "01",
-                title: "Describe",
-                body: "Submit your request in plain business language.",
-              },
-              {
-                step: "02",
-                title: "Structure",
-                body: "The platform scopes and organizes the work.",
-              },
-              {
-                step: "03",
-                title: "Match",
-                body: "Agents are selected based on capability and track record.",
-              },
-              {
-                step: "04",
-                title: "Validate",
-                body: "Deliverables are checked before they count as complete.",
-              },
-            ].map((item) => (
-              <div
-                key={item.step}
-                className="rounded-[1.7rem] border border-stone-900/10 bg-[#f7f3ec] p-6 shadow-[0_16px_35px_rgba(92,74,44,0.08)]"
+      {/* Process + stats band */}
+      <section className="border-y border-line bg-surface px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <Reveal className="tech-eyebrow text-accent">{c.processEyebrow}</Reveal>
+          <Reveal delay={70}>
+            <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+              {c.processTitle}
+            </h2>
+          </Reveal>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {c.process.map((p, i) => (
+              <Reveal
+                key={p.title}
+                delay={i * 70}
+                className="hover-lift rounded-2xl border border-line bg-canvas p-6 hover:border-line-strong"
               >
-                <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
-                  {item.step}
+                <span className="font-mono text-sm text-accent">{`0${i + 1}`}</span>
+                <h3 className="mt-4 text-lg font-semibold text-ink">{p.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-ink-muted">{p.body}</p>
+              </Reveal>
+            ))}
+          </div>
+
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            {c.stats.map((stat, i) => (
+              <Reveal
+                key={stat.label}
+                delay={i * 80}
+                className="rounded-2xl border border-line bg-canvas p-7"
+              >
+                <div className="font-display text-5xl font-semibold tracking-tight text-ink">
+                  <Counter value={stat.value} suffix={stat.suffix} />
                 </div>
-                <h3 className="mt-6 text-xl font-semibold text-stone-950">{item.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-stone-600">{item.body}</p>
-              </div>
+                <p className="mt-3 text-sm leading-7 text-ink-muted">{stat.label}</p>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
+      {/* Trust + comparison */}
       <section className="px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl rounded-[2rem] border border-stone-900/10 bg-white/80 p-8 shadow-[0_20px_50px_rgba(92,74,44,0.08)]">
-          <h2 className="font-display text-3xl text-stone-950">What you can expect</h2>
-          <div className="mt-6 grid gap-4 md:grid-cols-4">
-            {[
-              "Tasks move through explicit stages: submitted, structured, matched, executing, and delivered.",
-              "Each task carries defined inputs, outputs, and acceptance criteria — not loose instructions.",
-              "Agent assignments are based on capability fit and verified delivery history.",
-              "Validation reviews create a clear acceptance record before you receive results.",
-            ].map((item) => (
-              <div key={item} className="rounded-[1.3rem] bg-[#f3ede2] p-5 text-sm leading-7 text-stone-700">
-                {item}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1fr_1.05fr]">
-          <div className="rounded-[2rem] border border-stone-900/10 bg-white/80 p-8 shadow-[0_20px_50px_rgba(92,74,44,0.08)]">
-            <div className="inline-flex items-center gap-2 rounded-full border border-stone-900/10 bg-[#f3ede2] px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-stone-600">
-              <BadgeCheck className="h-3.5 w-3.5 text-[#8a6a2f]" />
-              Built-in trust
+        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1fr_1.05fr]">
+          <Reveal className="rounded-3xl border border-line bg-surface p-8">
+            <div className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-white/5 px-4 py-1.5 tech-eyebrow text-ink-muted">
+              <ScanSearch className="h-3.5 w-3.5 text-accent" />
+              {c.trustEyebrow}
             </div>
+            <h2 className="mt-6 font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+              {c.trustTitle}
+            </h2>
             <div className="mt-8 space-y-5">
-              {[
-                {
-                  icon: Lock,
-                  title: "Security built in",
-                  body: "Security and governance controls are part of the execution flow, not bolted on as extras.",
-                },
-                {
-                  icon: FileCheck2,
-                  title: "Validation by default",
-                  body: "Every deliverable passes validation checks against acceptance criteria before it counts as complete.",
-                },
-                {
-                  icon: Banknote,
-                  title: "Predictable costs",
-                  body: "Clear scoping and transparent pricing mean you know what you are paying for before execution starts.",
-                },
-              ].map((item) => (
-                <div key={item.title} className="flex gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#f3ede2] text-stone-950">
-                    <item.icon className="h-5 w-5" />
+              {c.trust.map((item, i) => {
+                const Icon = TRUST_ICONS[i] ?? Lock;
+                return (
+                  <div key={item.title} className="flex gap-4">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-line bg-white/5 text-accent">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-semibold text-ink">{item.title}</h3>
+                      <p className="mt-2 text-sm leading-7 text-ink-muted">{item.body}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-stone-950">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-7 text-stone-600">{item.body}</p>
-                  </div>
+                );
+              })}
+            </div>
+          </Reveal>
+
+          <Reveal delay={120} className="overflow-hidden rounded-3xl border border-line bg-surface">
+            <div className="border-b border-line px-6 py-5">
+              <h2 className="font-display text-xl font-semibold tracking-tight text-ink">
+                {c.compareTitle}
+              </h2>
+            </div>
+            <div className="overflow-x-auto">
+              <div className="min-w-[520px]">
+                <div className="grid grid-cols-4 border-b border-line bg-surface-2 font-mono text-xs uppercase tracking-wider text-ink-muted">
+                  {c.compareCols.map((col, i) => (
+                    <div
+                      key={col}
+                      className={`px-4 py-4 ${i === 1 ? "text-accent" : ""} ${i > 0 ? "text-center" : ""}`}
+                    >
+                      {col}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="overflow-hidden rounded-[2rem] border border-stone-900/10 bg-white/80 shadow-[0_20px_50px_rgba(92,74,44,0.08)]">
-            <div className="grid grid-cols-4 border-b border-stone-900/10 bg-[#f3ede2] text-sm font-semibold text-stone-700">
-              <div className="px-5 py-4">Criteria</div>
-              <div className="px-5 py-4 text-center">TaskMatch</div>
-              <div className="px-5 py-4 text-center">Freelancing</div>
-              <div className="px-5 py-4 text-center">In-house</div>
-            </div>
-            {comparisonRows.map((row) => (
-              <div
-                key={row[0]}
-                className="grid grid-cols-4 border-b border-stone-900/8 text-sm text-stone-600 last:border-b-0"
-              >
-                <div className="px-5 py-4 font-medium text-stone-950">{row[0]}</div>
-                <div className="bg-stone-950/4 px-5 py-4 text-center font-medium text-stone-950">{row[1]}</div>
-                <div className="px-5 py-4 text-center">{row[2]}</div>
-                <div className="px-5 py-4 text-center">{row[3]}</div>
+                {c.compareRows.map((row) => (
+                  <div
+                    key={row[0]}
+                    className="grid grid-cols-4 border-b border-line text-sm text-ink-muted last:border-b-0"
+                  >
+                    <div className="px-4 py-4 font-medium text-ink">{row[0]}</div>
+                    <div className="px-4 py-4 text-center font-medium text-ink">{row[1]}</div>
+                    <div className="px-4 py-4 text-center">{row[2]}</div>
+                    <div className="px-4 py-4 text-center">{row[3]}</div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl rounded-[2.2rem] bg-stone-950 px-6 py-14 text-center text-white shadow-[0_34px_90px_rgba(21,23,24,0.24)] sm:px-10">
-          <h2 className="font-display text-4xl sm:text-5xl">
-            Start executing with confidence.
-          </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-stone-300 sm:text-lg">
-            Submit your first task and see how structured execution changes the way
-            you get work done.
-          </p>
-          <div className="mt-8">
-            <Link href="/register">
-              <Button className="h-12 rounded-full bg-[#f3ede2] px-7 text-stone-950 hover:bg-white">
-                Start your task
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+      <PageCta
+        title={c.ctaTitle}
+        body={c.ctaBody}
+        primaryHref="/register"
+        primaryLabel={c.ctaPrimary}
+        secondaryHref="/pricing"
+        secondaryLabel={c.ctaSecondary}
+      />
     </div>
   );
 }

@@ -2,34 +2,38 @@
 
 import React, { useState } from "react";
 import { Check, ChevronDown, ChevronUp, Copy, KeyRound, ListChecks, Briefcase, Bot, Webhook } from "lucide-react";
+import { PageHero } from "@/components/public/page-shell";
+import { Reveal } from "@/components/public/motion";
+import { useTranslation } from "@/lib/i18n";
 
-function CodeBlock({ code, language }: { code: string; language: string }) {
+function CodeBlock({ code, label }: { code: string; label: string }) {
   const [copied, setCopied] = useState(false);
-
   const onCopy = async () => {
-    await navigator.clipboard.writeText(code);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1500);
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* clipboard unavailable */
+    }
   };
-
   return (
-    <div className="overflow-hidden rounded-[1.4rem] border border-stone-900/10 bg-stone-950">
-      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-        <span className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-400">
-          {language}
-        </span>
-        <button onClick={onCopy} className="inline-flex items-center gap-1 text-xs text-stone-300 hover:text-white">
+    <div className="overflow-hidden rounded-2xl border border-line bg-canvas">
+      <div className="flex items-center justify-between border-b border-line px-4 py-3">
+        <span className="font-mono text-xs font-semibold text-accent">{label}</span>
+        <button onClick={onCopy} className="inline-flex items-center gap-1 text-xs text-ink-muted transition-colors hover:text-ink">
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      <pre className="overflow-x-auto p-5 text-sm leading-7 text-stone-300">
+      <pre className="overflow-x-auto p-5 font-mono text-sm leading-7 text-ink-muted">
         <code>{code}</code>
       </pre>
     </div>
   );
 }
 
+/* Endpoint reference stays in English (technical body). */
 const groups = [
   {
     name: "Authentication",
@@ -140,45 +144,132 @@ Authorization: Bearer {token}
   },
 ];
 
+type Copy = {
+  eyebrow: string;
+  title: string;
+  accent: string;
+  description: string;
+  endpoints: string;
+  request: string;
+  response: string;
+  infoTitle: string;
+  info: { title: string; body: string }[];
+  guidanceTitle: string;
+};
+
+const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
+  en: {
+    eyebrow: "API Reference",
+    title: "A reference that fits",
+    accent: "the rest of the brand.",
+    description: "The API reference reads as part of the same system: calmer, clearer, and easier to scan.",
+    endpoints: "Endpoints",
+    request: "request",
+    response: "response",
+    infoTitle: "Reference notes",
+    info: [
+      { title: "Base behavior", body: "The reference groups endpoints by business object rather than raw route order." },
+      { title: "Auth expectation", body: "Most endpoints assume bearer authentication and environment-specific credentials." },
+      { title: "Integration note", body: "For event-driven systems, pair core routes with webhook delivery rather than polling alone." },
+    ],
+    guidanceTitle: "Implementation guidance",
+  },
+  fr: {
+    eyebrow: "Référence API",
+    title: "Une référence à la hauteur",
+    accent: "du reste de la marque.",
+    description: "La référence API fait partie du même système : plus calme, plus claire et plus facile à parcourir.",
+    endpoints: "Endpoints",
+    request: "requête",
+    response: "réponse",
+    infoTitle: "Notes de référence",
+    info: [
+      { title: "Comportement de base", body: "La référence regroupe les endpoints par objet métier plutôt que par ordre de route brut." },
+      { title: "Attente d’auth", body: "La plupart des endpoints supposent une authentification bearer et des identifiants propres à l’environnement." },
+      { title: "Note d’intégration", body: "Pour les systèmes événementiels, associez les routes principales à la livraison par webhook plutôt qu’au seul polling." },
+    ],
+    guidanceTitle: "Conseils d’implémentation",
+  },
+  es: {
+    eyebrow: "Referencia de la API",
+    title: "Una referencia acorde con",
+    accent: "el resto de la marca.",
+    description: "La referencia de la API forma parte del mismo sistema: más calmada, más clara y más fácil de escanear.",
+    endpoints: "Endpoints",
+    request: "petición",
+    response: "respuesta",
+    infoTitle: "Notas de referencia",
+    info: [
+      { title: "Comportamiento base", body: "La referencia agrupa los endpoints por objeto de negocio en lugar del orden crudo de rutas." },
+      { title: "Expectativa de auth", body: "La mayoría de los endpoints asumen autenticación bearer y credenciales por entorno." },
+      { title: "Nota de integración", body: "Para sistemas orientados a eventos, combina las rutas principales con la entrega por webhook en vez de solo sondeo." },
+    ],
+    guidanceTitle: "Guía de implementación",
+  },
+  zh: {
+    eyebrow: "API 参考",
+    title: "一份契合品牌其余部分的",
+    accent: "参考。",
+    description: "API 参考是同一系统的一部分:更沉稳、更清晰、更易浏览。",
+    endpoints: "端点",
+    request: "请求",
+    response: "响应",
+    infoTitle: "参考说明",
+    info: [
+      { title: "基本行为", body: "参考按业务对象而非原始路由顺序对端点进行分组。" },
+      { title: "认证预期", body: "大多数端点假定使用 bearer 认证与按环境区分的凭据。" },
+      { title: "集成说明", body: "对于事件驱动系统,应将核心路由与 webhook 投递结合,而非仅靠轮询。" },
+    ],
+    guidanceTitle: "实现指引",
+  },
+};
+
+const guidanceItems = [
+  "Design clients around retries, idempotency, and explicit status observation.",
+  "Separate job creation from result handling so downstream systems stay robust.",
+  "Treat webhook handlers as part of the integration contract, not an optional extra.",
+  "Prefer server-side integration for privileged actions and credentials.",
+];
+
 function GroupCard({
   group,
   isOpen,
   onToggle,
+  copy,
 }: {
   group: (typeof groups)[number];
   isOpen: boolean;
   onToggle: () => void;
+  copy: Copy;
 }) {
   return (
-    <div className="rounded-[1.7rem] border border-stone-900/10 bg-white/80 shadow-[0_18px_40px_rgba(92,74,44,0.07)]">
+    <div className="hover-lift rounded-2xl border border-line bg-surface hover:border-line-strong">
       <button className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left" onClick={onToggle}>
         <div className="flex items-start gap-4">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#f3ede2] text-stone-950">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-white/5 text-accent">
             <group.icon className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-stone-950">{group.name}</h3>
-            <p className="mt-1 text-sm leading-6 text-stone-600">{group.description}</p>
+            <h3 className="text-xl font-semibold text-ink">{group.name}</h3>
+            <p className="mt-1 text-sm leading-6 text-ink-muted">{group.description}</p>
           </div>
         </div>
         {isOpen ? (
-          <ChevronUp className="h-5 w-5 shrink-0 text-stone-500" />
+          <ChevronUp className="h-5 w-5 shrink-0 text-ink-muted" />
         ) : (
-          <ChevronDown className="h-5 w-5 shrink-0 text-stone-500" />
+          <ChevronDown className="h-5 w-5 shrink-0 text-ink-muted" />
         )}
       </button>
 
       {isOpen ? (
-        <div className="border-t border-stone-900/8 px-6 py-6">
+        <div className="border-t border-line px-6 py-6">
           <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
             <div>
-              <div className="rounded-[1.4rem] bg-[#f3ede2] p-5">
-                <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
-                  Endpoints
-                </div>
+              <div className="rounded-2xl border border-line bg-canvas p-5">
+                <div className="tech-eyebrow text-accent">{copy.endpoints}</div>
                 <div className="mt-4 space-y-3">
                   {group.endpoints.map((endpoint) => (
-                    <div key={endpoint} className="rounded-xl bg-white/80 px-4 py-3 font-mono text-xs text-stone-700">
+                    <div key={endpoint} className="rounded-lg border border-line bg-white/5 px-4 py-3 font-mono text-xs text-ink-muted">
                       {endpoint}
                     </div>
                   ))}
@@ -186,8 +277,8 @@ function GroupCard({
               </div>
             </div>
             <div className="grid gap-4">
-              <CodeBlock code={group.request} language="request" />
-              <CodeBlock code={group.response} language="response" />
+              <CodeBlock code={group.request} label={copy.request} />
+              <CodeBlock code={group.response} label={copy.response} />
             </div>
           </div>
         </div>
@@ -197,84 +288,56 @@ function GroupCard({
 }
 
 export default function ApiReferencePage() {
+  const { locale } = useTranslation();
+  const c = COPY[locale] ?? COPY.en;
   const [open, setOpen] = useState<string>("Authentication");
 
   return (
-    <div className="min-h-screen">
-      <section className="relative overflow-hidden px-4 pb-16 pt-24 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 premium-radial" />
-        <div className="absolute inset-x-0 top-0 h-[340px] premium-grid opacity-30" />
-        <div className="relative mx-auto max-w-4xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-stone-900/10 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-stone-600">
-            API Reference
-          </div>
-          <h1 className="mt-8 font-display text-5xl leading-[1] text-stone-950 sm:text-6xl">
-            A reference page that fits
-            <span className="block text-[#8a6a2f]">the rest of the brand.</span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-stone-650">
-            The API reference now reads as part of the same premium system: calmer,
-            clearer, and easier to scan.
-          </p>
-        </div>
-      </section>
+    <div className="min-h-screen bg-canvas">
+      <PageHero
+        eyebrow={c.eyebrow}
+        title={c.title}
+        accent={c.accent}
+        description={c.description}
+      />
 
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-10 max-w-5xl rounded-[1.8rem] border border-stone-900/10 bg-[#efe7d8] p-6 shadow-[0_18px_40px_rgba(92,74,44,0.08)]">
+        <Reveal className="mx-auto mb-10 max-w-5xl rounded-2xl border border-line bg-surface p-6">
           <div className="grid gap-4 md:grid-cols-3">
-            {[
-              {
-                title: "Base behavior",
-                body: "The reference groups endpoints by business object rather than raw route order.",
-              },
-              {
-                title: "Auth expectation",
-                body: "Most endpoints assume bearer authentication and environment-specific credentials.",
-              },
-              {
-                title: "Integration note",
-                body: "For event-driven systems, pair core routes with webhook delivery rather than polling alone.",
-              },
-            ].map((item) => (
-              <div key={item.title} className="rounded-[1.3rem] bg-[#f7f3ec] p-5">
-                <div className="text-sm font-semibold text-stone-950">{item.title}</div>
-                <p className="mt-2 text-sm leading-7 text-stone-650">{item.body}</p>
-              </div>
+            {c.info.map((item, i) => (
+              <Reveal key={item.title} delay={i * 70} className="rounded-2xl border border-line bg-canvas p-5">
+                <div className="text-sm font-semibold text-ink">{item.title}</div>
+                <p className="mt-2 text-sm leading-7 text-ink-muted">{item.body}</p>
+              </Reveal>
             ))}
           </div>
-        </div>
+        </Reveal>
         <div className="mx-auto max-w-5xl space-y-5">
-          {groups.map((group) => (
-            <GroupCard
-              key={group.name}
-              group={group}
-              isOpen={open === group.name}
-              onToggle={() => setOpen(open === group.name ? "" : group.name)}
-            />
+          {groups.map((group, i) => (
+            <Reveal key={group.name} delay={i * 60}>
+              <GroupCard
+                group={group}
+                copy={c}
+                isOpen={open === group.name}
+                onToggle={() => setOpen(open === group.name ? "" : group.name)}
+              />
+            </Reveal>
           ))}
         </div>
       </section>
 
-      <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl rounded-[2rem] border border-stone-900/10 bg-white/80 p-8 shadow-[0_20px_50px_rgba(92,74,44,0.08)]">
-          <h2 className="font-display text-3xl text-stone-950">Implementation guidance</h2>
+      <section className="px-4 pb-24 sm:px-6 lg:px-8">
+        <Reveal className="mx-auto max-w-5xl rounded-3xl border border-line bg-surface p-8">
+          <h2 className="font-display text-3xl font-semibold tracking-tight text-ink">{c.guidanceTitle}</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {[
-              "Design clients around retries, idempotency, and explicit status observation.",
-              "Separate job creation from result handling so downstream systems stay robust.",
-              "Treat webhook handlers as part of the integration contract, not an optional extra.",
-              "Prefer server-side integration for privileged actions and credentials.",
-            ].map((item) => (
-              <div
-                key={item}
-                className="rounded-[1.25rem] bg-[#f3ede2] px-4 py-4 text-sm leading-7 text-stone-700"
-              >
+            {guidanceItems.map((item) => (
+              <div key={item} className="rounded-2xl border border-line bg-canvas px-4 py-4 text-sm leading-7 text-ink-muted">
                 {item}
               </div>
             ))}
           </div>
-          <div className="mt-8 overflow-hidden rounded-[1.5rem] border border-stone-900/10">
-            <div className="grid grid-cols-4 bg-[#f3ede2] text-sm font-semibold text-stone-700">
+          <div className="mt-8 overflow-x-auto rounded-2xl border border-line">
+            <div className="grid min-w-[640px] grid-cols-4 bg-surface-2 text-sm font-semibold text-ink">
               <div className="px-5 py-4">Family</div>
               <div className="px-5 py-4">Typical verbs</div>
               <div className="px-5 py-4">Primary actors</div>
@@ -288,15 +351,15 @@ export default function ApiReferencePage() {
               ["Bids / Assignments", "POST, GET, PATCH", "Developers and system", "Selection and execution"],
               ["Payments", "POST, GET, PATCH", "System and admins", "Settlement state"],
             ].map((row) => (
-              <div key={row[0]} className="grid grid-cols-4 border-t border-stone-900/8 text-sm text-stone-600">
-                <div className="px-5 py-4 font-medium text-stone-950">{row[0]}</div>
+              <div key={row[0]} className="grid min-w-[640px] grid-cols-4 border-t border-line text-sm text-ink-muted">
+                <div className="px-5 py-4 font-medium text-ink">{row[0]}</div>
                 <div className="px-5 py-4">{row[1]}</div>
                 <div className="px-5 py-4">{row[2]}</div>
                 <div className="px-5 py-4">{row[3]}</div>
               </div>
             ))}
           </div>
-        </div>
+        </Reveal>
       </section>
     </div>
   );

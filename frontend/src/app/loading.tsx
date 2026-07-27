@@ -1,14 +1,31 @@
+"use client";
+
+import React from "react";
+import { useTranslation } from "@/lib/i18n";
+
+const COPY: Record<"en" | "fr" | "es" | "zh", { title: string; sub: string }> = {
+  en: { title: "Loading", sub: "Preparing your view…" },
+  fr: { title: "Chargement", sub: "Préparation de votre vue…" },
+  es: { title: "Cargando", sub: "Preparando tu vista…" },
+  zh: { title: "加载中", sub: "正在准备您的视图…" },
+};
+
 export default function Loading() {
+  const { locale } = useTranslation();
+  const c = COPY[locale] ?? COPY.en;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f7f3ec] px-4">
-      <div className="flex flex-col items-center gap-6 text-center">
-        <div className="relative flex h-14 w-14 items-center justify-center">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#8a6a2f]/20" />
-          <span className="relative inline-flex h-10 w-10 animate-spin rounded-full border-2 border-[#8a6a2f]/25 border-t-[#8a6a2f]" />
+    <div className="surface-dark relative flex min-h-screen items-center justify-center overflow-hidden bg-canvas px-4">
+      <div className="pointer-events-none absolute inset-0 lime-radial" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] grid-bg" />
+      <div className="relative flex flex-col items-center gap-7 text-center">
+        <div className="relative flex h-16 w-16 items-center justify-center">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent-lime opacity-20" />
+          <span className="relative inline-flex h-11 w-11 animate-spin rounded-full border-2 border-line-strong border-t-[var(--accent-lime)]" />
         </div>
         <div>
-          <div className="font-display text-2xl text-stone-950">Loading</div>
-          <p className="mt-2 text-sm text-stone-600">Preparing your view&hellip;</p>
+          <div className="font-display text-2xl font-semibold tracking-tight text-ink">{c.title}</div>
+          <p className="mt-2 font-mono text-sm text-ink-muted">{c.sub}</p>
         </div>
       </div>
     </div>

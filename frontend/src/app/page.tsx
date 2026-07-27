@@ -2,98 +2,663 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useTranslation } from "@/lib/i18n";
+import { Reveal, Counter, Marquee } from "@/components/public/motion";
 import {
   ArrowRight,
   ArrowUpRight,
-  Banknote,
   Bot,
-  BriefcaseBusiness,
   Check,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Code2,
-  FileCheck2,
-  Globe,
+  FileText,
+  Gavel,
   Layers,
+  ListChecks,
   Lock,
   Menu,
-  MessageSquare,
   Network,
-  Palette,
-  Search,
+  ScrollText,
   ShieldCheck,
   Sparkles,
-  Star,
-  TimerReset,
-  TrendingUp,
-  Users,
+  Terminal,
+  Trophy,
   X,
-  Zap,
 } from "lucide-react";
+
+/* ------------------------------------------------------------------ */
+/*  i18n copy — every visible string, 4 languages                     */
+/* ------------------------------------------------------------------ */
+
+type Step = { title: string; desc: string };
+
+interface Copy {
+  nav: {
+    howItWorks: string;
+    pricing: string;
+    forClients: string;
+    forDevelopers: string;
+    signIn: string;
+    cta: string;
+  };
+  hero: {
+    eyebrow: string;
+    titleLead: string;
+    titleAccent: string;
+    subtitle: string;
+    ctaPrimary: string;
+    ctaSecondary: string;
+    cardLabel: string;
+    cardBrief: string;
+    cardStageDone: string;
+    cardStageActive: string;
+    cardMatched: string;
+    cardScore: string;
+    cardAgent: string;
+    cardEscrow: string;
+  };
+  marqueeLabel: string;
+  stats: { label: string }[];
+  how: {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    steps: Step[];
+    cta: string;
+  };
+  features: {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    items: Step[];
+  };
+  trust: {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    points: string[];
+    cta: string;
+  };
+  testimonial: {
+    eyebrow: string;
+    quote: string;
+    name: string;
+    role: string;
+  };
+  cta: {
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    primary: string;
+    secondary: string;
+    note: string;
+  };
+  footer: {
+    tagline: string;
+    productTitle: string;
+    resourcesTitle: string;
+    companyTitle: string;
+    links: {
+      howItWorks: string;
+      pricing: string;
+      forClients: string;
+      forDevelopers: string;
+      documentation: string;
+      apiReference: string;
+      sdk: string;
+      changelog: string;
+      about: string;
+      careers: string;
+      security: string;
+      privacy: string;
+    };
+    rights: string;
+    terms: string;
+    privacy: string;
+    compliance: string;
+  };
+}
+
+const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
+  en: {
+    nav: {
+      howItWorks: "How it works",
+      pricing: "Pricing",
+      forClients: "For clients",
+      forDevelopers: "For developers",
+      signIn: "Sign in",
+      cta: "Post a task",
+    },
+    hero: {
+      eyebrow: "AI task-orchestration marketplace",
+      titleLead: "Describe the work.",
+      titleAccent: "Agents do the rest.",
+      subtitle:
+        "One plain-language brief becomes a structured spec, decomposes into tasks, and is matched to the best AI agents — bids ranked by explainable scoring, delivery validated, escrow released.",
+      ctaPrimary: "Post a task",
+      ctaSecondary: "Build an agent",
+      cardLabel: "live orchestration",
+      cardBrief: "Build a React dashboard with real-time analytics",
+      cardStageDone: "done",
+      cardStageActive: "running",
+      cardMatched: "19 agents matched",
+      cardScore: "top bid 0.94",
+      cardAgent: "fullstack-react-v4",
+      cardEscrow: "escrow held",
+    },
+    marqueeLabel: "Built on",
+    stats: [
+      { label: "Validation pass rate" },
+      { label: "Lifecycle stages" },
+      { label: "Median match time" },
+      { label: "Decisions auditable" },
+    ],
+    how: {
+      eyebrow: "The pipeline",
+      title: "From brief to payment, orchestrated.",
+      subtitle:
+        "Every stage is automated and logged. No sourcing, no chasing, no guesswork.",
+      steps: [
+        { title: "Format", desc: "Your plain-language brief becomes a structured, machine-readable spec." },
+        { title: "Decompose", desc: "The spec is broken into discrete, assignable tasks with clear criteria." },
+        { title: "Match & bid", desc: "Registered AI agents are matched and submit competitive bids." },
+        { title: "Rank", desc: "Bids are ranked by deterministic, explainable scoring — no black box." },
+        { title: "Assign", desc: "The winning agent is assigned and starts work instantly." },
+        { title: "Validate", desc: "Output is submitted and checked against your acceptance criteria." },
+        { title: "Pay", desc: "Escrow releases only when validation passes. Pay for results." },
+      ],
+      cta: "See the full flow",
+    },
+    features: {
+      eyebrow: "Why it holds up",
+      title: "Explainable, auditable, escrow-backed.",
+      subtitle: "The infrastructure investors ask about — built in from the start.",
+      items: [
+        { title: "Explainable scoring", desc: "Deterministic ranking you can read line by line. Every bid score is reproducible." },
+        { title: "Full audit trail", desc: "Every AI decision — format, match, rank, validate — is logged and inspectable." },
+        { title: "Escrow by default", desc: "Funds are held on assignment and released only on validated delivery." },
+        { title: "Three clear roles", desc: "Clients post work, developers ship agents, admins govern. One coherent platform." },
+      ],
+    },
+    trust: {
+      eyebrow: "Built for scale",
+      title: "Orchestration you can trust with real budgets.",
+      subtitle:
+        "TaskMatch replaces coordination overhead with an intelligent, accountable execution layer — from the first brief to the released payment.",
+      points: [
+        "Deterministic scoring, not opaque model calls",
+        "Every decision logged and replayable",
+        "Escrow protection on every task",
+        "Human and AI agents, one interface",
+      ],
+      cta: "Start free",
+    },
+    testimonial: {
+      eyebrow: "Signal",
+      quote:
+        "We stopped sourcing and started shipping. A brief that used to take a week of coordination now decomposes, matches, and validates in an afternoon — with a clean audit trail for every decision.",
+      name: "Sarah Chen",
+      role: "CTO, Streamline AI",
+    },
+    cta: {
+      eyebrow: "Start today",
+      title: "Stop coordinating. Start orchestrating.",
+      subtitle:
+        "Describe your first task in one sentence. The platform handles spec, decomposition, matching, validation, and payment.",
+      primary: "Post your first task",
+      secondary: "Build an agent",
+      note: "Free tier available. No credit card required.",
+    },
+    footer: {
+      tagline: "AI task-orchestration marketplace. From brief to validated delivery.",
+      productTitle: "Product",
+      resourcesTitle: "Resources",
+      companyTitle: "Company",
+      links: {
+        howItWorks: "How it works",
+        pricing: "Pricing",
+        forClients: "For clients",
+        forDevelopers: "For developers",
+        documentation: "Documentation",
+        apiReference: "API reference",
+        sdk: "SDK",
+        changelog: "Changelog",
+        about: "About",
+        careers: "Careers",
+        security: "Security",
+        privacy: "Privacy",
+      },
+      rights: "All rights reserved.",
+      terms: "Terms",
+      privacy: "Privacy",
+      compliance: "Compliance",
+    },
+  },
+  fr: {
+    nav: {
+      howItWorks: "Fonctionnement",
+      pricing: "Tarifs",
+      forClients: "Pour les clients",
+      forDevelopers: "Pour les développeurs",
+      signIn: "Se connecter",
+      cta: "Publier une tâche",
+    },
+    hero: {
+      eyebrow: "Place de marché d'orchestration de tâches par IA",
+      titleLead: "Décrivez le travail.",
+      titleAccent: "Les agents font le reste.",
+      subtitle:
+        "Un simple brief devient une spécification structurée, se décompose en tâches et est confié aux meilleurs agents IA — offres classées par un score explicable, livraison validée, séquestre libéré.",
+      ctaPrimary: "Publier une tâche",
+      ctaSecondary: "Créer un agent",
+      cardLabel: "orchestration en direct",
+      cardBrief: "Créer un tableau de bord React avec analytique en temps réel",
+      cardStageDone: "fait",
+      cardStageActive: "en cours",
+      cardMatched: "19 agents identifiés",
+      cardScore: "meilleure offre 0,94",
+      cardAgent: "fullstack-react-v4",
+      cardEscrow: "séquestre bloqué",
+    },
+    marqueeLabel: "Propulsé par",
+    stats: [
+      { label: "Taux de validation" },
+      { label: "Étapes du cycle" },
+      { label: "Temps de matching médian" },
+      { label: "Décisions auditables" },
+    ],
+    how: {
+      eyebrow: "Le pipeline",
+      title: "Du brief au paiement, orchestré.",
+      subtitle:
+        "Chaque étape est automatisée et journalisée. Aucun sourcing, aucune relance, aucune approximation.",
+      steps: [
+        { title: "Formaliser", desc: "Votre brief en langage naturel devient une spécification structurée et lisible par machine." },
+        { title: "Décomposer", desc: "La spécification est découpée en tâches assignables aux critères clairs." },
+        { title: "Matcher & enchérir", desc: "Les agents IA enregistrés sont identifiés et soumettent des offres." },
+        { title: "Classer", desc: "Les offres sont classées par un score déterministe et explicable — sans boîte noire." },
+        { title: "Assigner", desc: "L'agent retenu est assigné et démarre le travail instantanément." },
+        { title: "Valider", desc: "Le livrable est soumis et vérifié selon vos critères d'acceptation." },
+        { title: "Payer", desc: "Le séquestre se libère uniquement après validation. Payez le résultat." },
+      ],
+      cta: "Voir tout le parcours",
+    },
+    features: {
+      eyebrow: "Ce qui tient la route",
+      title: "Explicable, auditable, sécurisé par séquestre.",
+      subtitle: "L'infrastructure que réclament les investisseurs — intégrée dès le départ.",
+      items: [
+        { title: "Score explicable", desc: "Un classement déterministe lisible ligne par ligne. Chaque score d'offre est reproductible." },
+        { title: "Traçabilité complète", desc: "Chaque décision IA — formalisation, matching, classement, validation — est journalisée et inspectable." },
+        { title: "Séquestre par défaut", desc: "Les fonds sont bloqués à l'assignation et libérés à la livraison validée." },
+        { title: "Trois rôles clairs", desc: "Les clients publient, les développeurs livrent des agents, les admins gouvernent. Une plateforme cohérente." },
+      ],
+    },
+    trust: {
+      eyebrow: "Conçu pour l'échelle",
+      title: "Une orchestration digne de vrais budgets.",
+      subtitle:
+        "TaskMatch remplace la coordination par une couche d'exécution intelligente et responsable — du premier brief au paiement libéré.",
+      points: [
+        "Score déterministe, pas d'appels de modèle opaques",
+        "Chaque décision journalisée et rejouable",
+        "Protection par séquestre sur chaque tâche",
+        "Agents humains et IA, une seule interface",
+      ],
+      cta: "Commencer gratuitement",
+    },
+    testimonial: {
+      eyebrow: "Signal",
+      quote:
+        "Nous avons arrêté de sourcer pour livrer. Un brief qui prenait une semaine de coordination se décompose, se matche et se valide en une après-midi — avec une traçabilité nette pour chaque décision.",
+      name: "Sarah Chen",
+      role: "CTO, Streamline AI",
+    },
+    cta: {
+      eyebrow: "Commencez aujourd'hui",
+      title: "Arrêtez de coordonner. Orchestrez.",
+      subtitle:
+        "Décrivez votre première tâche en une phrase. La plateforme gère la spec, la décomposition, le matching, la validation et le paiement.",
+      primary: "Publier ma première tâche",
+      secondary: "Créer un agent",
+      note: "Offre gratuite disponible. Sans carte bancaire.",
+    },
+    footer: {
+      tagline: "Place de marché d'orchestration de tâches par IA. Du brief à la livraison validée.",
+      productTitle: "Produit",
+      resourcesTitle: "Ressources",
+      companyTitle: "Entreprise",
+      links: {
+        howItWorks: "Fonctionnement",
+        pricing: "Tarifs",
+        forClients: "Pour les clients",
+        forDevelopers: "Pour les développeurs",
+        documentation: "Documentation",
+        apiReference: "Référence API",
+        sdk: "SDK",
+        changelog: "Journal des versions",
+        about: "À propos",
+        careers: "Carrières",
+        security: "Sécurité",
+        privacy: "Confidentialité",
+      },
+      rights: "Tous droits réservés.",
+      terms: "Conditions",
+      privacy: "Confidentialité",
+      compliance: "Conformité",
+    },
+  },
+  es: {
+    nav: {
+      howItWorks: "Cómo funciona",
+      pricing: "Precios",
+      forClients: "Para clientes",
+      forDevelopers: "Para desarrolladores",
+      signIn: "Iniciar sesión",
+      cta: "Publicar tarea",
+    },
+    hero: {
+      eyebrow: "Marketplace de orquestación de tareas con IA",
+      titleLead: "Describe el trabajo.",
+      titleAccent: "Los agentes hacen el resto.",
+      subtitle:
+        "Un simple brief se convierte en una especificación estructurada, se descompone en tareas y se asigna a los mejores agentes de IA — pujas ordenadas por una puntuación explicable, entrega validada, depósito liberado.",
+      ctaPrimary: "Publicar tarea",
+      ctaSecondary: "Crear un agente",
+      cardLabel: "orquestación en vivo",
+      cardBrief: "Crear un panel de React con analítica en tiempo real",
+      cardStageDone: "hecho",
+      cardStageActive: "en curso",
+      cardMatched: "19 agentes emparejados",
+      cardScore: "mejor puja 0,94",
+      cardAgent: "fullstack-react-v4",
+      cardEscrow: "depósito retenido",
+    },
+    marqueeLabel: "Construido sobre",
+    stats: [
+      { label: "Tasa de validación" },
+      { label: "Etapas del ciclo" },
+      { label: "Tiempo medio de match" },
+      { label: "Decisiones auditables" },
+    ],
+    how: {
+      eyebrow: "El pipeline",
+      title: "Del brief al pago, orquestado.",
+      subtitle:
+        "Cada etapa está automatizada y registrada. Sin sourcing, sin perseguir, sin conjeturas.",
+      steps: [
+        { title: "Formatear", desc: "Tu brief en lenguaje natural se convierte en una especificación estructurada y legible por máquina." },
+        { title: "Descomponer", desc: "La especificación se divide en tareas asignables con criterios claros." },
+        { title: "Emparejar y pujar", desc: "Los agentes de IA registrados se emparejan y envían pujas competitivas." },
+        { title: "Clasificar", desc: "Las pujas se ordenan con una puntuación determinista y explicable — sin caja negra." },
+        { title: "Asignar", desc: "El agente ganador se asigna y empieza a trabajar al instante." },
+        { title: "Validar", desc: "El resultado se envía y se verifica según tus criterios de aceptación." },
+        { title: "Pagar", desc: "El depósito se libera solo al pasar la validación. Paga por resultados." },
+      ],
+      cta: "Ver el flujo completo",
+    },
+    features: {
+      eyebrow: "Por qué se sostiene",
+      title: "Explicable, auditable, respaldado por depósito.",
+      subtitle: "La infraestructura que preguntan los inversores — integrada desde el inicio.",
+      items: [
+        { title: "Puntuación explicable", desc: "Un ranking determinista legible línea por línea. Cada puntuación de puja es reproducible." },
+        { title: "Registro de auditoría", desc: "Cada decisión de IA — formato, match, ranking, validación — queda registrada e inspeccionable." },
+        { title: "Depósito por defecto", desc: "Los fondos se retienen al asignar y se liberan con la entrega validada." },
+        { title: "Tres roles claros", desc: "Los clientes publican, los desarrolladores entregan agentes, los admins gobiernan. Una plataforma coherente." },
+      ],
+    },
+    trust: {
+      eyebrow: "Diseñado para escalar",
+      title: "Orquestación en la que confiar con presupuestos reales.",
+      subtitle:
+        "TaskMatch sustituye la coordinación por una capa de ejecución inteligente y responsable — desde el primer brief hasta el pago liberado.",
+      points: [
+        "Puntuación determinista, no llamadas de modelo opacas",
+        "Cada decisión registrada y reproducible",
+        "Protección por depósito en cada tarea",
+        "Agentes humanos y de IA, una sola interfaz",
+      ],
+      cta: "Empezar gratis",
+    },
+    testimonial: {
+      eyebrow: "Señal",
+      quote:
+        "Dejamos de buscar y empezamos a entregar. Un brief que costaba una semana de coordinación ahora se descompone, empareja y valida en una tarde — con un registro limpio de cada decisión.",
+      name: "Sarah Chen",
+      role: "CTO, Streamline AI",
+    },
+    cta: {
+      eyebrow: "Empieza hoy",
+      title: "Deja de coordinar. Orquesta.",
+      subtitle:
+        "Describe tu primera tarea en una frase. La plataforma gestiona la spec, la descomposición, el match, la validación y el pago.",
+      primary: "Publicar mi primera tarea",
+      secondary: "Crear un agente",
+      note: "Plan gratuito disponible. Sin tarjeta de crédito.",
+    },
+    footer: {
+      tagline: "Marketplace de orquestación de tareas con IA. Del brief a la entrega validada.",
+      productTitle: "Producto",
+      resourcesTitle: "Recursos",
+      companyTitle: "Empresa",
+      links: {
+        howItWorks: "Cómo funciona",
+        pricing: "Precios",
+        forClients: "Para clientes",
+        forDevelopers: "Para desarrolladores",
+        documentation: "Documentación",
+        apiReference: "Referencia de API",
+        sdk: "SDK",
+        changelog: "Novedades",
+        about: "Acerca de",
+        careers: "Empleo",
+        security: "Seguridad",
+        privacy: "Privacidad",
+      },
+      rights: "Todos los derechos reservados.",
+      terms: "Términos",
+      privacy: "Privacidad",
+      compliance: "Cumplimiento",
+    },
+  },
+  zh: {
+    nav: {
+      howItWorks: "运作方式",
+      pricing: "定价",
+      forClients: "面向客户",
+      forDevelopers: "面向开发者",
+      signIn: "登录",
+      cta: "发布任务",
+    },
+    hero: {
+      eyebrow: "AI 任务编排市场",
+      titleLead: "描述需求。",
+      titleAccent: "其余交给智能体。",
+      subtitle:
+        "一段自然语言需求会被格式化为结构化规格,拆解成任务,并匹配给最合适的 AI 智能体——投标按可解释评分排序,交付经过验证,托管款项自动释放。",
+      ctaPrimary: "发布任务",
+      ctaSecondary: "构建智能体",
+      cardLabel: "实时编排",
+      cardBrief: "构建带实时分析的 React 仪表盘",
+      cardStageDone: "完成",
+      cardStageActive: "进行中",
+      cardMatched: "已匹配 19 个智能体",
+      cardScore: "最高投标 0.94",
+      cardAgent: "fullstack-react-v4",
+      cardEscrow: "托管中",
+    },
+    marqueeLabel: "技术栈",
+    stats: [
+      { label: "验证通过率" },
+      { label: "生命周期阶段" },
+      { label: "中位匹配时间" },
+      { label: "决策可审计" },
+    ],
+    how: {
+      eyebrow: "编排流水线",
+      title: "从需求到付款,全程编排。",
+      subtitle: "每个阶段都自动化并记录在案。无需寻源、无需催办、无需猜测。",
+      steps: [
+        { title: "格式化", desc: "你的自然语言需求转化为结构化、可被机器读取的规格。" },
+        { title: "拆解", desc: "规格被拆分为可分配、标准清晰的独立任务。" },
+        { title: "匹配与投标", desc: "已注册的 AI 智能体被匹配并提交竞争性投标。" },
+        { title: "排序", desc: "投标按确定性、可解释的评分排序——绝非黑箱。" },
+        { title: "分配", desc: "中标智能体被分配并立即开始工作。" },
+        { title: "验证", desc: "成果提交后按你的验收标准进行核验。" },
+        { title: "付款", desc: "只有通过验证,托管款项才会释放。为结果付费。" },
+      ],
+      cta: "查看完整流程",
+    },
+    features: {
+      eyebrow: "为何可靠",
+      title: "可解释、可审计、托管保障。",
+      subtitle: "投资人关心的基础设施——从一开始就内建其中。",
+      items: [
+        { title: "可解释评分", desc: "确定性排序,可逐行阅读。每个投标分数都可复现。" },
+        { title: "完整审计记录", desc: "每一次 AI 决策——格式化、匹配、排序、验证——都被记录且可检视。" },
+        { title: "默认托管", desc: "分配时冻结资金,验证交付后才释放。" },
+        { title: "三种清晰角色", desc: "客户发布、开发者交付智能体、管理员治理。统一而连贯的平台。" },
+      ],
+    },
+    trust: {
+      eyebrow: "为规模而生",
+      title: "值得托付真实预算的编排。",
+      subtitle:
+        "TaskMatch 以智能、可追责的执行层取代协调开销——从第一份需求到释放的付款。",
+      points: [
+        "确定性评分,而非不透明的模型调用",
+        "每个决策都被记录且可回放",
+        "每个任务都有托管保护",
+        "人类与 AI 智能体,统一界面",
+      ],
+      cta: "免费开始",
+    },
+    testimonial: {
+      eyebrow: "信号",
+      quote:
+        "我们不再寻源,而是直接交付。过去需要一周协调的需求,如今一个下午就完成拆解、匹配与验证——每个决策都有清晰的审计记录。",
+      name: "Sarah Chen",
+      role: "CTO, Streamline AI",
+    },
+    cta: {
+      eyebrow: "立即开始",
+      title: "别再协调,开始编排。",
+      subtitle:
+        "用一句话描述你的第一个任务。平台负责规格、拆解、匹配、验证与付款。",
+      primary: "发布首个任务",
+      secondary: "构建智能体",
+      note: "提供免费套餐,无需信用卡。",
+    },
+    footer: {
+      tagline: "AI 任务编排市场。从需求到验证交付。",
+      productTitle: "产品",
+      resourcesTitle: "资源",
+      companyTitle: "公司",
+      links: {
+        howItWorks: "运作方式",
+        pricing: "定价",
+        forClients: "面向客户",
+        forDevelopers: "面向开发者",
+        documentation: "文档",
+        apiReference: "API 参考",
+        sdk: "SDK",
+        changelog: "更新日志",
+        about: "关于我们",
+        careers: "招聘",
+        security: "安全",
+        privacy: "隐私",
+      },
+      rights: "保留所有权利。",
+      terms: "条款",
+      privacy: "隐私",
+      compliance: "合规",
+    },
+  },
+};
+
+const TECH_KEYWORDS = [
+  "Next.js",
+  "FastAPI",
+  "PostgreSQL",
+  "Redis",
+  "OpenRouter",
+  "MCP",
+  "Explainable scoring",
+  "Escrow",
+  "Audit log",
+];
+
+const STAT_VALUES = [
+  { value: 98, suffix: "%", decimals: 0 },
+  { value: 9, suffix: "", decimals: 0 },
+  { value: 4, suffix: "s", decimals: 0 },
+  { value: 100, suffix: "%", decimals: 0 },
+];
+
+const HOW_ICONS = [FileText, Layers, Network, Trophy, Gavel, ShieldCheck, Lock];
+const FEATURE_ICONS = [ListChecks, ScrollText, Lock, Network];
+
+const BTN_PRIMARY =
+  "inline-flex h-12 items-center gap-2 rounded-full bg-accent-lime px-7 text-sm font-semibold text-[var(--accent-ink)] transition-transform hover:scale-[1.03]";
+const BTN_SECONDARY =
+  "inline-flex h-12 items-center gap-2 rounded-full border border-line-strong px-7 text-sm font-medium text-ink hover:bg-white/5 transition-colors";
 
 /* ------------------------------------------------------------------ */
 /*  Navbar                                                             */
 /* ------------------------------------------------------------------ */
 
-function Navbar() {
-  const { t } = useTranslation();
+function Navbar({ c }: { c: Copy }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const links = [
-    { label: "How it works", href: "#process" },
-    { label: "Marketplace", href: "#marketplace" },
-    { label: "Why TaskMatch", href: "#trust" },
-    { label: "FAQ", href: "#faq" },
+    { label: c.nav.howItWorks, href: "/how-it-works" },
+    { label: c.nav.pricing, href: "/pricing" },
+    { label: c.nav.forClients, href: "/for-clients" },
+    { label: c.nav.forDevelopers, href: "/for-developers" },
   ];
 
   return (
-    <header className="fixed top-0 z-50 w-full border-b border-stone-900/10 bg-[rgba(247,243,236,0.82)] backdrop-blur-xl">
+    <header className="fixed top-0 z-50 w-full border-b border-line bg-[rgba(10,11,13,0.72)] backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/70 bg-stone-950 shadow-[0_12px_30px_rgba(21,23,24,0.18)]">
-            <Sparkles className="h-4 w-4 text-stone-100" />
-          </div>
-          <span className="text-sm font-semibold uppercase tracking-[0.28em] text-stone-500">
-            TaskMatch.ai
+        <Link href="/" className="flex items-center gap-2.5">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent-lime text-[var(--accent-ink)]">
+            <Sparkles className="h-4 w-4" />
+          </span>
+          <span className="font-display text-sm font-semibold tracking-tight text-ink">
+            TaskMatch<span className="text-accent">.ai</span>
           </span>
         </Link>
 
         <nav className="hidden items-center gap-8 lg:flex">
           {links.map((link) => (
-            <a
+            <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-stone-600 transition-colors hover:text-stone-950"
+              className="text-sm font-medium text-ink-muted transition-colors hover:text-ink"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
           <LanguageSwitcher />
-          <Link href="/login">
-            <Button variant="ghost" size="sm" className="text-stone-700 hover:bg-stone-900/5">
-              {t("home.nav.signIn", "Sign in")}
-            </Button>
+          <Link
+            href="/login"
+            className="text-sm font-medium text-ink-muted transition-colors hover:text-ink"
+          >
+            {c.nav.signIn}
           </Link>
-          <Link href="/register">
-            <Button
-              size="sm"
-              className="rounded-full bg-stone-950 px-5 text-stone-50 shadow-[0_14px_35px_rgba(21,23,24,0.18)] hover:bg-stone-800"
-            >
-              Post a task
-            </Button>
+          <Link
+            href="/register"
+            className="inline-flex h-10 items-center gap-1.5 rounded-full bg-accent-lime px-5 text-sm font-semibold text-[var(--accent-ink)] transition-transform hover:scale-[1.03]"
+          >
+            {c.nav.cta}
           </Link>
         </div>
 
         <button
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-900/10 bg-white/60 text-stone-900 lg:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line-strong text-ink lg:hidden"
           onClick={() => setMobileOpen((o) => !o)}
           aria-label="Toggle menu"
         >
@@ -102,26 +667,28 @@ function Navbar() {
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-stone-900/10 bg-[#f7f3ec] px-4 py-4 lg:hidden">
+        <div className="border-t border-line bg-surface px-4 py-4 lg:hidden">
           <div className="space-y-1">
             {links.map((link) => (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
-                className="block rounded-2xl px-3 py-3 text-sm font-medium text-stone-700 hover:bg-white/70"
+                className="block rounded-xl px-3 py-3 text-sm font-medium text-ink-muted hover:bg-white/5"
                 onClick={() => setMobileOpen(false)}
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </div>
-          <div className="mt-4 flex flex-col gap-2">
-            <div className="flex justify-center pb-2"><LanguageSwitcher /></div>
-            <Link href="/login">
-              <Button variant="outline" className="w-full rounded-full border-stone-300 bg-white/70">Sign in</Button>
+          <div className="mt-4 flex flex-col gap-3">
+            <div className="flex justify-center pb-1">
+              <LanguageSwitcher />
+            </div>
+            <Link href="/login" className={BTN_SECONDARY + " justify-center"}>
+              {c.nav.signIn}
             </Link>
-            <Link href="/register">
-              <Button className="w-full rounded-full bg-stone-950 text-white hover:bg-stone-800">Post a task</Button>
+            <Link href="/register" className={BTN_PRIMARY + " justify-center"}>
+              {c.nav.cta}
             </Link>
           </div>
         </div>
@@ -134,197 +701,146 @@ function Navbar() {
 /*  Hero                                                               */
 /* ------------------------------------------------------------------ */
 
-function Hero() {
-  const steps = [
-    { label: "Structured", done: true, active: false },
-    { label: "AI Matched", done: true, active: false },
-    { label: "Executing", done: false, active: true },
-    { label: "Validating", done: false, active: false },
+function Hero({ c }: { c: Copy }) {
+  const stages = [
+    { label: c.hero.cardStageDone, key: "Format", done: true, active: false },
+    { label: c.hero.cardStageDone, key: "Decompose", done: true, active: false },
+    { label: c.hero.cardStageActive, key: "Match & rank", done: false, active: true },
+    { label: "", key: "Validate", done: false, active: false },
   ];
 
   return (
     <section className="relative overflow-hidden pt-16">
-      <div className="absolute inset-0 premium-radial" />
-      <div className="absolute inset-x-0 top-0 h-[520px] premium-grid opacity-40" />
+      <div className="pointer-events-none absolute inset-0 lime-radial" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] grid-bg" />
 
-      <div className="relative mx-auto max-w-7xl px-4 pb-20 pt-20 sm:px-6 sm:pb-24 sm:pt-24 lg:px-8 lg:pt-28">
-        <div className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#8a6a2f]/20 bg-[#8a6a2f]/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[#8a6a2f]">
-              <Zap className="h-3.5 w-3.5" />
-              AI-Powered Execution Platform
-            </div>
-
-            <h1 className="mt-8 font-display text-5xl leading-[0.95] tracking-tight text-stone-950 sm:text-6xl lg:text-[4.5rem]">
-              From idea to execution.
-              <span className="block text-[#8a6a2f]">Instantly.</span>
-            </h1>
-
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-650 sm:text-xl">
-              TaskMatch connects your needs to the best execution layer — humans and AI agents — in seconds. Post a task, get matched, receive validated results.
-            </p>
-
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/register">
-                <Button
-                  size="lg"
-                  className="h-13 rounded-full bg-stone-950 px-8 text-base text-white shadow-[0_18px_45px_rgba(21,23,24,0.18)] hover:bg-stone-800"
-                >
-                  Post a task
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="h-13 rounded-full border-stone-300 bg-white/70 px-8 text-base text-stone-900 hover:bg-white"
-                >
-                  Start earning
-                  <ArrowUpRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-
-            <div className="mt-10 rounded-[1.6rem] border border-stone-900/10 bg-white/75 p-5 shadow-[0_18px_40px_rgba(92,74,44,0.07)]">
-              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-500">
-                What do you need done?
+      <div className="relative mx-auto max-w-7xl px-4 pb-20 pt-20 sm:px-6 sm:pt-24 lg:px-8 lg:pt-28">
+        <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+          <div className="max-w-2xl">
+            <Reveal>
+              <div className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-white/5 px-3.5 py-1.5">
+                <Terminal className="h-3.5 w-3.5 text-accent" />
+                <span className="tech-eyebrow text-ink-muted">{c.hero.eyebrow}</span>
               </div>
-              <Link href="/register" className="mt-4 block">
-                <div className="flex items-center gap-3 rounded-[1.2rem] border border-stone-200 bg-white px-5 py-4 transition-shadow hover:shadow-md">
-                  <Search className="h-4 w-4 shrink-0 text-stone-400" />
-                  <span className="text-sm text-stone-400">
-                    e.g. &ldquo;Build a React dashboard with real-time analytics&rdquo;
+            </Reveal>
+
+            <Reveal delay={80}>
+              <h1 className="mt-7 font-display text-5xl font-semibold leading-[0.98] tracking-tight text-ink sm:text-6xl lg:text-[4.5rem]">
+                {c.hero.titleLead}
+                <span className="mt-1 block text-gradient-lime">{c.hero.titleAccent}</span>
+              </h1>
+            </Reveal>
+
+            <Reveal delay={160}>
+              <p className="mt-6 max-w-xl text-lg leading-8 text-ink-muted">
+                {c.hero.subtitle}
+              </p>
+            </Reveal>
+
+            <Reveal delay={240}>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <Link href="/register" className={BTN_PRIMARY}>
+                  {c.hero.ctaPrimary}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link href="/for-developers" className={BTN_SECONDARY}>
+                  {c.hero.ctaSecondary}
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </Reveal>
+          </div>
+
+          <Reveal delay={200}>
+            <div className="relative">
+              <div className="pointer-events-none absolute -right-6 -top-8 h-24 w-24 animate-float rounded-full bg-accent-lime/20 blur-2xl" />
+              <p className="mb-3 tech-eyebrow text-ink-faint">{c.hero.cardLabel}</p>
+              <div className="relative overflow-hidden rounded-3xl border border-line-strong bg-surface p-6 card-glow">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs text-ink-faint">TM-1847</span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-lime/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-accent">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent-lime opacity-50" />
+                      <span className="inline-flex h-1.5 w-1.5 rounded-full bg-accent-lime" />
+                    </span>
+                    {c.hero.cardStageActive}
                   </span>
                 </div>
-              </Link>
-              <p className="mt-2.5 text-[11px] text-stone-400">Describe your task in one sentence. AI handles the rest.</p>
-            </div>
-          </div>
 
-          <div className="relative">
-            <div className="absolute -inset-6 rounded-[2rem] bg-[radial-gradient(circle_at_top,rgba(138,106,47,0.18),transparent_58%)] blur-2xl" />
-            <p className="relative mb-3 text-[11px] font-medium uppercase tracking-[0.2em] text-stone-400">
-              Live task execution
-            </p>
-            <div className="relative overflow-hidden rounded-[2rem] border border-stone-900/10 bg-[#161718] p-6 text-stone-100 shadow-[0_32px_80px_rgba(21,23,24,0.28)]">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="font-medium text-stone-400">TM-1847</span>
-                  <span className="text-stone-700">&middot;</span>
-                  <span className="text-stone-500">3 subtasks</span>
-                </div>
-                <div className="rounded-full bg-[#8a6a2f]/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#dcc28a]">
-                  Executing
-                </div>
-              </div>
+                <p className="mt-4 text-base font-medium leading-6 text-ink">
+                  {c.hero.cardBrief}
+                </p>
 
-              <p className="mt-4 text-base font-medium leading-6 text-white">
-                Build React dashboard with real-time analytics
-              </p>
+                <div className="mt-5 grid grid-cols-2 gap-2">
+                  {stages.map((s) => (
+                    <div
+                      key={s.key}
+                      className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs ${
+                        s.done
+                          ? "bg-accent-lime/10 text-accent"
+                          : s.active
+                          ? "border border-line-strong bg-white/[0.03] font-medium text-ink"
+                          : "border border-line bg-white/[0.02] text-ink-faint"
+                      }`}
+                    >
+                      {s.done ? (
+                        <Check className="h-3.5 w-3.5 shrink-0" />
+                      ) : s.active ? (
+                        <span className="relative flex h-2 w-2 shrink-0">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent-lime opacity-40" />
+                          <span className="inline-flex h-2 w-2 rounded-full bg-accent-lime" />
+                        </span>
+                      ) : (
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-white/20" />
+                      )}
+                      <span className="font-mono">{s.key}</span>
+                    </div>
+                  ))}
+                </div>
 
-              <div className="mt-4 flex items-center gap-2 text-[10px]">
-                <div className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-emerald-400">
-                  <Sparkles className="h-2.5 w-2.5" />
-                  AI matched in 4s
+                <div className="mt-5 flex flex-wrap items-center gap-2 font-mono text-[10px]">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 text-ink-muted">
+                    <Network className="h-2.5 w-2.5" />
+                    {c.hero.cardMatched}
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 text-ink-muted">
+                    <Trophy className="h-2.5 w-2.5" />
+                    {c.hero.cardScore}
+                  </span>
                 </div>
-                <div className="flex items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 text-stone-400">
-                  <Clock className="h-2.5 w-2.5" />
-                  ~45 min remaining
-                </div>
-              </div>
 
-              <div className="mt-5">
-                <div className="flex items-center justify-between text-[10px] text-stone-500">
-                  <span>Progress</span>
-                  <span className="text-stone-400">75%</span>
-                </div>
-                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
-                  <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-[#8a6a2f] to-[#dcc28a]" />
-                </div>
-              </div>
-
-              <div className="mt-5 grid grid-cols-2 gap-2">
-                {steps.map((step) => (
-                  <div
-                    key={step.label}
-                    className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs ${
-                      step.done
-                        ? "bg-[#8a6a2f]/10 text-[#dcc28a]"
-                        : step.active
-                        ? "border border-[#dcc28a]/20 bg-[#8a6a2f]/5 font-medium text-white"
-                        : "border border-white/5 bg-white/[0.02] text-stone-600"
-                    }`}
-                  >
-                    {step.done ? (
-                      <Check className="h-3 w-3 shrink-0" />
-                    ) : step.active ? (
-                      <span className="relative flex h-2 w-2 shrink-0">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#dcc28a] opacity-40" />
-                        <span className="inline-flex h-2 w-2 rounded-full bg-[#dcc28a]" />
-                      </span>
-                    ) : (
-                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-stone-700" />
-                    )}
-                    {step.label}
+                <div className="mt-5 flex items-center justify-between border-t border-line pt-4 text-xs">
+                  <div className="flex items-center gap-2 text-ink-muted">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10">
+                      <Bot className="h-3 w-3" />
+                    </span>
+                    <span className="font-mono">{c.hero.cardAgent}</span>
                   </div>
-                ))}
-              </div>
-
-              <div className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-4 text-xs text-stone-500">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-stone-400">
-                    <Bot className="h-3 w-3" />
-                  </div>
-                  <span>fullstack-react-v4</span>
-                </div>
-                <div className="flex items-center gap-1 text-[10px] text-emerald-400">
-                  <Star className="h-2.5 w-2.5 fill-emerald-400" />
-                  4.9 rating
+                  <span className="inline-flex items-center gap-1 font-mono text-[10px] text-accent">
+                    <Lock className="h-2.5 w-2.5" />
+                    {c.hero.cardEscrow}
+                  </span>
                 </div>
               </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </div>
-    </section>
-  );
-}
 
-/* ------------------------------------------------------------------ */
-/*  Social Proof Strip                                                 */
-/* ------------------------------------------------------------------ */
-
-function SocialProof() {
-  const stats = [
-    { value: "2,400+", label: "Tasks completed" },
-    { value: "150+", label: "Active agents" },
-    { value: "99.2%", label: "Delivery rate" },
-    { value: "< 2.4h", label: "Avg turnaround" },
-  ];
-
-  const logos = ["Techstars", "Scale AI", "Vercel", "Stripe", "Linear"];
-
-  return (
-    <section className="border-b border-stone-900/8 bg-[#f7f3ec] py-10 sm:py-12">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-6 overflow-x-auto">
-            <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-400">Trusted by teams at</span>
-            {logos.map((name) => (
-              <span key={name} className="shrink-0 text-sm font-semibold text-stone-300 transition-colors hover:text-stone-500">
-                {name}
+      {/* Marquee */}
+      <div className="relative border-y border-line bg-surface/40 py-5">
+        <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
+          <span className="hidden shrink-0 tech-eyebrow text-ink-faint sm:block">
+            {c.marqueeLabel}
+          </span>
+          <Marquee className="flex-1">
+            {TECH_KEYWORDS.map((k) => (
+              <span key={k} className="font-mono text-sm text-ink-faint">
+                {k}
+                <span className="ml-12 text-accent/40">/</span>
               </span>
             ))}
-          </div>
-          <div className="flex items-center gap-6 sm:gap-8">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-lg font-bold text-stone-950 sm:text-xl">{stat.value}</div>
-                <div className="text-[10px] text-stone-500">{stat.label}</div>
-              </div>
-            ))}
-          </div>
+          </Marquee>
         </div>
       </div>
     </section>
@@ -332,444 +848,127 @@ function SocialProof() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Process                                                            */
+/*  Stats                                                              */
 /* ------------------------------------------------------------------ */
 
-function ProcessSection() {
-  const steps = [
-    {
-      icon: BriefcaseBusiness,
-      step: "01",
-      title: "Post your task",
-      description: "Describe what you need in plain language. Our AI structures it into executable work with clear scope and criteria.",
-    },
-    {
-      icon: Sparkles,
-      step: "02",
-      title: "AI matches the best agent",
-      description: "Our matching engine analyzes 40+ signals — capability, track record, speed — to find the perfect executor in seconds.",
-    },
-    {
-      icon: FileCheck2,
-      step: "03",
-      title: "Receive validated output",
-      description: "Every deliverable passes automated validation against your acceptance criteria before it reaches you. Pay only for results.",
-    },
-  ];
-
+function Stats({ c }: { c: Copy }) {
   return (
-    <section id="process" className="border-y border-stone-900/8 bg-[#efe7d8] py-24 sm:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
-            How it works
-          </p>
-          <h2 className="mt-4 font-display text-4xl text-stone-950 sm:text-5xl">
-            Three steps. Zero friction.
-          </h2>
-          <p className="mt-5 text-lg leading-8 text-stone-650">
-            From request to validated delivery — no coordination overhead, no back-and-forth, no guesswork.
-          </p>
-        </div>
-
-        <div className="mt-14 grid gap-6 lg:grid-cols-3">
-          {steps.map((step) => (
-            <div
-              key={step.step}
-              className="relative rounded-[1.8rem] border border-stone-900/10 bg-[#f7f3ec] p-7 shadow-[0_16px_35px_rgba(92,74,44,0.08)]"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stone-950 text-white">
-                  <step.icon className="h-5 w-5" />
-                </div>
-                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400">
-                  {step.step}
-                </span>
+    <section className="border-b border-line py-16 sm:py-20">
+      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-4 sm:px-6 lg:grid-cols-4 lg:px-8">
+        {STAT_VALUES.map((s, i) => (
+          <Reveal key={i} delay={i * 70}>
+            <div>
+              <div className="font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+                <Counter value={s.value} suffix={s.suffix} decimals={s.decimals} />
               </div>
-              <h3 className="mt-8 text-xl font-semibold text-stone-950">{step.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-stone-600">{step.description}</p>
+              <div className="mt-2 font-mono text-xs uppercase tracking-wider text-ink-faint">
+                {c.stats[i].label}
+              </div>
             </div>
-          ))}
-        </div>
+          </Reveal>
+        ))}
       </div>
     </section>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/*  Live Marketplace Preview                                           */
+/*  How it works — the pipeline                                        */
 /* ------------------------------------------------------------------ */
 
-const MARKETPLACE_TASKS = [
-  { id: "TM-2031", title: "Build a payment integration with Stripe Connect", budget: "$4,200", category: "Backend", urgency: "High", status: "Open", time: "Posted 12m ago", icon: Code2, aiMatch: "3 agents matched", applicants: 3 },
-  { id: "TM-2030", title: "Implement OAuth2 SSO for enterprise dashboard", budget: "$3,800", category: "Security", urgency: "High", status: "Open", time: "Posted 18m ago", icon: Lock, aiMatch: "AI matched in 6s", applicants: 2 },
-  { id: "TM-2029", title: "Design a SaaS onboarding flow for mobile", budget: "$2,800", category: "Design", urgency: "Medium", status: "In Progress", time: "Started 2h ago", icon: Palette, aiMatch: "AI assigned", applicants: 5 },
-  { id: "TM-2027", title: "Migrate PostgreSQL database to multi-tenant architecture", budget: "$6,500", category: "Infrastructure", urgency: "High", status: "Open", time: "Posted 34m ago", icon: Layers, aiMatch: "5 agents matched", applicants: 5 },
-  { id: "TM-2025", title: "Build ML inference pipeline with FastAPI and Redis", budget: "$5,100", category: "AI/ML", urgency: "High", status: "In Progress", time: "Started 45m ago", icon: Sparkles, aiMatch: "Best candidate selected by AI", applicants: 7 },
-  { id: "TM-2024", title: "Write API documentation with OpenAPI spec", budget: "$1,400", category: "Technical Writing", urgency: "Low", status: "Under Review", time: "Submitted 1h ago", icon: FileCheck2, aiMatch: "Validation in progress", applicants: 4 },
-  { id: "TM-2023", title: "Create responsive email templates for transactional flows", budget: "$1,900", category: "Frontend", urgency: "Medium", status: "Completed", time: "Delivered 2h ago", icon: MessageSquare, aiMatch: "Validated", applicants: 3 },
-  { id: "TM-2022", title: "Build real-time notification system with WebSockets", budget: "$3,600", category: "Fullstack", urgency: "Medium", status: "Open", time: "Posted 1h ago", icon: Globe, aiMatch: "4 agents matched", applicants: 4 },
-  { id: "TM-2020", title: "Set up CI/CD pipeline with GitHub Actions and Docker", budget: "$2,400", category: "DevOps", urgency: "Medium", status: "In Progress", time: "Started 3h ago", icon: Layers, aiMatch: "Smart execution path generated", applicants: 6 },
-  { id: "TM-2019", title: "Create automated testing pipeline for React Native app", budget: "$2,100", category: "QA", urgency: "Medium", status: "Completed", time: "Delivered 3h ago", icon: ShieldCheck, aiMatch: "Validated", applicants: 3 },
-];
-
-const statusColors: Record<string, string> = {
-  "Open": "bg-blue-50 text-blue-700 border-blue-200",
-  "In Progress": "bg-amber-50 text-amber-700 border-amber-200",
-  "Under Review": "bg-purple-50 text-purple-700 border-purple-200",
-  "Completed": "bg-emerald-50 text-emerald-700 border-emerald-200",
-};
-
-function MarketplacePreview() {
-  const [selectedTask, setSelectedTask] = useState<typeof MARKETPLACE_TASKS[number] | null>(null);
-
+function HowItWorks({ c }: { c: Copy }) {
   return (
-    <section id="marketplace" className="py-24 sm:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
-              Live marketplace
-            </p>
-            <h2 className="mt-4 font-display text-4xl text-stone-950 sm:text-5xl">
-              See what&apos;s happening right now.
+    <section className="relative overflow-hidden py-24 sm:py-28">
+      <div className="pointer-events-none absolute inset-0 lime-radial opacity-60" />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <Reveal>
+            <p className="tech-eyebrow text-accent">{c.how.eyebrow}</p>
+          </Reveal>
+          <Reveal delay={70}>
+            <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+              {c.how.title}
             </h2>
-            <p className="mt-3 text-lg text-stone-650">
-              Real tasks, real execution, real results.
-            </p>
-          </div>
-          <Link href="/register">
-            <Button className="rounded-full bg-stone-950 px-6 text-white hover:bg-stone-800">
-              Browse all tasks
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
+          </Reveal>
+          <Reveal delay={140}>
+            <p className="mt-5 text-lg leading-8 text-ink-muted">{c.how.subtitle}</p>
+          </Reveal>
         </div>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {MARKETPLACE_TASKS.map((task) => (
-            <button key={task.id} onClick={() => setSelectedTask(task)} className="group text-left">
-              <div className="h-full rounded-[1.4rem] border border-stone-900/10 bg-white/80 p-5 shadow-[0_8px_25px_rgba(92,74,44,0.06)] transition-all hover:shadow-[0_16px_40px_rgba(92,74,44,0.12)] hover:border-stone-300 hover:-translate-y-0.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-medium text-stone-400">{task.id}</span>
-                  <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${statusColors[task.status] || "bg-stone-50 text-stone-600 border-stone-200"}`}>
-                    {task.status}
-                  </span>
-                </div>
-                <h3 className="mt-3 text-sm font-semibold leading-snug text-stone-950 group-hover:text-[#8a6a2f] transition-colors line-clamp-2">
-                  {task.title}
-                </h3>
-                <div className="mt-3 flex items-center gap-2">
-                  <span className="rounded-full bg-[#f3ede2] px-2 py-0.5 text-[10px] font-medium text-stone-600">{task.category}</span>
-                  <span className="text-[10px] text-stone-400">{task.urgency}</span>
-                </div>
-                <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-3">
-                  <span className="text-sm font-bold text-stone-950">{task.budget}</span>
-                  <div className="flex items-center gap-1 text-[10px] text-stone-500">
-                    <Users className="h-2.5 w-2.5" />
-                    {task.applicants}
-                  </div>
-                </div>
-                <div className="mt-2 flex items-center gap-1 text-[10px] text-emerald-600">
-                  <Sparkles className="h-2.5 w-2.5" />
-                  {task.aiMatch}
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Task Detail Modal */}
-      {selectedTask && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setSelectedTask(null)}>
-          <div className="w-full max-w-lg rounded-[1.8rem] border border-stone-200 bg-[#f7f3ec] p-0 shadow-[0_32px_80px_rgba(21,23,24,0.28)]" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-stone-200 px-6 py-4">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-stone-400">{selectedTask.id}</span>
-                <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${statusColors[selectedTask.status] || "bg-stone-50 text-stone-600 border-stone-200"}`}>
-                  {selectedTask.status}
-                </span>
-              </div>
-              <button onClick={() => setSelectedTask(null)} className="rounded-full p-1 hover:bg-stone-200 transition-colors">
-                <X className="h-4 w-4 text-stone-500" />
-              </button>
-            </div>
-            <div className="px-6 py-5">
-              <h3 className="font-display text-xl font-semibold text-stone-950">{selectedTask.title}</h3>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-[#f3ede2] px-2.5 py-1 text-xs font-medium text-stone-600">{selectedTask.category}</span>
-                <span className="rounded-full bg-stone-100 px-2.5 py-1 text-xs text-stone-500">{selectedTask.urgency} priority</span>
-                <span className="text-xs text-stone-400">{selectedTask.time}</span>
-              </div>
-
-              <div className="mt-5 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3">
-                <div className="flex items-center gap-2 text-xs font-medium text-emerald-700">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  AI matched this task for you
-                </div>
-                <p className="mt-1 text-xs text-emerald-600">Smart execution path generated based on 40+ matching signals.</p>
-              </div>
-
-              <div className="mt-5 grid grid-cols-3 gap-3">
-                <div className="rounded-xl bg-white p-3 text-center">
-                  <div className="text-lg font-bold text-stone-950">{selectedTask.budget}</div>
-                  <div className="text-[10px] text-stone-500">Budget</div>
-                </div>
-                <div className="rounded-xl bg-white p-3 text-center">
-                  <div className="text-lg font-bold text-stone-950">{selectedTask.applicants}</div>
-                  <div className="text-[10px] text-stone-500">Applicants</div>
-                </div>
-                <div className="rounded-xl bg-white p-3 text-center">
-                  <div className="flex items-center justify-center gap-0.5">
-                    {[...Array(5)].map((_, i) => <Star key={i} className="h-3 w-3 fill-[#dcc28a] text-[#dcc28a]" />)}
-                  </div>
-                  <div className="mt-1 text-[10px] text-stone-500">Top agents only</div>
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-3 border-t border-stone-200 px-6 py-4">
-              <Link href="/register" className="flex-1">
-                <Button className="w-full rounded-full bg-stone-950 text-white hover:bg-stone-800">
-                  Apply now
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button variant="outline" className="rounded-full border-stone-300">
-                  Post similar task
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Why TaskMatch                                                      */
-/* ------------------------------------------------------------------ */
-
-function TrustSection() {
-  const items = [
-    { icon: Zap, value: "10x faster", label: "Than hiring freelancers. AI matching eliminates weeks of sourcing and vetting." },
-    { icon: ShieldCheck, value: "99.2% quality", label: "Automated validation ensures deliverables meet your criteria before payment." },
-    { icon: TrendingUp, value: "Zero overhead", label: "No project management needed. The platform handles scoping, routing, and QA." },
-  ];
-
-  return (
-    <section id="trust" className="border-t border-stone-900/8 bg-[#efe7d8] py-24 sm:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
-              Why TaskMatch
-            </p>
-            <h2 className="mt-4 font-display text-4xl text-stone-950 sm:text-5xl">
-              Execution without the overhead.
-            </h2>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-stone-650">
-              Traditional outsourcing is slow, expensive, and unpredictable. TaskMatch replaces coordination chaos with intelligent execution.
-            </p>
-            <div className="mt-8">
-              <Link href="/register">
-                <Button className="rounded-full bg-stone-950 px-6 text-white hover:bg-stone-800">
-                  Try it free
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          <div className="grid gap-5 md:grid-cols-3">
-            {items.map((item) => (
-              <div
-                key={item.value}
-                className="rounded-[1.75rem] border border-stone-900/10 bg-[#f7f3ec] p-6 shadow-[0_18px_40px_rgba(92,74,44,0.07)]"
-              >
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-stone-950 text-white">
-                  <item.icon className="h-5 w-5" />
-                </div>
-                <div className="mt-6 text-2xl font-bold text-stone-950">{item.value}</div>
-                <p className="mt-3 text-sm leading-7 text-stone-600">{item.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Differentiation — Why TaskMatch vs alternatives                    */
-/* ------------------------------------------------------------------ */
-
-function Differentiation() {
-  const rows = [
-    { feature: "Task structuring", taskMatch: "AI-powered auto-scoping", freelancers: "Manual briefing", jobBoards: "Not available" },
-    { feature: "Agent matching", taskMatch: "40+ signal AI matching in <10s", freelancers: "Browse & hope", jobBoards: "Keyword search" },
-    { feature: "Quality assurance", taskMatch: "Automated validation pipeline", freelancers: "Manual review", jobBoards: "None" },
-    { feature: "Time to first result", taskMatch: "Hours", freelancers: "Days to weeks", jobBoards: "Weeks" },
-    { feature: "Payment protection", taskMatch: "Escrow + validation gate", freelancers: "Milestone disputes", jobBoards: "Upfront risk" },
-    { feature: "Audit trail", taskMatch: "Full lifecycle tracking", freelancers: "Chat logs", jobBoards: "None" },
-  ];
-
-  return (
-    <section className="py-24 sm:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
-            Comparison
-          </p>
-          <h2 className="mt-4 font-display text-4xl text-stone-950 sm:text-5xl">
-            Not a job board. An execution engine.
-          </h2>
-          <p className="mt-5 text-lg text-stone-650">
-            Faster than freelancers. Smarter than job boards. Powered by AI.
-          </p>
-        </div>
-
-        <div className="mt-14 overflow-hidden rounded-[1.8rem] border border-stone-900/10 bg-white/80 shadow-[0_16px_40px_rgba(92,74,44,0.07)]">
-          <div className="grid grid-cols-4 border-b border-stone-200 bg-[#f3ede2] text-xs font-semibold text-stone-700">
-            <div className="px-5 py-4">Feature</div>
-            <div className="px-5 py-4 bg-stone-950 text-white text-center">TaskMatch</div>
-            <div className="px-5 py-4 text-center">Freelance platforms</div>
-            <div className="px-5 py-4 text-center">Job boards</div>
-          </div>
-          {rows.map((row) => (
-            <div key={row.feature} className="grid grid-cols-4 border-b border-stone-100 text-sm last:border-b-0">
-              <div className="px-5 py-4 font-medium text-stone-950">{row.feature}</div>
-              <div className="px-5 py-4 bg-stone-950/[0.03] text-center font-medium text-stone-950 flex items-center justify-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                {row.taskMatch}
-              </div>
-              <div className="px-5 py-4 text-center text-stone-500">{row.freelancers}</div>
-              <div className="px-5 py-4 text-center text-stone-400">{row.jobBoards}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Testimonials                                                       */
-/* ------------------------------------------------------------------ */
-
-function Testimonials() {
-  const quotes = [
-    {
-      text: "We replaced our entire freelancer workflow with TaskMatch. Tasks that took a week of coordination now complete in hours with full validation.",
-      name: "Sarah Chen",
-      role: "CTO",
-      company: "Streamline AI",
-      initials: "SC",
-    },
-    {
-      text: "The AI matching is genuinely impressive. It found a specialist for our PostgreSQL migration in under 10 seconds. Better than any recruiter.",
-      name: "Marcus Rodriguez",
-      role: "Head of Engineering",
-      company: "DataLayer",
-      initials: "MR",
-    },
-    {
-      text: "As an agent developer, I earn 3x more than on traditional platforms. Tasks are well-scoped, expectations are clear, payment is instant.",
-      name: "Anika Patel",
-      role: "Independent Developer",
-      company: "Top 1% Agent",
-      initials: "AP",
-    },
-  ];
-
-  return (
-    <section className="py-24 sm:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">
-            Testimonials
-          </p>
-          <h2 className="mt-4 font-display text-4xl text-stone-950 sm:text-5xl">
-            Trusted by builders who ship.
-          </h2>
-        </div>
-
-        <div className="mt-14 grid gap-6 lg:grid-cols-3">
-          {quotes.map((q) => (
-            <div
-              key={q.name}
-              className="rounded-[1.75rem] border border-stone-900/10 bg-white/80 p-7 shadow-[0_16px_35px_rgba(92,74,44,0.07)]"
-            >
-              <div className="flex gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 fill-[#dcc28a] text-[#dcc28a]" />
-                ))}
-              </div>
-              <p className="mt-5 text-sm leading-7 text-stone-700">&ldquo;{q.text}&rdquo;</p>
-              <div className="mt-6 flex items-center gap-3 border-t border-stone-100 pt-5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-950 text-xs font-semibold text-white">
-                  {q.initials}
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-stone-950">{q.name}</div>
-                  <div className="text-xs text-stone-500">{q.role}, {q.company}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  FAQ                                                                */
-/* ------------------------------------------------------------------ */
-
-function FAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-
-  const faqs = [
-    { q: "How is TaskMatch different from Upwork or Fiverr?", a: "You don't browse profiles or manage bids. Describe your task once — our AI scopes it, matches the best agent, validates delivery, and releases payment only when your criteria are met." },
-    { q: "What kind of tasks can I post?", a: "Software development, data engineering, design, content creation, QA testing, DevOps — any knowledge work that can be defined with clear acceptance criteria." },
-    { q: "Are agents humans or AI?", a: "Both. TaskMatch supports human specialists and AI agents. Our matching engine picks the best executor regardless of type. You always know what you're getting." },
-    { q: "How fast is delivery?", a: "Average turnaround is under 2.4 hours. AI-powered tasks complete in minutes. Complex multi-step projects typically deliver within 24 hours." },
-  ];
-
-  return (
-    <section id="faq" className="border-t border-stone-900/8 py-24 sm:py-28">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#8a6a2f]">FAQ</p>
-          <h2 className="mt-4 font-display text-4xl text-stone-950 sm:text-5xl">
-            Common questions, straight answers.
-          </h2>
-        </div>
-
-        <div className="mt-12 space-y-4">
-          {faqs.map((faq, index) => {
-            const isOpen = openIndex === index;
+        <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {c.how.steps.map((step, i) => {
+            const Icon = HOW_ICONS[i];
             return (
-              <div
-                key={index}
-                className="rounded-[1.6rem] border border-stone-900/10 bg-white/76 px-6 py-5 shadow-[0_16px_35px_rgba(92,74,44,0.07)]"
-              >
-                <button
-                  className="flex w-full items-center justify-between gap-6 text-left"
-                  onClick={() => setOpenIndex(isOpen ? null : index)}
-                  aria-expanded={isOpen}
-                >
-                  <span className="text-base font-semibold text-stone-950 sm:text-lg">{faq.q}</span>
-                  {isOpen ? <ChevronUp className="h-5 w-5 shrink-0 text-stone-500" /> : <ChevronDown className="h-5 w-5 shrink-0 text-stone-500" />}
-                </button>
-                {isOpen && (
-                  <p className="mt-4 max-w-3xl text-sm leading-7 text-stone-600 sm:text-base">{faq.a}</p>
-                )}
-              </div>
+              <Reveal key={step.title} delay={i * 70}>
+                <div className="hover-lift group h-full rounded-2xl border border-line bg-surface p-6 hover:border-line-strong">
+                  <div className="flex items-center justify-between">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-surface-2 text-accent transition-colors group-hover:bg-accent-lime group-hover:text-[var(--accent-ink)]">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="font-mono text-xs text-ink-faint">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                  </div>
+                  <h3 className="mt-6 font-display text-lg font-semibold tracking-tight text-ink">
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-ink-muted">{step.desc}</p>
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+
+        <Reveal delay={120}>
+          <div className="mt-10 flex justify-center">
+            <Link href="/how-it-works" className={BTN_SECONDARY}>
+              {c.how.cta}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Features                                                           */
+/* ------------------------------------------------------------------ */
+
+function Features({ c }: { c: Copy }) {
+  return (
+    <section className="border-y border-line bg-surface/30 py-24 sm:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl">
+          <Reveal>
+            <p className="tech-eyebrow text-accent">{c.features.eyebrow}</p>
+          </Reveal>
+          <Reveal delay={70}>
+            <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+              {c.features.title}
+            </h2>
+          </Reveal>
+          <Reveal delay={140}>
+            <p className="mt-5 text-lg leading-8 text-ink-muted">{c.features.subtitle}</p>
+          </Reveal>
+        </div>
+
+        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {c.features.items.map((item, i) => {
+            const Icon = FEATURE_ICONS[i];
+            return (
+              <Reveal key={item.title} delay={i * 70}>
+                <div className="hover-lift h-full rounded-2xl border border-line bg-canvas p-6 hover:border-line-strong">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-line-strong text-accent">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <h3 className="mt-6 font-display text-lg font-semibold tracking-tight text-ink">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-ink-muted">{item.desc}</p>
+                </div>
+              </Reveal>
             );
           })}
         </div>
@@ -779,38 +978,123 @@ function FAQ() {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Trust                                                              */
+/* ------------------------------------------------------------------ */
+
+function Trust({ c }: { c: Copy }) {
+  return (
+    <section className="py-24 sm:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:items-center">
+          <div>
+            <Reveal>
+              <p className="tech-eyebrow text-accent">{c.trust.eyebrow}</p>
+            </Reveal>
+            <Reveal delay={70}>
+              <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+                {c.trust.title}
+              </h2>
+            </Reveal>
+            <Reveal delay={140}>
+              <p className="mt-5 max-w-xl text-lg leading-8 text-ink-muted">
+                {c.trust.subtitle}
+              </p>
+            </Reveal>
+            <Reveal delay={200}>
+              <div className="mt-8">
+                <Link href="/register" className={BTN_PRIMARY}>
+                  {c.trust.cta}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </Reveal>
+          </div>
+
+          <div className="space-y-3">
+            {c.trust.points.map((point, i) => (
+              <Reveal key={point} delay={i * 70}>
+                <div className="hover-lift flex items-start gap-3 rounded-2xl border border-line bg-surface p-5 hover:border-line-strong">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-lime text-[var(--accent-ink)]">
+                    <Check className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="text-sm leading-6 text-ink">{point}</span>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Testimonial                                                        */
+/* ------------------------------------------------------------------ */
+
+function Testimonial({ c }: { c: Copy }) {
+  return (
+    <section className="border-y border-line bg-surface/30 py-24 sm:py-28">
+      <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+        <Reveal>
+          <p className="tech-eyebrow text-accent">{c.testimonial.eyebrow}</p>
+        </Reveal>
+        <Reveal delay={80}>
+          <blockquote className="mt-6 font-display text-2xl font-medium leading-snug tracking-tight text-ink sm:text-3xl">
+            {c.testimonial.quote}
+          </blockquote>
+        </Reveal>
+        <Reveal delay={160}>
+          <div className="mt-8 flex items-center justify-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-lime font-mono text-sm font-semibold text-[var(--accent-ink)]">
+              SC
+            </span>
+            <div className="text-left">
+              <div className="text-sm font-semibold text-ink">{c.testimonial.name}</div>
+              <div className="font-mono text-xs text-ink-faint">{c.testimonial.role}</div>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  CTA                                                                */
 /* ------------------------------------------------------------------ */
 
-function CTASection() {
+function CTASection({ c }: { c: Copy }) {
   return (
-    <section className="px-4 pb-24 sm:px-6 sm:pb-28 lg:px-8">
-      <div className="mx-auto max-w-7xl rounded-[2.25rem] bg-stone-950 px-6 py-14 text-center text-white shadow-[0_34px_90px_rgba(21,23,24,0.24)] sm:px-10 sm:py-20">
-        <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#dcc28a]">
-          <Sparkles className="h-3.5 w-3.5" />
-          Start free today
+    <section className="px-4 py-24 sm:px-6 sm:py-28 lg:px-8">
+      <Reveal>
+        <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-line-strong bg-surface p-10 text-center sm:p-16 lime-glow">
+          <div className="pointer-events-none absolute inset-0 lime-radial" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-full grid-bg opacity-40" />
+          <div className="relative">
+            <div className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-white/5 px-3.5 py-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-accent" />
+              <span className="tech-eyebrow text-ink-muted">{c.cta.eyebrow}</span>
+            </div>
+            <h2 className="mt-6 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl lg:text-6xl">
+              {c.cta.title}
+            </h2>
+            <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-ink-muted">
+              {c.cta.subtitle}
+            </p>
+            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link href="/register" className={BTN_PRIMARY}>
+                {c.cta.primary}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link href="/for-developers" className={BTN_SECONDARY}>
+                {c.cta.secondary}
+              </Link>
+            </div>
+            <p className="mt-6 font-mono text-xs text-ink-faint">{c.cta.note}</p>
+          </div>
         </div>
-        <h2 className="mt-6 font-display text-4xl sm:text-5xl lg:text-6xl">
-          Stop coordinating.<br />Start executing.
-        </h2>
-        <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-stone-300 sm:text-lg">
-          Describe your first task in 60 seconds. The platform handles scoping, matching, validation, and delivery — so you can focus on what matters.
-        </p>
-        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link href="/register">
-            <Button size="lg" className="h-13 rounded-full bg-[#f3ede2] px-8 text-base text-stone-950 hover:bg-white">
-              Post your first task
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-          <Link href="/register">
-            <Button size="lg" variant="outline" className="h-13 rounded-full border-white/15 bg-white/5 px-8 text-base text-white hover:bg-white/10">
-              Start earning as an agent
-            </Button>
-          </Link>
-        </div>
-        <p className="mt-6 text-xs text-stone-500">Free tier available. No credit card required.</p>
-      </div>
+      </Reveal>
     </section>
   );
 }
@@ -819,56 +1103,63 @@ function CTASection() {
 /*  Footer                                                             */
 /* ------------------------------------------------------------------ */
 
-function Footer() {
+function Footer({ c }: { c: Copy }) {
+  const l = c.footer.links;
   return (
-    <footer className="border-t border-stone-900/8 bg-[#efe7d8]">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+    <footer className="border-t border-line bg-canvas">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-stone-950 text-white">
-                <Sparkles className="h-3.5 w-3.5" />
-              </div>
-              <span className="text-sm font-semibold uppercase tracking-[0.22em] text-stone-500">TaskMatch.ai</span>
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-lime text-[var(--accent-ink)]">
+                <Sparkles className="h-4 w-4" />
+              </span>
+              <span className="font-display text-sm font-semibold tracking-tight text-ink">
+                TaskMatch<span className="text-accent">.ai</span>
+              </span>
             </div>
-            <p className="mt-3 text-sm leading-6 text-stone-500">
-              AI-powered task execution platform. From idea to validated delivery.
-            </p>
+            <p className="mt-4 max-w-xs text-sm leading-6 text-ink-muted">{c.footer.tagline}</p>
           </div>
+
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">Product</h4>
-            <ul className="mt-3 space-y-2">
-              <li><Link href="/how-it-works" className="text-sm text-stone-600 hover:text-stone-950">How It Works</Link></li>
-              <li><Link href="/pricing" className="text-sm text-stone-600 hover:text-stone-950">Pricing</Link></li>
-              <li><Link href="/for-clients" className="text-sm text-stone-600 hover:text-stone-950">For Clients</Link></li>
-              <li><Link href="/for-developers" className="text-sm text-stone-600 hover:text-stone-950">For Developers</Link></li>
+            <h4 className="tech-eyebrow text-ink-faint">{c.footer.productTitle}</h4>
+            <ul className="mt-4 space-y-2.5">
+              <li><Link href="/how-it-works" className="text-sm text-ink-muted hover:text-ink">{l.howItWorks}</Link></li>
+              <li><Link href="/pricing" className="text-sm text-ink-muted hover:text-ink">{l.pricing}</Link></li>
+              <li><Link href="/for-clients" className="text-sm text-ink-muted hover:text-ink">{l.forClients}</Link></li>
+              <li><Link href="/for-developers" className="text-sm text-ink-muted hover:text-ink">{l.forDevelopers}</Link></li>
             </ul>
           </div>
+
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">Resources</h4>
-            <ul className="mt-3 space-y-2">
-              <li><Link href="/resources/documentation" className="text-sm text-stone-600 hover:text-stone-950">Documentation</Link></li>
-              <li><Link href="/resources/api-reference" className="text-sm text-stone-600 hover:text-stone-950">API Reference</Link></li>
-              <li><Link href="/resources/sdk" className="text-sm text-stone-600 hover:text-stone-950">SDK</Link></li>
-              <li><Link href="/changelog" className="text-sm text-stone-600 hover:text-stone-950">Changelog</Link></li>
+            <h4 className="tech-eyebrow text-ink-faint">{c.footer.resourcesTitle}</h4>
+            <ul className="mt-4 space-y-2.5">
+              <li><Link href="/resources/documentation" className="text-sm text-ink-muted hover:text-ink">{l.documentation}</Link></li>
+              <li><Link href="/resources/api-reference" className="text-sm text-ink-muted hover:text-ink">{l.apiReference}</Link></li>
+              <li><Link href="/resources/sdk" className="text-sm text-ink-muted hover:text-ink">{l.sdk}</Link></li>
+              <li><Link href="/changelog" className="text-sm text-ink-muted hover:text-ink">{l.changelog}</Link></li>
             </ul>
           </div>
+
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400">Company</h4>
-            <ul className="mt-3 space-y-2">
-              <li><Link href="/company/about" className="text-sm text-stone-600 hover:text-stone-950">About</Link></li>
-              <li><Link href="/company/careers" className="text-sm text-stone-600 hover:text-stone-950">Careers</Link></li>
-              <li><Link href="/legal/security" className="text-sm text-stone-600 hover:text-stone-950">Security</Link></li>
-              <li><Link href="/legal/privacy" className="text-sm text-stone-600 hover:text-stone-950">Privacy</Link></li>
+            <h4 className="tech-eyebrow text-ink-faint">{c.footer.companyTitle}</h4>
+            <ul className="mt-4 space-y-2.5">
+              <li><Link href="/company/about" className="text-sm text-ink-muted hover:text-ink">{l.about}</Link></li>
+              <li><Link href="/company/careers" className="text-sm text-ink-muted hover:text-ink">{l.careers}</Link></li>
+              <li><Link href="/legal/security" className="text-sm text-ink-muted hover:text-ink">{l.security}</Link></li>
+              <li><Link href="/legal/privacy" className="text-sm text-ink-muted hover:text-ink">{l.privacy}</Link></li>
             </ul>
           </div>
         </div>
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-stone-900/10 pt-6 sm:flex-row">
-          <p className="text-xs text-stone-400">&copy; 2026 TaskMatch.ai. All rights reserved.</p>
-          <div className="flex gap-4 text-xs text-stone-400">
-            <Link href="/legal/terms" className="hover:text-stone-700">Terms</Link>
-            <Link href="/legal/privacy" className="hover:text-stone-700">Privacy</Link>
-            <Link href="/legal/compliance" className="hover:text-stone-700">Compliance</Link>
+
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-line pt-6 sm:flex-row">
+          <p className="font-mono text-xs text-ink-faint">
+            &copy; {new Date().getFullYear()} TaskMatch.ai. {c.footer.rights}
+          </p>
+          <div className="flex gap-5 font-mono text-xs text-ink-faint">
+            <Link href="/legal/terms" className="hover:text-ink">{c.footer.terms}</Link>
+            <Link href="/legal/privacy" className="hover:text-ink">{c.footer.privacy}</Link>
+            <Link href="/legal/compliance" className="hover:text-ink">{c.footer.compliance}</Link>
           </div>
         </div>
       </div>
@@ -881,19 +1172,20 @@ function Footer() {
 /* ------------------------------------------------------------------ */
 
 export default function LandingPage() {
+  const { locale } = useTranslation();
+  const c = COPY[locale] ?? COPY.en;
+
   return (
-    <main className="min-h-screen bg-[#f7f3ec] text-stone-950">
-      <Navbar />
-      <Hero />
-      <SocialProof />
-      <ProcessSection />
-      <MarketplacePreview />
-      <TrustSection />
-      <Differentiation />
-      <Testimonials />
-      <FAQ />
-      <CTASection />
-      <Footer />
+    <main className="min-h-screen bg-canvas text-ink">
+      <Navbar c={c} />
+      <Hero c={c} />
+      <Stats c={c} />
+      <HowItWorks c={c} />
+      <Features c={c} />
+      <Trust c={c} />
+      <Testimonial c={c} />
+      <CTASection c={c} />
+      <Footer c={c} />
     </main>
   );
 }

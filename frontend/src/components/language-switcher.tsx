@@ -1,46 +1,37 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { useTranslation, type Locale } from "@/lib/i18n";
-
-const options: { value: Locale; flag: string; label: string }[] = [
-  { value: "en", flag: "\ud83c\uddec\ud83c\udde7", label: "EN" },
-  { value: "fr", flag: "\ud83c\uddeb\ud83c\uddf7", label: "FR" },
-];
+import { useTranslation, LOCALES } from "@/lib/i18n";
 
 export function LanguageSwitcher() {
   const { locale, setLocale } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  /* Close dropdown on outside click. */
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const current = options.find((o) => o.value === locale) ?? options[0];
+  const current = LOCALES.find((o) => o.value === locale) ?? LOCALES[0];
 
   return (
     <div ref={ref} className="relative inline-block text-left">
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+        className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-white/5 px-3 py-1.5 font-mono text-xs uppercase tracking-widest text-ink-muted transition-colors hover:border-[var(--accent-lime)] hover:text-ink focus:outline-none"
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label="Select language"
       >
-        <span className="text-base leading-none">{current.flag}</span>
+        <span className="text-sm leading-none">{current.flag}</span>
         <span>{current.label}</span>
         <svg
-          className={`h-4 w-4 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}
-          xmlns="http://www.w3.org/2000/svg"
+          className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`}
           viewBox="0 0 20 20"
           fill="currentColor"
           aria-hidden="true"
@@ -56,19 +47,15 @@ export function LanguageSwitcher() {
       {open && (
         <ul
           role="listbox"
-          aria-activedescendant={`lang-${locale}`}
-          className="absolute right-0 z-50 mt-1 w-28 origin-top-right rounded-md border border-gray-200 bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none"
+          className="absolute right-0 z-50 mt-2 w-44 origin-top-right overflow-hidden rounded-xl border border-line-strong bg-surface-2 py-1 shadow-[0_24px_70px_-30px_rgba(0,0,0,0.9)]"
         >
-          {options.map((opt) => (
+          {LOCALES.map((opt) => (
             <li
               key={opt.value}
-              id={`lang-${opt.value}`}
               role="option"
               aria-selected={opt.value === locale}
-              className={`flex cursor-pointer items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-indigo-50 ${
-                opt.value === locale
-                  ? "font-semibold text-indigo-600"
-                  : "text-gray-700"
+              className={`flex cursor-pointer items-center gap-3 px-3.5 py-2.5 text-sm transition-colors hover:bg-white/5 ${
+                opt.value === locale ? "text-accent" : "text-ink-muted"
               }`}
               onClick={() => {
                 setLocale(opt.value);
@@ -76,7 +63,10 @@ export function LanguageSwitcher() {
               }}
             >
               <span className="text-base leading-none">{opt.flag}</span>
-              <span>{opt.label}</span>
+              <span className="font-medium">{opt.native}</span>
+              {opt.value === locale && (
+                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-accent-lime" />
+              )}
             </li>
           ))}
         </ul>

@@ -3,6 +3,8 @@
 import React from "react";
 import { GitCommitVertical } from "lucide-react";
 import { PageHero } from "@/components/public/page-shell";
+import { Reveal } from "@/components/public/motion";
+import { useTranslation, type Locale } from "@/lib/i18n";
 
 type EntryType = "Feature" | "Improvement" | "Fix";
 
@@ -14,11 +16,12 @@ type Release = {
 };
 
 const typeStyles: Record<EntryType, string> = {
-  Feature: "bg-[#8a6a2f] text-white",
-  Improvement: "bg-[#efe7d8] text-[#8a6a2f] border border-[#c7b591]",
-  Fix: "bg-stone-950 text-white",
+  Feature: "bg-accent-lime text-[var(--accent-ink)]",
+  Improvement: "border border-line-strong bg-white/5 text-accent",
+  Fix: "bg-surface-2 text-ink border border-line-strong",
 };
 
+/* Release entry text stays in English (operational record). */
 const releases: Release[] = [
   {
     version: "v1.4.0",
@@ -87,68 +90,116 @@ const releases: Release[] = [
   },
 ];
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
+type Copy = {
+  eyebrow: string;
+  title: string;
+  accent: string;
+  description: string;
+  typeLabels: Record<EntryType, string>;
+};
+
+const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
+  en: {
+    eyebrow: "Changelog",
+    title: "Every release,",
+    accent: "in the open.",
+    description:
+      "A dated record of what shipped across the MCP orchestration layer, agent matching, bid ranking, validation, escrow payments, the dashboard, and the API.",
+    typeLabels: { Feature: "Feature", Improvement: "Improvement", Fix: "Fix" },
+  },
+  fr: {
+    eyebrow: "Nouveautés",
+    title: "Chaque version,",
+    accent: "en toute transparence.",
+    description:
+      "Un journal daté des livraisons sur la couche d’orchestration MCP, le matching d’agents, le classement des offres, la validation, les paiements sous séquestre, le tableau de bord et l’API.",
+    typeLabels: { Feature: "Nouveauté", Improvement: "Amélioration", Fix: "Correctif" },
+  },
+  es: {
+    eyebrow: "Novedades",
+    title: "Cada versión,",
+    accent: "a la vista de todos.",
+    description:
+      "Un registro fechado de lo publicado en la capa de orquestación MCP, el emparejamiento de agentes, el ranking de ofertas, la validación, los pagos en depósito, el panel y la API.",
+    typeLabels: { Feature: "Novedad", Improvement: "Mejora", Fix: "Corrección" },
+  },
+  zh: {
+    eyebrow: "更新日志",
+    title: "每一次发布,",
+    accent: "皆公开透明。",
+    description:
+      "一份带日期的记录,涵盖 MCP 编排层、智能体匹配、竞价排名、验证、托管付款、仪表盘与 API 的发布内容。",
+    typeLabels: { Feature: "新功能", Improvement: "改进", Fix: "修复" },
+  },
+};
+
+const dateLocales: Record<Locale, string> = { en: "en-US", fr: "fr-FR", es: "es-ES", zh: "zh-CN" };
 
 export default function ChangelogPage() {
+  const { locale } = useTranslation();
+  const c = COPY[locale] ?? COPY.en;
+
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString(dateLocales[locale] ?? "en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-canvas">
       <PageHero
-        eyebrow="Changelog"
-        title="Every release,"
-        accent="in the open."
-        description="A dated record of what shipped across the MCP orchestration layer, agent matching, bid ranking, validation, escrow payments, the dashboard, and the API."
+        eyebrow={c.eyebrow}
+        title={c.title}
+        accent={c.accent}
+        description={c.description}
         icon={GitCommitVertical}
       />
 
       <section className="px-4 pb-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
-          <div className="mb-8 flex flex-wrap gap-3 text-xs font-semibold">
+          <div className="mb-8 flex flex-wrap gap-3">
             {(["Feature", "Improvement", "Fix"] as EntryType[]).map((type) => (
               <span
                 key={type}
-                className={`rounded-full px-3 py-1 uppercase tracking-[0.18em] ${typeStyles[type]}`}
+                className={`rounded-full px-3 py-1 tech-eyebrow ${typeStyles[type]}`}
               >
-                {type}
+                {c.typeLabels[type]}
               </span>
             ))}
           </div>
 
           <div className="relative">
-            <div className="absolute bottom-2 left-[7px] top-2 w-px bg-stone-900/12 sm:left-[calc(9rem+7px)]" />
+            <div className="absolute bottom-2 left-[7px] top-2 w-px bg-[rgb(var(--line)/0.14)] sm:left-[calc(9rem+7px)]" />
             <div className="space-y-12">
-              {releases.map((release) => (
-                <div
+              {releases.map((release, ri) => (
+                <Reveal
                   key={release.version}
+                  delay={ri * 60}
                   className="relative pl-8 sm:grid sm:grid-cols-[9rem_1fr] sm:gap-8 sm:pl-0"
                 >
                   <div className="sm:relative sm:pr-8 sm:text-right">
-                    <div className="font-display text-2xl text-stone-950">{release.version}</div>
-                    <div className="mt-1 text-sm text-stone-500">{formatDate(release.date)}</div>
-                    <span className="absolute left-[-1.72rem] top-2 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-[#8a6a2f] bg-[#f7f3ec] sm:left-auto sm:right-[-0.44rem]" />
+                    <div className="font-display text-2xl font-semibold text-ink">{release.version}</div>
+                    <div className="mt-1 font-mono text-sm text-ink-muted">{formatDate(release.date)}</div>
+                    <span className="absolute left-[-1.72rem] top-2 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-[var(--accent-lime)] bg-canvas sm:left-auto sm:right-[-0.44rem]" />
                   </div>
 
-                  <div className="rounded-[1.8rem] border border-stone-900/10 bg-white/80 p-7 shadow-[0_18px_40px_rgba(92,74,44,0.07)]">
-                    <p className="text-base font-semibold text-stone-950">{release.summary}</p>
+                  <div className="rounded-2xl border border-line bg-surface p-7 hover-lift hover:border-line-strong">
+                    <p className="text-base font-semibold text-ink">{release.summary}</p>
                     <ul className="mt-5 space-y-4">
                       {release.entries.map((entry, index) => (
                         <li key={index} className="flex gap-3">
                           <span
-                            className={`mt-0.5 shrink-0 rounded-full px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.14em] ${typeStyles[entry.type]}`}
+                            className={`mt-0.5 shrink-0 rounded-full px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.14em] ${typeStyles[entry.type]}`}
                           >
-                            {entry.type}
+                            {c.typeLabels[entry.type]}
                           </span>
-                          <span className="text-sm leading-7 text-stone-700">{entry.text}</span>
+                          <span className="text-sm leading-7 text-ink-muted">{entry.text}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
-                </div>
+                </Reveal>
               ))}
             </div>
           </div>

@@ -9,12 +9,21 @@ import React, {
 } from "react";
 import en from "@/i18n/en";
 import fr from "@/i18n/fr";
+import zh from "@/i18n/zh";
+import es from "@/i18n/es";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
 /* -------------------------------------------------------------------------- */
 
-export type Locale = "en" | "fr";
+export type Locale = "en" | "fr" | "zh" | "es";
+
+export const LOCALES: { value: Locale; label: string; native: string; flag: string }[] = [
+  { value: "en", label: "EN", native: "English", flag: "🇬🇧" },
+  { value: "fr", label: "FR", native: "Français", flag: "🇫🇷" },
+  { value: "es", label: "ES", native: "Español", flag: "🇪🇸" },
+  { value: "zh", label: "中文", native: "中文", flag: "🇨🇳" },
+];
 
 /** Recursively extract dot-notation paths from a nested object type. */
 type NestedKeyOf<T, Prefix extends string = ""> = T extends object
@@ -36,7 +45,7 @@ export type TranslationKey = NestedKeyOf<typeof en>;
 /** Deep-readonly record type that allows any string values (not literal). */
 type DeepRecord = { readonly [key: string]: string | readonly any[] | DeepRecord };
 
-const dictionaries: Record<Locale, DeepRecord> = { en, fr };
+const dictionaries: Record<Locale, DeepRecord> = { en, fr, zh, es };
 
 /* -------------------------------------------------------------------------- */
 /*  Helpers                                                                   */
@@ -49,7 +58,8 @@ function detectBrowserLocale(): Locale {
   if (typeof navigator === "undefined") return "en";
   const lang = navigator.language || (navigator as any).userLanguage || "en";
   const prefix = lang.slice(0, 2).toLowerCase();
-  return prefix === "fr" ? "fr" : "en";
+  const supported: Locale[] = ["en", "fr", "zh", "es"];
+  return (supported as string[]).includes(prefix) ? (prefix as Locale) : "en";
 }
 
 /**
@@ -98,7 +108,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     } catch {
       /* localStorage unavailable (SSR or privacy mode) */
     }
-    if (stored === "en" || stored === "fr") {
+    if (stored === "en" || stored === "fr" || stored === "es" || stored === "zh") {
       setLocaleState(stored);
     } else {
       const detected = detectBrowserLocale();
