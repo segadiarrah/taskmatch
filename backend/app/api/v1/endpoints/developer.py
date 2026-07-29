@@ -9,22 +9,105 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends
-from sqlalchemy import select
+from typing import Optional
+
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.deps import get_current_active_user
-from app.models.agent import Agent
-from app.models.assignment import Assignment
+from app.models.agent import Agent, AgentStatus
+from app.models.assignment import Assignment, AssignmentStatus
 from app.models.bid import Bid
 from app.models.job import Job
+from app.models.payment import PaymentRecord, PaymentStatus
 from app.models.review import ValidationReview
 from app.models.submission import Submission
 from app.models.task import Task
 from app.models.user import User
 
 router = APIRouter()
+
+
+@router.get("/developer/dashboard/stats", summary="My developer dashboard KPIs")
+async def dashboard_stats(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    my_agents = (
+        await db.execute(select(func.count(Agent.id)).where(Agent.developer_user_id == current_user.id))
+    ).scalar_one()
+    agent_ids = await _my_agent_ids(db, current_user)
+    active_assignments = 0
+    completed_tasks = 0
+    if agent_ids:
+        active_assignments = (
+            await db.execute(
+                select(func.count(Assignment.id)).where(
+                    Assignment.agent_id.in_(agent_ids), Assignment.status == AssignmentStatus.active
+                )
+            )
+        ).scalar_one()
+        completed_tasks = (
+            await db.execute(
+                select(func.count(Assignment.id)).where(
+                    Assignment.agent_id.in_(agent_ids), Assignment.status == AssignmentStatus.completed
+                )
+            )
+        ).scalar_one()
+    earnings = (
+        await db.execute(
+            select(func.coalesce(func.sum(PaymentRecord.net_amount), 0)).where(
+                PaymentRecord.developer_user_id == current_user.id,
+                PaymentRecord.payment_status == PaymentStatus.paid,
+            )
+        )
+    ).scalar_one()
+    return {
+        "my_agents": int(my_agents),
+        "active_assignments": int(active_assignments),
+        "completed_tasks": int(completed_tasks),
+        "total_earnings": float(earnings or 0),
+    }
+
+
+@router.get("/developer/assignments", summary="My assignments (optionally filtered by status)")
+async def developer_assignments(
+    status: Optional[str] = Query(None),
+    limit: int = Query(20, ge=1, le=100),
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    agent_ids = await _my_agent_ids(db, current_user)
+    if not agent_ids:
+        return {"items": []}
+    q = select(Assignment).where(Assignment.agent_id.in_(agent_ids))
+    if status:
+        q = q.where(Assignment.status == status)
+    q = q.order_by(Assignment.created_at.desc()).limit(limit)
+    rows = list((await db.execute(q)).scalars().all())
+
+    items = []
+    for a in rows:
+        task = (await db.execute(select(Task).where(Task.id == a.task_id))).scalar_one_or_none()
+        job = None
+        if task is not None:
+            job = (await db.execute(select(Job).where(Job.id == task.job_id))).scalar_one_or_none()
+        items.append(
+            {
+                "id": str(a.id),
+                "task_id": str(a.task_id),
+                "task_title": task.title if task else "",
+                "job_title": job.title if job else "",
+                "agent_name": a.agent.name if a.agent else "",
+                "status": a.status.value if hasattr(a.status, "value") else str(a.status),
+                "budget": float(task.budget) if task and task.budget is not None else 0.0,
+                "currency": (job.currency if job else None) or "EUR",
+                "deadline": task.deadline.isoformat() if task and getattr(task, "deadline", None) else None,
+            }
+        )
+    return {"items": items}
 
 
 async def _my_agent_ids(db: AsyncSession, user: User) -> list[uuid.UUID]:
