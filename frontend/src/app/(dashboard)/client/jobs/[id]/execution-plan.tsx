@@ -78,6 +78,15 @@ interface PlanJob {
   budget_max: number;
 }
 
+interface PlanPayment {
+  id: string;
+  status: string;
+  gross_amount: number;
+  platform_fee: number;
+  net_amount: number;
+  currency: string;
+}
+
 interface PlanResponse {
   ready: boolean;
   planning: boolean;
@@ -85,6 +94,7 @@ interface PlanResponse {
   spec: PlanSpec;
   tasks: PlanTask[];
   stages: PlanStage[];
+  payment?: PlanPayment | null;
 }
 
 const POLL_MS = 3000;
@@ -155,6 +165,7 @@ export default function ExecutionPlan({
   const [tick, setTick] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [accepting, setAccepting] = useState(false);
 
   const pollsRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -205,6 +216,20 @@ export default function ExecutionPlan({
       );
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleAccept = async () => {
+    try {
+      setAccepting(true);
+      await apiPost(`/v1/jobs/${jobId}/accept`, {});
+      pollsRef.current = 0;
+      await load();
+      onSubmitted?.();
+    } catch {
+      /* keep current state; button stays available to retry */
+    } finally {
+      setAccepting(false);
     }
   };
 
@@ -338,6 +363,12 @@ export default function ExecutionPlan({
   // ---- Ready state ----
   const spec = plan?.spec ?? { objective: null, deliverables: [], constraints: [], success_criteria: [] };
   const tasks = plan?.tasks ?? [];
+  const payment = plan?.payment ?? null;
+  const jobDone = plan?.job.status === "completed" || payment?.status === "paid";
+  const canRelease =
+    !!payment && (payment.status === "releasable" || payment.status === "authorized" || payment.status === "pending");
+  const fmtMoney = (n: number, ccy: string) =>
+    new Intl.NumberFormat(undefined, { style: "currency", currency: ccy || "EUR", maximumFractionDigits: 0 }).format(n);
 
   return (
     <Card>
@@ -352,10 +383,48 @@ export default function ExecutionPlan({
           )}
         </CardTitle>
         <CardDescription className="text-sm">
-          {"Here's exactly how your request will be delivered — the tasks it became, and the agents matched to each."}
+          {"Here's exactly how your request will be delivered — the tasks it became, who executed each, and the result."}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
+        {/* Escrow review & release */}
+        {payment && (canRelease || jobDone) && (
+          <section
+            className={cn(
+              "rounded-xl border p-4",
+              jobDone ? "border-emerald-300 bg-emerald-50/70" : "border-blue-300 bg-blue-50/60"
+            )}
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className={cn("mt-0.5 h-5 w-5", jobDone ? "text-emerald-600" : "text-blue-600")} />
+                <div>
+                  <p className="text-sm font-semibold text-zinc-800">
+                    {jobDone ? "Work accepted — escrow released" : "Work delivered — held in escrow for your review"}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {jobDone
+                      ? `${fmtMoney(payment.net_amount, payment.currency)} released to the executor. Job completed.`
+                      : `${fmtMoney(payment.gross_amount, payment.currency)} held in escrow (${fmtMoney(
+                          payment.net_amount,
+                          payment.currency
+                        )} to the executor after the ${fmtMoney(payment.platform_fee, payment.currency)} platform fee). Review the results below, then release.`}
+                  </p>
+                </div>
+              </div>
+              {canRelease && !jobDone && (
+                <Button onClick={handleAccept} disabled={accepting} className="shrink-0">
+                  {accepting ? "Releasing…" : "Accept & release payment"}
+                </Button>
+              )}
+              {jobDone && (
+                <Badge variant="success" className="shrink-0">
+                  Completed
+                </Badge>
+              )}
+            </div>
+          </section>
+        )}
         {/* a. Structured spec */}
         <section className="space-y-4">
           <div className="flex items-center gap-2">

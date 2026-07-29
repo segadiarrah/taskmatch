@@ -607,11 +607,29 @@ async def get_job_plan(
             out = s.output_json or {}
             result_text = str(out.get("result") or "")
             delivered_by_task[key] = {
+                "submission_id": str(s.id),
                 "summary": s.summary or out.get("summary"),
-                "result_preview": result_text[:1200],
+                "result_preview": result_text[:8000],
                 "produced_by": out.get("produced_by"),
                 "status": s.status.value if hasattr(s.status, "value") else str(s.status),
             }
+
+    # Latest payment for the job (so the client can review + release escrow).
+    payment = (
+        await db.execute(
+            select(PaymentRecord).where(PaymentRecord.job_id == job_id).order_by(PaymentRecord.created_at.desc()).limit(1)
+        )
+    ).scalar_one_or_none()
+    payment_summary = None
+    if payment is not None:
+        payment_summary = {
+            "id": str(payment.id),
+            "status": payment.payment_status.value if hasattr(payment.payment_status, "value") else str(payment.payment_status),
+            "gross_amount": float(payment.gross_amount),
+            "platform_fee": float(payment.platform_fee),
+            "net_amount": float(payment.net_amount),
+            "currency": payment.currency,
+        }
 
     stages = [
         {"key": "format", "label": "Format", "desc": "Your brief becomes a structured spec."},
@@ -654,6 +672,49 @@ async def get_job_plan(
             for t in tasks
         ],
         "stages": stages,
+        "payment": payment_summary,
+    }
+
+
+@router.post("/{job_id}/accept", summary="Accept delivered work and release escrow")
+async def accept_job(
+    job_id: uuid.UUID,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Client accepts the delivered work: releases the escrow payment and marks
+    the job completed. Accessible to the job owner (or an admin)."""
+    job = (await db.execute(select(Job).where(Job.id == job_id))).scalar_one_or_none()
+    if job is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
+    role = getattr(current_user.role, "value", str(current_user.role))
+    if job.client_user_id != current_user.id and role != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your job")
+
+    payments = list(
+        (await db.execute(select(PaymentRecord).where(PaymentRecord.job_id == job_id))).scalars().all()
+    )
+    released = 0
+    for p in payments:
+        if p.payment_status in (PaymentStatus.releasable, PaymentStatus.authorized, PaymentStatus.pending):
+            p.payment_status = PaymentStatus.paid
+            released += 1
+    job.status = JobStatus.completed
+    await db.flush()
+
+    await log_audit(
+        db,
+        actor_type="user",
+        actor_id=str(current_user.id),
+        action="accept_job",
+        entity_type="job",
+        entity_id=str(job.id),
+        payload={"payments_released": released},
+    )
+    return {
+        "job_id": str(job.id),
+        "status": job.status.value if hasattr(job.status, "value") else str(job.status),
+        "payments_released": released,
     }
 
 
