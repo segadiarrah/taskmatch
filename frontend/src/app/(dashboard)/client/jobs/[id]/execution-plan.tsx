@@ -48,6 +48,12 @@ interface PlanTask {
   priority: number | string | null;
   status: string;
   matched_agents: MatchedAgent[];
+  delivered?: {
+    summary: string | null;
+    result_preview: string | null;
+    produced_by: string | null;
+    status: string | null;
+  } | null;
 }
 
 interface PlanSpec {
@@ -529,6 +535,29 @@ export default function ExecutionPlan({
                         </ol>
                       )}
                     </div>
+                    {task.delivered && task.delivered.result_preview ? (
+                      <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50/50 p-3">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="success" className="flex-shrink-0">
+                            <CheckCircle2 className="mr-1 h-3 w-3" />
+                            Delivered
+                          </Badge>
+                          {task.delivered.produced_by ? (
+                            <span className="text-xs text-muted-foreground">
+                              by {task.delivered.produced_by}
+                            </span>
+                          ) : null}
+                        </div>
+                        {task.delivered.summary ? (
+                          <p className="mt-2 text-sm font-medium text-zinc-800">
+                            {task.delivered.summary}
+                          </p>
+                        ) : null}
+                        <pre className="mt-2 max-h-52 overflow-auto whitespace-pre-wrap rounded-md bg-white/70 p-2.5 text-xs leading-relaxed text-zinc-700">
+                          {task.delivered.result_preview}
+                        </pre>
+                      </div>
+                    ) : null}
                   </div>
                 );
               })}

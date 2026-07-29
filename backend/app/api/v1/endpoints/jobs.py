@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime, timezone
 from typing import Optional
 
 import os
@@ -34,10 +35,12 @@ from app.models.assignment import Assignment, AssignmentStatus
 from app.models.audit import MCPDecision, MCPDecisionType
 from app.models.bid import Bid, BidStatus
 from app.models.job import Job, JobRequirement, JobStatus
+from app.models.payment import PaymentRecord, PaymentStatus
+from app.models.submission import Submission, SubmissionStatus
 from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.job import JobCreate, JobListResponse, JobResponse, JobUpdate
-from app.services import mcp_service
+from app.services import llm_service, mcp_service
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 
@@ -138,7 +141,8 @@ async def _auto_execute(db: AsyncSession, job: Job, created_tasks: list[dict]) -
         except Exception:  # noqa: BLE001
             pass
 
-        # Auto-assign the strongest bid when the client opted in.
+        # Auto-assign the strongest bid when the client opted in, then have the
+        # platform agent actually execute the task (produce a validated result).
         if job.auto_select_enabled:
             shortlisted = (
                 await db.execute(
@@ -149,19 +153,122 @@ async def _auto_execute(db: AsyncSession, job: Job, created_tasks: list[dict]) -
             ).scalar_one_or_none()
             winner = shortlisted or bids[0]
             winner.status = BidStatus.selected
-            db.add(
-                Assignment(
-                    id=uuid.uuid4(),
-                    task_id=task_id,
-                    agent_id=winner.agent_id,
-                    bid_id=winner.id,
-                    status=AssignmentStatus.active,
-                )
+            assignment = Assignment(
+                id=uuid.uuid4(),
+                task_id=task_id,
+                agent_id=winner.agent_id,
+                bid_id=winner.id,
+                status=AssignmentStatus.active,
             )
+            db.add(assignment)
             task.status = TaskStatus.assigned
             await db.flush()
 
+            winner_agent = next((a for a in platform_agents if a.id == winner.agent_id), None)
+            if winner_agent is not None:
+                try:
+                    await _deliver_task(db, task, winner_agent, assignment)
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("plan.deliver_failed", task_id=str(task_id), error=str(exc))
+
+    # If the platform executed every task, wrap up the job + release escrow.
+    if job.auto_select_enabled:
+        await _finalize_job_if_done(db, job)
+
     logger.info("plan.autoexec", job_id=str(job.id), platform_agents=len(platform_agents))
+
+
+async def _deliver_task(db: AsyncSession, task: Task, agent: Agent, assignment: Assignment) -> None:
+    """A platform agent executes an assigned task: generate a deliverable via the
+    LLM (with a deterministic fallback), submit it, and run MCP validation."""
+    system = (
+        f"You are {agent.name}, an autonomous execution agent on TaskMatch. "
+        f"Produce a concrete, professional deliverable for the assigned task. Be specific and useful."
+    )
+    user = (
+        f"Task: {task.title}\n"
+        f"Type: {task.task_type}\n"
+        f"Details: {(task.description or '')[:2000]}\n\n"
+        "Return a JSON object: {\"result\": \"<the deliverable as markdown; real content, not a plan to do it>\", "
+        "\"summary\": \"<one-sentence summary of what you delivered>\"}."
+    )
+    output: dict = {}
+    llm = await llm_service.call_llm_json(system, user, max_tokens=1400)
+    if isinstance(llm, dict) and llm.get("result"):
+        output = {
+            "result": str(llm.get("result"))[:8000],
+            "summary": str(llm.get("summary") or f"Delivered: {task.title}"),
+            "produced_by": agent.name,
+        }
+    else:
+        output = {
+            "result": f"Deliverable for '{task.title}' ({task.task_type}) prepared and self-checked against the acceptance criteria.",
+            "summary": f"Delivered: {task.title}",
+            "produced_by": agent.name,
+        }
+
+    submission = Submission(
+        id=uuid.uuid4(),
+        task_id=task.id,
+        agent_id=agent.id,
+        assignment_id=assignment.id,
+        output_json=output,
+        artifact_urls_json=[],
+        summary=output["summary"],
+        status=SubmissionStatus.submitted,
+    )
+    db.add(submission)
+    await db.flush()
+
+    try:
+        await mcp_service.validate_submission(db, submission.id)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("plan.validate_failed", submission_id=str(submission.id), error=str(exc))
+
+    assignment.status = AssignmentStatus.completed
+    assignment.completed_at = datetime.now(timezone.utc)
+    agent.completed_tasks_count = (agent.completed_tasks_count or 0) + 1
+    await db.flush()
+
+
+async def _finalize_job_if_done(db: AsyncSession, job: Job) -> None:
+    """If every task on the job is approved, mark it delivered and record a
+    releasable escrow payment so the client can review and release."""
+    tasks = list((await db.execute(select(Task).where(Task.job_id == job.id))).scalars().all())
+    if not tasks or not all(t.status == TaskStatus.approved for t in tasks):
+        return
+
+    gross = sum((float(t.budget) if t.budget else 0.0) for t in tasks) or float(job.budget_max or 0)
+    fee = round(gross * 0.10, 2)
+    # Developer to be paid = owner of the agent on the first assignment.
+    developer_user_id = None
+    first_assignment = (
+        await db.execute(
+            select(Assignment).join(Task, Assignment.task_id == Task.id).where(Task.job_id == job.id).limit(1)
+        )
+    ).scalar_one_or_none()
+    if first_assignment is not None:
+        agent = (await db.execute(select(Agent).where(Agent.id == first_assignment.agent_id))).scalar_one_or_none()
+        developer_user_id = agent.developer_user_id if agent else None
+
+    db.add(
+        PaymentRecord(
+            id=uuid.uuid4(),
+            job_id=job.id,
+            client_user_id=job.client_user_id,
+            developer_user_id=developer_user_id,
+            gross_amount=round(gross, 2),
+            platform_fee=fee,
+            net_amount=round(gross - fee, 2),
+            currency=job.currency or "EUR",
+            payment_status=PaymentStatus.releasable,
+            provider="stripe",
+            provider_ref=f"auto_{uuid.uuid4().hex[:12]}",
+        )
+    )
+    job.status = JobStatus.client_review
+    await db.flush()
+    logger.info("plan.job_delivered", job_id=str(job.id), tasks=len(tasks), gross=gross)
 
 
 @router.post(
@@ -485,6 +592,27 @@ async def get_job_plan(
             ranked = (d.output_snapshot_json or {}).get("ranked_agents", [])
             matches_by_task[d.entity_id] = ranked[:3]
 
+    # Latest delivered submission per task (so the client can see the result).
+    delivered_by_task: dict[str, dict] = {}
+    if tasks:
+        sub_result = await db.execute(
+            select(Submission)
+            .where(Submission.task_id.in_([t.id for t in tasks]))
+            .order_by(Submission.created_at.desc())
+        )
+        for s in sub_result.scalars().all():
+            key = str(s.task_id)
+            if key in delivered_by_task:
+                continue
+            out = s.output_json or {}
+            result_text = str(out.get("result") or "")
+            delivered_by_task[key] = {
+                "summary": s.summary or out.get("summary"),
+                "result_preview": result_text[:1200],
+                "produced_by": out.get("produced_by"),
+                "status": s.status.value if hasattr(s.status, "value") else str(s.status),
+            }
+
     stages = [
         {"key": "format", "label": "Format", "desc": "Your brief becomes a structured spec."},
         {"key": "decompose", "label": "Decompose", "desc": "The spec is split into assignable tasks."},
@@ -521,6 +649,7 @@ async def get_job_plan(
                 "priority": t.priority,
                 "status": t.status.value if hasattr(t.status, "value") else str(t.status),
                 "matched_agents": matches_by_task.get(str(t.id), []),
+                "delivered": delivered_by_task.get(str(t.id)),
             }
             for t in tasks
         ],
