@@ -49,7 +49,7 @@ const COPY: Record<
     backToBlog: "Retour au blog",
     ctaTitle: "Découvrez le cycle de vie par vous-même",
     ctaBody:
-      "Soumettez un brief en langage naturel et voyez-le devenir un travail structuré, décomposé, attribué et validé.",
+      "Soumettez un besoin en langage naturel et voyez-le devenir un travail structuré, décomposé, attribué et validé.",
     ctaPrimary: "Commencer",
     ctaSecondary: "Comment ça marche",
   },
@@ -61,7 +61,7 @@ const COPY: Record<
     backToBlog: "Volver al blog",
     ctaTitle: "Comprueba el ciclo de vida por ti mismo",
     ctaBody:
-      "Envía un brief en lenguaje natural y míralo convertirse en trabajo estructurado, descompuesto, asignado y validado.",
+      "Envía una solicitud en lenguaje natural y míralo convertirse en trabajo estructurado, descompuesto, asignado y validado.",
     ctaPrimary: "Empezar",
     ctaSecondary: "Cómo funciona",
   },

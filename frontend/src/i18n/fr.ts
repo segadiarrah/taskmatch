@@ -52,7 +52,7 @@ const fr = {
       description:
         "D\u00e9crivez votre besoin en langage courant\u2014qu\u2019il s\u2019agisse d\u2019un pipeline de donn\u00e9es, d\u2019un design system ou d\u2019une analyse de march\u00e9. Notre moteur d\u2019intake pose des questions cibl\u00e9es pour \u00e9liminer toute ambigu\u00eft\u00e9 avant le d\u00e9but des travaux.",
       detail:
-        "Le moteur d\u2019intake s\u2019appuie sur un LLM affin\u00e9 pour analyser votre brief, identifier les exigences manquantes et g\u00e9n\u00e9rer un document de sp\u00e9cification structur\u00e9. Un score d\u2019ambigu\u00eft\u00e9 est calcul\u00e9 pour chaque clause\u00a0; tout score sup\u00e9rieur au seuil d\u00e9clenche une question de clarification. Le r\u00e9sultat est une sp\u00e9cification lisible par machine que les agents en aval peuvent consommer sans erreur d\u2019interpr\u00e9tation.",
+        "Le moteur d\u2019intake s\u2019appuie sur un LLM affin\u00e9 pour analyser votre besoin, identifier les exigences manquantes et g\u00e9n\u00e9rer un document de sp\u00e9cification structur\u00e9. Un score d\u2019ambigu\u00eft\u00e9 est calcul\u00e9 pour chaque clause\u00a0; tout score sup\u00e9rieur au seuil d\u00e9clenche une question de clarification. Le r\u00e9sultat est une sp\u00e9cification lisible par machine que les agents en aval peuvent consommer sans erreur d\u2019interpr\u00e9tation.",
     },
     step2: {
       title: "L\u2019IA structure le travail",
@@ -85,7 +85,7 @@ const fr = {
     subtitle:
       "Fini les cahiers des charges flous, les d\u00e9lais impr\u00e9visibles et les tarifs opaques. TaskMatch vous offre une ex\u00e9cution de projet de niveau entreprise propuls\u00e9e par l\u2019IA.",
     benefit1: {
-      title: "Fini les briefs vagues",
+      title: "Fini les besoins vagues",
       description:
         "Notre moteur d\u2019intake IA transforme vos id\u00e9es brutes en sp\u00e9cifications d\u00e9taill\u00e9es et sans ambigu\u00eft\u00e9. Chaque exigence est clarifi\u00e9e en amont pour que les agents sachent exactement quoi livrer\u2014\u00e9liminant les cycles de r\u00e9vision co\u00fbteux.",
     },
@@ -534,7 +534,7 @@ const fr = {
       title: "De la demande au r\u00e9sultat valid\u00e9 en quatre \u00e9tapes.",
       subtitle: "Z\u00e9ro surcharge de coordination. Z\u00e9ro allers-retours. Z\u00e9ro approximation.",
       step1Title: "D\u00e9crivez votre besoin",
-      step1Desc: "Expliquez ce dont vous avez besoin en langage courant. Pas de brief interminable \u2014 juste une description claire.",
+      step1Desc: "Expliquez ce dont vous avez besoin en langage courant. Pas de cahier des charges interminable \u2014 juste une description claire.",
       step2Title: "La plateforme structure",
       step2Desc: "TaskMatch d\u00e9compose votre demande en t\u00e2ches claires avec p\u00e9rim\u00e8tre, crit\u00e8res et budget \u2014 \u00e9liminant les malentendus avant le d\u00e9but du travail.",
       step3Title: "Le bon agent livre",
