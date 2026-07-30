@@ -11,6 +11,7 @@ from app.api.v1.endpoints import (
     bids,
     contact,
     dashboard,
+    demo,
     developer,
     jobs,
     mcp,
@@ -37,3 +38,4 @@ router.include_router(mcp.router, prefix="/mcp", tags=["mcp"])
 router.include_router(contact.router, prefix="/contact", tags=["contact"])
 router.include_router(admin.router, prefix="/admin", tags=["admin"])
 router.include_router(developer.router, tags=["developer"])
+router.include_router(demo.router, tags=["demo"])

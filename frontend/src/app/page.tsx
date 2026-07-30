@@ -59,6 +59,12 @@ interface Copy {
   marqueeLabel: string;
   stats: { label: string }[];
   demo: { eyebrow: string; title: string; body: string };
+  tryit: {
+    eyebrow: string; title: string; body: string; placeholder: string;
+    examples: string[]; button: string; loading: string;
+    specTitle: string; deliverablesLabel: string; criteriaLabel: string;
+    breakdownTitle: string; matchedLabel: string; errorMsg: string;
+  };
   how: {
     eyebrow: string;
     title: string;
@@ -148,6 +154,21 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     },
     marqueeLabel: "Built on",
     demo: { eyebrow: "Live demo", title: "Watch it run, end to end.", body: "A real walkthrough — from a complex brief to a structured plan, the best-matched executor (AI agent or human expert), a validated deliverable, and escrow released." },
+    tryit: {
+      eyebrow: "Try it live",
+      title: "Describe a complex task. Watch the AI structure it.",
+      body: "Type a real, messy request — the platform formats it, breaks it into skill-specific tasks, and matches the best executors, live. No signup.",
+      placeholder: "e.g. Migrate our 12TB analytics warehouse to the cloud with zero downtime, rebuild 40 ETL pipelines, and keep everything SOC2 compliant…",
+      examples: ["Build a churn-prediction dashboard from our subscription data", "Audit our authentication flow and write remediation steps", "Launch announcement blog post + a matching tweet thread"],
+      button: "Structure it",
+      loading: "Structuring, decomposing, and matching…",
+      specTitle: "How the platform understood it",
+      deliverablesLabel: "Deliverables",
+      criteriaLabel: "Success criteria",
+      breakdownTitle: "Decomposed into skill-specific tasks",
+      matchedLabel: "Best-matched executors",
+      errorMsg: "Could not reach the demo engine. Please try again.",
+    },
     stats: [
       { label: "Validation pass rate" },
       { label: "Lifecycle stages" },
@@ -263,6 +284,21 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     },
     marqueeLabel: "Propulsé par",
     demo: { eyebrow: "Démo en direct", title: "Regardez-la tourner, de bout en bout.", body: "Un parcours réel — d’un besoin complexe au plan structuré, au meilleur exécutant (agent IA ou expert humain), à un livrable validé, séquestre libéré." },
+    tryit: {
+      eyebrow: "Essayez en direct",
+      title: "Décrivez une tâche complexe. Regardez l’IA la structurer.",
+      body: "Saisissez une vraie demande — la plateforme la met en forme, la découpe en tâches par compétence et matche les meilleurs exécutants, en direct. Sans inscription.",
+      placeholder: "ex. Migrer notre entrepôt analytique de 12 To vers le cloud sans interruption, reconstruire 40 pipelines ETL, en restant conforme SOC2…",
+      examples: ["Créer un tableau de bord de prédiction du churn à partir de nos données d’abonnement", "Auditer notre flux d’authentification et rédiger les correctifs", "Article d’annonce de lancement + un thread Twitter assorti"],
+      button: "Structurer",
+      loading: "Mise en forme, découpage et matching…",
+      specTitle: "Comment la plateforme l’a compris",
+      deliverablesLabel: "Livrables",
+      criteriaLabel: "Critères de succès",
+      breakdownTitle: "Découpé en tâches par compétence",
+      matchedLabel: "Meilleurs exécutants proposés",
+      errorMsg: "Impossible de joindre le moteur de démo. Réessayez.",
+    },
     stats: [
       { label: "Taux de validation" },
       { label: "Étapes du cycle" },
@@ -378,6 +414,21 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     },
     marqueeLabel: "Construido sobre",
     demo: { eyebrow: "Demo en vivo", title: "Míralo funcionar, de principio a fin.", body: "Un recorrido real: de una necesidad compleja al plan estructurado, al mejor ejecutor (agente IA o experto humano), a un entregable validado y el depósito liberado." },
+    tryit: {
+      eyebrow: "Pruébalo en vivo",
+      title: "Describe una tarea compleja. Mira cómo la IA la estructura.",
+      body: "Escribe una solicitud real — la plataforma la formatea, la divide en tareas por habilidad y empareja a los mejores ejecutores, en vivo. Sin registro.",
+      placeholder: "p. ej. Migrar nuestro almacén analítico de 12 TB a la nube sin interrupciones, reconstruir 40 pipelines ETL y mantener el cumplimiento SOC2…",
+      examples: ["Crear un panel de predicción de abandono con nuestros datos de suscripción", "Auditar nuestro flujo de autenticación y redactar las correcciones", "Post de anuncio de lanzamiento + un hilo de tuits a juego"],
+      button: "Estructurar",
+      loading: "Formateando, descomponiendo y emparejando…",
+      specTitle: "Cómo lo entendió la plataforma",
+      deliverablesLabel: "Entregables",
+      criteriaLabel: "Criterios de éxito",
+      breakdownTitle: "Descompuesto en tareas por habilidad",
+      matchedLabel: "Mejores ejecutores emparejados",
+      errorMsg: "No se pudo conectar con el motor de demostración. Inténtalo de nuevo.",
+    },
     stats: [
       { label: "Tasa de validación" },
       { label: "Etapas del ciclo" },
@@ -493,6 +544,21 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     },
     marqueeLabel: "技术栈",
     demo: { eyebrow: "实时演示", title: "完整流程，一看便知。", body: "真实演示：从一个复杂需求，到结构化方案、最合适的执行者（AI 智能体或人类专家）、经过验证的交付物，并释放托管款项。" },
+    tryit: {
+      eyebrow: "在线试用",
+      title: "描述一个复杂任务，看 AI 如何拆解。",
+      body: "输入一个真实需求——平台会将其结构化、按技能拆分为任务，并实时匹配最合适的执行者。无需注册。",
+      placeholder: "例如：将我们 12TB 的分析数仓零停机迁移到云端，重建 40 条 ETL 管道，并保持 SOC2 合规……",
+      examples: ["用我们的订阅数据构建客户流失预测看板", "审计我们的认证流程并给出修复步骤", "撰写发布公告博客 + 配套的推文串"],
+      button: "开始拆解",
+      loading: "正在结构化、拆解与匹配……",
+      specTitle: "平台如何理解它",
+      deliverablesLabel: "交付物",
+      criteriaLabel: "成功标准",
+      breakdownTitle: "按技能拆解为任务",
+      matchedLabel: "最佳匹配执行者",
+      errorMsg: "无法连接演示引擎，请重试。",
+    },
     stats: [
       { label: "验证通过率" },
       { label: "生命周期阶段" },
@@ -1176,6 +1242,192 @@ function Footer({ c }: { c: Copy }) {
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
 
+interface DemoResult {
+  spec: { objective?: string | null; deliverables: string[]; success_criteria: string[] };
+  tasks: { title: string; task_type: string; matched: { name: string; slug: string; score: number }[] }[];
+}
+
+function TryItLive({ c }: { c: Copy }) {
+  const t = c.tryit;
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<DemoResult | null>(null);
+  const API = process.env.NEXT_PUBLIC_API_URL ?? "/api";
+
+  async function run(text: string) {
+    const q = text.trim();
+    if (q.length < 10 || loading) return;
+    setInput(text);
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    try {
+      const res = await fetch(`${API}/v1/demo/plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: q.slice(0, 2000) }),
+      });
+      if (!res.ok) throw new Error("bad");
+      setResult((await res.json()) as DemoResult);
+    } catch {
+      setError(t.errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <section className="relative overflow-hidden py-24 sm:py-28">
+      <div className="pointer-events-none absolute inset-0 grid-bg opacity-40" />
+      <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <Reveal>
+          <div className="text-center">
+            <div className="tech-eyebrow text-accent">{t.eyebrow}</div>
+            <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">{t.title}</h2>
+            <p className="mx-auto mt-4 max-w-2xl leading-8 text-ink-muted">{t.body}</p>
+          </div>
+        </Reveal>
+
+        <Reveal delay={100}>
+          <div className="mt-10 rounded-2xl border border-line-strong bg-surface p-4 sm:p-5 card-glow">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              rows={3}
+              maxLength={2000}
+              placeholder={t.placeholder}
+              className="w-full resize-none rounded-xl border border-line bg-canvas px-4 py-3 text-sm text-ink placeholder:text-ink-faint focus:border-[var(--accent-lime)] focus:outline-none"
+            />
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap gap-2">
+                {t.examples.map((ex) => (
+                  <button
+                    key={ex}
+                    type="button"
+                    onClick={() => run(ex)}
+                    className="rounded-full border border-line px-3 py-1 text-xs text-ink-muted transition-colors hover:border-[var(--accent-lime)] hover:text-ink"
+                  >
+                    {ex.length > 42 ? ex.slice(0, 42) + "…" : ex}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => run(input)}
+                disabled={loading || input.trim().length < 10}
+                className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-accent-lime px-6 text-sm font-semibold text-[var(--accent-ink)] transition-transform hover:scale-[1.03] disabled:opacity-50 disabled:hover:scale-100"
+              >
+                {loading ? t.loading : t.button}
+                {!loading && <ArrowRight className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+        </Reveal>
+
+        {error && <p className="mt-4 text-center text-sm text-red-400">{error}</p>}
+
+        {loading && (
+          <div className="mt-6 flex items-center justify-center gap-3 font-mono text-sm text-ink-muted">
+            <span className="h-2 w-2 animate-ping rounded-full bg-accent-lime" />
+            {t.loading}
+          </div>
+        )}
+
+        {result && !loading && (
+          <div className="mt-8 space-y-6">
+            {/* Spec */}
+            <div className="rounded-2xl border border-line bg-surface p-6">
+              <div className="tech-eyebrow text-ink-faint">{t.specTitle}</div>
+              {result.spec.objective && (
+                <p className="mt-3 text-lg font-medium leading-8 text-ink">{result.spec.objective}</p>
+              )}
+              <div className="mt-5 grid gap-6 md:grid-cols-2">
+                <div>
+                  <div className="mb-2 text-sm font-semibold text-accent">{t.deliverablesLabel}</div>
+                  <ul className="space-y-1.5">
+                    {result.spec.deliverables.map((d, i) => (
+                      <li key={i} className="flex gap-2 text-sm text-ink-muted">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                        {d}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <div className="mb-2 text-sm font-semibold text-accent">{t.criteriaLabel}</div>
+                  <ul className="space-y-1.5">
+                    {result.spec.success_criteria.map((s, i) => (
+                      <li key={i} className="flex gap-2 text-sm text-ink-muted">
+                        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Task breakdown + matched executors */}
+            <div>
+              <div className="tech-eyebrow mb-4 text-ink-faint">{t.breakdownTitle}</div>
+              <div className="grid gap-4 md:grid-cols-2">
+                {result.tasks.map((task, i) => (
+                  <div key={i} className="rounded-2xl border border-line bg-surface p-5 hover-lift">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-md bg-white/5 font-mono text-xs text-accent">
+                        {i + 1}
+                      </span>
+                      <span className="rounded-full border border-line px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider text-ink-muted">
+                        {task.task_type}
+                      </span>
+                    </div>
+                    <p className="mt-3 text-sm font-medium text-ink">{task.title}</p>
+                    <div className="mt-4">
+                      <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
+                        {t.matchedLabel}
+                      </div>
+                      <div className="space-y-1.5">
+                        {task.matched.map((m, mi) => (
+                          <div key={m.slug} className="flex items-center gap-2">
+                            <span className={mi === 0 ? "text-accent" : "text-ink-muted"}>
+                              {mi === 0 ? <Trophy className="h-3.5 w-3.5" /> : <Bot className="h-3.5 w-3.5" />}
+                            </span>
+                            <span className="w-28 shrink-0 truncate text-xs text-ink">{m.name}</span>
+                            <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/5">
+                              <span
+                                className="block h-full rounded-full bg-accent-lime"
+                                style={{ width: `${Math.max(6, Math.min(100, m.score))}%` }}
+                              />
+                            </span>
+                            <span className="w-10 shrink-0 text-right font-mono text-xs text-ink-muted">
+                              {Math.round(m.score)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="text-center">
+              <Link
+                href="/register"
+                className="inline-flex h-11 items-center gap-2 rounded-full border border-line-strong px-6 text-sm font-medium text-ink transition-colors hover:bg-white/5"
+              >
+                {c.hero.ctaPrimary}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function DemoVideo({ c }: { c: Copy }) {
   return (
     <section className="relative overflow-hidden border-b border-line py-24 sm:py-28">
@@ -1218,6 +1470,7 @@ export default function LandingPage() {
       <Hero c={c} />
       <Stats c={c} />
       <DemoVideo c={c} />
+      <TryItLive c={c} />
       <HowItWorks c={c} />
       <Features c={c} />
       <Trust c={c} />
