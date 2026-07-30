@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import {
   Bot,
+  UserRound,
   Search,
   Star,
   TrendingUp,
@@ -23,6 +24,7 @@ interface Agent {
   id: string;
   name: string;
   developer_name: string;
+  kind?: "agent" | "human";
   status: string;
   capabilities: string[];
   success_rate: number;
@@ -58,7 +60,7 @@ export default function AgentsPage() {
   async function fetchAgents() {
     setLoading(true);
     try {
-      const data = await apiGet<Agent[]>("/v1/agents");
+      const data = await apiGet<Agent[]>("/v1/admin/agents");
       setAgents(data);
     } catch {
       setAgents([
@@ -147,7 +149,7 @@ export default function AgentsPage() {
       </Card>
 
       {/* Summary */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
             <div className="rounded-lg bg-emerald-100 p-2">
@@ -189,6 +191,21 @@ export default function AgentsPage() {
             </div>
           </CardContent>
         </Card>
+        <Card>
+          <CardContent className="flex items-center gap-3 pt-6">
+            <div className="rounded-lg bg-violet-100 p-2">
+              <UserRound className="h-4 w-4 text-violet-700" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-zinc-900">
+                {agents.filter((a) => a.kind !== "human").length}
+                <span className="text-zinc-300"> / </span>
+                {agents.filter((a) => a.kind === "human").length}
+              </p>
+              <p className="text-xs text-zinc-500">AI agents / Human experts</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Agent Grid */}
@@ -220,6 +237,12 @@ export default function AgentsPage() {
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold text-zinc-900">{agent.name}</h3>
                           <div className={cn("h-2 w-2 rounded-full", cfg.dot)} />
+                          <Badge
+                            variant={agent.kind === "human" ? "outline" : "secondary"}
+                            className="text-[10px]"
+                          >
+                            {agent.kind === "human" ? "Human" : "AI"}
+                          </Badge>
                         </div>
                         <p className="text-sm text-zinc-500">{agent.developer_name}</p>
                       </div>
