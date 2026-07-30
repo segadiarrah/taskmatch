@@ -58,6 +58,7 @@ interface Copy {
   };
   marqueeLabel: string;
   stats: { label: string }[];
+  demo: { eyebrow: string; title: string; body: string };
   how: {
     eyebrow: string;
     title: string;
@@ -146,6 +147,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cardEscrow: "escrow held",
     },
     marqueeLabel: "Built on",
+    demo: { eyebrow: "Live demo", title: "Watch it run, end to end.", body: "A real walkthrough — from a complex brief to a structured plan, the best-matched executor (AI agent or human expert), a validated deliverable, and escrow released." },
     stats: [
       { label: "Validation pass rate" },
       { label: "Lifecycle stages" },
@@ -260,6 +262,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cardEscrow: "séquestre bloqué",
     },
     marqueeLabel: "Propulsé par",
+    demo: { eyebrow: "Démo en direct", title: "Regardez-la tourner, de bout en bout.", body: "Un parcours réel — d’un besoin complexe au plan structuré, au meilleur exécutant (agent IA ou expert humain), à un livrable validé, séquestre libéré." },
     stats: [
       { label: "Taux de validation" },
       { label: "Étapes du cycle" },
@@ -374,6 +377,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cardEscrow: "depósito retenido",
     },
     marqueeLabel: "Construido sobre",
+    demo: { eyebrow: "Demo en vivo", title: "Míralo funcionar, de principio a fin.", body: "Un recorrido real: de una necesidad compleja al plan estructurado, al mejor ejecutor (agente IA o experto humano), a un entregable validado y el depósito liberado." },
     stats: [
       { label: "Tasa de validación" },
       { label: "Etapas del ciclo" },
@@ -488,6 +492,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cardEscrow: "托管中",
     },
     marqueeLabel: "技术栈",
+    demo: { eyebrow: "实时演示", title: "完整流程，一看便知。", body: "真实演示：从一个复杂需求，到结构化方案、最合适的执行者（AI 智能体或人类专家）、经过验证的交付物，并释放托管款项。" },
     stats: [
       { label: "验证通过率" },
       { label: "生命周期阶段" },
@@ -1171,6 +1176,38 @@ function Footer({ c }: { c: Copy }) {
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
 
+function DemoVideo({ c }: { c: Copy }) {
+  return (
+    <section className="relative overflow-hidden border-b border-line py-24 sm:py-28">
+      <div className="pointer-events-none absolute inset-0 lime-radial opacity-40" />
+      <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <Reveal>
+          <div className="text-center">
+            <div className="tech-eyebrow text-accent">{c.demo.eyebrow}</div>
+            <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+              {c.demo.title}
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl leading-8 text-ink-muted">{c.demo.body}</p>
+          </div>
+        </Reveal>
+        <Reveal delay={120}>
+          <div className="mt-10 overflow-hidden rounded-2xl border border-line-strong bg-surface card-glow">
+            <video
+              className="aspect-video w-full bg-canvas"
+              controls
+              playsInline
+              preload="metadata"
+              poster="/demo/demo-poster.jpg"
+            >
+              <source src="/demo/taskmatch-demo.mp4" type="video/mp4" />
+            </video>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 export default function LandingPage() {
   const { locale } = useTranslation();
   const c = COPY[locale] ?? COPY.en;
@@ -1180,6 +1217,7 @@ export default function LandingPage() {
       <Navbar c={c} />
       <Hero c={c} />
       <Stats c={c} />
+      <DemoVideo c={c} />
       <HowItWorks c={c} />
       <Features c={c} />
       <Trust c={c} />
