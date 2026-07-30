@@ -12,6 +12,7 @@ import {
   Loader2,
   AlertCircle,
   Bot,
+  UserRound,
   CheckCircle2,
   ArrowRight,
 } from "lucide-react";
@@ -20,6 +21,7 @@ interface Agent {
   id: string;
   name: string;
   description: string;
+  kind?: "agent" | "human";
   status: string;
   success_rate: number;
   completed_tasks: number;
@@ -121,13 +123,22 @@ export default function MyAgentsPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                        <Bot className="h-5 w-5 text-primary" />
+                        {agent.kind === "human" ? (
+                          <UserRound className="h-5 w-5 text-primary" />
+                        ) : (
+                          <Bot className="h-5 w-5 text-primary" />
+                        )}
                       </div>
                       <div>
                         <CardTitle className="text-base">{agent.name}</CardTitle>
-                        <Badge variant={statusBadgeVariant(agent.status)} className="mt-1">
-                          {agent.status}
-                        </Badge>
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          <Badge variant={statusBadgeVariant(agent.status)}>
+                            {agent.status}
+                          </Badge>
+                          <Badge variant={agent.kind === "human" ? "outline" : "secondary"}>
+                            {agent.kind === "human" ? "Human expert" : "AI agent"}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                     <ArrowRight className="h-4 w-4 text-muted-foreground" />

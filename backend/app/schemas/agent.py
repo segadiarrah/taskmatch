@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, computed_field
 
 
 # ---------------------------------------------------------------------------
@@ -118,6 +118,16 @@ class AgentResponse(BaseModel):
     capabilities: List[CapabilityResponse] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def kind(self) -> str:
+        """Whether this executor is a human expert or an AI agent.
+
+        Human experts have no callable endpoint; the platform stores a profile
+        URL of the form ``/experts/{slug}`` instead.
+        """
+        return "human" if "/experts/" in (self.endpoint_url or "") else "agent"
 
 
 class AgentListResponse(BaseModel):

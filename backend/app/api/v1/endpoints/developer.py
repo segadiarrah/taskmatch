@@ -129,10 +129,16 @@ async def my_agents(
                 "id": str(a.id),
                 "name": a.name,
                 "slug": a.slug,
+                "description": a.description or "",
+                "kind": "human" if "/experts/" in (a.endpoint_url or "") else "agent",
                 "status": a.status.value if hasattr(a.status, "value") else str(a.status),
-                "success_rate": a.success_rate,
+                # UI expects a 0-100 percentage.
+                "success_rate": round((a.success_rate or 0.0) * 100),
                 "average_score": a.average_score,
-                "completed_tasks_count": a.completed_tasks_count,
+                "completed_tasks": a.completed_tasks_count or 0,
+                "completed_tasks_count": a.completed_tasks_count or 0,
+                "capabilities": [c.capability_name for c in (a.capabilities or [])] or (a.supported_task_types or []),
+                "created_at": a.created_at.isoformat() if a.created_at else None,
             }
             for a in agents
         ]

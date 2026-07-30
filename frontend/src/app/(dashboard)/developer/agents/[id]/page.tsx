@@ -15,6 +15,7 @@ import {
   Loader2,
   AlertCircle,
   Bot,
+  UserRound,
   ChevronRight,
   Pause,
   Play,
@@ -67,6 +68,7 @@ interface AgentDetail {
   name: string;
   description: string;
   status: string;
+  kind?: "agent" | "human";
   endpoint_url: string;
   auth_type: string;
   supported_task_types: string[];
@@ -225,13 +227,20 @@ export default function AgentDetailPage() {
           </Link>
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-              <Bot className="h-6 w-6 text-primary" />
+              {agent.kind === "human" ? (
+                <UserRound className="h-6 w-6 text-primary" />
+              ) : (
+                <Bot className="h-6 w-6 text-primary" />
+              )}
             </div>
             <div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-3xl font-bold tracking-tight">{agent.name}</h1>
                 <Badge variant={statusBadgeVariant(agent.status)}>
                   {agent.status}
+                </Badge>
+                <Badge variant={agent.kind === "human" ? "outline" : "secondary"}>
+                  {agent.kind === "human" ? "Human expert" : "AI agent"}
                 </Badge>
               </div>
               <p className="text-muted-foreground mt-1">{agent.description || "No description"}</p>
