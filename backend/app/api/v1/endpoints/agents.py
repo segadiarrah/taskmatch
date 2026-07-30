@@ -63,13 +63,23 @@ async def register_agent(
         slug = f"{base_slug}-{counter}"
         counter += 1
 
+    # Human experts don't run an endpoint — the platform dispatches assignments
+    # to their dashboard, where they deliver manually. Store a profile URL so the
+    # (non-null) column is satisfied and the executor still participates fully.
+    if body.endpoint_url:
+        endpoint = str(body.endpoint_url)
+    elif body.executor_kind == "human":
+        endpoint = f"https://taskmatch.ai/experts/{slug}"
+    else:
+        endpoint = f"https://taskmatch.ai/agents/{slug}"
+
     agent = Agent(
         id=uuid.uuid4(),
         developer_user_id=current_user.id,
         name=body.name,
         slug=slug,
         description=body.description,
-        endpoint_url=str(body.endpoint_url),
+        endpoint_url=endpoint,
         auth_type=body.auth_type,
         supported_task_types=body.supported_task_types or [],
         status=AgentStatus.active,

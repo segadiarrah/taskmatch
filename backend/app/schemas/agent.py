@@ -50,8 +50,14 @@ class AgentCreate(BaseModel):
     description: str = Field(
         default="", max_length=4096, description="Markdown-friendly description"
     )
-    endpoint_url: HttpUrl = Field(
-        ..., description="URL the platform calls to dispatch tasks"
+    executor_kind: str = Field(
+        default="agent",
+        pattern=r"^(agent|human)$",
+        description="'agent' for an AI agent endpoint, 'human' for a human expert",
+    )
+    endpoint_url: Optional[HttpUrl] = Field(
+        None,
+        description="URL the platform calls to dispatch tasks (AI agents only; optional for human experts)",
     )
     auth_type: str = Field(
         default="none",

@@ -36,10 +36,12 @@ export default function RegisterAgentPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [executorKind, setExecutorKind] = useState<"agent" | "human">("agent");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [endpointUrl, setEndpointUrl] = useState("");
   const [authType, setAuthType] = useState("none");
+  const isHuman = executorKind === "human";
   const [taskTypesInput, setTaskTypesInput] = useState("");
   const [capabilities, setCapabilities] = useState<Capability[]>([]);
 
@@ -68,19 +70,20 @@ export default function RegisterAgentPage() {
     setError(null);
 
     if (!name.trim()) {
-      setError("Agent name is required.");
+      setError(isHuman ? "Your name is required." : "Agent name is required.");
       return;
     }
-    if (!endpointUrl.trim()) {
-      setError("Endpoint URL is required.");
-      return;
-    }
-
-    try {
-      new URL(endpointUrl);
-    } catch {
-      setError("Please enter a valid endpoint URL.");
-      return;
+    if (!isHuman) {
+      if (!endpointUrl.trim()) {
+        setError("Endpoint URL is required for an AI agent.");
+        return;
+      }
+      try {
+        new URL(endpointUrl);
+      } catch {
+        setError("Please enter a valid endpoint URL.");
+        return;
+      }
     }
 
     const supportedTaskTypes = taskTypesInput
@@ -91,7 +94,8 @@ export default function RegisterAgentPage() {
     const payload = {
       name: name.trim(),
       description: description.trim(),
-      endpoint_url: endpointUrl.trim(),
+      executor_kind: executorKind,
+      endpoint_url: isHuman ? undefined : endpointUrl.trim(),
       auth_type: authType,
       supported_task_types: supportedTaskTypes,
       capabilities: capabilities.map((c) => ({
@@ -131,9 +135,13 @@ export default function RegisterAgentPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Register New Agent</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {isHuman ? "Register as a human expert" : "Register a new AI agent"}
+          </h1>
           <p className="text-muted-foreground mt-1">
-            Set up a new AI agent to accept and complete tasks.
+            {isHuman
+              ? "Offer your skills as an expert. You will receive matched tasks in your dashboard and deliver them yourself."
+              : "Set up a new AI agent to accept and complete tasks automatically."}
           </p>
         </div>
       </div>
@@ -147,6 +155,39 @@ export default function RegisterAgentPage() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Executor kind */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Who is executing?</CardTitle>
+            <CardDescription>
+              Both AI agents and human experts compete for tasks and are ranked by the same explainable score.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[
+                { k: "agent" as const, title: "AI agent", desc: "Runs an endpoint; executes tasks automatically." },
+                { k: "human" as const, title: "Human expert", desc: "You receive matched tasks and deliver them yourself." },
+              ].map((opt) => (
+                <button
+                  type="button"
+                  key={opt.k}
+                  onClick={() => setExecutorKind(opt.k)}
+                  className={
+                    "rounded-lg border p-4 text-left transition-colors " +
+                    (executorKind === opt.k
+                      ? "border-zinc-900 bg-zinc-50 ring-1 ring-zinc-900"
+                      : "border-zinc-200 hover:border-zinc-300")
+                  }
+                >
+                  <div className="text-sm font-semibold">{opt.title}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">{opt.desc}</div>
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Basic Info */}
         <Card>
           <CardHeader>
@@ -182,59 +223,68 @@ export default function RegisterAgentPage() {
           </CardContent>
         </Card>
 
-        {/* Connection */}
+        {/* Connection / Skills */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Connection Settings</CardTitle>
-            <CardDescription>How TaskMatch communicates with your agent.</CardDescription>
+            <CardTitle className="text-lg">{isHuman ? "Your skills" : "Connection & skills"}</CardTitle>
+            <CardDescription>
+              {isHuman
+                ? "The task types you can take on. Matching uses these plus your track record."
+                : "How TaskMatch communicates with your agent, and what it can handle."}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="endpoint" className="text-sm font-medium">
-                Endpoint URL <span className="text-destructive">*</span>
-              </label>
-              <Input
-                id="endpoint"
-                type="url"
-                placeholder="https://api.example.com/agent"
-                value={endpointUrl}
-                onChange={(e) => setEndpointUrl(e.target.value)}
-                required
-              />
-              <p className="text-xs text-muted-foreground">
-                The URL where TaskMatch will send task requests to your agent.
-              </p>
-            </div>
+            {!isHuman && (
+              <>
+                <div className="space-y-2">
+                  <label htmlFor="endpoint" className="text-sm font-medium">
+                    Endpoint URL <span className="text-destructive">*</span>
+                  </label>
+                  <Input
+                    id="endpoint"
+                    type="url"
+                    placeholder="https://api.example.com/agent"
+                    value={endpointUrl}
+                    onChange={(e) => setEndpointUrl(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    The URL where TaskMatch will send task requests to your agent.
+                  </p>
+                </div>
 
-            <div className="space-y-2">
-              <label htmlFor="auth_type" className="text-sm font-medium">
-                Authentication Type
-              </label>
-              <Select
-                id="auth_type"
-                value={authType}
-                onChange={(e) => setAuthType(e.target.value)}
-              >
-                {AUTH_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </Select>
-            </div>
+                <div className="space-y-2">
+                  <label htmlFor="auth_type" className="text-sm font-medium">
+                    Authentication Type
+                  </label>
+                  <Select
+                    id="auth_type"
+                    value={authType}
+                    onChange={(e) => setAuthType(e.target.value)}
+                  >
+                    {AUTH_TYPES.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              </>
+            )}
 
             <div className="space-y-2">
               <label htmlFor="task_types" className="text-sm font-medium">
-                Supported Task Types
+                {isHuman ? "Skills / task types" : "Supported Task Types"}
               </label>
               <Input
                 id="task_types"
-                placeholder="e.g., code_generation, code_review, testing, documentation"
+                placeholder="e.g., coding, design, data_analysis, writing, review"
                 value={taskTypesInput}
                 onChange={(e) => setTaskTypesInput(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
-                Comma-separated list of task types your agent can handle.
+                {isHuman
+                  ? "Comma-separated list of task types you can deliver."
+                  : "Comma-separated list of task types your agent can handle."}
               </p>
             </div>
           </CardContent>
