@@ -25,6 +25,8 @@ import json
 
 import structlog
 
+from pydantic import BaseModel, Field
+
 from app.core.database import async_session_factory, get_db
 from app.core.deps import get_current_active_user, require_role
 from app.middleware.audit import log_audit
@@ -236,6 +238,17 @@ async def _finalize_job_if_done(db: AsyncSession, job: Job) -> None:
     releasable escrow payment so the client can review and release."""
     tasks = list((await db.execute(select(Task).where(Task.job_id == job.id))).scalars().all())
     if not tasks or not all(t.status == TaskStatus.approved for t in tasks):
+        return
+
+    # Idempotent: a revision cycle re-approves tasks but must not mint a second
+    # escrow payment. If one already exists, just return the job to client review.
+    existing_payment = (
+        await db.execute(select(PaymentRecord).where(PaymentRecord.job_id == job.id).limit(1))
+    ).scalar_one_or_none()
+    if existing_payment is not None:
+        job.status = JobStatus.client_review
+        await db.flush()
+        logger.info("plan.job_redelivered", job_id=str(job.id), tasks=len(tasks))
         return
 
     gross = sum((float(t.budget) if t.budget else 0.0) for t in tasks) or float(job.budget_max or 0)
@@ -715,6 +728,102 @@ async def accept_job(
         "job_id": str(job.id),
         "status": job.status.value if hasattr(job.status, "value") else str(job.status),
         "payments_released": released,
+    }
+
+
+class DisputeRequest(BaseModel):
+    """Client-supplied reason for contesting a delivered deliverable."""
+
+    reason: str = Field(default="", max_length=2000)
+
+
+async def _run_revision(job_id: uuid.UUID, reason: str) -> None:
+    """Background: re-execute a disputed job's tasks and re-validate, returning it
+    to client review. Escrow stays frozen (never paid) throughout the revision."""
+    async with async_session_factory() as db:
+        try:
+            tasks = list((await db.execute(select(Task).where(Task.job_id == job_id))).scalars().all())
+            for task in tasks:
+                assignment = (
+                    await db.execute(
+                        select(Assignment)
+                        .where(Assignment.task_id == task.id)
+                        .order_by(Assignment.created_at.desc())
+                        .limit(1)
+                    )
+                ).scalar_one_or_none()
+                if assignment is None:
+                    continue
+                agent = (await db.execute(select(Agent).where(Agent.id == assignment.agent_id))).scalar_one_or_none()
+                if agent is None:
+                    continue
+                # Reopen the assignment so the executor can deliver a revised result.
+                assignment.status = AssignmentStatus.active
+                assignment.completed_at = None
+                await db.flush()
+                await _deliver_task(db, task, agent, assignment)
+            job = (await db.execute(select(Job).where(Job.id == job_id))).scalar_one_or_none()
+            if job is not None:
+                await _finalize_job_if_done(db, job)
+            await db.commit()
+            logger.info("dispute.revision_complete", job_id=str(job_id))
+        except Exception as exc:  # noqa: BLE001
+            await db.rollback()
+            logger.warning("dispute.revision_failed", job_id=str(job_id), error=str(exc))
+
+
+@router.post("/{job_id}/dispute", summary="Contest delivered work: freeze escrow and request a revision")
+async def dispute_job(
+    job_id: uuid.UUID,
+    body: DisputeRequest,
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Client contests a delivered deliverable. Escrow stays held (unpaid), the
+    tasks return to revision, and a fresh execution + validation pass runs before
+    the job comes back for review. Accessible to the job owner (or an admin)."""
+    job = (await db.execute(select(Job).where(Job.id == job_id))).scalar_one_or_none()
+    if job is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
+    role = getattr(current_user.role, "value", str(current_user.role))
+    if job.client_user_id != current_user.id and role != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your job")
+    if job.status != JobStatus.client_review:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only delivered work awaiting your review can be disputed",
+        )
+
+    # Escrow is already held as 'releasable' (never paid) — contesting keeps it
+    # frozen. Return the delivered tasks to revision and reopen the job.
+    tasks = list((await db.execute(select(Task).where(Task.job_id == job_id))).scalars().all())
+    reverted = 0
+    for t in tasks:
+        if t.status == TaskStatus.approved:
+            t.status = TaskStatus.validation_failed
+            reverted += 1
+    job.status = JobStatus.in_progress
+    await db.flush()
+
+    await log_audit(
+        db,
+        actor_type="user",
+        actor_id=str(current_user.id),
+        action="dispute_job",
+        entity_type="job",
+        entity_id=str(job.id),
+        payload={"reason": body.reason[:500], "tasks_reverted": reverted},
+    )
+    # Persist the transition before the background revision opens its own session.
+    await db.commit()
+    background_tasks.add_task(_run_revision, job_id, body.reason)
+
+    return {
+        "job_id": str(job.id),
+        "status": job.status.value if hasattr(job.status, "value") else str(job.status),
+        "escrow": "held",
+        "message": "Dispute recorded. Escrow is held and a revision is in progress.",
     }
 
 

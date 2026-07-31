@@ -166,6 +166,9 @@ export default function ExecutionPlan({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [accepting, setAccepting] = useState(false);
+  const [disputing, setDisputing] = useState(false);
+  const [showDispute, setShowDispute] = useState(false);
+  const [disputeReason, setDisputeReason] = useState("");
 
   const pollsRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -230,6 +233,23 @@ export default function ExecutionPlan({
       /* keep current state; button stays available to retry */
     } finally {
       setAccepting(false);
+    }
+  };
+
+  const handleDispute = async () => {
+    try {
+      setDisputing(true);
+      await apiPost(`/v1/jobs/${jobId}/dispute`, { reason: disputeReason.trim() });
+      setShowDispute(false);
+      setDisputeReason("");
+      // Escrow stays held; job re-enters revision — resume polling to watch it.
+      pollsRef.current = 0;
+      await load();
+      onSubmitted?.();
+    } catch {
+      /* keep current state; button stays available to retry */
+    } finally {
+      setDisputing(false);
     }
   };
 
@@ -413,9 +433,19 @@ export default function ExecutionPlan({
                 </div>
               </div>
               {canRelease && !jobDone && (
-                <Button onClick={handleAccept} disabled={accepting} className="shrink-0">
-                  {accepting ? "Releasing…" : "Accept & release payment"}
-                </Button>
+                <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDispute((v) => !v)}
+                    disabled={accepting || disputing}
+                    className="shrink-0"
+                  >
+                    Request changes
+                  </Button>
+                  <Button onClick={handleAccept} disabled={accepting || disputing} className="shrink-0">
+                    {accepting ? "Releasing…" : "Accept & release payment"}
+                  </Button>
+                </div>
               )}
               {jobDone && (
                 <Badge variant="success" className="shrink-0">
@@ -423,6 +453,35 @@ export default function ExecutionPlan({
                 </Badge>
               )}
             </div>
+
+            {canRelease && !jobDone && showDispute && (
+              <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50/70 p-3">
+                <p className="text-xs font-medium text-zinc-700">
+                  What did the deliverable miss? Your payment stays held in escrow while the
+                  executor revises the work against your success criteria.
+                </p>
+                <textarea
+                  value={disputeReason}
+                  onChange={(e) => setDisputeReason(e.target.value)}
+                  rows={3}
+                  placeholder="e.g. Section 2 doesn't cover the EU market as requested; tone is too informal."
+                  className="mt-2 w-full rounded-md border border-zinc-300 bg-white p-2 text-sm text-zinc-800 focus:border-amber-400 focus:outline-none"
+                />
+                <div className="mt-2 flex justify-end gap-2">
+                  <Button
+                    variant="ghost"
+                    onClick={() => setShowDispute(false)}
+                    disabled={disputing}
+                    className="shrink-0"
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleDispute} disabled={disputing} className="shrink-0">
+                    {disputing ? "Submitting…" : "Submit dispute & request revision"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </section>
         )}
         {/* a. Structured spec */}

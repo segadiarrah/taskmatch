@@ -232,7 +232,7 @@ export default function AboutPage() {
               <p className="mt-5 text-sm leading-7 text-ink-muted">{c.founderBio}</p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <a
-                  href="https://www.linkedin.com/in/sega-diarrah"
+                  href="https://www.linkedin.com/in/segadiarrah"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-1.5 text-sm text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
