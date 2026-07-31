@@ -344,7 +344,17 @@ function PublicFooter() {
               taskmatch<span className="text-accent">.ai</span>
             </span>
           </div>
-          <p className="font-mono text-xs text-ink-faint">© {year} TaskMatch.ai. {L.rights}</p>
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
+            <a
+              href="https://www.linkedin.com/company/tauraco"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-xs text-ink-faint transition-colors hover:text-accent"
+            >
+              LinkedIn ↗
+            </a>
+            <p className="font-mono text-xs text-ink-faint">© {year} TaskMatch.ai — operated by Tauraco. {L.rights}</p>
+          </div>
         </div>
       </div>
     </footer>

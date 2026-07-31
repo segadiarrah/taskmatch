@@ -96,8 +96,13 @@ export default function CompliancePage() {
       toc={toc}
     >
       <LegalSection id="overview" title={c.s.overview}>
-        <p>TaskMatch positions compliance as an operating discipline that spans platform design, data handling, access control, and review processes.</p>
-        <p>The goal is not only legal coverage, but also operational clarity for clients, developers, and reviewers.</p>
+        <p>TaskMatch.ai is operated by Tauraco and positions compliance as an operating discipline that spans platform design, data handling, access control, and review processes.</p>
+        <p>
+          Processing of personal data is aligned with the EU General Data Protection Regulation
+          (GDPR / RGPD) and comparable regimes. TaskMatch operates to a SOC 2 Type II control
+          framework, with an audit in progress, and makes a Data Processing Agreement (DPA)
+          available to enterprise customers.
+        </p>
         <p>
           Compliance posture is strongest when legal, technical, and operational controls are
           aligned instead of being treated as separate workstreams.
@@ -133,13 +138,20 @@ export default function CompliancePage() {
         <ul className="list-disc pl-6">
           <li>Role-scoped access and account boundaries</li>
           <li>Operational logs and auditable state transitions</li>
-          <li>Security review and incident handling expectations</li>
+          <li>SOC 2 Type II control framework (audit in progress)</li>
+          <li>Vetted sub-processors under data-processing agreements, with data hosted in the EU</li>
+          <li>Encryption of briefs and uploaded documents at rest and in transit</li>
           <li>Retention and rights-handling process discipline</li>
         </ul>
+        <p>
+          Sensitive material submitted in briefs is scoped to the assigned executor for the
+          duration of a task, is never used to train models, and can be redacted or deleted on
+          request.
+        </p>
       </LegalSection>
 
       <LegalSection id="requests" title={c.s.requests}>
-        <p>Compliance and privacy requests should flow through designated TaskMatch contact channels and be handled according to documented internal procedures.</p>
+        <p>Data-subject and privacy requests (access, correction, deletion, portability, restriction, and objection under GDPR / RGPD and comparable laws) can be sent to <a href="mailto:privacy@tauraco.ai">privacy@tauraco.ai</a>. Enterprise customers can request the DPA, sub-processor list, and security questionnaire responses through the same channel.</p>
       </LegalSection>
     </LegalPageShell>
   );

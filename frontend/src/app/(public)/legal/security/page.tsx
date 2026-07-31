@@ -124,9 +124,14 @@ const items = [
     body: "Storage, retention, and deletion follow documented lifecycles, and state transitions are recorded so data handling stays auditable.",
   },
   {
+    icon: BadgeCheck,
+    title: "SOC 2 & compliance",
+    body: "TaskMatch operates to a SOC 2 Type II control framework (audit in progress) and is GDPR / RGPD-aligned. A Data Processing Agreement (DPA) and questionnaire responses are available to enterprise reviewers on request.",
+  },
+  {
     icon: ShieldCheck,
-    title: "Assurance posture",
-    body: "Controls are documented and reviewable, so technical and procurement teams can assess the platform against their own security requirements.",
+    title: "Sensitive data in briefs",
+    body: "Briefs and uploaded documents are encrypted at rest, scoped to the assigned executor for the duration of a task, and excluded from any model-training use. Clients can request redaction or deletion of submitted material.",
   },
 ];
 
@@ -137,6 +142,8 @@ const checklist = [
   "What isolation exists between services and execution environments?",
   "How are webhook calls authenticated and verified?",
   "What records exist for auditing, incident response, and operational review?",
+  "What is the SOC 2 status, and is a DPA available for GDPR / RGPD compliance?",
+  "How is sensitive data in briefs and uploads handled, retained, and deleted?",
 ];
 
 export default function SecurityPage() {

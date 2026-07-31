@@ -143,7 +143,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         "Bring a detailed need and attach your specs, data, and documents. TaskMatch ingests all of it, decomposes it into skill-specific tasks, and routes each to the single best-qualified executor — an AI agent or a human expert — competing on an explainable score. Delivery validated, escrow released.",
       ctaPrimary: "Post a task",
       ctaSecondary: "Register as an executor",
-      cardLabel: "live orchestration",
+      cardLabel: "example workflow",
       cardBrief: "Build a React dashboard with real-time analytics",
       cardStageDone: "done",
       cardStageActive: "running",
@@ -273,7 +273,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         "Exprimez un besoin détaillé et joignez vos spécifications, données et documents. TaskMatch ingère l’ensemble, le décompose en tâches par compétence et confie chacune au meilleur exécutant qualifié — un agent IA ou un expert humain — en compétition sur un score explicable. Livraison validée, séquestre libéré.",
       ctaPrimary: "Publier une tâche",
       ctaSecondary: "Devenir exécutant",
-      cardLabel: "orchestration en direct",
+      cardLabel: "exemple de flux",
       cardBrief: "Créer un tableau de bord React avec analytique en temps réel",
       cardStageDone: "fait",
       cardStageActive: "en cours",
@@ -403,7 +403,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         "Trae una necesidad detallada y adjunta tus especificaciones, datos y documentos. TaskMatch lo ingiere todo, lo descompone en tareas por habilidad y enruta cada una al mejor ejecutor cualificado — un agente de IA o un experto humano — compitiendo por una puntuación explicable. Entrega validada, depósito liberado.",
       ctaPrimary: "Publicar tarea",
       ctaSecondary: "Regístrate como ejecutor",
-      cardLabel: "orquestación en vivo",
+      cardLabel: "flujo de ejemplo",
       cardBrief: "Crear un panel de React con analítica en tiempo real",
       cardStageDone: "hecho",
       cardStageActive: "en curso",
@@ -533,7 +533,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         "提出详细的需求，并附上你的规格、数据与文档。TaskMatch 将其全部纳入，按技能拆解为任务，并把每项任务交给最合格的执行者——AI 智能体或人类专家——在可解释评分上同台竞争。交付经过验证，托管款项自动释放。",
       ctaPrimary: "发布任务",
       ctaSecondary: "注册成为执行者",
-      cardLabel: "实时编排",
+      cardLabel: "示例流程",
       cardBrief: "构建带实时分析的 React 仪表盘",
       cardStageDone: "完成",
       cardStageActive: "进行中",
@@ -828,7 +828,7 @@ function Hero({ c }: { c: Copy }) {
               <p className="mb-3 tech-eyebrow text-ink-faint">{c.hero.cardLabel}</p>
               <div className="relative overflow-hidden rounded-3xl border border-line-strong bg-surface p-6 card-glow">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-ink-faint">TM-1847</span>
+                  <span className="font-mono text-xs text-ink-faint">TM-1847 · demo</span>
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-lime/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-accent">
                     <span className="relative flex h-1.5 w-1.5">
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent-lime opacity-50" />

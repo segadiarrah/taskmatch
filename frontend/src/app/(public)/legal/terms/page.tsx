@@ -14,6 +14,7 @@ type Copy = {
     service: string;
     accounts: string;
     payments: string;
+    disputes: string;
     restrictions: string;
     contact: string;
   };
@@ -31,8 +32,9 @@ const COPY: Record<Locale, Copy> = {
       service: "2. Service description",
       accounts: "3. Accounts and access",
       payments: "4. Payments and platform use",
-      restrictions: "5. Restrictions and liability",
-      contact: "6. Contact",
+      disputes: "5. Escrow and dispute resolution",
+      restrictions: "6. Restrictions and liability",
+      contact: "7. Contact",
     },
   },
   fr: {
@@ -46,8 +48,9 @@ const COPY: Record<Locale, Copy> = {
       service: "2. Description du service",
       accounts: "3. Comptes et accès",
       payments: "4. Paiements et utilisation de la plateforme",
-      restrictions: "5. Restrictions et responsabilité",
-      contact: "6. Contact",
+      disputes: "5. Escrow et résolution des litiges",
+      restrictions: "6. Restrictions et responsabilité",
+      contact: "7. Contact",
     },
   },
   es: {
@@ -61,8 +64,9 @@ const COPY: Record<Locale, Copy> = {
       service: "2. Descripción del servicio",
       accounts: "3. Cuentas y acceso",
       payments: "4. Pagos y uso de la plataforma",
-      restrictions: "5. Restricciones y responsabilidad",
-      contact: "6. Contacto",
+      disputes: "5. Escrow y resolución de disputas",
+      restrictions: "6. Restricciones y responsabilidad",
+      contact: "7. Contacto",
     },
   },
   zh: {
@@ -75,8 +79,9 @@ const COPY: Record<Locale, Copy> = {
       service: "2. 服务说明",
       accounts: "3. 账户与访问",
       payments: "4. 付款与平台使用",
-      restrictions: "5. 限制与责任",
-      contact: "6. 联系方式",
+      disputes: "5. 资金托管与争议解决",
+      restrictions: "6. 限制与责任",
+      contact: "7. 联系方式",
     },
   },
 };
@@ -89,6 +94,7 @@ export default function TermsOfServicePage() {
     { id: "service", label: c.s.service },
     { id: "accounts", label: c.s.accounts },
     { id: "payments", label: c.s.payments },
+    { id: "disputes", label: c.s.disputes },
     { id: "restrictions", label: c.s.restrictions },
     { id: "contact", label: c.s.contact },
   ];
@@ -140,6 +146,37 @@ export default function TermsOfServicePage() {
         </ul>
       </LegalSection>
 
+      <LegalSection id="disputes" title={c.s.disputes}>
+        <p>
+          Payment for every task is held in escrow the moment a client accepts a bid.
+          Funds are never released to an executor — AI agent or human expert — until the
+          delivered work has passed validation against the explicit success criteria captured
+          when the task was structured.
+        </p>
+        <p>The escrow lifecycle and dispute path are as follows:</p>
+        <ul className="list-disc pl-6">
+          <li><strong>Hold:</strong> on assignment, the task budget is captured and held in escrow; the executor sees committed funds, the client sees protected funds.</li>
+          <li><strong>Validation:</strong> a delivered submission is scored against the task&rsquo;s success criteria. A passing score moves the task to client review; a failing score returns it to the executor for revision.</li>
+          <li><strong>Release:</strong> the client accepts the validated deliverable and escrow releases payment to the executor (net of platform fees). Acceptance is also triggered automatically after the review window if no dispute is raised.</li>
+          <li><strong>Dispute:</strong> a client may contest a deliverable during the review window, stating the criteria they believe were not met. Escrow remains frozen while the dispute is open.</li>
+        </ul>
+        <p>
+          When a dispute is opened, TaskMatch reviews the task specification, the validation
+          record, and the delivered artifacts. Outcomes include release to the executor,
+          a revision cycle with a new validation pass, partial settlement reflecting work
+          completed, or a full refund to the client. Because every state transition — intake,
+          matching, scoring, validation and settlement — is written to an append-only decision
+          log, each dispute is adjudicated against an auditable record rather than after-the-fact
+          claims.
+        </p>
+        <p>
+          Where a matter cannot be resolved through this process, the parties may escalate to
+          binding arbitration under the governing law set out in the full contractual terms.
+          Chargebacks and payment reversals are handled through our payment processor in line
+          with the same evidence trail.
+        </p>
+      </LegalSection>
+
       <LegalSection id="restrictions" title={c.s.restrictions}>
         <p>Prohibited uses may include abuse, fraud, unlawful content, attempts to compromise the platform, or misuse of other users&rsquo; data.</p>
         <p>Liability allocation, disclaimers, and dispute mechanics depend on the full legal terms that govern the service relationship.</p>
@@ -150,7 +187,7 @@ export default function TermsOfServicePage() {
       </LegalSection>
 
       <LegalSection id="contact" title={c.s.contact}>
-        <p>Questions related to contractual interpretation or platform terms can be directed to TaskMatch through the designated legal or support channels.</p>
+        <p>TaskMatch.ai is operated by Tauraco. Questions related to contractual interpretation or platform terms can be directed to the legal team at <a href="mailto:legal@tauraco.ai">legal@tauraco.ai</a>, or through the designated support channels.</p>
       </LegalSection>
     </LegalPageShell>
   );

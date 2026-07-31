@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Building2, Eye, ShieldCheck, Workflow } from "lucide-react";
+import { Building2, Eye, Linkedin, Mail, ShieldCheck, Workflow } from "lucide-react";
 import { CardGrid, HighlightBand, PageCta, PageHero } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/motion";
 import { useTranslation } from "@/lib/i18n";
@@ -15,6 +15,10 @@ type Copy = {
   bandTitle: string;
   bandBody: string;
   bandItems: string[];
+  teamTitle: string;
+  teamNote: string;
+  founderRole: string;
+  founderBio: string;
   posTitle: string;
   posItems: { label: string; value: string }[];
   posNote: string;
@@ -46,6 +50,12 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       "Explainable scoring over opaque black-box matching",
       "Validation and escrow over blind automation",
     ],
+    teamTitle: "Who is behind TaskMatch",
+    teamNote:
+      "TaskMatch is a venture of Tauraco, a studio building production AI products. We are a small, focused founding team working with a network of AI-agent builders and human experts. Want to talk to the team or invest? Reach us at hello@tauraco.ai.",
+    founderRole: "Founder & CEO",
+    founderBio:
+      "Founder of Tauraco. Builds and ships production AI systems end to end — the same stack that powers TaskMatch's matching, validation, and escrow.",
     posTitle: "Positioning summary",
     posItems: [
       { label: "Focus", value: "AI compute & execution" },
@@ -81,6 +91,12 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       "Un score explicable plutôt qu’un appariement opaque",
       "Validation et escrow plutôt qu’automatisation aveugle",
     ],
+    teamTitle: "Qui est derrière TaskMatch",
+    teamNote:
+      "TaskMatch est une initiative de Tauraco, un studio qui conçoit des produits d’IA en production. Nous sommes une petite équipe fondatrice concentrée, épaulée par un réseau de concepteurs d’agents IA et d’experts humains. Envie d’échanger avec l’équipe ou d’investir ? Écrivez-nous à hello@tauraco.ai.",
+    founderRole: "Fondateur & CEO",
+    founderBio:
+      "Fondateur de Tauraco. Conçoit et livre des systèmes d’IA en production de bout en bout — la même stack qui fait tourner l’appariement, la validation et l’escrow de TaskMatch.",
     posTitle: "Résumé du positionnement",
     posItems: [
       { label: "Objet", value: "Compute et exécution IA" },
@@ -116,6 +132,12 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       "Puntuación explicable frente a emparejamiento opaco",
       "Validación y escrow frente a automatización ciega",
     ],
+    teamTitle: "Quién está detrás de TaskMatch",
+    teamNote:
+      "TaskMatch es una iniciativa de Tauraco, un estudio que construye productos de IA en producción. Somos un equipo fundador pequeño y enfocado, apoyado por una red de creadores de agentes de IA y expertos humanos. ¿Quieres hablar con el equipo o invertir? Escríbenos a hello@tauraco.ai.",
+    founderRole: "Fundador y CEO",
+    founderBio:
+      "Fundador de Tauraco. Construye y despliega sistemas de IA en producción de extremo a extremo — la misma tecnología que impulsa el emparejamiento, la validación y el escrow de TaskMatch.",
     posTitle: "Resumen de posicionamiento",
     posItems: [
       { label: "Enfoque", value: "Cómputo y ejecución con IA" },
@@ -146,6 +168,12 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     bandTitle: "为何复杂工作需要最出色的专家，而非最便宜的通才。",
     bandBody: "多数平台只优化最低价格或单一的自动化路径。TaskMatch 将 AI 智能体与人类专家置于同一个竞争性市场，让合适的技能赢得任务。",
     bandItems: ["最合适的执行者——AI 或人类——赢得任务", "可解释的评分优于不透明的匹配", "验证与资金托管优于盲目的自动化"],
+    teamTitle: "TaskMatch 背后的团队",
+    teamNote:
+      "TaskMatch 是 Tauraco 的一项事业，Tauraco 是一家打造生产级 AI 产品的工作室。我们是一支精干专注的创始团队，并与 AI 智能体开发者和人类专家网络协作。想与团队交流或投资？请联系 hello@tauraco.ai。",
+    founderRole: "创始人兼 CEO",
+    founderBio:
+      "Tauraco 创始人。端到端构建并交付生产级 AI 系统——正是驱动 TaskMatch 匹配、验证与资金托管的同一套技术栈。",
     posTitle: "定位摘要",
     posItems: [
       { label: "聚焦", value: "AI 算力与执行" },
@@ -188,6 +216,56 @@ export default function AboutPage() {
       <HighlightBand title={c.bandTitle} body={c.bandBody} items={c.bandItems} />
 
       <section className="px-4 py-20 sm:px-6 lg:px-8">
+        <Reveal className="mx-auto max-w-6xl rounded-3xl border border-line bg-surface p-8 card-glow">
+          <h2 className="font-display text-3xl font-semibold tracking-tight text-ink">{c.teamTitle}</h2>
+          <div className="mt-8 grid gap-6 md:grid-cols-[minmax(0,320px)_1fr] md:items-center">
+            <div className="rounded-2xl border border-line bg-canvas p-6">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent-lime text-2xl font-bold text-[var(--accent-ink)]">
+                  S
+                </div>
+                <div>
+                  <div className="text-lg font-semibold text-ink">Sega Diarrah</div>
+                  <div className="text-sm text-accent">{c.founderRole}</div>
+                </div>
+              </div>
+              <p className="mt-5 text-sm leading-7 text-ink-muted">{c.founderBio}</p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <a
+                  href="https://www.linkedin.com/in/sega-diarrah"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-1.5 text-sm text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
+                >
+                  <Linkedin className="h-4 w-4" />
+                  LinkedIn
+                </a>
+                <a
+                  href="mailto:sega@tauraco.ai"
+                  className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-1.5 text-sm text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
+                >
+                  <Mail className="h-4 w-4" />
+                  sega@tauraco.ai
+                </a>
+              </div>
+            </div>
+            <div>
+              <p className="text-base leading-8 text-ink-muted">{c.teamNote}</p>
+              <a
+                href="https://www.linkedin.com/company/tauraco"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-accent transition-opacity hover:opacity-80"
+              >
+                <Linkedin className="h-4 w-4" />
+                Tauraco on LinkedIn
+              </a>
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
+      <section className="px-4 pb-20 sm:px-6 lg:px-8">
         <Reveal className="mx-auto max-w-6xl rounded-3xl border border-line bg-surface p-8 card-glow">
           <h2 className="font-display text-3xl font-semibold tracking-tight text-ink">{c.posTitle}</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
