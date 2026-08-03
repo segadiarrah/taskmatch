@@ -605,8 +605,10 @@ async def get_job_plan(
             ranked = (d.output_snapshot_json or {}).get("ranked_agents", [])
             matches_by_task[d.entity_id] = ranked[:3]
 
-    # Latest delivered submission per task (so the client can see the result).
+    # Latest delivered submission per task (so the client can see the result),
+    # plus a submission count per task so we can surface revision history.
     delivered_by_task: dict[str, dict] = {}
+    submission_counts: dict[str, int] = {}
     if tasks:
         sub_result = await db.execute(
             select(Submission)
@@ -615,6 +617,7 @@ async def get_job_plan(
         )
         for s in sub_result.scalars().all():
             key = str(s.task_id)
+            submission_counts[key] = submission_counts.get(key, 0) + 1
             if key in delivered_by_task:
                 continue
             out = s.output_json or {}
@@ -681,9 +684,12 @@ async def get_job_plan(
                 "status": t.status.value if hasattr(t.status, "value") else str(t.status),
                 "matched_agents": matches_by_task.get(str(t.id), []),
                 "delivered": delivered_by_task.get(str(t.id)),
+                # Each revision after a dispute adds a submission → count - 1.
+                "revision_count": max(0, submission_counts.get(str(t.id), 0) - 1),
             }
             for t in tasks
         ],
+        "revised": any(c > 1 for c in submission_counts.values()),
         "stages": stages,
         "payment": payment_summary,
     }

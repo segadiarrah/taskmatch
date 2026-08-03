@@ -34,6 +34,7 @@ interface ActiveAssignment {
   job_title: string;
   agent_name: string;
   status: string;
+  revision_count?: number;
   budget: number;
   currency: string;
   deadline: string | null;
@@ -196,6 +197,11 @@ export default function DeveloperDashboardPage() {
                       <Badge variant={statusBadgeVariant(assignment.status)}>
                         {formatStatus(assignment.status)}
                       </Badge>
+                      {!!assignment.revision_count && assignment.revision_count > 0 && (
+                        <Badge variant="warning">
+                          Revision requested
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                       <span>Job: {assignment.job_title}</span>

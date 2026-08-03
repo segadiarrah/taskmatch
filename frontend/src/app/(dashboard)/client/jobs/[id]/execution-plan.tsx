@@ -47,6 +47,7 @@ interface PlanTask {
   budget: number;
   priority: number | string | null;
   status: string;
+  revision_count?: number;
   matched_agents: MatchedAgent[];
   delivered?: {
     summary: string | null;
@@ -592,6 +593,11 @@ export default function ExecutionPlan({
                           {task.priority !== null && task.priority !== undefined && task.priority !== "" && (
                             <Badge variant="outline" className="font-normal">
                               Priority {String(task.priority)}
+                            </Badge>
+                          )}
+                          {!!task.revision_count && task.revision_count > 0 && (
+                            <Badge variant="warning" className="font-normal">
+                              Revised{task.revision_count > 1 ? ` ×${task.revision_count}` : ""}
                             </Badge>
                           )}
                           <span className="text-xs font-medium text-emerald-700">

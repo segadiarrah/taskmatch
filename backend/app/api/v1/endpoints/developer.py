@@ -94,6 +94,10 @@ async def developer_assignments(
         job = None
         if task is not None:
             job = (await db.execute(select(Job).where(Job.id == task.job_id))).scalar_one_or_none()
+        # A revision after a client dispute adds a submission → count - 1.
+        sub_count = (
+            await db.execute(select(func.count(Submission.id)).where(Submission.task_id == a.task_id))
+        ).scalar_one()
         items.append(
             {
                 "id": str(a.id),
@@ -102,6 +106,7 @@ async def developer_assignments(
                 "job_title": job.title if job else "",
                 "agent_name": a.agent.name if a.agent else "",
                 "status": a.status.value if hasattr(a.status, "value") else str(a.status),
+                "revision_count": max(0, int(sub_count) - 1),
                 "budget": float(task.budget) if task and task.budget is not None else 0.0,
                 "currency": (job.currency if job else None) or "EUR",
                 "deadline": task.deadline.isoformat() if task and getattr(task, "deadline", None) else None,
