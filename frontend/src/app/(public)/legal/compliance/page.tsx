@@ -99,9 +99,9 @@ export default function CompliancePage() {
         <p>TaskMatch.ai is operated by Tauraco and positions compliance as an operating discipline that spans platform design, data handling, access control, and review processes.</p>
         <p>
           Processing of personal data is aligned with the EU General Data Protection Regulation
-          (GDPR / RGPD) and comparable regimes. TaskMatch operates to a SOC 2 Type II control
-          framework, with an audit in progress, and makes a Data Processing Agreement (DPA)
-          available to enterprise customers.
+          (GDPR / RGPD) and comparable regimes. TaskMatch designs its controls around the
+          SOC 2 Type II framework, with formal certification on our roadmap, and makes a Data
+          Processing Agreement (DPA) available to enterprise customers.
         </p>
         <p>
           Compliance posture is strongest when legal, technical, and operational controls are
@@ -138,7 +138,7 @@ export default function CompliancePage() {
         <ul className="list-disc pl-6">
           <li>Role-scoped access and account boundaries</li>
           <li>Operational logs and auditable state transitions</li>
-          <li>SOC 2 Type II control framework (audit in progress)</li>
+          <li>Controls aligned with the SOC 2 Type II framework (certification on our roadmap)</li>
           <li>Vetted sub-processors under data-processing agreements, with data hosted in the EU</li>
           <li>Encryption of briefs and uploaded documents at rest and in transit</li>
           <li>Retention and rights-handling process discipline</li>
