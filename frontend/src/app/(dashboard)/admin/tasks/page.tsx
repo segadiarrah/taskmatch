@@ -70,7 +70,7 @@ export default function TasksPage() {
   async function fetchTasks() {
     setLoading(true);
     try {
-      const data = await apiGet<Task[]>("/v1/tasks");
+      const data = await apiGet<Task[]>("/v1/admin/tasks");
       setTasks(data);
     } catch {
       setTasks([

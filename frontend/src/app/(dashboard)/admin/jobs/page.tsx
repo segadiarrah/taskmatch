@@ -76,7 +76,7 @@ export default function JobsPage() {
   async function fetchJobs() {
     setLoading(true);
     try {
-      const data = await apiGet<Job[]>("/v1/jobs");
+      const data = await apiGet<Job[]>("/v1/admin/jobs");
       setJobs(data);
     } catch {
       setJobs([

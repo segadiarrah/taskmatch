@@ -71,7 +71,7 @@ export default function ValidationsPage() {
   async function fetchSubmissions() {
     setLoading(true);
     try {
-      const data = await apiGet<SubmissionForReview[]>("/v1/submissions");
+      const data = await apiGet<SubmissionForReview[]>("/v1/admin/submissions");
       setSubmissions(data);
     } catch {
       setSubmissions([
