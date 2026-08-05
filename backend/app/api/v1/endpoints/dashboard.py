@@ -15,7 +15,7 @@ from app.core.deps import require_role
 from app.middleware.audit import AuditLog, log_audit
 from app.models.agent import Agent, AgentCapability, AgentStatus
 from app.models.audit import FeedbackCategory, FeedbackNote, MCPDecision
-from app.models.job import Job
+from app.models.job import Job, JobStatus
 from app.models.payment import PaymentRecord, PaymentStatus
 from app.models.submission import Submission, SubmissionStatus
 from app.models.task import Task, TaskStatus
@@ -101,6 +101,60 @@ async def dashboard_overview(
     )
     total_payments_completed = float(completed_payments_result.scalar() or 0)
 
+    # --- Marketplace economics (what investors probe first) ---
+    # GMV = all payment volume that has cleared bidding into escrow or settled
+    # (i.e. every non-cancelled payment record). Platform revenue = fees on the
+    # settled (paid) portion; take rate is revenue over settled GMV.
+    settled_states = (PaymentStatus.paid,)
+    escrowed_or_settled = (
+        PaymentStatus.paid,
+        PaymentStatus.releasable,
+        PaymentStatus.authorized,
+        PaymentStatus.pending,
+    )
+    gmv = float(
+        (
+            await db.execute(
+                select(func.coalesce(func.sum(PaymentRecord.gross_amount), 0)).where(
+                    PaymentRecord.payment_status.in_(escrowed_or_settled)
+                )
+            )
+        ).scalar()
+        or 0
+    )
+    platform_revenue = float(
+        (
+            await db.execute(
+                select(func.coalesce(func.sum(PaymentRecord.platform_fee), 0)).where(
+                    PaymentRecord.payment_status.in_(settled_states)
+                )
+            )
+        ).scalar()
+        or 0
+    )
+    take_rate = round((platform_revenue / total_payments_completed) * 100, 1) if total_payments_completed else 0.0
+
+    completed_jobs = jobs_by_status.get(JobStatus.completed.value, 0)
+
+    payment_count = int(
+        (await db.execute(select(func.count()).select_from(PaymentRecord))).scalar() or 0
+    )
+    total_gross_all = float(
+        (
+            await db.execute(select(func.coalesce(func.sum(PaymentRecord.gross_amount), 0)))
+        ).scalar()
+        or 0
+    )
+    avg_job_value = round(total_gross_all / payment_count, 2) if payment_count else 0.0
+
+    # Reporting currency: the most common job currency, defaulting to EUR.
+    currency_row = (
+        await db.execute(
+            select(Job.currency, func.count()).group_by(Job.currency).order_by(func.count().desc()).limit(1)
+        )
+    ).first()
+    currency = (currency_row[0] if currency_row and currency_row[0] else "EUR")
+
     return DashboardOverview(
         total_jobs=total_jobs,
         jobs_by_status=jobs_by_status,
@@ -111,6 +165,12 @@ async def dashboard_overview(
         failed_tasks=failed_tasks,
         total_payments_pending=total_payments_pending,
         total_payments_completed=total_payments_completed,
+        gmv=round(gmv, 2),
+        platform_revenue=round(platform_revenue, 2),
+        take_rate=take_rate,
+        completed_jobs=completed_jobs,
+        avg_job_value=avg_job_value,
+        currency=currency,
     )
 
 

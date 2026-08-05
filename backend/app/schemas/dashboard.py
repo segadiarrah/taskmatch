@@ -32,6 +32,22 @@ class DashboardOverview(BaseModel):
     total_payments_completed: float = Field(
         ..., description="Sum of completed payment amounts"
     )
+    gmv: float = Field(
+        0.0, description="Gross merchandise value: all escrowed + settled payment volume"
+    )
+    platform_revenue: float = Field(
+        0.0, description="Platform revenue: sum of platform fees on settled payments"
+    )
+    take_rate: float = Field(
+        0.0, description="Platform take rate as a percentage of settled GMV"
+    )
+    completed_jobs: int = Field(
+        0, description="Number of jobs that reached completed status"
+    )
+    avg_job_value: float = Field(
+        0.0, description="Average gross value across jobs with a payment record"
+    )
+    currency: str = Field("EUR", description="Reporting currency for monetary metrics")
 
 
 class AgentMatchResult(BaseModel):

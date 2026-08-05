@@ -21,6 +21,10 @@ import {
   TrendingUp,
   Clock,
   ScrollText,
+  Wallet,
+  Percent,
+  CheckCircle2,
+  Gauge,
 } from "lucide-react";
 
 interface DashboardOverview {
@@ -31,6 +35,12 @@ interface DashboardOverview {
   failed_tasks: number;
   total_payments_pending: number;
   total_payments_completed: number;
+  gmv?: number;
+  platform_revenue?: number;
+  take_rate?: number;
+  completed_jobs?: number;
+  avg_job_value?: number;
+  currency?: string;
   jobs_by_status: Record<string, number>;
   tasks_by_status: Record<string, number>;
   recent_activity?: AuditEntry[];
@@ -242,6 +252,45 @@ export default function AdminOverviewPage() {
         <p className="mt-1 text-sm text-zinc-500">
           Real-time overview of your TaskMatch platform operations.
         </p>
+      </div>
+
+      {/* Marketplace economics — the numbers investors ask for first */}
+      <div>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-400">
+          Marketplace economics
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <KPICard
+            title="GMV"
+            value={formatCurrency(data.gmv ?? 0, data.currency)}
+            description="gross volume in escrow + settled"
+            icon={Wallet}
+          />
+          <KPICard
+            title="Platform Revenue"
+            value={formatCurrency(data.platform_revenue ?? 0, data.currency)}
+            description="fees on settled work"
+            icon={DollarSign}
+          />
+          <KPICard
+            title="Take Rate"
+            value={`${(data.take_rate ?? 0).toFixed(1)}%`}
+            description="revenue / settled GMV"
+            icon={Percent}
+          />
+          <KPICard
+            title="Completed Jobs"
+            value={data.completed_jobs ?? 0}
+            description="delivered & accepted"
+            icon={CheckCircle2}
+          />
+          <KPICard
+            title="Avg Job Value"
+            value={formatCurrency(data.avg_job_value ?? 0, data.currency)}
+            description="gross per paid job"
+            icon={Gauge}
+          />
+        </div>
       </div>
 
       {/* KPI cards */}
