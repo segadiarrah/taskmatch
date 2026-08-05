@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import uuid
 
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
@@ -20,11 +21,11 @@ from app.core.deps import get_current_active_user
 from app.models.agent import Agent, AgentStatus
 from app.models.assignment import Assignment, AssignmentStatus
 from app.models.bid import Bid
-from app.models.job import Job
+from app.models.job import Job, JobStatus
 from app.models.payment import PaymentRecord, PaymentStatus
 from app.models.review import ValidationReview
 from app.models.submission import Submission
-from app.models.task import Task
+from app.models.task import Task, TaskStatus
 from app.models.user import User
 
 router = APIRouter()
@@ -258,6 +259,175 @@ async def my_submissions(
                 "artifact_urls": s.artifact_urls_json or [],
                 "submitted_at": s.submitted_at.isoformat() if s.submitted_at else (s.created_at.isoformat() if s.created_at else None),
                 "score": review.score if review is not None else None,
+            }
+        )
+    return {"items": items}
+
+
+# ---------------------------------------------------------------------------
+# Client dashboard KPIs + developer earnings. These back the two main
+# post-login landing pages, so they must return real data (never 404 into a
+# broken/placeholder dashboard during a demo).
+# ---------------------------------------------------------------------------
+
+
+@router.get("/client/dashboard/stats", summary="My client dashboard KPIs")
+async def client_dashboard_stats(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    my_job_ids = [
+        r[0]
+        for r in (
+            await db.execute(select(Job.id).where(Job.client_user_id == current_user.id))
+        ).all()
+    ]
+    my_jobs = len(my_job_ids)
+
+    active_tasks = 0
+    if my_job_ids:
+        active_tasks = int(
+            (
+                await db.execute(
+                    select(func.count(Task.id)).where(
+                        Task.job_id.in_(my_job_ids),
+                        Task.status.in_(
+                            [TaskStatus.assigned, TaskStatus.in_progress, TaskStatus.submitted]
+                        ),
+                    )
+                )
+            ).scalar_one()
+        )
+
+    # Jobs delivered and waiting on this client to review/release escrow.
+    pending_reviews = int(
+        (
+            await db.execute(
+                select(func.count(Job.id)).where(
+                    Job.client_user_id == current_user.id,
+                    Job.status == JobStatus.client_review,
+                )
+            )
+        ).scalar_one()
+    )
+
+    total_spent = float(
+        (
+            await db.execute(
+                select(func.coalesce(func.sum(PaymentRecord.gross_amount), 0)).where(
+                    PaymentRecord.client_user_id == current_user.id,
+                    PaymentRecord.payment_status == PaymentStatus.paid,
+                )
+            )
+        ).scalar()
+        or 0
+    )
+
+    return {
+        "my_jobs": my_jobs,
+        "active_tasks": active_tasks,
+        "pending_reviews": pending_reviews,
+        "total_spent": round(total_spent, 2),
+    }
+
+
+@router.get("/developer/earnings/summary", summary="My earnings summary")
+async def developer_earnings_summary(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    total_earned = float(
+        (
+            await db.execute(
+                select(func.coalesce(func.sum(PaymentRecord.net_amount), 0)).where(
+                    PaymentRecord.developer_user_id == current_user.id,
+                    PaymentRecord.payment_status == PaymentStatus.paid,
+                )
+            )
+        ).scalar()
+        or 0
+    )
+    pending_payments = float(
+        (
+            await db.execute(
+                select(func.coalesce(func.sum(PaymentRecord.net_amount), 0)).where(
+                    PaymentRecord.developer_user_id == current_user.id,
+                    PaymentRecord.payment_status.in_(
+                        [PaymentStatus.releasable, PaymentStatus.authorized, PaymentStatus.pending]
+                    ),
+                )
+            )
+        ).scalar()
+        or 0
+    )
+    month_start = datetime.now(timezone.utc).replace(
+        day=1, hour=0, minute=0, second=0, microsecond=0
+    )
+    this_month = float(
+        (
+            await db.execute(
+                select(func.coalesce(func.sum(PaymentRecord.net_amount), 0)).where(
+                    PaymentRecord.developer_user_id == current_user.id,
+                    PaymentRecord.payment_status == PaymentStatus.paid,
+                    PaymentRecord.created_at >= month_start,
+                )
+            )
+        ).scalar()
+        or 0
+    )
+    return {
+        "total_earned": round(total_earned, 2),
+        "pending_payments": round(pending_payments, 2),
+        "this_month": round(this_month, 2),
+        "currency": "EUR",
+    }
+
+
+@router.get("/developer/earnings/payments", summary="My payment records")
+async def developer_earnings_payments(
+    limit: int = Query(50, ge=1, le=200),
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    rows = list(
+        (
+            await db.execute(
+                select(PaymentRecord)
+                .where(PaymentRecord.developer_user_id == current_user.id)
+                .order_by(PaymentRecord.created_at.desc())
+                .limit(limit)
+            )
+        ).scalars().all()
+    )
+    # Resolve a representative task/agent per payment via its job's first task.
+    items = []
+    for p in rows:
+        task = (
+            await db.execute(
+                select(Task).where(Task.job_id == p.job_id).order_by(Task.priority).limit(1)
+            )
+        ).scalar_one_or_none()
+        agent_name = ""
+        if task is not None:
+            assignment = (
+                await db.execute(
+                    select(Assignment).where(Assignment.task_id == task.id).limit(1)
+                )
+            ).scalar_one_or_none()
+            if assignment is not None and assignment.agent is not None:
+                agent_name = assignment.agent.name
+        items.append(
+            {
+                "id": str(p.id),
+                "task_id": str(task.id) if task else "",
+                "task_title": task.title if task else "",
+                "agent_name": agent_name,
+                "gross_amount": float(p.gross_amount),
+                "platform_fee": float(p.platform_fee),
+                "net_amount": float(p.net_amount),
+                "currency": p.currency or "EUR",
+                "status": p.payment_status.value if hasattr(p.payment_status, "value") else str(p.payment_status),
+                "created_at": p.created_at.isoformat() if p.created_at else "",
             }
         )
     return {"items": items}
