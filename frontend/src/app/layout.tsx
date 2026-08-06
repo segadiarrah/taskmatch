@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
-import { Space_Grotesk, Manrope, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/lib/query-provider";
 import { AuthProvider } from "@/lib/auth";
@@ -11,14 +11,9 @@ const CookieBanner = dynamic(
   { ssr: false }
 );
 
-const manrope = Manrope({
+const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-display",
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -41,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
-        className={`${manrope.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         <QueryProvider>
           <AuthProvider>

@@ -187,7 +187,7 @@ export default function TermsOfServicePage() {
       </LegalSection>
 
       <LegalSection id="contact" title={c.s.contact}>
-        <p>TaskMatch.ai is operated by Tauraco. Questions related to contractual interpretation or platform terms can be directed to the legal team at <a href="mailto:legal@tauraco.ai">legal@tauraco.ai</a>, or through the designated support channels.</p>
+        <p>TaskMatch.ai is operated by Tauraco. Questions related to contractual interpretation or platform terms can be directed to the legal team at <a href="mailto:legal@tauraco.ai" className="text-brand-700 hover:underline">legal@tauraco.ai</a>, or through the designated support channels.</p>
       </LegalSection>
     </LegalPageShell>
   );

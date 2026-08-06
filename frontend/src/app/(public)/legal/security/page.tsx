@@ -151,19 +151,19 @@ export default function SecurityPage() {
   const c = COPY[locale] ?? COPY.en;
 
   return (
-    <div className="min-h-screen bg-canvas">
-      <section className="border-b border-line px-4 py-4 sm:px-6 lg:px-8 print:hidden">
+    <div className="min-h-screen bg-white">
+      <section className="border-b border-stone-200 px-4 py-4 sm:px-6 lg:px-8 print:hidden">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-ink-muted transition-colors hover:text-ink"
+            className="inline-flex items-center gap-2 text-sm font-medium text-stone-600 transition-colors hover:text-stone-900"
           >
             <ArrowLeft className="h-4 w-4" />
             {c.back}
           </Link>
           <button
             onClick={() => window.print()}
-            className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-1.5 text-sm text-ink-muted transition-colors hover:bg-white/5 hover:text-ink"
+            className="inline-flex items-center gap-2 rounded-lg border border-stone-300 px-4 py-1.5 text-sm text-stone-600 transition-colors hover:bg-stone-50 hover:text-stone-900"
           >
             <Printer className="h-4 w-4" />
             {c.print}
@@ -171,32 +171,31 @@ export default function SecurityPage() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden px-4 pb-16 pt-20 sm:px-6 lg:px-8">
-        <div className="pointer-events-none absolute inset-0 lime-radial" />
-        <Reveal className="relative mx-auto max-w-6xl">
+      <section className="border-b border-stone-200 px-4 pb-16 pt-20 sm:px-6 lg:px-8">
+        <Reveal className="mx-auto max-w-6xl">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-white/5 px-4 py-1.5 tech-eyebrow text-ink-muted">
-              <ShieldCheck className="h-3.5 w-3.5 text-accent" />
+            <div className="eyebrow inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-4 py-1.5 text-stone-600">
+              <ShieldCheck className="h-3.5 w-3.5 text-brand-700" />
               {c.eyebrow}
             </div>
-            <h1 className="mt-8 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
+            <h1 className="mt-8 text-5xl font-semibold leading-[1.02] tracking-tight text-stone-900 sm:text-6xl">
               {c.titleLead}
-              <span className="block text-gradient-lime">{c.titleAccent}</span>
+              <span className="block text-brand-800">{c.titleAccent}</span>
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-ink-muted">{c.summary}</p>
-            <p className="mt-4 font-mono text-xs text-ink-faint">{c.updatedAt}</p>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">{c.summary}</p>
+            <p className="mt-4 font-mono text-xs text-stone-400">{c.updatedAt}</p>
           </div>
         </Reveal>
       </section>
 
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <Reveal className="mx-auto max-w-6xl rounded-3xl border border-line bg-surface p-8">
-          <h2 className="font-display text-3xl font-semibold tracking-tight text-ink">{c.archTitle}</h2>
+        <Reveal className="mx-auto max-w-6xl rounded-2xl border border-stone-200 bg-white p-8">
+          <h2 className="text-3xl font-semibold tracking-tight text-stone-900">{c.archTitle}</h2>
           <div className="mt-8 grid gap-4 md:grid-cols-5">
             {archLayers.map((item) => (
               <div
                 key={item}
-                className="rounded-2xl border border-line bg-surface-2 px-4 py-5 text-center text-sm font-medium text-ink-muted"
+                className="rounded-lg border border-stone-200 bg-stone-50 px-4 py-5 text-center text-sm font-medium text-stone-600"
               >
                 {item}
               </div>
@@ -211,26 +210,26 @@ export default function SecurityPage() {
             <Reveal
               key={item.title}
               delay={index * 60}
-              className="card-glow rounded-3xl border border-line bg-surface p-7 transition-transform hover:-translate-y-0.5"
+              className="hover-lift rounded-xl border border-stone-200 bg-white p-7 hover:border-stone-300 hover:shadow-sm"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-line bg-surface-2 text-accent">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-brand-700">
                 <item.icon className="h-5 w-5" />
               </div>
-              <h3 className="mt-5 text-xl font-semibold text-ink">{item.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-ink-muted">{item.body}</p>
+              <h3 className="mt-5 text-xl font-semibold text-stone-900">{item.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-stone-600">{item.body}</p>
             </Reveal>
           ))}
         </div>
       </section>
 
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <Reveal className="mx-auto max-w-6xl rounded-3xl border border-line bg-surface p-8">
-          <h2 className="font-display text-3xl font-semibold tracking-tight text-ink">{c.checklistTitle}</h2>
+        <Reveal className="mx-auto max-w-6xl rounded-2xl border border-stone-200 bg-white p-8">
+          <h2 className="text-3xl font-semibold tracking-tight text-stone-900">{c.checklistTitle}</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             {checklist.map((item) => (
               <div
                 key={item}
-                className="rounded-2xl border border-line bg-surface-2 px-4 py-4 text-sm leading-7 text-ink-muted"
+                className="rounded-lg border border-stone-200 bg-stone-50 px-4 py-4 text-sm leading-7 text-stone-600"
               >
                 {item}
               </div>
@@ -240,20 +239,17 @@ export default function SecurityPage() {
       </section>
 
       <section className="px-4 pb-24 sm:px-6 lg:px-8">
-        <Reveal className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl border border-line-strong bg-surface px-6 py-14 text-center sm:px-10">
-          <div className="pointer-events-none absolute inset-0 lime-radial opacity-70" />
-          <div className="relative">
-            <h2 className="font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">{c.ctaTitle}</h2>
-            <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-ink-muted sm:text-lg">{c.ctaBody}</p>
-            <div className="mt-8">
-              <Link
-                href="/resources/documentation"
-                className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-accent-lime px-7 text-sm font-semibold text-[var(--accent-ink)] transition-transform hover:scale-[1.03]"
-              >
-                {c.ctaButton}
-                <BadgeCheck className="h-4 w-4" />
-              </Link>
-            </div>
+        <Reveal className="mx-auto max-w-6xl rounded-2xl bg-brand-900 px-6 py-14 text-center sm:px-10">
+          <h2 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">{c.ctaTitle}</h2>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-brand-100 sm:text-lg">{c.ctaBody}</p>
+          <div className="mt-8">
+            <Link
+              href="/resources/documentation"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-white px-7 text-sm font-semibold text-brand-900 transition-colors hover:bg-brand-50"
+            >
+              {c.ctaButton}
+              <BadgeCheck className="h-4 w-4" />
+            </Link>
           </div>
         </Reveal>
       </section>

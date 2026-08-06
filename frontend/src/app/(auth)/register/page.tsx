@@ -176,17 +176,17 @@ export default function RegisterPage() {
   };
 
   const inputClass =
-    "h-11 w-full rounded-xl border border-line bg-surface px-4 text-sm text-ink placeholder:text-ink-faint transition-colors focus:border-[var(--accent-lime)] focus:outline-none";
+    "w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600";
 
   return (
     <Reveal>
       <div className="mb-6 text-center">
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">{c.title}</h1>
-        <p className="mt-1.5 text-sm text-ink-muted">{c.subtitle}</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-stone-900">{c.title}</h1>
+        <p className="mt-1.5 text-sm text-stone-600">{c.subtitle}</p>
       </div>
 
       {error && (
-        <div className="mb-4 flex items-center gap-2 rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {error}
         </div>
@@ -194,42 +194,42 @@ export default function RegisterPage() {
 
       {/* Role selection */}
       <div className="mb-6">
-        <label className="mb-2 block text-sm font-medium text-ink">{c.intent}</label>
+        <label className="mb-2 block text-sm font-medium text-stone-900">{c.intent}</label>
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
             onClick={() => setRole("client")}
             className={cn(
-              "flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition-all",
+              "flex flex-col items-center gap-2 rounded-xl border p-4 text-center transition-colors",
               role === "client"
-                ? "border-[var(--accent-lime)] bg-accent-lime/10 text-ink"
-                : "border-line bg-surface text-ink-muted hover:border-line-strong"
+                ? "border-brand-600 bg-brand-50 text-stone-900"
+                : "border-stone-200 bg-white text-stone-600 hover:border-stone-300"
             )}
           >
-            <Briefcase className={cn("h-6 w-6", role === "client" ? "text-accent" : "text-ink-faint")} />
-            <span className="text-sm font-semibold text-ink">{c.postTasks}</span>
-            <span className="text-xs text-ink-faint">{c.postTasksHint}</span>
+            <Briefcase className={cn("h-6 w-6", role === "client" ? "text-brand-700" : "text-stone-400")} />
+            <span className="text-sm font-semibold text-stone-900">{c.postTasks}</span>
+            <span className="text-xs text-stone-500">{c.postTasksHint}</span>
           </button>
           <button
             type="button"
             onClick={() => setRole("agent_developer")}
             className={cn(
-              "flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition-all",
+              "flex flex-col items-center gap-2 rounded-xl border p-4 text-center transition-colors",
               role === "agent_developer"
-                ? "border-[var(--accent-lime)] bg-accent-lime/10 text-ink"
-                : "border-line bg-surface text-ink-muted hover:border-line-strong"
+                ? "border-brand-600 bg-brand-50 text-stone-900"
+                : "border-stone-200 bg-white text-stone-600 hover:border-stone-300"
             )}
           >
-            <Bot className={cn("h-6 w-6", role === "agent_developer" ? "text-accent" : "text-ink-faint")} />
-            <span className="text-sm font-semibold text-ink">{c.runAgents}</span>
-            <span className="text-xs text-ink-faint">{c.runAgentsHint}</span>
+            <Bot className={cn("h-6 w-6", role === "agent_developer" ? "text-brand-700" : "text-stone-400")} />
+            <span className="text-sm font-semibold text-stone-900">{c.runAgents}</span>
+            <span className="text-xs text-stone-500">{c.runAgentsHint}</span>
           </button>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="full_name" className="mb-1.5 block text-sm font-medium text-ink">
+          <label htmlFor="full_name" className="mb-1.5 block text-sm font-medium text-stone-900">
             {c.fullName}
           </label>
           <input
@@ -246,7 +246,7 @@ export default function RegisterPage() {
         </div>
 
         <div>
-          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-ink">
+          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-stone-900">
             {c.email}
           </label>
           <input
@@ -262,7 +262,7 @@ export default function RegisterPage() {
         </div>
 
         <div>
-          <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-ink">
+          <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-stone-900">
             {c.password}
           </label>
           <input
@@ -281,7 +281,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={isLoading}
-          className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-accent-lime px-6 text-sm font-semibold text-[var(--accent-ink)] transition-transform hover:scale-[1.03] disabled:pointer-events-none disabled:opacity-60"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-brand-800 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-900 disabled:opacity-50"
         >
           {isLoading ? (
             <>
@@ -297,21 +297,21 @@ export default function RegisterPage() {
         </button>
       </form>
 
-      <p className="mt-4 text-center text-xs leading-6 text-ink-faint">
+      <p className="mt-4 text-center text-xs leading-6 text-stone-500">
         {c.agreePre}{" "}
-        <a href="#" className="text-ink-muted underline hover:text-ink">
+        <a href="#" className="text-stone-600 underline hover:text-stone-900">
           {c.terms}
         </a>{" "}
         {c.and}{" "}
-        <a href="#" className="text-ink-muted underline hover:text-ink">
+        <a href="#" className="text-stone-600 underline hover:text-stone-900">
           {c.privacy}
         </a>
         .
       </p>
 
-      <div className="mt-6 text-center text-sm text-ink-muted">
+      <div className="mt-6 text-center text-sm text-stone-600">
         {c.haveAccount}{" "}
-        <Link href="/login" className="font-medium text-accent hover:opacity-80">
+        <Link href="/login" className="font-medium text-brand-700 hover:underline">
           {c.signIn}
         </Link>
       </div>

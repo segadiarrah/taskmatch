@@ -15,17 +15,12 @@ export default function Loading() {
   const c = COPY[locale] ?? COPY.en;
 
   return (
-    <div className="surface-dark relative flex min-h-screen items-center justify-center overflow-hidden bg-canvas px-4">
-      <div className="pointer-events-none absolute inset-0 lime-radial" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] grid-bg" />
-      <div className="relative flex flex-col items-center gap-7 text-center">
-        <div className="relative flex h-16 w-16 items-center justify-center">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent-lime opacity-20" />
-          <span className="relative inline-flex h-11 w-11 animate-spin rounded-full border-2 border-line-strong border-t-[var(--accent-lime)]" />
-        </div>
+    <div className="flex min-h-screen items-center justify-center bg-white px-4">
+      <div className="flex flex-col items-center gap-7 text-center">
+        <span className="inline-flex h-10 w-10 animate-spin rounded-full border-2 border-stone-200 border-t-brand-700" />
         <div>
-          <div className="font-display text-2xl font-semibold tracking-tight text-ink">{c.title}</div>
-          <p className="mt-2 font-mono text-sm text-ink-muted">{c.sub}</p>
+          <div className="text-2xl font-semibold tracking-tight text-stone-900">{c.title}</div>
+          <p className="mt-2 text-sm text-stone-500">{c.sub}</p>
         </div>
       </div>
     </div>

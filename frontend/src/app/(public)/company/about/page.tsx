@@ -198,7 +198,7 @@ export default function AboutPage() {
   const c = COPY[locale] ?? COPY.en;
 
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-screen bg-white">
       <PageHero
         eyebrow={c.eyebrow}
         title={c.title}
@@ -216,33 +216,33 @@ export default function AboutPage() {
       <HighlightBand title={c.bandTitle} body={c.bandBody} items={c.bandItems} />
 
       <section className="px-4 py-20 sm:px-6 lg:px-8">
-        <Reveal className="mx-auto max-w-6xl rounded-3xl border border-line bg-surface p-8 card-glow">
-          <h2 className="font-display text-3xl font-semibold tracking-tight text-ink">{c.teamTitle}</h2>
+        <Reveal className="mx-auto max-w-6xl rounded-2xl border border-stone-200 bg-white p-8">
+          <h2 className="text-3xl font-semibold tracking-tight text-stone-900">{c.teamTitle}</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-[minmax(0,320px)_1fr] md:items-center">
-            <div className="rounded-2xl border border-line bg-canvas p-6">
+            <div className="rounded-xl border border-stone-200 bg-stone-50 p-6">
               <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent-lime text-2xl font-bold text-[var(--accent-ink)]">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-800 text-2xl font-bold text-white">
                   S
                 </div>
                 <div>
-                  <div className="text-lg font-semibold text-ink">Sega Diarrah</div>
-                  <div className="text-sm text-accent">{c.founderRole}</div>
+                  <div className="text-lg font-semibold text-stone-900">Sega Diarrah</div>
+                  <div className="text-sm text-brand-700">{c.founderRole}</div>
                 </div>
               </div>
-              <p className="mt-5 text-sm leading-7 text-ink-muted">{c.founderBio}</p>
+              <p className="mt-5 text-sm leading-7 text-stone-600">{c.founderBio}</p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <a
                   href="https://www.linkedin.com/in/segadiarrah"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-1.5 text-sm text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
+                  className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-1.5 text-sm text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900"
                 >
                   <Linkedin className="h-4 w-4" />
                   LinkedIn
                 </a>
                 <a
                   href="mailto:sega@tauraco.ai"
-                  className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-1.5 text-sm text-ink-muted transition-colors hover:border-line-strong hover:text-ink"
+                  className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-1.5 text-sm text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900"
                 >
                   <Mail className="h-4 w-4" />
                   sega@tauraco.ai
@@ -250,12 +250,12 @@ export default function AboutPage() {
               </div>
             </div>
             <div>
-              <p className="text-base leading-8 text-ink-muted">{c.teamNote}</p>
+              <p className="text-base leading-8 text-stone-600">{c.teamNote}</p>
               <a
                 href="https://www.linkedin.com/company/tauraco"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-accent transition-opacity hover:opacity-80"
+                className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand-700 hover:underline"
               >
                 <Linkedin className="h-4 w-4" />
                 Tauraco on LinkedIn
@@ -266,40 +266,40 @@ export default function AboutPage() {
       </section>
 
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <Reveal className="mx-auto max-w-6xl rounded-3xl border border-line bg-surface p-8 card-glow">
-          <h2 className="font-display text-3xl font-semibold tracking-tight text-ink">{c.posTitle}</h2>
+        <Reveal className="mx-auto max-w-6xl rounded-2xl border border-stone-200 bg-white p-8">
+          <h2 className="text-3xl font-semibold tracking-tight text-stone-900">{c.posTitle}</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {c.posItems.map((item, i) => (
               <Reveal
                 key={item.label}
                 delay={i * 70}
-                className="rounded-2xl border border-line bg-canvas p-5 hover-lift hover:border-line-strong"
+                className="rounded-xl border border-stone-200 bg-stone-50 p-5 hover-lift hover:border-stone-300"
               >
-                <div className="tech-eyebrow text-accent">{item.label}</div>
-                <div className="mt-3 text-lg font-semibold text-ink">{item.value}</div>
+                <div className="eyebrow text-brand-700">{item.label}</div>
+                <div className="mt-3 text-lg font-semibold text-stone-900">{item.value}</div>
               </Reveal>
             ))}
           </div>
-          <p className="mt-6 text-sm leading-7 text-ink-muted">{c.posNote}</p>
+          <p className="mt-6 text-sm leading-7 text-stone-600">{c.posNote}</p>
         </Reveal>
       </section>
 
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <Reveal className="mx-auto max-w-6xl rounded-3xl border border-line bg-surface-2 p-8">
-          <h2 className="font-display text-3xl font-semibold tracking-tight text-ink">{c.stackTitle}</h2>
+        <Reveal className="mx-auto max-w-6xl rounded-2xl border border-stone-200 bg-stone-50 p-8">
+          <h2 className="text-3xl font-semibold tracking-tight text-stone-900">{c.stackTitle}</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-4">
             {c.stackItems.map((item, i) => (
               <Reveal
                 key={item}
                 delay={i * 70}
-                className="rounded-2xl border border-line bg-canvas px-5 py-5 font-mono text-sm text-ink-muted hover-lift hover:border-line-strong"
+                className="rounded-lg border border-stone-200 bg-white px-5 py-5 font-mono text-sm text-stone-600 hover-lift hover:border-stone-300"
               >
-                <span className="text-accent">→ </span>
+                <span className="mr-1.5 font-semibold text-brand-700">→</span>
                 {item}
               </Reveal>
             ))}
           </div>
-          <p className="mt-6 text-sm leading-7 text-ink-muted">{c.stackNote}</p>
+          <p className="mt-6 text-sm leading-7 text-stone-600">{c.stackNote}</p>
         </Reveal>
       </section>
 

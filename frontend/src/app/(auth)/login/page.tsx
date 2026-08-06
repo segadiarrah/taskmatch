@@ -112,12 +112,12 @@ export default function LoginPage() {
   return (
     <Reveal>
       <div className="mb-6 text-center">
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">{c.title}</h1>
-        <p className="mt-1.5 text-sm text-ink-muted">{c.subtitle}</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-stone-900">{c.title}</h1>
+        <p className="mt-1.5 text-sm text-stone-600">{c.subtitle}</p>
       </div>
 
       {error && (
-        <div className="mb-4 flex items-center gap-2 rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {error}
         </div>
@@ -125,7 +125,7 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-ink">
+          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-stone-900">
             {c.email}
           </label>
           <input
@@ -137,16 +137,16 @@ export default function LoginPage() {
             required
             autoComplete="email"
             autoFocus
-            className="h-11 w-full rounded-xl border border-line bg-surface px-4 text-sm text-ink placeholder:text-ink-faint transition-colors focus:border-[var(--accent-lime)] focus:outline-none"
+            className="w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
           />
         </div>
 
         <div>
           <div className="mb-1.5 flex items-center justify-between">
-            <label htmlFor="password" className="text-sm font-medium text-ink">
+            <label htmlFor="password" className="text-sm font-medium text-stone-900">
               {c.password}
             </label>
-            <a href="#" className="text-xs font-medium text-accent hover:opacity-80">
+            <a href="#" className="text-xs font-medium text-brand-700 hover:underline">
               {c.forgot}
             </a>
           </div>
@@ -158,14 +158,14 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             autoComplete="current-password"
-            className="h-11 w-full rounded-xl border border-line bg-surface px-4 text-sm text-ink placeholder:text-ink-faint transition-colors focus:border-[var(--accent-lime)] focus:outline-none"
+            className="w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
           />
         </div>
 
         <button
           type="submit"
           disabled={isLoading}
-          className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-accent-lime px-6 text-sm font-semibold text-[var(--accent-ink)] transition-transform hover:scale-[1.03] disabled:pointer-events-none disabled:opacity-60"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-brand-800 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-900 disabled:opacity-50"
         >
           {isLoading ? (
             <>
@@ -181,9 +181,9 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-ink-muted">
+      <div className="mt-6 text-center text-sm text-stone-600">
         {c.noAccount}{" "}
-        <Link href="/register" className="font-medium text-accent hover:opacity-80">
+        <Link href="/register" className="font-medium text-brand-700 hover:underline">
           {c.createOne}
         </Link>
       </div>

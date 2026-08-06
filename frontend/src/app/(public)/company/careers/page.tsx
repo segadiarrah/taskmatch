@@ -216,15 +216,15 @@ function RoleCard({ role, applyLabel }: { role: Role; applyLabel: string }) {
   const subject = encodeURIComponent(`Application: ${role.title}`);
 
   return (
-    <div className="hover-lift rounded-2xl border border-line bg-surface hover:border-line-strong">
+    <div className="hover-lift rounded-xl border border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm">
       <button
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between gap-6 px-7 py-6 text-left"
       >
         <div>
-          <h3 className="text-xl font-semibold text-ink">{role.title}</h3>
-          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs font-medium text-ink-faint">
-            <span className="rounded-full border border-line bg-white/5 px-3 py-1 tech-eyebrow text-accent">
+          <h3 className="text-xl font-semibold text-stone-900">{role.title}</h3>
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs font-medium text-stone-500">
+            <span className="rounded-full bg-brand-50 px-3 py-1 eyebrow text-brand-700">
               {role.team}
             </span>
             <span className="inline-flex items-center gap-1">
@@ -235,25 +235,25 @@ function RoleCard({ role, applyLabel }: { role: Role; applyLabel: string }) {
           </div>
         </div>
         {open ? (
-          <ChevronUp className="h-5 w-5 shrink-0 text-ink-muted" />
+          <ChevronUp className="h-5 w-5 shrink-0 text-stone-600" />
         ) : (
-          <ChevronDown className="h-5 w-5 shrink-0 text-ink-muted" />
+          <ChevronDown className="h-5 w-5 shrink-0 text-stone-600" />
         )}
       </button>
       {open ? (
-        <div className="border-t border-line px-7 py-6">
-          <p className="text-sm leading-7 text-ink-muted">{role.description}</p>
+        <div className="border-t border-stone-200 px-7 py-6">
+          <p className="text-sm leading-7 text-stone-600">{role.description}</p>
           <ul className="mt-5 space-y-3">
             {role.points.map((point) => (
-              <li key={point} className="flex gap-3 text-sm leading-7 text-ink-muted">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-lime" />
+              <li key={point} className="flex gap-3 text-sm leading-7 text-stone-600">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-800" />
                 <span>{point}</span>
               </li>
             ))}
           </ul>
           <a
             href={`mailto:sega@tauraco.ai?subject=${subject}`}
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-accent-lime px-6 py-3 text-sm font-semibold text-[var(--accent-ink)] transition-transform hover:scale-[1.03]"
+            className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-brand-800 px-7 text-sm font-semibold text-white transition-colors hover:bg-brand-900"
           >
             {applyLabel}
           </a>
@@ -268,7 +268,7 @@ export default function CareersPage() {
   const c = COPY[locale] ?? COPY.en;
 
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-screen bg-white">
       <PageHero
         eyebrow={c.eyebrow}
         title={c.title}
@@ -280,8 +280,8 @@ export default function CareersPage() {
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="font-display text-3xl font-semibold tracking-tight text-ink">{c.openRoles}</h2>
-            <span className="font-mono text-sm text-ink-muted">{c.positions(roles.length)}</span>
+            <h2 className="text-3xl font-semibold tracking-tight text-stone-900">{c.openRoles}</h2>
+            <span className="font-mono text-sm text-stone-500">{c.positions(roles.length)}</span>
           </div>
           <div className="space-y-4">
             {roles.map((role, i) => (
@@ -293,16 +293,16 @@ export default function CareersPage() {
         </div>
       </section>
 
-      <section className="border-y border-line bg-surface px-4 py-20 sm:px-6 lg:px-8">
+      <section className="border-y border-stone-200 bg-stone-50 px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="max-w-2xl">
             <Reveal>
-              <h2 className="font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
+              <h2 className="text-4xl font-semibold tracking-tight text-stone-900 sm:text-5xl">
                 {c.cultureTitle}
               </h2>
             </Reveal>
             <Reveal delay={80}>
-              <p className="mt-5 text-lg leading-8 text-ink-muted">{c.cultureBody}</p>
+              <p className="mt-5 text-lg leading-8 text-stone-600">{c.cultureBody}</p>
             </Reveal>
           </div>
           <div className="mt-10 grid gap-5 md:grid-cols-2">
@@ -312,13 +312,13 @@ export default function CareersPage() {
                 <Reveal
                   key={item.title}
                   delay={i * 80}
-                  className="hover-lift group rounded-2xl border border-line bg-canvas p-7 hover:border-line-strong"
+                  className="hover-lift group rounded-xl border border-stone-200 bg-white p-7 hover:border-stone-300 hover:shadow-sm"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-white/5 text-accent transition-colors group-hover:border-[var(--accent-lime)]">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-brand-700">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="mt-5 text-xl font-semibold text-ink">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-ink-muted">{item.body}</p>
+                  <h3 className="mt-5 text-xl font-semibold text-stone-900">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-stone-600">{item.body}</p>
                 </Reveal>
               );
             })}

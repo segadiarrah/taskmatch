@@ -76,18 +76,18 @@ export default function GuideArticlePage() {
 
   if (!guide) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center bg-canvas px-4">
-        <Reveal className="card-glow max-w-md rounded-3xl border border-line bg-surface p-10 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-line bg-surface-2 text-accent">
+      <div className="flex min-h-[70vh] items-center justify-center bg-white px-4">
+        <Reveal className="max-w-md rounded-2xl border border-stone-200 bg-white p-10 text-center shadow-sm">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-stone-200 bg-stone-50 text-brand-700">
             <FileQuestion className="h-6 w-6" />
           </div>
-          <h1 className="mt-6 font-display text-3xl font-semibold tracking-tight text-ink">
+          <h1 className="mt-6 text-3xl font-semibold tracking-tight text-stone-900">
             {c.notFoundTitle}
           </h1>
-          <p className="mt-3 text-sm leading-7 text-ink-muted">{c.notFoundBody}</p>
+          <p className="mt-3 text-sm leading-7 text-stone-600">{c.notFoundBody}</p>
           <Link
             href="/resources/guides"
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent-lime px-6 h-11 text-sm font-semibold text-[var(--accent-ink)] transition-transform hover:scale-[1.03]"
+            className="mt-8 inline-flex h-11 items-center gap-2 rounded-lg bg-brand-800 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-900"
           >
             <ArrowLeft className="h-4 w-4" />
             {c.backToGuides}
@@ -98,40 +98,38 @@ export default function GuideArticlePage() {
   }
 
   return (
-    <div className="min-h-screen bg-canvas">
-      <section className="relative overflow-hidden px-4 pb-8 pt-20 sm:px-6 lg:px-8">
-        <div className="pointer-events-none absolute inset-0 lime-radial" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[320px] grid-bg opacity-30" />
-        <Reveal className="relative mx-auto max-w-3xl">
+    <div className="min-h-screen bg-white">
+      <section className="px-4 pb-8 pt-28 sm:px-6 lg:px-8">
+        <Reveal className="mx-auto max-w-3xl">
           <Link
             href="/resources/guides"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-stone-600 transition-colors hover:text-stone-900"
           >
             <ArrowLeft className="h-4 w-4" />
             {c.allGuides}
           </Link>
 
-          <div className="mt-8 flex flex-wrap items-center gap-3 font-mono text-xs uppercase tracking-[0.18em]">
-            <span className="inline-flex items-center gap-1 rounded-full border border-line-strong bg-accent-lime/10 px-3 py-1 text-accent">
+          <div className="mt-8 flex flex-wrap items-center gap-3 eyebrow">
+            <span className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-brand-50 px-3 py-1 text-brand-700">
               <Users className="h-3.5 w-3.5" />
               {guide.audience}
             </span>
-            <span className="inline-flex items-center gap-1 text-ink-faint">
+            <span className="inline-flex items-center gap-1 text-stone-500">
               <Layers className="h-3.5 w-3.5" />
               {guide.level}
             </span>
-            <span className="inline-flex items-center gap-1 text-ink-faint">
+            <span className="inline-flex items-center gap-1 text-stone-500">
               <Clock3 className="h-3.5 w-3.5" />
               {guide.readingTime}
             </span>
           </div>
 
-          <h1 className="mt-6 font-display text-4xl font-semibold leading-[1.08] tracking-tight text-ink sm:text-5xl">
+          <h1 className="mt-6 text-4xl font-semibold leading-[1.08] tracking-tight text-stone-900 sm:text-5xl">
             {guide.title}
           </h1>
-          <div className="mt-6 space-y-4 border-t border-line pt-6">
+          <div className="mt-6 space-y-4 border-t border-stone-200 pt-6">
             {guide.intro.map((paragraph, index) => (
-              <p key={index} className="text-lg leading-8 text-ink-muted">
+              <p key={index} className="text-lg leading-8 text-stone-600">
                 {paragraph}
               </p>
             ))}
@@ -145,13 +143,13 @@ export default function GuideArticlePage() {
             <Reveal
               key={index}
               delay={index * 60}
-              className="rounded-3xl border border-line bg-surface p-8"
+              className="rounded-2xl border border-stone-200 bg-white p-8"
             >
-              <h2 className="font-display text-2xl font-semibold tracking-tight text-ink">
+              <h2 className="text-2xl font-semibold tracking-tight text-stone-900">
                 {step.title}
               </h2>
               {step.paragraphs.map((paragraph, pIndex) => (
-                <p key={pIndex} className="mt-4 text-base leading-8 text-ink-muted">
+                <p key={pIndex} className="mt-4 text-base leading-8 text-stone-600">
                   {paragraph}
                 </p>
               ))}
@@ -160,20 +158,20 @@ export default function GuideArticlePage() {
                   {step.bullets.map((bullet, bIndex) => (
                     <li
                       key={bIndex}
-                      className="flex gap-3 rounded-2xl border border-line bg-surface-2 px-5 py-4 text-sm leading-7 text-ink-muted"
+                      className="flex gap-3 rounded-xl border border-stone-200 bg-stone-50 px-5 py-4 text-sm leading-7 text-stone-600"
                     >
-                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-lime" />
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-800" />
                       <span>{bullet}</span>
                     </li>
                   ))}
                 </ul>
               ) : null}
               {step.code ? (
-                <div className="mt-6 overflow-hidden rounded-2xl border border-line bg-canvas">
-                  <div className="border-b border-line px-5 py-3 font-mono text-xs uppercase tracking-[0.18em] text-ink-faint">
+                <div className="mt-6 overflow-hidden rounded-lg border border-stone-200 bg-stone-50">
+                  <div className="border-b border-stone-200 px-5 py-3 font-mono text-xs uppercase tracking-[0.18em] text-stone-500">
                     {step.code.language}
                   </div>
-                  <pre className="overflow-x-auto p-5 font-mono text-sm leading-7 text-ink">
+                  <pre className="overflow-x-auto p-5 font-mono text-sm leading-7 text-stone-800">
                     <code>{step.code.content}</code>
                   </pre>
                 </div>

@@ -481,7 +481,7 @@ export default function PricingPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-screen bg-white">
       <PageHero
         eyebrow={c.eyebrow}
         title={c.title}
@@ -497,32 +497,32 @@ export default function PricingPage() {
             <Reveal
               key={plan.key}
               delay={i * 80}
-              className={`hover-lift relative flex flex-col rounded-3xl border p-8 ${
+              className={`hover-lift relative flex flex-col rounded-2xl p-8 ${
                 plan.featured
-                  ? "border-line-strong bg-surface-2 lime-glow"
-                  : "border-line bg-surface hover:border-line-strong"
+                  ? "border-2 border-brand-800 bg-white shadow-sm"
+                  : "border border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm"
               }`}
             >
               {plan.featured ? (
-                <div className="absolute -top-3 left-8 inline-flex items-center gap-1.5 rounded-full bg-accent-lime px-3 py-1 text-xs font-semibold text-[var(--accent-ink)]">
+                <div className="absolute -top-3 left-8 inline-flex items-center gap-1.5 rounded-full bg-brand-800 px-3 py-1 text-xs font-semibold text-white">
                   <Sparkles className="h-3 w-3" />
                   {c.recommended}
                 </div>
               ) : null}
-              <p className="tech-eyebrow text-accent">{plan.name}</p>
+              <p className="eyebrow text-brand-700">{plan.name}</p>
               <div className="mt-4 flex items-end gap-2">
-                <span className="font-display text-4xl font-semibold tracking-tight text-ink">{plan.price}</span>
-                <span className="pb-1 text-sm text-ink-faint">{plan.cadence}</span>
+                <span className="text-4xl font-semibold tracking-tight text-stone-900">{plan.price}</span>
+                <span className="pb-1 text-sm text-stone-500">{plan.cadence}</span>
               </div>
-              <p className="mt-5 text-sm leading-7 text-ink-muted">{plan.description}</p>
+              <p className="mt-5 text-sm leading-7 text-stone-600">{plan.description}</p>
 
               <div className="mt-7">
                 <Link
                   href={plan.href}
-                  className={`inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold transition-transform hover:scale-[1.02] ${
+                  className={`inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-colors ${
                     plan.featured
-                      ? "bg-accent-lime text-[var(--accent-ink)]"
-                      : "border border-line-strong text-ink hover:bg-white/5"
+                      ? "bg-brand-800 text-white hover:bg-brand-900"
+                      : "border border-stone-300 bg-white text-stone-700 hover:bg-stone-50"
                   }`}
                 >
                   {plan.cta}
@@ -533,8 +533,8 @@ export default function PricingPage() {
               <div className="mt-8 space-y-3">
                 {plan.features.map((feature) => (
                   <div key={feature} className="flex items-start gap-3">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                    <span className="text-sm leading-6 text-ink-muted">{feature}</span>
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-700" />
+                    <span className="text-sm leading-6 text-stone-600">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -544,22 +544,22 @@ export default function PricingPage() {
       </section>
 
       {/* Comparison */}
-      <section className="border-y border-line bg-surface px-4 py-20 sm:px-6 lg:px-8">
+      <section className="border-y border-stone-200 bg-stone-50 px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
-          <Reveal className="tech-eyebrow text-accent">{c.compareEyebrow}</Reveal>
+          <Reveal className="eyebrow text-brand-700">{c.compareEyebrow}</Reveal>
           <Reveal delay={70}>
-            <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
               {c.compareTitle}
             </h2>
           </Reveal>
 
-          <Reveal delay={140} className="mt-10 overflow-x-auto rounded-2xl border border-line bg-canvas">
+          <Reveal delay={140} className="mt-10 overflow-x-auto rounded-xl border border-stone-200 bg-white">
             <div className="min-w-[560px]">
-              <div className="grid grid-cols-4 border-b border-line bg-surface-2 font-mono text-xs uppercase tracking-wider text-ink-muted">
+              <div className="grid grid-cols-4 border-b border-stone-200 bg-stone-50 font-mono text-xs uppercase tracking-wider text-stone-600">
                 {c.compareCols.map((col, i) => (
                   <div
                     key={col}
-                    className={`px-5 py-4 ${i === 2 ? "text-accent" : ""} ${i > 0 ? "text-center" : ""}`}
+                    className={`px-5 py-4 ${i === 2 ? "text-brand-700" : ""} ${i > 0 ? "text-center" : ""}`}
                   >
                     {col}
                   </div>
@@ -568,11 +568,11 @@ export default function PricingPage() {
               {c.compareRows.map((row) => (
                 <div
                   key={row[0]}
-                  className="grid grid-cols-4 border-b border-line text-sm text-ink-muted last:border-b-0"
+                  className="grid grid-cols-4 border-b border-stone-200 text-sm text-stone-600 last:border-b-0"
                 >
-                  <div className="px-5 py-4 font-medium text-ink">{row[0]}</div>
+                  <div className="px-5 py-4 font-medium text-stone-900">{row[0]}</div>
                   <div className="px-5 py-4 text-center">{row[1]}</div>
-                  <div className="px-5 py-4 text-center font-medium text-ink">{row[2]}</div>
+                  <div className="px-5 py-4 text-center font-medium text-stone-900">{row[2]}</div>
                   <div className="px-5 py-4 text-center">{row[3]}</div>
                 </div>
               ))}
@@ -586,22 +586,22 @@ export default function PricingPage() {
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
             <div>
-              <Reveal className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-white/5 px-4 py-1.5 tech-eyebrow text-ink-muted">
-                <Building2 className="h-3.5 w-3.5 text-accent" />
+              <Reveal className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-4 py-1.5 eyebrow text-stone-600">
+                <Building2 className="h-3.5 w-3.5 text-brand-700" />
                 {c.entEyebrow}
               </Reveal>
               <Reveal delay={80}>
-                <h2 className="mt-6 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+                <h2 className="mt-6 text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
                   {c.entTitle}
                 </h2>
               </Reveal>
               <Reveal delay={140}>
-                <p className="mt-5 max-w-xl text-lg leading-8 text-ink-muted">{c.entBody}</p>
+                <p className="mt-5 max-w-xl text-lg leading-8 text-stone-600">{c.entBody}</p>
               </Reveal>
               <Reveal delay={200} className="mt-8">
                 <Link
                   href="/company/contact"
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-accent-lime px-7 text-sm font-semibold text-[var(--accent-ink)] transition-transform hover:scale-[1.03]"
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-brand-800 px-7 text-sm font-semibold text-white transition-colors hover:bg-brand-900"
                 >
                   {c.entCta}
                   <ArrowRight className="h-4 w-4" />
@@ -616,14 +616,14 @@ export default function PricingPage() {
                   <Reveal
                     key={point.title}
                     delay={i * 80}
-                    className="hover-lift rounded-2xl border border-line bg-surface p-6 hover:border-line-strong lg:flex lg:items-start lg:gap-4"
+                    className="hover-lift rounded-xl border border-stone-200 bg-white p-6 hover:border-stone-300 hover:shadow-sm lg:flex lg:items-start lg:gap-4"
                   >
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-line bg-white/5 text-accent">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-brand-700">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="mt-4 lg:mt-0">
-                      <h3 className="text-base font-semibold text-ink">{point.title}</h3>
-                      <p className="mt-2 text-sm leading-7 text-ink-muted">{point.body}</p>
+                      <h3 className="text-base font-semibold text-stone-900">{point.title}</h3>
+                      <p className="mt-2 text-sm leading-7 text-stone-600">{point.body}</p>
                     </div>
                   </Reveal>
                 );
@@ -636,9 +636,9 @@ export default function PricingPage() {
       {/* FAQ */}
       <section id="faq" className="px-4 pb-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
-          <Reveal className="tech-eyebrow text-accent">{c.faqEyebrow}</Reveal>
+          <Reveal className="eyebrow text-brand-700">{c.faqEyebrow}</Reveal>
           <Reveal delay={70}>
-            <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
               {c.faqTitle}
             </h2>
           </Reveal>
@@ -650,7 +650,7 @@ export default function PricingPage() {
                 <Reveal
                   key={item.q}
                   delay={index * 60}
-                  className="overflow-hidden rounded-2xl border border-line bg-surface"
+                  className="overflow-hidden rounded-xl border border-stone-200 bg-white"
                 >
                   <button
                     type="button"
@@ -658,15 +658,15 @@ export default function PricingPage() {
                     onClick={() => setOpenIndex(isOpen ? null : index)}
                     aria-expanded={isOpen}
                   >
-                    <span className="text-base font-semibold text-ink">{item.q}</span>
+                    <span className="text-base font-semibold text-stone-900">{item.q}</span>
                     <ChevronDown
-                      className={`h-5 w-5 shrink-0 text-ink-muted transition-transform duration-300 ${
-                        isOpen ? "rotate-180 text-accent" : ""
+                      className={`h-5 w-5 shrink-0 text-stone-500 transition-transform duration-300 ${
+                        isOpen ? "rotate-180 text-brand-700" : ""
                       }`}
                     />
                   </button>
                   {isOpen ? (
-                    <p className="px-6 pb-6 text-sm leading-7 text-ink-muted">{item.a}</p>
+                    <p className="px-6 pb-6 text-sm leading-7 text-stone-600">{item.a}</p>
                   ) : null}
                 </Reveal>
               );

@@ -151,7 +151,7 @@ export default function CompliancePage() {
       </LegalSection>
 
       <LegalSection id="requests" title={c.s.requests}>
-        <p>Data-subject and privacy requests (access, correction, deletion, portability, restriction, and objection under GDPR / RGPD and comparable laws) can be sent to <a href="mailto:privacy@tauraco.ai">privacy@tauraco.ai</a>. Enterprise customers can request the DPA, sub-processor list, and security questionnaire responses through the same channel.</p>
+        <p>Data-subject and privacy requests (access, correction, deletion, portability, restriction, and objection under GDPR / RGPD and comparable laws) can be sent to <a href="mailto:privacy@tauraco.ai" className="text-brand-700 hover:underline">privacy@tauraco.ai</a>. Enterprise customers can request the DPA, sub-processor list, and security questionnaire responses through the same channel.</p>
       </LegalSection>
     </LegalPageShell>
   );

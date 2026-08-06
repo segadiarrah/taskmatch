@@ -18,15 +18,15 @@ function CodeBlock({ code, label }: { code: string; label: string }) {
     }
   };
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-canvas">
-      <div className="flex items-center justify-between border-b border-line px-4 py-3">
-        <span className="font-mono text-xs font-semibold text-accent">{label}</span>
-        <button onClick={onCopy} className="inline-flex items-center gap-1 text-xs text-ink-muted transition-colors hover:text-ink">
+    <div className="overflow-hidden rounded-lg border border-stone-200 bg-stone-50">
+      <div className="flex items-center justify-between border-b border-stone-200 px-4 py-3">
+        <span className="font-mono text-xs font-semibold text-brand-700">{label}</span>
+        <button onClick={onCopy} className="inline-flex items-center gap-1 text-xs text-stone-500 transition-colors hover:text-stone-900">
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      <pre className="overflow-x-auto p-5 font-mono text-sm leading-7 text-ink-muted">
+      <pre className="overflow-x-auto p-5 font-mono text-sm leading-7 text-stone-800">
         <code>{code}</code>
       </pre>
     </div>
@@ -243,33 +243,33 @@ function GroupCard({
   copy: Copy;
 }) {
   return (
-    <div className="hover-lift rounded-2xl border border-line bg-surface hover:border-line-strong">
+    <div className="hover-lift rounded-2xl border border-stone-200 bg-white hover:border-stone-300">
       <button className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left" onClick={onToggle}>
         <div className="flex items-start gap-4">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-white/5 text-accent">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-stone-200 bg-stone-50 text-brand-700">
             <group.icon className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-ink">{group.name}</h3>
-            <p className="mt-1 text-sm leading-6 text-ink-muted">{group.description}</p>
+            <h3 className="text-xl font-semibold text-stone-900">{group.name}</h3>
+            <p className="mt-1 text-sm leading-6 text-stone-600">{group.description}</p>
           </div>
         </div>
         {isOpen ? (
-          <ChevronUp className="h-5 w-5 shrink-0 text-ink-muted" />
+          <ChevronUp className="h-5 w-5 shrink-0 text-stone-500" />
         ) : (
-          <ChevronDown className="h-5 w-5 shrink-0 text-ink-muted" />
+          <ChevronDown className="h-5 w-5 shrink-0 text-stone-500" />
         )}
       </button>
 
       {isOpen ? (
-        <div className="border-t border-line px-6 py-6">
+        <div className="border-t border-stone-200 px-6 py-6">
           <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
             <div>
-              <div className="rounded-2xl border border-line bg-canvas p-5">
-                <div className="tech-eyebrow text-accent">{copy.endpoints}</div>
+              <div className="rounded-xl border border-stone-200 bg-stone-50 p-5">
+                <div className="eyebrow text-brand-700">{copy.endpoints}</div>
                 <div className="mt-4 space-y-3">
                   {group.endpoints.map((endpoint) => (
-                    <div key={endpoint} className="rounded-lg border border-line bg-white/5 px-4 py-3 font-mono text-xs text-ink-muted">
+                    <div key={endpoint} className="rounded-lg border border-stone-200 bg-white px-4 py-3 font-mono text-xs text-stone-800">
                       {endpoint}
                     </div>
                   ))}
@@ -293,7 +293,7 @@ export default function ApiReferencePage() {
   const [open, setOpen] = useState<string>("Authentication");
 
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-screen bg-white">
       <PageHero
         eyebrow={c.eyebrow}
         title={c.title}
@@ -302,12 +302,12 @@ export default function ApiReferencePage() {
       />
 
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <Reveal className="mx-auto mb-10 max-w-5xl rounded-2xl border border-line bg-surface p-6">
+        <Reveal className="mx-auto mb-10 max-w-5xl rounded-2xl border border-stone-200 bg-white p-6">
           <div className="grid gap-4 md:grid-cols-3">
             {c.info.map((item, i) => (
-              <Reveal key={item.title} delay={i * 70} className="rounded-2xl border border-line bg-canvas p-5">
-                <div className="text-sm font-semibold text-ink">{item.title}</div>
-                <p className="mt-2 text-sm leading-7 text-ink-muted">{item.body}</p>
+              <Reveal key={item.title} delay={i * 70} className="rounded-xl border border-stone-200 bg-stone-50 p-5">
+                <div className="text-sm font-semibold text-stone-900">{item.title}</div>
+                <p className="mt-2 text-sm leading-7 text-stone-600">{item.body}</p>
               </Reveal>
             ))}
           </div>
@@ -327,17 +327,17 @@ export default function ApiReferencePage() {
       </section>
 
       <section className="px-4 pb-24 sm:px-6 lg:px-8">
-        <Reveal className="mx-auto max-w-5xl rounded-3xl border border-line bg-surface p-8">
-          <h2 className="font-display text-3xl font-semibold tracking-tight text-ink">{c.guidanceTitle}</h2>
+        <Reveal className="mx-auto max-w-5xl rounded-2xl border border-stone-200 bg-white p-8">
+          <h2 className="text-3xl font-semibold tracking-tight text-stone-900">{c.guidanceTitle}</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             {guidanceItems.map((item) => (
-              <div key={item} className="rounded-2xl border border-line bg-canvas px-4 py-4 text-sm leading-7 text-ink-muted">
+              <div key={item} className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-4 text-sm leading-7 text-stone-600">
                 {item}
               </div>
             ))}
           </div>
-          <div className="mt-8 overflow-x-auto rounded-2xl border border-line">
-            <div className="grid min-w-[640px] grid-cols-4 bg-surface-2 text-sm font-semibold text-ink">
+          <div className="mt-8 overflow-x-auto rounded-xl border border-stone-200">
+            <div className="grid min-w-[640px] grid-cols-4 bg-stone-50 text-sm font-semibold text-stone-900">
               <div className="px-5 py-4">Family</div>
               <div className="px-5 py-4">Typical verbs</div>
               <div className="px-5 py-4">Primary actors</div>
@@ -351,8 +351,8 @@ export default function ApiReferencePage() {
               ["Bids / Assignments", "POST, GET, PATCH", "Developers and system", "Selection and execution"],
               ["Payments", "POST, GET, PATCH", "System and admins", "Settlement state"],
             ].map((row) => (
-              <div key={row[0]} className="grid min-w-[640px] grid-cols-4 border-t border-line text-sm text-ink-muted">
-                <div className="px-5 py-4 font-medium text-ink">{row[0]}</div>
+              <div key={row[0]} className="grid min-w-[640px] grid-cols-4 border-t border-stone-200 text-sm text-stone-600">
+                <div className="px-5 py-4 font-medium text-stone-900">{row[0]}</div>
                 <div className="px-5 py-4">{row[1]}</div>
                 <div className="px-5 py-4">{row[2]}</div>
                 <div className="px-5 py-4">{row[3]}</div>

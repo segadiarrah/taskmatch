@@ -4,36 +4,25 @@
 
 @layer base {
   :root {
-    /* shadcn tokens — kept LIGHT for the dashboard/admin surface */
+    /* shadcn tokens — dashboard/admin surface (light) */
     --background: 0 0% 100%;
-    --foreground: 240 10% 4%;
+    --foreground: 20 10% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 4%;
-    --primary: 240 6% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 6% 10%;
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
-    --accent: 240 5% 96%;
-    --accent-foreground: 240 6% 10%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 240 6% 10%;
-    --radius: 0.75rem;
-
-    /* --- Obsidian × Acid Lime : public marketing surface --- */
-    --canvas: #0a0b0d;
-    --surface: #131519;
-    --surface-2: #1a1d23;
-    --ink: #e8eae6;
-    --ink-muted: #9aa0a6;
-    --ink-faint: #6b7280;
-    --accent-lime: #c7f94e;
-    --accent-ink: #0a0b0d;
-    --line: 255 255 255;
+    --card-foreground: 20 10% 10%;
+    --primary: 207 50% 21%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 30 7% 96%;
+    --secondary-foreground: 20 10% 10%;
+    --muted: 30 7% 96%;
+    --muted-foreground: 28 6% 40%;
+    --accent: 30 7% 96%;
+    --accent-foreground: 20 10% 10%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 8% 90%;
+    --input: 30 8% 90%;
+    --ring: 207 50% 21%;
+    --radius: 0.5rem;
   }
 }
 
@@ -43,114 +32,55 @@
   }
 
   html {
-    background: var(--canvas);
+    background: #ffffff;
   }
 
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-sans), sans-serif;
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display), sans-serif;
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
     letter-spacing: -0.02em;
   }
-}
 
-/* ------------------------------------------------------------------ */
-/*  Public marketing surface : dark, tech, minimal                    */
-/* ------------------------------------------------------------------ */
-@layer components {
-  .surface-dark {
-    background: var(--canvas);
-    color: var(--ink);
-    font-family: var(--font-sans), sans-serif;
-  }
-  .surface-dark ::selection {
-    background: var(--accent-lime);
-    color: var(--accent-ink);
+  ::selection {
+    background: #c0d4e3;
+    color: #13293a;
   }
 }
 
 @layer utilities {
-  .font-display { font-family: var(--font-display), sans-serif; }
+  .font-display { font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif; }
   .font-mono { font-family: var(--font-mono), ui-monospace, monospace; }
   .text-balance { text-wrap: balance; }
 
-  /* palette helpers */
-  .text-ink { color: var(--ink); }
-  .text-ink-muted { color: var(--ink-muted); }
-  .text-ink-faint { color: var(--ink-faint); }
-  .text-accent { color: var(--accent-lime); }
-  .bg-canvas { background-color: var(--canvas); }
-  .bg-surface { background-color: var(--surface); }
-  .bg-surface-2 { background-color: var(--surface-2); }
-  .bg-accent-lime { background-color: var(--accent-lime); }
-  .border-line { border-color: rgb(var(--line) / 0.09); }
-  .border-line-strong { border-color: rgb(var(--line) / 0.16); }
-
-  /* eyebrow / terminal label */
-  .tech-eyebrow {
-    font-family: var(--font-mono), monospace;
+  /* Section eyebrow label — quiet, uppercase, tracked out */
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.24em;
-    font-size: 0.68rem;
+    letter-spacing: 0.16em;
   }
 
-  /* animated gradient text */
-  .text-gradient-lime {
-    background: linear-gradient(100deg, #e8eae6 10%, #c7f94e 50%, #e8eae6 90%);
-    background-size: 220% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: gradient-pan 6s linear infinite;
-  }
-
-  /* backgrounds */
-  .grid-bg {
-    background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-    background-size: 54px 54px;
-    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
-    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
-  }
-  .lime-radial {
-    background-image:
-      radial-gradient(circle at 18% 12%, rgba(199, 249, 78, 0.12), transparent 24%),
-      radial-gradient(circle at 84% 8%, rgba(199, 249, 78, 0.06), transparent 22%);
-  }
-  .lime-glow { box-shadow: 0 0 0 1px rgba(199, 249, 78, 0.25), 0 18px 60px -12px rgba(199, 249, 78, 0.35); }
-  .card-glow { box-shadow: 0 24px 70px -30px rgba(0, 0, 0, 0.9); }
-
-  /* scroll-reveal */
+  /* Subtle scroll-reveal (disabled under prefers-reduced-motion) */
   .reveal {
     opacity: 0;
-    transform: translateY(22px);
-    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateY(12px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
     transition-delay: var(--reveal-delay, 0ms);
-    will-change: opacity, transform;
   }
   .reveal.is-visible { opacity: 1; transform: none; }
 
-  .hover-lift { transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), border-color 0.35s ease, box-shadow 0.35s ease; }
-  .hover-lift:hover { transform: translateY(-4px); }
-
-  .animate-float { animation: float 7s ease-in-out infinite; }
-  .animate-blink { animation: blink 1.1s step-end infinite; }
-  .animate-gradient-pan { background-size: 220% auto; animation: gradient-pan 6s linear infinite; }
-  .marquee-track { animation: marquee 32s linear infinite; }
+  /* Restrained hover lift for cards */
+  .hover-lift {
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  .hover-lift:hover { transform: translateY(-2px); }
 }
-
-@keyframes gradient-pan { to { background-position: 220% center; } }
-@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes rise-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

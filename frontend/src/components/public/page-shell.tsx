@@ -19,22 +19,20 @@ export function PageHero({
   icon?: React.ElementType;
 }) {
   return (
-    <section className="relative overflow-hidden px-4 pb-16 pt-28 sm:px-6 lg:px-8">
-      <div className="pointer-events-none absolute inset-0 lime-radial" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] grid-bg" />
-      <div className="relative mx-auto max-w-4xl text-center">
-        <Reveal className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-white/5 px-4 py-1.5 tech-eyebrow text-ink-muted">
-          {Icon ? <Icon className="h-3.5 w-3.5 text-accent" /> : null}
+    <section className="border-b border-stone-200 bg-white px-4 pb-16 pt-28 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl text-center">
+        <Reveal className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-4 py-1.5 eyebrow text-stone-600">
+          {Icon ? <Icon className="h-3.5 w-3.5 text-brand-700" /> : null}
           {eyebrow}
         </Reveal>
         <Reveal delay={80}>
-          <h1 className="mt-8 font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
+          <h1 className="mt-8 text-5xl font-semibold leading-[1.05] tracking-tight text-stone-900 sm:text-6xl">
             {title}
-            {accent ? <span className="block text-gradient-lime">{accent}</span> : null}
+            {accent ? <span className="block text-brand-800">{accent}</span> : null}
           </h1>
         </Reveal>
         <Reveal delay={160}>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-ink-muted">{description}</p>
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-stone-600">{description}</p>
         </Reveal>
       </div>
     </section>
@@ -52,15 +50,15 @@ export function CardGrid({
         <Reveal
           key={item.title}
           delay={i * 70}
-          className="hover-lift group rounded-2xl border border-line bg-surface p-7 hover:border-line-strong"
+          className="hover-lift group rounded-xl border border-stone-200 bg-white p-7 hover:border-stone-300 hover:shadow-sm"
         >
           {item.icon ? (
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-white/5 text-accent transition-colors group-hover:border-[var(--accent-lime)]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-brand-700">
               <item.icon className="h-5 w-5" />
             </div>
           ) : null}
-          <h3 className="mt-5 text-lg font-semibold text-ink">{item.title}</h3>
-          <p className="mt-3 text-sm leading-7 text-ink-muted">{item.body}</p>
+          <h3 className="mt-5 text-lg font-semibold text-stone-900">{item.title}</h3>
+          <p className="mt-3 text-sm leading-7 text-stone-600">{item.body}</p>
         </Reveal>
       ))}
     </div>
@@ -77,22 +75,22 @@ export function HighlightBand({
   items: string[];
 }) {
   return (
-    <section className="border-y border-line bg-surface px-4 py-20 sm:px-6 lg:px-8">
+    <section className="border-y border-stone-200 bg-stone-50 px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <Reveal>
-          <h2 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">{title}</h2>
+          <h2 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">{title}</h2>
         </Reveal>
         <Reveal delay={80}>
-          <p className="mt-5 max-w-3xl text-lg leading-8 text-ink-muted">{body}</p>
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-600">{body}</p>
         </Reveal>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {items.map((item, i) => (
             <Reveal
               key={item}
               delay={i * 80}
-              className="rounded-xl border border-line bg-canvas px-5 py-5 font-mono text-sm text-ink-muted"
+              className="rounded-lg border border-stone-200 bg-white px-5 py-5 text-sm leading-6 text-stone-600"
             >
-              <span className="text-accent">→ </span>
+              <span className="mr-1.5 font-semibold text-brand-700">→</span>
               {item}
             </Reveal>
           ))}
@@ -119,28 +117,25 @@ export function PageCta({
 }) {
   return (
     <section className="px-4 pb-24 pt-4 sm:px-6 lg:px-8">
-      <Reveal className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl border border-line-strong bg-surface px-6 py-16 text-center sm:px-10">
-        <div className="pointer-events-none absolute inset-0 lime-radial opacity-70" />
-        <div className="relative">
-          <h2 className="font-display text-4xl font-semibold tracking-tight text-ink sm:text-5xl">{title}</h2>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-ink-muted sm:text-lg">{body}</p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+      <Reveal className="mx-auto max-w-6xl rounded-2xl bg-brand-900 px-6 py-16 text-center sm:px-10">
+        <h2 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">{title}</h2>
+        <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-brand-100 sm:text-lg">{body}</p>
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link
+            href={primaryHref}
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-white px-7 text-sm font-semibold text-brand-900 transition-colors hover:bg-brand-50"
+          >
+            {primaryLabel}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          {secondaryHref && secondaryLabel ? (
             <Link
-              href={primaryHref}
-              className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-accent-lime px-7 text-sm font-semibold text-[var(--accent-ink)] transition-transform hover:scale-[1.03]"
+              href={secondaryHref}
+              className="inline-flex h-12 items-center justify-center rounded-lg border border-white/25 px-7 text-sm font-medium text-white transition-colors hover:bg-white/10"
             >
-              {primaryLabel}
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              {secondaryLabel}
             </Link>
-            {secondaryHref && secondaryLabel ? (
-              <Link
-                href={secondaryHref}
-                className="inline-flex h-12 items-center justify-center rounded-full border border-line-strong px-7 text-sm font-medium text-ink transition-colors hover:bg-white/5"
-              >
-                {secondaryLabel}
-              </Link>
-            ) : null}
-          </div>
+          ) : null}
         </div>
       </Reveal>
     </section>

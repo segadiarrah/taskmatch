@@ -340,7 +340,7 @@ export default function HowItWorksPage() {
   const c = COPY[locale] ?? COPY.en;
 
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-screen bg-white">
       <PageHero
         eyebrow={c.eyebrow}
         title={c.title}
@@ -352,9 +352,9 @@ export default function HowItWorksPage() {
       {/* Steps */}
       <section className="px-4 pb-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
-          <Reveal className="tech-eyebrow text-accent">{c.stepsEyebrow}</Reveal>
+          <Reveal className="eyebrow text-brand-700">{c.stepsEyebrow}</Reveal>
           <Reveal delay={70}>
-            <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
               {c.stepsTitle}
             </h2>
           </Reveal>
@@ -366,19 +366,19 @@ export default function HowItWorksPage() {
                 <Reveal
                   key={step.n}
                   delay={i * 70}
-                  className="hover-lift group flex flex-col rounded-2xl border border-line bg-surface p-7 hover:border-line-strong"
+                  className="hover-lift flex flex-col rounded-xl border border-stone-200 bg-white p-7 hover:border-stone-300 hover:shadow-sm"
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-white/5 text-accent transition-colors group-hover:border-[var(--accent-lime)]">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-brand-700">
                       <Icon className="h-5 w-5" />
                     </div>
-                    <span className="font-mono text-sm text-ink-faint">{step.n}</span>
+                    <span className="font-mono text-sm text-stone-400">{step.n}</span>
                   </div>
-                  <h3 className="mt-5 text-lg font-semibold text-ink">{step.title}</h3>
-                  <p className="mt-3 flex-1 text-sm leading-7 text-ink-muted">{step.body}</p>
-                  <div className="mt-5 flex items-start gap-2 border-t border-line pt-4">
-                    <span className="tech-eyebrow shrink-0 text-accent">{c.guaranteeLabel}</span>
-                    <span className="text-sm leading-6 text-ink">{step.guarantee}</span>
+                  <h3 className="mt-5 text-lg font-semibold text-stone-900">{step.title}</h3>
+                  <p className="mt-3 flex-1 text-sm leading-7 text-stone-600">{step.body}</p>
+                  <div className="mt-5 flex items-start gap-2 border-t border-stone-200 pt-4">
+                    <span className="eyebrow shrink-0 text-brand-700">{c.guaranteeLabel}</span>
+                    <span className="text-sm leading-6 text-stone-900">{step.guarantee}</span>
                   </div>
                 </Reveal>
               );
@@ -388,15 +388,15 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Stats */}
-      <section className="border-y border-line bg-surface px-4 py-20 sm:px-6 lg:px-8">
+      <section className="border-y border-stone-200 bg-stone-50 px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <Reveal>
-            <h2 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+            <h2 className="text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
               {c.statsTitle}
             </h2>
           </Reveal>
           <Reveal delay={80}>
-            <p className="mt-5 max-w-3xl text-lg leading-8 text-ink-muted">{c.statsBody}</p>
+            <p className="mt-5 max-w-3xl text-lg leading-8 text-stone-600">{c.statsBody}</p>
           </Reveal>
           <div className="mt-10 grid gap-5 md:grid-cols-3">
             {c.stats.map((stat, i) => {
@@ -405,13 +405,13 @@ export default function HowItWorksPage() {
                 <Reveal
                   key={stat.label}
                   delay={i * 80}
-                  className="hover-lift rounded-2xl border border-line bg-canvas p-7 hover:border-line-strong"
+                  className="hover-lift rounded-xl border border-stone-200 bg-white p-7 hover:border-stone-300 hover:shadow-sm"
                 >
-                  <Icon className="h-5 w-5 text-accent" />
-                  <div className="mt-5 font-display text-5xl font-semibold tracking-tight text-ink">
+                  <Icon className="h-5 w-5 text-brand-700" />
+                  <div className="mt-5 text-5xl font-semibold tracking-tight text-stone-900">
                     <Counter value={stat.value} suffix={stat.suffix} />
                   </div>
-                  <p className="mt-3 text-sm leading-7 text-ink-muted">{stat.label}</p>
+                  <p className="mt-3 text-sm leading-7 text-stone-600">{stat.label}</p>
                 </Reveal>
               );
             })}
@@ -422,16 +422,16 @@ export default function HowItWorksPage() {
       {/* Lifecycle table */}
       <section className="px-4 py-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
-          <Reveal className="tech-eyebrow text-accent">{c.lifecycleEyebrow}</Reveal>
+          <Reveal className="eyebrow text-brand-700">{c.lifecycleEyebrow}</Reveal>
           <Reveal delay={70}>
-            <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
               {c.lifecycleTitle}
             </h2>
           </Reveal>
 
-          <Reveal delay={140} className="mt-10 overflow-x-auto rounded-2xl border border-line bg-surface">
+          <Reveal delay={140} className="mt-10 overflow-x-auto rounded-xl border border-stone-200 bg-white">
             <div className="min-w-[680px]">
-              <div className="grid grid-cols-4 border-b border-line bg-surface-2 font-mono text-xs uppercase tracking-wider text-ink-muted">
+              <div className="grid grid-cols-4 border-b border-stone-200 bg-stone-50 font-mono text-xs uppercase tracking-wider text-stone-600">
                 {c.lifecycleCols.map((col) => (
                   <div key={col} className="px-5 py-4">
                     {col}
@@ -441,11 +441,11 @@ export default function HowItWorksPage() {
               {c.lifecycleRows.map((row) => (
                 <div
                   key={row[0]}
-                  className="grid grid-cols-4 border-b border-line text-sm text-ink-muted last:border-b-0 hover:bg-white/5"
+                  className="grid grid-cols-4 border-b border-stone-200 text-sm text-stone-600 last:border-b-0 hover:bg-stone-50"
                 >
-                  <div className="px-5 py-4 font-medium text-ink">{row[0]}</div>
+                  <div className="px-5 py-4 font-medium text-stone-900">{row[0]}</div>
                   <div className="px-5 py-4">{row[1]}</div>
-                  <div className="px-5 py-4 font-mono text-xs text-accent">{row[2]}</div>
+                  <div className="px-5 py-4 font-mono text-xs text-brand-700">{row[2]}</div>
                   <div className="px-5 py-4">{row[3]}</div>
                 </div>
               ))}

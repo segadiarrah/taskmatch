@@ -139,7 +139,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
 
 const cardIcons = [Mail, MessageSquare, Phone, BookOpen];
 const inputClass =
-  "rounded-2xl border-line bg-canvas text-ink placeholder:text-ink-faint focus-visible:ring-1 focus-visible:ring-[var(--accent-lime)] focus-visible:ring-offset-0";
+  "rounded-lg border-stone-300 bg-white px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600 focus-visible:border-brand-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-600";
 
 export default function ContactPage() {
   const { locale } = useTranslation();
@@ -151,7 +151,7 @@ export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
 
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-screen bg-white">
       <PageHero
         eyebrow={c.eyebrow}
         title={c.title}
@@ -164,23 +164,23 @@ export default function ContactPage() {
         <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <CardGrid items={c.cards.map((card, i) => ({ ...card, icon: cardIcons[i] }))} />
-            <Reveal delay={120} className="mt-6 rounded-2xl border border-line bg-surface p-6">
-              <h2 className="text-xl font-semibold text-ink">{c.asideTitle}</h2>
-              <p className="mt-3 text-sm leading-7 text-ink-muted">{c.asideBody1}</p>
-              <p className="mt-3 text-sm leading-7 text-ink-muted">{c.asideBody2}</p>
+            <Reveal delay={120} className="mt-6 rounded-xl border border-stone-200 bg-white p-6">
+              <h2 className="text-xl font-semibold text-stone-900">{c.asideTitle}</h2>
+              <p className="mt-3 text-sm leading-7 text-stone-600">{c.asideBody1}</p>
+              <p className="mt-3 text-sm leading-7 text-stone-600">{c.asideBody2}</p>
             </Reveal>
           </div>
 
-          <Reveal delay={80} className="rounded-3xl border border-line-strong bg-surface p-8 card-glow">
+          <Reveal delay={80} className="rounded-2xl border border-stone-200 bg-white p-8 shadow-sm">
             {submitted ? (
               <div className="flex flex-col items-center py-10 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full border border-line bg-white/5">
-                  <CheckCircle2 className="h-8 w-8 text-accent" />
+                <div className="flex h-16 w-16 items-center justify-center rounded-full border border-stone-200 bg-stone-50">
+                  <CheckCircle2 className="h-8 w-8 text-brand-700" />
                 </div>
-                <h2 className="mt-5 font-display text-2xl font-semibold text-ink">{c.sentTitle}</h2>
-                <p className="mt-3 max-w-md text-sm leading-7 text-ink-muted">{c.sentBody}</p>
+                <h2 className="mt-5 text-2xl font-semibold text-stone-900">{c.sentTitle}</h2>
+                <p className="mt-3 max-w-md text-sm leading-7 text-stone-600">{c.sentBody}</p>
                 <button
-                  className="mt-6 inline-flex h-11 items-center justify-center rounded-full border border-line-strong px-6 text-sm font-medium text-ink transition-colors hover:bg-white/5"
+                  className="mt-6 inline-flex h-11 items-center justify-center rounded-lg border border-stone-300 bg-white px-6 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
                   onClick={() => setSubmitted(false)}
                 >
                   {c.another}
@@ -232,10 +232,10 @@ export default function ContactPage() {
                   setSubmitting(false);
                 }}
               >
-                <h2 className="font-display text-3xl font-semibold tracking-tight text-ink">{c.formTitle}</h2>
+                <h2 className="text-3xl font-semibold tracking-tight text-stone-900">{c.formTitle}</h2>
                 <Input
                   placeholder={c.name}
-                  className={inputClass}
+                  className={`${inputClass} h-12`}
                   required
                   value={form.name}
                   onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
@@ -243,14 +243,14 @@ export default function ContactPage() {
                 <Input
                   placeholder={c.email}
                   type="email"
-                  className={inputClass}
+                  className={`${inputClass} h-12`}
                   required
                   value={form.email}
                   onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                 />
                 <Input
                   placeholder={c.subject}
-                  className={inputClass}
+                  className={`${inputClass} h-12`}
                   required
                   value={form.subject}
                   onChange={(e) => setForm((prev) => ({ ...prev, subject: e.target.value }))}
@@ -263,10 +263,10 @@ export default function ContactPage() {
                   value={form.message}
                   onChange={(e) => setForm((prev) => ({ ...prev, message: e.target.value }))}
                 />
-                {error ? <p className="text-sm text-red-400">{error}</p> : null}
+                {error ? <p className="text-sm text-red-600">{error}</p> : null}
                 <button
                   type="submit"
-                  className="inline-flex h-12 items-center justify-center rounded-full bg-accent-lime px-7 text-sm font-semibold text-[var(--accent-ink)] transition-transform hover:scale-[1.03] disabled:opacity-60"
+                  className="inline-flex h-12 items-center justify-center rounded-lg bg-brand-800 px-7 text-sm font-semibold text-white transition-colors hover:bg-brand-900 disabled:opacity-50"
                   disabled={submitting}
                 >
                   {submitting ? c.sending : c.send}

@@ -16,9 +16,9 @@ type Release = {
 };
 
 const typeStyles: Record<EntryType, string> = {
-  Feature: "bg-accent-lime text-[var(--accent-ink)]",
-  Improvement: "border border-line-strong bg-white/5 text-accent",
-  Fix: "bg-surface-2 text-ink border border-line-strong",
+  Feature: "bg-brand-800 text-white",
+  Improvement: "border border-stone-300 bg-white text-brand-700",
+  Fix: "border border-stone-200 bg-stone-100 text-stone-700",
 };
 
 /* Release entry text stays in English (operational record). */
@@ -147,7 +147,7 @@ export default function ChangelogPage() {
     });
 
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-screen bg-white">
       <PageHero
         eyebrow={c.eyebrow}
         title={c.title}
@@ -162,7 +162,7 @@ export default function ChangelogPage() {
             {(["Feature", "Improvement", "Fix"] as EntryType[]).map((type) => (
               <span
                 key={type}
-                className={`rounded-full px-3 py-1 tech-eyebrow ${typeStyles[type]}`}
+                className={`rounded-full px-3 py-1 eyebrow ${typeStyles[type]}`}
               >
                 {c.typeLabels[type]}
               </span>
@@ -170,7 +170,7 @@ export default function ChangelogPage() {
           </div>
 
           <div className="relative">
-            <div className="absolute bottom-2 left-[7px] top-2 w-px bg-[rgb(var(--line)/0.14)] sm:left-[calc(9rem+7px)]" />
+            <div className="absolute bottom-2 left-[7px] top-2 w-px bg-stone-200 sm:left-[calc(9rem+7px)]" />
             <div className="space-y-12">
               {releases.map((release, ri) => (
                 <Reveal
@@ -179,13 +179,15 @@ export default function ChangelogPage() {
                   className="relative pl-8 sm:grid sm:grid-cols-[9rem_1fr] sm:gap-8 sm:pl-0"
                 >
                   <div className="sm:relative sm:pr-8 sm:text-right">
-                    <div className="font-display text-2xl font-semibold text-ink">{release.version}</div>
-                    <div className="mt-1 font-mono text-sm text-ink-muted">{formatDate(release.date)}</div>
-                    <span className="absolute left-[-1.72rem] top-2 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-[var(--accent-lime)] bg-canvas sm:left-auto sm:right-[-0.44rem]" />
+                    <span className="inline-flex items-center rounded-md bg-brand-50 px-2.5 py-1 font-mono text-sm font-semibold text-brand-700">
+                      {release.version}
+                    </span>
+                    <div className="mt-2 font-mono text-xs text-stone-500">{formatDate(release.date)}</div>
+                    <span className="absolute left-[-1.72rem] top-2 h-3.5 w-3.5 rounded-full border-2 border-brand-700 bg-white sm:left-auto sm:right-[-0.44rem]" />
                   </div>
 
-                  <div className="rounded-2xl border border-line bg-surface p-7 hover-lift hover:border-line-strong">
-                    <p className="text-base font-semibold text-ink">{release.summary}</p>
+                  <div className="hover-lift rounded-xl border border-stone-200 bg-white p-7 hover:border-stone-300 hover:shadow-sm">
+                    <p className="text-base font-semibold text-stone-900">{release.summary}</p>
                     <ul className="mt-5 space-y-4">
                       {release.entries.map((entry, index) => (
                         <li key={index} className="flex gap-3">
@@ -194,7 +196,7 @@ export default function ChangelogPage() {
                           >
                             {c.typeLabels[entry.type]}
                           </span>
-                          <span className="text-sm leading-7 text-ink-muted">{entry.text}</span>
+                          <span className="text-sm leading-7 text-stone-600">{entry.text}</span>
                         </li>
                       ))}
                     </ul>

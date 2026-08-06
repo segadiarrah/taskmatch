@@ -3,8 +3,8 @@
 import React, { useEffect, useRef, useState } from "react";
 
 /**
- * Reveal — fades/rises children into view on scroll using IntersectionObserver.
- * Respects prefers-reduced-motion via the global CSS override.
+ * Reveal — gently fades/rises children into view on scroll using
+ * IntersectionObserver. Respects prefers-reduced-motion via globals.css.
  */
 export function Reveal({
   children,
@@ -57,7 +57,7 @@ export function Counter({
   suffix = "",
   prefix = "",
   decimals = 0,
-  duration = 1400,
+  duration = 1200,
   className = "",
 }: {
   value: number;
@@ -116,19 +116,5 @@ export function Counter({
       })}
       {suffix}
     </span>
-  );
-}
-
-/**
- * Marquee — infinite horizontal scroll of children (duplicated for seamless loop).
- */
-export function Marquee({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={`group relative flex overflow-hidden ${className}`}>
-      <div className="marquee-track flex shrink-0 items-center gap-12 pr-12">{children}</div>
-      <div className="marquee-track flex shrink-0 items-center gap-12 pr-12" aria-hidden>
-        {children}
-      </div>
-    </div>
   );
 }

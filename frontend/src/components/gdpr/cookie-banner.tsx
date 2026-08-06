@@ -48,8 +48,8 @@ function Toggle({
       disabled={disabled}
       onClick={() => onChange(!enabled)}
       className={cn(
-        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2",
-        enabled ? "bg-zinc-900" : "bg-zinc-300",
+        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 focus-visible:ring-offset-2",
+        enabled ? "bg-brand-800" : "bg-stone-300",
         disabled && "opacity-60 cursor-not-allowed"
       )}
     >
@@ -84,14 +84,14 @@ function CookieCategory({
     <div className="flex items-start justify-between gap-4 py-3">
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-zinc-900">{name}</span>
+          <span className="text-sm font-medium text-stone-900">{name}</span>
           {disabled && (
-            <span className="text-xs text-zinc-500 bg-zinc-100 rounded px-1.5 py-0.5">
+            <span className="text-xs text-stone-500 bg-stone-100 rounded px-1.5 py-0.5">
               Always on
             </span>
           )}
         </div>
-        <p className="text-xs text-zinc-500 mt-0.5">{description}</p>
+        <p className="text-xs text-stone-500 mt-0.5">{description}</p>
       </div>
       <Toggle enabled={enabled} disabled={disabled} onChange={onChange} />
     </div>
@@ -173,21 +173,21 @@ export function CookieBanner() {
           role="dialog"
           aria-label="Cookie consent"
         >
-          <div className="border-t border-zinc-200 bg-white shadow-lg">
+          <div className="border-t border-stone-200 bg-white shadow-lg">
             <div className="mx-auto max-w-5xl px-4 py-4 sm:px-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 {/* Message */}
                 <div className="flex items-start gap-3 flex-1">
-                  <Cookie className="h-5 w-5 text-zinc-500 mt-0.5 shrink-0" />
+                  <Cookie className="h-5 w-5 text-stone-500 mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-sm text-zinc-700">
+                    <p className="text-sm text-stone-700">
                       We use cookies to enhance your experience, analyze
                       platform usage, and support our marketing efforts. You can
                       customize your preferences or accept/reject all cookies.
                     </p>
                     <Link
                       href="/legal/compliance#cookie-policy"
-                      className="text-xs text-zinc-500 hover:text-zinc-900 underline mt-1 inline-block"
+                      className="text-xs text-stone-500 hover:text-stone-900 underline mt-1 inline-block"
                     >
                       Read our Cookie Policy
                     </Link>
@@ -237,7 +237,7 @@ export function CookieBanner() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="divide-y divide-zinc-100">
+          <div className="divide-y divide-stone-100">
             <CookieCategory
               name="Necessary Cookies"
               description="Required for authentication, security, and core platform functionality. These cookies cannot be disabled."
