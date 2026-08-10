@@ -78,7 +78,7 @@ export default function GuidesPage() {
   const c = COPY[locale] ?? COPY.en;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-ink-950 text-ink-50">
       <PageHero
         eyebrow={c.eyebrow}
         title={c.title}
@@ -94,27 +94,27 @@ export default function GuidesPage() {
               <Reveal key={guide.slug} delay={i * 70}>
                 <Link
                   href={`/resources/guides/${guide.slug}`}
-                  className="hover-lift group flex h-full flex-col rounded-2xl border border-stone-200 bg-white p-8 hover:border-stone-300 hover:shadow-sm"
+                  className="hover-lift group flex h-full flex-col rounded-lg border border-ink-700 bg-ink-900 p-8 hover:border-signal-500/40"
                 >
                   <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
-                    <span className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 eyebrow text-brand-700">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-signal-500/30 bg-signal-500/10 px-3 py-1 eyebrow text-signal-400">
                       <Users className="h-3.5 w-3.5" />
                       {guide.audience}
                     </span>
-                    <span className="inline-flex items-center gap-1 text-stone-500">
+                    <span className="inline-flex items-center gap-1 font-mono text-ink-500">
                       <Layers className="h-3.5 w-3.5" />
                       {guide.level}
                     </span>
-                    <span className="inline-flex items-center gap-1 text-stone-500">
+                    <span className="inline-flex items-center gap-1 font-mono text-ink-500">
                       <Clock3 className="h-3.5 w-3.5" />
                       {guide.readingTime}
                     </span>
                   </div>
-                  <h3 className="mt-5 text-2xl font-semibold leading-snug text-stone-900">{guide.title}</h3>
-                  <p className="mt-3 flex-1 text-sm leading-7 text-stone-600">{guide.excerpt}</p>
-                  <div className="mt-6 flex items-center gap-2 border-t border-stone-200 pt-5 text-sm font-semibold text-stone-900">
+                  <h3 className="mt-5 font-display text-2xl font-medium leading-snug text-ink-50">{guide.title}</h3>
+                  <p className="mt-3 flex-1 text-sm leading-7 text-ink-400">{guide.excerpt}</p>
+                  <div className="mt-6 flex items-center gap-2 border-t border-ink-700 pt-5 text-sm font-semibold text-ink-100">
                     {c.steps(guide.steps.length)}
-                    <ArrowRight className="h-4 w-4 text-brand-700 transition-transform group-hover:translate-x-1" />
+                    <ArrowRight className="h-4 w-4 text-signal-400 transition-transform group-hover:translate-x-1" />
                   </div>
                 </Link>
               </Reveal>

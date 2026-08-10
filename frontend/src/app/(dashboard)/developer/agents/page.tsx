@@ -73,7 +73,7 @@ export default function MyAgentsPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">My Agents</h1>
+          <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">My Agents</h1>
           <p className="text-muted-foreground mt-1">
             Manage and monitor your registered AI agents.
           </p>
@@ -118,15 +118,15 @@ export default function MyAgentsPage() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {agents.map((agent) => (
             <Link key={agent.id} href={`/developer/agents/${agent.id}`}>
-              <Card className="h-full cursor-pointer transition-all hover:shadow-md hover:border-primary/30">
+              <Card className="hover-lift h-full cursor-pointer hover:border-signal-500/40">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10">
                         {agent.kind === "human" ? (
-                          <UserRound className="h-5 w-5 text-primary" />
+                          <UserRound className="h-5 w-5 text-signal-400" />
                         ) : (
-                          <Bot className="h-5 w-5 text-primary" />
+                          <Bot className="h-5 w-5 text-signal-400" />
                         )}
                       </div>
                       <div>
@@ -153,23 +153,23 @@ export default function MyAgentsPage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Success Rate</span>
-                      <span className="font-medium">{Math.round(agent.success_rate)}%</span>
+                      <span className="font-mono font-medium">{Math.round(agent.success_rate)}%</span>
                     </div>
                     <Progress
                       value={agent.success_rate}
                       className="h-2"
                       indicatorClassName={
                         agent.success_rate >= 80
-                          ? "bg-emerald-500"
+                          ? "bg-success"
                           : agent.success_rate >= 50
-                            ? "bg-amber-500"
-                            : "bg-red-500"
+                            ? "bg-warning"
+                            : "bg-danger"
                       }
                     />
                   </div>
 
                   <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                     <span className="text-muted-foreground">
                       {agent.completed_tasks} completed task{agent.completed_tasks !== 1 ? "s" : ""}
                     </span>

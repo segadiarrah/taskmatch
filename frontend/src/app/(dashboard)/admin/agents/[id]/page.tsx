@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { apiGet, apiPost } from "@/lib/api";
 import { cn, formatCurrency, formatDate, formatStatus, formatDateTime } from "@/lib/utils";
@@ -72,10 +72,10 @@ interface FeedbackNote {
   created_at: string;
 }
 
-const statusConfig: Record<string, { color: string; dot: string; label: string }> = {
-  active: { color: "text-emerald-700 bg-emerald-100", dot: "bg-emerald-500", label: "Active" },
-  paused: { color: "text-amber-700 bg-amber-100", dot: "bg-amber-500", label: "Paused" },
-  disabled: { color: "text-red-700 bg-red-100", dot: "bg-red-500", label: "Disabled" },
+const statusConfig: Record<string, { variant: "success" | "warning" | "destructive"; dot: string; label: string }> = {
+  active: { variant: "success", dot: "bg-success", label: "Active" },
+  paused: { variant: "warning", dot: "bg-warning", label: "Paused" },
+  disabled: { variant: "destructive", dot: "bg-danger", label: "Disabled" },
 };
 
 export default function AgentDetailPage() {
@@ -88,11 +88,7 @@ export default function AgentDetailPage() {
   const [newNote, setNewNote] = useState("");
   const [noteCategory, setNoteCategory] = useState("general");
 
-  useEffect(() => {
-    fetchAgent();
-  }, [agentId]);
-
-  async function fetchAgent() {
+  const fetchAgent = useCallback(async () => {
     setLoading(true);
     try {
       const data = await apiGet<AgentDetail>(`/v1/agents/${agentId}`);
@@ -129,7 +125,11 @@ export default function AgentDetailPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [agentId]);
+
+  useEffect(() => {
+    fetchAgent();
+  }, [fetchAgent]);
 
   async function handleStatusAction(action: string) {
     if (!agent) return;
@@ -178,7 +178,7 @@ export default function AgentDetailPage() {
   if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
       </div>
     );
   }
@@ -186,7 +186,7 @@ export default function AgentDetailPage() {
   if (!agent) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <p className="text-zinc-500">Agent not found.</p>
+        <p className="text-muted-foreground">Agent not found.</p>
       </div>
     );
   }
@@ -201,25 +201,25 @@ export default function AgentDetailPage() {
           variant="ghost"
           size="sm"
           onClick={() => router.push("/admin/agents")}
-          className="mb-4 text-zinc-500"
+          className="mb-4 text-muted-foreground"
         >
           <ArrowLeft className="mr-1 h-4 w-4" />
           Back to Agents
         </Button>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-start gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-zinc-100 text-2xl font-bold text-zinc-700">
+            <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-ink-700 bg-ink-800 font-display text-2xl font-medium text-ink-100">
               {agent.name.charAt(0)}
             </div>
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold tracking-tight text-zinc-900">{agent.name}</h1>
-                <Badge className={cfg.color}>
+                <h1 className="font-display text-2xl font-medium tracking-tight text-ink-50">{agent.name}</h1>
+                <Badge variant={cfg.variant}>
                   <span className={cn("mr-1.5 h-1.5 w-1.5 rounded-full inline-block", cfg.dot)} />
                   {cfg.label}
                 </Badge>
               </div>
-              <p className="mt-1 text-sm text-zinc-500">
+              <p className="mt-1 text-sm text-muted-foreground">
                 by {agent.developer_name} ({agent.developer_email})
               </p>
             </div>
@@ -266,19 +266,19 @@ export default function AgentDetailPage() {
         {/* Profile */}
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle className="text-base">Profile</CardTitle>
+            <CardTitle className="font-display text-base">Profile</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm leading-relaxed text-zinc-600">{agent.description}</p>
+            <p className="text-sm leading-relaxed text-ink-300">{agent.description}</p>
             <div>
-              <p className="mb-2 text-xs font-medium uppercase tracking-wider text-zinc-400">Capabilities</p>
+              <p className="eyebrow mb-2 text-ink-500">Capabilities</p>
               <div className="flex flex-wrap gap-1.5">
                 {agent.capabilities.map((cap) => (
                   <Badge key={cap} variant="outline">{cap}</Badge>
                 ))}
               </div>
             </div>
-            <div className="text-xs text-zinc-400">
+            <div className="font-mono text-xs text-ink-500">
               Registered {formatDate(agent.created_at)}
             </div>
           </CardContent>
@@ -287,43 +287,43 @@ export default function AgentDetailPage() {
         {/* Performance Metrics */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <BarChart3 className="h-4 w-4 text-blue-500" />
+            <CardTitle className="flex items-center gap-2 font-display text-base">
+              <BarChart3 className="h-4 w-4 text-info" />
               Performance Metrics
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-lg bg-zinc-50 p-4 text-center">
-                <TrendingUp className="mx-auto h-5 w-5 text-emerald-500" />
-                <p className="mt-2 text-2xl font-bold text-zinc-900">
+              <div className="rounded-md border border-ink-800 bg-ink-900/60 p-4 text-center">
+                <TrendingUp className="mx-auto h-5 w-5 text-success" />
+                <p className="mt-2 font-display text-2xl font-medium text-ink-50">
                   {(agent.success_rate * 100).toFixed(0)}%
                 </p>
-                <p className="text-xs text-zinc-500">Success Rate</p>
+                <p className="text-xs text-muted-foreground">Success Rate</p>
                 <Progress value={agent.success_rate * 100} className="mt-2" />
               </div>
-              <div className="rounded-lg bg-zinc-50 p-4 text-center">
-                <Star className="mx-auto h-5 w-5 text-amber-500" />
-                <p className="mt-2 text-2xl font-bold text-zinc-900">
+              <div className="rounded-md border border-ink-800 bg-ink-900/60 p-4 text-center">
+                <Star className="mx-auto h-5 w-5 text-warning" />
+                <p className="mt-2 font-display text-2xl font-medium text-ink-50">
                   {agent.avg_score.toFixed(1)}
                 </p>
-                <p className="text-xs text-zinc-500">Avg. Score</p>
+                <p className="text-xs text-muted-foreground">Avg. Score</p>
                 <Progress value={(agent.avg_score / 5) * 100} className="mt-2" />
               </div>
-              <div className="rounded-lg bg-zinc-50 p-4 text-center">
-                <CheckCircle2 className="mx-auto h-5 w-5 text-blue-500" />
-                <p className="mt-2 text-2xl font-bold text-zinc-900">
+              <div className="rounded-md border border-ink-800 bg-ink-900/60 p-4 text-center">
+                <CheckCircle2 className="mx-auto h-5 w-5 text-info" />
+                <p className="mt-2 font-display text-2xl font-medium text-ink-50">
                   {agent.completed_tasks}
                 </p>
-                <p className="text-xs text-zinc-500">Completed Tasks</p>
-                <p className="mt-2 text-xs text-zinc-400">{agent.active_tasks} currently active</p>
+                <p className="text-xs text-muted-foreground">Completed Tasks</p>
+                <p className="mt-2 font-mono text-xs text-ink-500">{agent.active_tasks} currently active</p>
               </div>
-              <div className="rounded-lg bg-zinc-50 p-4 text-center">
-                <Shield className="mx-auto h-5 w-5 text-purple-500" />
-                <p className="mt-2 text-2xl font-bold text-zinc-900">
+              <div className="rounded-md border border-ink-800 bg-ink-900/60 p-4 text-center">
+                <Shield className="mx-auto h-5 w-5 text-[#b49aff]" />
+                <p className="mt-2 font-display text-2xl font-medium text-ink-50">
                   {formatCurrency(agent.total_earnings)}
                 </p>
-                <p className="text-xs text-zinc-500">Total Earnings</p>
+                <p className="text-xs text-muted-foreground">Total Earnings</p>
               </div>
             </div>
           </CardContent>
@@ -333,15 +333,15 @@ export default function AgentDetailPage() {
       {/* Assignment History */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <History className="h-4 w-4 text-zinc-400" />
+          <CardTitle className="flex items-center gap-2 font-display text-base">
+            <History className="h-4 w-4 text-ink-500" />
             Assignment History
           </CardTitle>
           <CardDescription>Past and current task assignments</CardDescription>
         </CardHeader>
         <CardContent>
           {agent.assignment_history.length === 0 ? (
-            <div className="flex h-24 items-center justify-center text-sm text-zinc-400">
+            <div className="flex h-24 items-center justify-center text-sm text-ink-500">
               No assignment history.
             </div>
           ) : (
@@ -364,8 +364,8 @@ export default function AgentDetailPage() {
                     className="cursor-pointer"
                     onClick={() => router.push(`/admin/tasks/${a.task_id}`)}
                   >
-                    <TableCell className="font-medium">{a.task_title}</TableCell>
-                    <TableCell className="text-zinc-500">{a.job_title}</TableCell>
+                    <TableCell className="font-medium text-foreground">{a.task_title}</TableCell>
+                    <TableCell className="text-ink-400">{a.job_title}</TableCell>
                     <TableCell>
                       <Badge
                         variant={
@@ -377,21 +377,21 @@ export default function AgentDetailPage() {
                         {formatStatus(a.status)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right font-medium">
+                    <TableCell className="text-right font-mono font-medium text-foreground">
                       {formatCurrency(a.amount)}
                     </TableCell>
                     <TableCell className="text-right">
                       {a.score !== null ? (
-                        <span className="flex items-center justify-end gap-1">
-                          <Star className="h-3 w-3 text-amber-500" />
+                        <span className="flex items-center justify-end gap-1 font-mono text-ink-200">
+                          <Star className="h-3 w-3 text-warning" />
                           {a.score.toFixed(1)}
                         </span>
                       ) : (
-                        <span className="text-zinc-400">--</span>
+                        <span className="text-ink-600">--</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-zinc-500">{formatDate(a.assigned_at)}</TableCell>
-                    <TableCell className="text-zinc-500">
+                    <TableCell className="font-mono text-ink-400">{formatDate(a.assigned_at)}</TableCell>
+                    <TableCell className="font-mono text-ink-400">
                       {a.completed_at ? formatDate(a.completed_at) : "--"}
                     </TableCell>
                   </TableRow>
@@ -405,17 +405,17 @@ export default function AgentDetailPage() {
       {/* Feedback Notes */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <MessageSquare className="h-4 w-4 text-zinc-400" />
+          <CardTitle className="flex items-center gap-2 font-display text-base">
+            <MessageSquare className="h-4 w-4 text-ink-500" />
             Feedback Notes
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Add new note */}
-          <div className="rounded-lg border border-zinc-200 p-4">
+          <div className="rounded-md border border-ink-800 bg-ink-900/40 p-4">
             <div className="flex items-center gap-2 mb-3">
               <select
-                className="rounded-md border border-zinc-200 px-2 py-1 text-sm"
+                className="rounded-md border border-ink-600 bg-ink-900 px-2 py-1 text-sm text-ink-200"
                 value={noteCategory}
                 onChange={(e) => setNoteCategory(e.target.value)}
               >
@@ -440,19 +440,19 @@ export default function AgentDetailPage() {
 
           {/* Notes list */}
           {agent.feedback_notes.length === 0 ? (
-            <div className="flex h-16 items-center justify-center text-sm text-zinc-400">
+            <div className="flex h-16 items-center justify-center text-sm text-ink-500">
               No feedback notes yet.
             </div>
           ) : (
             <div className="space-y-3">
               {agent.feedback_notes.map((note) => (
-                <div key={note.id} className="rounded-lg bg-zinc-50 p-4">
+                <div key={note.id} className="rounded-md border border-ink-800 bg-ink-900/60 p-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-zinc-900">{note.author}</span>
+                    <span className="text-sm font-medium text-foreground">{note.author}</span>
                     <Badge variant="outline" className="text-[10px]">{note.category}</Badge>
-                    <span className="text-xs text-zinc-400">{formatDateTime(note.created_at)}</span>
+                    <span className="font-mono text-xs text-ink-500">{formatDateTime(note.created_at)}</span>
                   </div>
-                  <p className="text-sm text-zinc-600">{note.content}</p>
+                  <p className="text-sm text-ink-300">{note.content}</p>
                 </div>
               ))}
             </div>

@@ -121,8 +121,8 @@ export default function TasksPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Task Management</h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Task Management</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Track and manage all decomposed tasks across jobs.
         </p>
       </div>
@@ -132,7 +132,7 @@ export default function TasksPage() {
         <CardContent className="pt-6">
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-500" />
               <Input
                 placeholder="Search by task or job title..."
                 className="pl-10"
@@ -141,7 +141,7 @@ export default function TasksPage() {
               />
             </div>
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-zinc-400" />
+              <Filter className="h-4 w-4 text-ink-500" />
               <Select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -169,9 +169,9 @@ export default function TasksPage() {
 
       {/* Bulk actions */}
       {selectedTasks.size > 0 && (
-        <Card className="border-zinc-300 bg-zinc-50">
+        <Card className="border-signal-500/30 bg-signal-500/5">
           <CardContent className="flex items-center gap-3 py-3 pt-3">
-            <span className="text-sm font-medium text-zinc-700">
+            <span className="text-sm font-medium text-ink-200">
               {selectedTasks.size} task{selectedTasks.size > 1 ? "s" : ""} selected
             </span>
             <div className="flex gap-2">
@@ -190,13 +190,13 @@ export default function TasksPage() {
         <CardContent className="pt-6">
           {loading ? (
             <div className="flex h-48 items-center justify-center">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
             </div>
           ) : filteredTasks.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
-              <ListChecks className="h-10 w-10 text-zinc-300" />
-              <p className="mt-3 text-sm font-medium text-zinc-500">No tasks found</p>
-              <p className="text-xs text-zinc-400">Try adjusting your filters</p>
+              <ListChecks className="h-10 w-10 text-ink-600" />
+              <p className="mt-3 text-sm font-medium text-muted-foreground">No tasks found</p>
+              <p className="text-xs text-ink-500">Try adjusting your filters</p>
             </div>
           ) : (
             <Table>
@@ -205,7 +205,7 @@ export default function TasksPage() {
                   <TableHead className="w-10">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 rounded border-zinc-300"
+                      className="h-4 w-4 rounded border-ink-600 bg-ink-800 accent-signal-500"
                       checked={selectedTasks.size === filteredTasks.length && filteredTasks.length > 0}
                       onChange={toggleAll}
                     />
@@ -231,13 +231,13 @@ export default function TasksPage() {
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
-                        className="h-4 w-4 rounded border-zinc-300"
+                        className="h-4 w-4 rounded border-ink-600 bg-ink-800 accent-signal-500"
                         checked={selectedTasks.has(task.id)}
                         onChange={() => toggleTask(task.id)}
                       />
                     </TableCell>
-                    <TableCell className="font-medium text-zinc-900">{task.title}</TableCell>
-                    <TableCell className="text-zinc-500 max-w-[160px] truncate">{task.job_title}</TableCell>
+                    <TableCell className="font-medium text-foreground">{task.title}</TableCell>
+                    <TableCell className="max-w-[160px] truncate text-ink-400">{task.job_title}</TableCell>
                     <TableCell>
                       <Badge variant="outline">{formatStatus(task.task_type)}</Badge>
                     </TableCell>
@@ -246,28 +246,28 @@ export default function TasksPage() {
                         {formatStatus(task.status)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right font-medium">{formatCurrency(task.budget)}</TableCell>
+                    <TableCell className="text-right font-mono font-medium text-foreground">{formatCurrency(task.budget)}</TableCell>
                     <TableCell>
                       <span className={cn(
-                        "text-sm font-semibold",
-                        task.priority === 1 ? "text-red-600" :
-                        task.priority === 2 ? "text-amber-600" : "text-zinc-400"
+                        "font-mono text-sm font-semibold",
+                        task.priority === 1 ? "text-danger" :
+                        task.priority === 2 ? "text-warning" : "text-ink-500"
                       )}>
                         P{task.priority}
                       </span>
                     </TableCell>
-                    <TableCell className="text-zinc-600">
+                    <TableCell className="text-ink-300">
                       {task.assigned_agent_name || (
-                        <span className="text-zinc-400">--</span>
+                        <span className="text-ink-600">--</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
                       {task.bids_count > 0 ? (
-                        <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+                        <span className="rounded-sm border border-info/40 bg-info/10 px-1.5 py-0.5 font-mono text-[11px] font-medium text-info">
                           {task.bids_count}
                         </span>
                       ) : (
-                        <span className="text-zinc-400">0</span>
+                        <span className="text-ink-600">0</span>
                       )}
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>

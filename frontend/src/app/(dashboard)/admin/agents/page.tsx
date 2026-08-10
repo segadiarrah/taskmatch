@@ -35,9 +35,9 @@ interface Agent {
 }
 
 const statusConfig: Record<string, { color: string; label: string; dot: string }> = {
-  active: { color: "bg-emerald-50 border-emerald-200", label: "Active", dot: "bg-emerald-500" },
-  paused: { color: "bg-amber-50 border-amber-200", label: "Paused", dot: "bg-amber-500" },
-  disabled: { color: "bg-red-50 border-red-200", label: "Disabled", dot: "bg-red-500" },
+  active: { color: "border-success/40 bg-success/5", label: "Active", dot: "bg-success" },
+  paused: { color: "border-warning/40 bg-warning/5", label: "Paused", dot: "bg-warning" },
+  disabled: { color: "border-danger/40 bg-danger/5", label: "Disabled", dot: "bg-danger" },
 };
 
 const allCapabilities = [
@@ -93,7 +93,7 @@ export default function AgentsPage() {
   if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
       </div>
     );
   }
@@ -102,8 +102,8 @@ export default function AgentsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Agent Directory</h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Agent Directory</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Browse and manage registered AI agents on the platform.
         </p>
       </div>
@@ -113,7 +113,7 @@ export default function AgentsPage() {
         <CardContent className="pt-6">
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-500" />
               <Input
                 placeholder="Search by name or developer..."
                 className="pl-10"
@@ -122,7 +122,7 @@ export default function AgentsPage() {
               />
             </div>
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-zinc-400" />
+              <Filter className="h-4 w-4 text-ink-500" />
               <Select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -152,57 +152,57 @@ export default function AgentsPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <div className="rounded-lg bg-emerald-100 p-2">
-              <Bot className="h-4 w-4 text-emerald-700" />
+            <div className="rounded-md border border-success/30 bg-success/10 p-2">
+              <Bot className="h-4 w-4 text-success" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-zinc-900">
+              <p className="font-display text-2xl font-medium text-ink-50">
                 {agents.filter((a) => a.status === "active").length}
               </p>
-              <p className="text-xs text-zinc-500">Active Agents</p>
+              <p className="text-xs text-muted-foreground">Active Agents</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <div className="rounded-lg bg-blue-100 p-2">
-              <CheckCircle2 className="h-4 w-4 text-blue-700" />
+            <div className="rounded-md border border-info/30 bg-info/10 p-2">
+              <CheckCircle2 className="h-4 w-4 text-info" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-zinc-900">
+              <p className="font-display text-2xl font-medium text-ink-50">
                 {agents.reduce((sum, a) => sum + a.completed_tasks, 0)}
               </p>
-              <p className="text-xs text-zinc-500">Total Completed</p>
+              <p className="text-xs text-muted-foreground">Total Completed</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <div className="rounded-lg bg-amber-100 p-2">
-              <Star className="h-4 w-4 text-amber-700" />
+            <div className="rounded-md border border-warning/30 bg-warning/10 p-2">
+              <Star className="h-4 w-4 text-warning" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-zinc-900">
+              <p className="font-display text-2xl font-medium text-ink-50">
                 {agents.length > 0
                   ? (agents.reduce((sum, a) => sum + a.avg_score, 0) / agents.length).toFixed(1)
                   : "0"}
               </p>
-              <p className="text-xs text-zinc-500">Avg. Score</p>
+              <p className="text-xs text-muted-foreground">Avg. Score</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <div className="rounded-lg bg-violet-100 p-2">
-              <UserRound className="h-4 w-4 text-violet-700" />
+            <div className="rounded-md border border-[#b49aff]/30 bg-[#b49aff]/10 p-2">
+              <UserRound className="h-4 w-4 text-[#b49aff]" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-zinc-900">
+              <p className="font-display text-2xl font-medium text-ink-50">
                 {agents.filter((a) => a.kind !== "human").length}
-                <span className="text-zinc-300"> / </span>
+                <span className="text-ink-600"> / </span>
                 {agents.filter((a) => a.kind === "human").length}
               </p>
-              <p className="text-xs text-zinc-500">AI agents / Human experts</p>
+              <p className="text-xs text-muted-foreground">AI agents / Human experts</p>
             </div>
           </CardContent>
         </Card>
@@ -212,9 +212,9 @@ export default function AgentsPage() {
       {filteredAgents.length === 0 ? (
         <Card>
           <CardContent className="flex h-48 flex-col items-center justify-center text-center pt-6">
-            <Bot className="h-10 w-10 text-zinc-300" />
-            <p className="mt-3 text-sm font-medium text-zinc-500">No agents found</p>
-            <p className="text-xs text-zinc-400">Try adjusting your search or filters</p>
+            <Bot className="h-10 w-10 text-ink-600" />
+            <p className="mt-3 text-sm font-medium text-muted-foreground">No agents found</p>
+            <p className="text-xs text-ink-500">Try adjusting your search or filters</p>
           </CardContent>
         </Card>
       ) : (
@@ -224,18 +224,18 @@ export default function AgentsPage() {
             return (
               <Card
                 key={agent.id}
-                className={cn("cursor-pointer transition-shadow hover:shadow-md border", cfg.color)}
+                className={cn("cursor-pointer border hover-lift", cfg.color)}
                 onClick={() => router.push(`/admin/agents/${agent.id}`)}
               >
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg font-bold text-zinc-700 shadow-sm">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full border border-ink-700 bg-ink-800 font-display text-lg font-medium text-ink-100">
                         {agent.name.charAt(0)}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-zinc-900">{agent.name}</h3>
+                          <h3 className="font-semibold text-foreground">{agent.name}</h3>
                           <div className={cn("h-2 w-2 rounded-full", cfg.dot)} />
                           <Badge
                             variant={agent.kind === "human" ? "outline" : "secondary"}
@@ -244,10 +244,10 @@ export default function AgentsPage() {
                             {agent.kind === "human" ? "Human" : "AI"}
                           </Badge>
                         </div>
-                        <p className="text-sm text-zinc-500">{agent.developer_name}</p>
+                        <p className="text-sm text-muted-foreground">{agent.developer_name}</p>
                       </div>
                     </div>
-                    <ExternalLink className="h-4 w-4 text-zinc-300" />
+                    <ExternalLink className="h-4 w-4 text-ink-600" />
                   </div>
 
                   {/* Capabilities */}
@@ -265,33 +265,33 @@ export default function AgentsPage() {
                   </div>
 
                   {/* Stats */}
-                  <div className="mt-4 grid grid-cols-3 divide-x divide-zinc-200">
+                  <div className="mt-4 grid grid-cols-3 divide-x divide-ink-800">
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-1">
-                        <TrendingUp className="h-3 w-3 text-emerald-500" />
-                        <span className="text-sm font-bold text-zinc-900">
+                        <TrendingUp className="h-3 w-3 text-success" />
+                        <span className="font-mono text-sm font-semibold text-foreground">
                           {(agent.success_rate * 100).toFixed(0)}%
                         </span>
                       </div>
-                      <p className="text-[10px] text-zinc-400">Success</p>
+                      <p className="text-[10px] text-ink-500">Success</p>
                     </div>
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-1">
-                        <Star className="h-3 w-3 text-amber-500" />
-                        <span className="text-sm font-bold text-zinc-900">
+                        <Star className="h-3 w-3 text-warning" />
+                        <span className="font-mono text-sm font-semibold text-foreground">
                           {agent.avg_score.toFixed(1)}
                         </span>
                       </div>
-                      <p className="text-[10px] text-zinc-400">Avg Score</p>
+                      <p className="text-[10px] text-ink-500">Avg Score</p>
                     </div>
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-1">
-                        <CheckCircle2 className="h-3 w-3 text-blue-500" />
-                        <span className="text-sm font-bold text-zinc-900">
+                        <CheckCircle2 className="h-3 w-3 text-info" />
+                        <span className="font-mono text-sm font-semibold text-foreground">
                           {agent.completed_tasks}
                         </span>
                       </div>
-                      <p className="text-[10px] text-zinc-400">Done</p>
+                      <p className="text-[10px] text-ink-500">Done</p>
                     </div>
                   </div>
                 </CardContent>

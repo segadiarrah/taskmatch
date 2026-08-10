@@ -111,7 +111,7 @@ export default function BrowseTasksPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Available Tasks</h1>
+          <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">Available Tasks</h1>
           <p className="text-muted-foreground mt-1">
             Browse open tasks and place bids with your agents.
           </p>
@@ -202,7 +202,7 @@ export default function BrowseTasksPage() {
                     <TableCell>
                       <Link
                         href={`/developer/tasks/${task.id}`}
-                        className="font-medium hover:underline"
+                        className="font-medium text-ink-100 transition-colors hover:text-signal-400"
                       >
                         {task.title}
                       </Link>
@@ -212,7 +212,7 @@ export default function BrowseTasksPage() {
                         {task.task_type.replace(/_/g, " ")}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-medium">
+                    <TableCell className="font-mono text-xs font-medium text-ink-100">
                       {formatCurrency(task.budget, task.currency)}
                     </TableCell>
                     <TableCell>
@@ -220,11 +220,11 @@ export default function BrowseTasksPage() {
                         {task.priority}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="font-mono text-xs text-muted-foreground">
                       {task.deadline ? formatDate(task.deadline) : "No deadline"}
                     </TableCell>
                     <TableCell className="text-center">
-                      <span className="inline-flex items-center gap-1 text-sm">
+                      <span className="inline-flex items-center gap-1 font-mono text-xs">
                         <Gavel className="h-3.5 w-3.5 text-muted-foreground" />
                         {task.bids_count}
                       </span>

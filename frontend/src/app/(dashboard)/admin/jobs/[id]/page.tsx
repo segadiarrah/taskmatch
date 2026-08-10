@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { apiGet, apiPost, apiPut } from "@/lib/api";
 import { cn, formatCurrency, formatDate, formatStatus, formatDateTime } from "@/lib/utils";
@@ -111,10 +111,10 @@ function StatusTimeline({ currentStatus }: { currentStatus: string }) {
                 className={cn(
                   "flex h-7 w-7 items-center justify-center rounded-full border-2 transition-colors",
                   isCompleted
-                    ? "border-emerald-500 bg-emerald-500 text-white"
+                    ? "border-success bg-success text-ink-950"
                     : isCancelled
-                    ? "border-red-300 bg-red-50 text-red-400"
-                    : "border-zinc-200 bg-white text-zinc-400"
+                    ? "border-danger/40 bg-danger/10 text-danger"
+                    : "border-ink-700 bg-ink-900 text-ink-500"
                 )}
               >
                 {isCompleted ? (
@@ -128,7 +128,7 @@ function StatusTimeline({ currentStatus }: { currentStatus: string }) {
               <span
                 className={cn(
                   "mt-1 text-[10px] font-medium capitalize",
-                  isCurrent ? "text-zinc-900" : "text-zinc-400"
+                  isCurrent ? "text-ink-50" : "text-ink-500"
                 )}
               >
                 {status.replace(/_/g, " ")}
@@ -139,8 +139,8 @@ function StatusTimeline({ currentStatus }: { currentStatus: string }) {
                 className={cn(
                   "mb-4 h-0.5 w-6 flex-shrink-0",
                   !isCancelled && index < currentIndex
-                    ? "bg-emerald-500"
-                    : "bg-zinc-200"
+                    ? "bg-success"
+                    : "bg-ink-700"
                 )}
               />
             )}
@@ -162,11 +162,7 @@ export default function JobDetailPage() {
   const [newStatus, setNewStatus] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
-  useEffect(() => {
-    fetchJob();
-  }, [jobId]);
-
-  async function fetchJob() {
+  const fetchJob = useCallback(async () => {
     setLoading(true);
     try {
       const data = await apiGet<JobDetail>(`/v1/jobs/${jobId}`);
@@ -204,7 +200,11 @@ export default function JobDetailPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [jobId]);
+
+  useEffect(() => {
+    fetchJob();
+  }, [fetchJob]);
 
   async function handleFormat() {
     if (!job) return;
@@ -249,7 +249,7 @@ export default function JobDetailPage() {
   if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
       </div>
     );
   }
@@ -257,7 +257,7 @@ export default function JobDetailPage() {
   if (!job) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <p className="text-zinc-500">Job not found.</p>
+        <p className="text-muted-foreground">Job not found.</p>
       </div>
     );
   }
@@ -270,7 +270,7 @@ export default function JobDetailPage() {
           variant="ghost"
           size="sm"
           onClick={() => router.push("/admin/jobs")}
-          className="mb-4 text-zinc-500"
+          className="mb-4 text-muted-foreground"
         >
           <ArrowLeft className="mr-1 h-4 w-4" />
           Back to Jobs
@@ -278,12 +278,12 @@ export default function JobDetailPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">{job.title}</h1>
+              <h1 className="font-display text-2xl font-medium tracking-tight text-ink-50">{job.title}</h1>
               <Badge variant={statusBadgeVariant[job.status] || "secondary"}>
                 {formatStatus(job.status)}
               </Badge>
             </div>
-            <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-zinc-500">
+            <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <User className="h-3.5 w-3.5" />
                 {job.client_name}
@@ -333,7 +333,7 @@ export default function JobDetailPage() {
       {editingStatus && (
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <span className="text-sm font-medium text-zinc-700">Change status to:</span>
+            <span className="text-sm font-medium text-ink-200">Change status to:</span>
             <Select
               value={newStatus}
               onChange={(e) => setNewStatus(e.target.value)}
@@ -362,7 +362,7 @@ export default function JobDetailPage() {
       {/* Status Timeline */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Status Timeline</CardTitle>
+          <CardTitle className="font-display text-base">Status Timeline</CardTitle>
         </CardHeader>
         <CardContent>
           <StatusTimeline currentStatus={job.status} />
@@ -373,28 +373,28 @@ export default function JobDetailPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <FileText className="h-4 w-4 text-zinc-400" />
+            <CardTitle className="flex items-center gap-2 font-display text-base">
+              <FileText className="h-4 w-4 text-ink-500" />
               Raw Description
             </CardTitle>
             <CardDescription>Original client submission</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="rounded-lg bg-zinc-50 p-4 text-sm leading-relaxed text-zinc-700 whitespace-pre-wrap">
+            <div className="rounded-md border border-ink-800 bg-ink-900 p-4 text-sm leading-relaxed text-ink-200 whitespace-pre-wrap">
               {job.description_raw || "No raw description available."}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Sparkles className="h-4 w-4 text-indigo-500" />
+            <CardTitle className="flex items-center gap-2 font-display text-base">
+              <Sparkles className="h-4 w-4 text-signal-400" />
               Formatted Summary
             </CardTitle>
             <CardDescription>AI-structured version</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="rounded-lg bg-indigo-50/50 p-4 text-sm leading-relaxed text-zinc-700 whitespace-pre-wrap">
+            <div className="rounded-md border border-signal-500/20 bg-signal-500/5 p-4 text-sm leading-relaxed text-ink-200 whitespace-pre-wrap">
               {job.description_formatted || "Not yet formatted. Click 'Format Job' to process."}
             </div>
           </CardContent>
@@ -406,8 +406,8 @@ export default function JobDetailPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <ListChecks className="h-4 w-4 text-zinc-400" />
+              <CardTitle className="flex items-center gap-2 font-display text-base">
+                <ListChecks className="h-4 w-4 text-ink-500" />
                 Tasks ({job.tasks.length})
               </CardTitle>
               <CardDescription>Decomposed work items for this job</CardDescription>
@@ -417,8 +417,8 @@ export default function JobDetailPage() {
         <CardContent>
           {job.tasks.length === 0 ? (
             <div className="flex h-32 flex-col items-center justify-center text-center">
-              <ListChecks className="h-8 w-8 text-zinc-300" />
-              <p className="mt-2 text-sm text-zinc-400">
+              <ListChecks className="h-8 w-8 text-ink-600" />
+              <p className="mt-2 text-sm text-ink-500">
                 No tasks yet. Decompose this job to create tasks.
               </p>
             </div>
@@ -441,7 +441,7 @@ export default function JobDetailPage() {
                     className="cursor-pointer"
                     onClick={() => router.push(`/admin/tasks/${task.id}`)}
                   >
-                    <TableCell className="font-medium">{task.title}</TableCell>
+                    <TableCell className="font-medium text-foreground">{task.title}</TableCell>
                     <TableCell>
                       <Badge variant="outline">{formatStatus(task.task_type)}</Badge>
                     </TableCell>
@@ -450,19 +450,19 @@ export default function JobDetailPage() {
                         {formatStatus(task.status)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right font-medium">
+                    <TableCell className="text-right font-mono font-medium text-foreground">
                       {formatCurrency(task.budget)}
                     </TableCell>
                     <TableCell>
                       <span className={cn(
-                        "text-sm font-medium",
-                        task.priority === 1 ? "text-red-600" :
-                        task.priority === 2 ? "text-amber-600" : "text-zinc-500"
+                        "font-mono text-sm font-medium",
+                        task.priority === 1 ? "text-danger" :
+                        task.priority === 2 ? "text-warning" : "text-ink-500"
                       )}>
                         P{task.priority}
                       </span>
                     </TableCell>
-                    <TableCell className="text-zinc-500">
+                    <TableCell className="text-ink-400">
                       {task.assigned_agent || "Unassigned"}
                     </TableCell>
                   </TableRow>
@@ -476,15 +476,15 @@ export default function JobDetailPage() {
       {/* MCP Decisions */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Brain className="h-4 w-4 text-purple-500" />
+          <CardTitle className="flex items-center gap-2 font-display text-base">
+            <Brain className="h-4 w-4 text-[#b49aff]" />
             MCP Decisions
           </CardTitle>
           <CardDescription>AI reasoning and decisions for this job</CardDescription>
         </CardHeader>
         <CardContent>
           {job.mcp_decisions.length === 0 ? (
-            <div className="flex h-24 items-center justify-center text-sm text-zinc-400">
+            <div className="flex h-24 items-center justify-center text-sm text-ink-500">
               No MCP decisions recorded yet.
             </div>
           ) : (
@@ -492,20 +492,20 @@ export default function JobDetailPage() {
               {job.mcp_decisions.map((decision) => (
                 <div
                   key={decision.id}
-                  className="rounded-lg border border-zinc-100 bg-zinc-50/50 p-4"
+                  className="rounded-md border border-ink-800 bg-ink-900/60 p-4"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Badge variant="purple">{formatStatus(decision.decision_type)}</Badge>
-                      <span className="text-xs text-zinc-400">
+                      <span className="font-mono text-xs text-ink-500">
                         {formatDateTime(decision.created_at)}
                       </span>
                     </div>
-                    <span className="text-xs font-medium text-zinc-500">
+                    <span className="font-mono text-xs font-medium text-ink-400">
                       Confidence: {(decision.confidence * 100).toFixed(0)}%
                     </span>
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                  <p className="mt-2 text-sm leading-relaxed text-ink-300">
                     {decision.reasoning}
                   </p>
                 </div>
@@ -519,8 +519,8 @@ export default function JobDetailPage() {
       {job.status_history.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Clock className="h-4 w-4 text-zinc-400" />
+            <CardTitle className="flex items-center gap-2 font-display text-base">
+              <Clock className="h-4 w-4 text-ink-500" />
               Status History
             </CardTitle>
           </CardHeader>
@@ -528,19 +528,19 @@ export default function JobDetailPage() {
             <div className="space-y-3">
               {job.status_history.map((change, i) => (
                 <div key={i} className="flex items-center gap-3 text-sm">
-                  <span className="text-xs text-zinc-400 w-32 shrink-0">
+                  <span className="w-32 shrink-0 font-mono text-xs text-ink-500">
                     {formatDateTime(change.changed_at)}
                   </span>
                   <Badge variant="secondary" className="font-normal">
                     {formatStatus(change.from_status)}
                   </Badge>
-                  <span className="text-zinc-400">&rarr;</span>
+                  <span className="text-ink-600">&rarr;</span>
                   <Badge variant={statusBadgeVariant[change.to_status] || "secondary"}>
                     {formatStatus(change.to_status)}
                   </Badge>
-                  <span className="text-zinc-500">by {change.changed_by}</span>
+                  <span className="text-ink-400">by {change.changed_by}</span>
                   {change.reason && (
-                    <span className="text-zinc-400">({change.reason})</span>
+                    <span className="text-ink-500">({change.reason})</span>
                   )}
                 </div>
               ))}

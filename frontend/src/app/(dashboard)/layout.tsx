@@ -23,7 +23,7 @@ import {
   X,
   LogOut,
   ChevronLeft,
-  Zap,
+  Layers,
 } from "lucide-react";
 
 interface NavItem {
@@ -101,10 +101,10 @@ export default function DashboardLayout({
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-zinc-50">
+      <div className="flex h-screen items-center justify-center bg-ink-950">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
-          <p className="text-sm text-zinc-500">Loading TaskMatch...</p>
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
+          <p className="font-mono text-sm text-ink-500">Loading TaskMatch...</p>
         </div>
       </div>
     );
@@ -124,11 +124,11 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="flex h-screen bg-zinc-50">
+    <div className="flex h-screen bg-ink-950">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/70 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -136,41 +136,45 @@ export default function DashboardLayout({
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-zinc-200 bg-white transition-all duration-300 lg:relative lg:z-0",
+          "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-ink-800 bg-ink-900 transition-all duration-300 lg:relative lg:z-0",
           sidebarCollapsed ? "w-[68px]" : "w-64",
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
         {/* Logo */}
         <div className={cn(
-          "flex h-16 items-center border-b border-zinc-100 px-4",
+          "flex h-16 items-center border-b border-ink-800 px-4",
           sidebarCollapsed ? "justify-center" : "justify-between"
         )}>
           {!sidebarCollapsed && (
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900">
-                <Zap className="h-4 w-4 text-white" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-signal-500">
+                <Layers className="h-4 w-4 text-ink-950" />
               </div>
               <div>
-                <h1 className="text-sm font-bold tracking-tight text-zinc-900">TaskMatch</h1>
-                <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-400">Mission Control</p>
+                <h1 className="text-sm font-bold tracking-tight text-ink-50">TaskMatch</h1>
+                <p className="font-mono text-[10px] uppercase tracking-wider text-ink-500">Mission Control</p>
               </div>
             </div>
           )}
           {sidebarCollapsed && (
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900">
-              <Zap className="h-4 w-4 text-white" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-signal-500">
+              <Layers className="h-4 w-4 text-ink-950" />
             </div>
           )}
           <button
+            type="button"
+            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="hidden rounded-md p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 lg:block"
+            className="hidden rounded-md p-1 text-ink-500 hover:bg-ink-800 hover:text-ink-200 lg:block"
           >
             <ChevronLeft className={cn("h-4 w-4 transition-transform", sidebarCollapsed && "rotate-180")} />
           </button>
           <button
+            type="button"
+            aria-label="Close navigation"
             onClick={() => setSidebarOpen(false)}
-            className="rounded-md p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 lg:hidden"
+            className="rounded-md p-1 text-ink-500 hover:bg-ink-800 hover:text-ink-200 lg:hidden"
           >
             <X className="h-4 w-4" />
           </button>
@@ -189,15 +193,18 @@ export default function DashboardLayout({
                   setSidebarOpen(false);
                 }}
                 className={cn(
-                  "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  "relative flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   active
-                    ? "bg-zinc-900 text-white"
-                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
+                    ? "bg-ink-800 text-ink-50"
+                    : "text-ink-400 hover:bg-ink-850 hover:text-ink-100",
                   sidebarCollapsed && "justify-center px-2"
                 )}
                 title={sidebarCollapsed ? item.label : undefined}
               >
-                <Icon className="h-4 w-4 shrink-0" />
+                {active && (
+                  <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-signal-500" />
+                )}
+                <Icon className={cn("h-4 w-4 shrink-0", active && "text-signal-400")} />
                 {!sidebarCollapsed && <span>{item.label}</span>}
               </button>
             );
@@ -206,14 +213,14 @@ export default function DashboardLayout({
 
         {/* User section at bottom */}
         {!sidebarCollapsed && (
-          <div className="border-t border-zinc-100 p-4">
+          <div className="border-t border-ink-800 p-4">
             <div className="flex items-center gap-3">
               <Avatar size="sm">
                 <AvatarFallback>{getInitials(user.full_name)}</AvatarFallback>
               </Avatar>
               <div className="flex-1 truncate">
-                <p className="truncate text-sm font-medium text-zinc-900">{user.full_name}</p>
-                <p className="truncate text-xs text-zinc-500">{user.email}</p>
+                <p className="truncate text-sm font-medium text-ink-100">{user.full_name}</p>
+                <p className="truncate font-mono text-xs text-ink-500">{user.email}</p>
               </div>
             </div>
           </div>
@@ -223,16 +230,22 @@ export default function DashboardLayout({
       {/* Main content area */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-4 lg:px-6">
+        <header className="flex h-16 items-center justify-between border-b border-ink-800 bg-ink-900 px-4 lg:px-6">
           <div className="flex items-center gap-3">
             <button
+              type="button"
+              aria-label="Open navigation"
               onClick={() => setSidebarOpen(true)}
-              className="rounded-md p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 lg:hidden"
+              className="rounded-md p-2 text-ink-500 hover:bg-ink-800 hover:text-ink-200 lg:hidden"
             >
               <Menu className="h-5 w-5" />
             </button>
-            <div className="hidden items-center gap-2 text-sm text-zinc-500 lg:flex">
-              <span className="font-medium text-zinc-900">
+            <div className="hidden items-center gap-2 text-sm lg:flex">
+              <span className="font-mono text-[11px] uppercase tracking-wider text-ink-500">
+                {getRoleLabel(user.role)}
+              </span>
+              <span className="text-ink-700">/</span>
+              <span className="font-medium text-ink-50">
                 {filteredNavItems.find((item) => isActive(item.href))?.label || "Dashboard"}
               </span>
             </div>
@@ -246,9 +259,9 @@ export default function DashboardLayout({
               <Avatar size="sm">
                 <AvatarFallback>{getInitials(user.full_name)}</AvatarFallback>
               </Avatar>
-              <span className="text-sm font-medium text-zinc-700">{user.full_name}</span>
+              <span className="text-sm font-medium text-ink-200">{user.full_name}</span>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => { logout(); router.push("/login"); }} className="text-zinc-500">
+            <Button variant="ghost" size="sm" onClick={() => { logout(); router.push("/login"); }}>
               <LogOut className="mr-1 h-4 w-4" />
               <span className="hidden sm:inline">Logout</span>
             </Button>
@@ -256,7 +269,7 @@ export default function DashboardLayout({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <main className="flex-1 overflow-y-auto bg-ink-950 p-4 lg:p-6">
           {children}
         </main>
       </div>

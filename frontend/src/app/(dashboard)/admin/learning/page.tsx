@@ -56,14 +56,14 @@ interface MCPDecision {
 
 const feedbackCategories = ["quality", "speed", "reliability", "communication", "cost", "technical", "general"];
 
-const categoryColors: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
-  quality: { bg: "bg-purple-100", text: "text-purple-700", icon: Star },
-  speed: { bg: "bg-blue-100", text: "text-blue-700", icon: Zap },
-  reliability: { bg: "bg-emerald-100", text: "text-emerald-700", icon: ShieldCheck },
-  communication: { bg: "bg-amber-100", text: "text-amber-700", icon: MessageSquare },
-  cost: { bg: "bg-pink-100", text: "text-pink-700", icon: TrendingUp },
-  technical: { bg: "bg-indigo-100", text: "text-indigo-700", icon: Lightbulb },
-  general: { bg: "bg-zinc-100", text: "text-zinc-700", icon: Tag },
+const categoryColors: Record<string, { variant: "default" | "secondary" | "outline" | "success" | "warning" | "info" | "purple"; box: string; icon: React.ElementType }> = {
+  quality: { variant: "purple", box: "bg-[#b49aff]/10 text-[#b49aff]", icon: Star },
+  speed: { variant: "info", box: "bg-info/10 text-info", icon: Zap },
+  reliability: { variant: "success", box: "bg-success/10 text-success", icon: ShieldCheck },
+  communication: { variant: "warning", box: "bg-warning/10 text-warning", icon: MessageSquare },
+  cost: { variant: "default", box: "bg-signal-500/10 text-signal-400", icon: TrendingUp },
+  technical: { variant: "secondary", box: "bg-ink-800 text-ink-300", icon: Lightbulb },
+  general: { variant: "outline", box: "bg-ink-800 text-ink-400", icon: Tag },
 };
 
 const decisionTypes = ["format", "decompose", "match", "rank_bids", "validate", "assign", "flag"];
@@ -175,8 +175,8 @@ export default function LearningPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Learning & Feedback</h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Learning & Feedback</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Track operator feedback, MCP reasoning, and platform learning insights.
         </p>
       </div>
@@ -186,12 +186,12 @@ export default function LearningPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-purple-100 p-2">
-                <MessageSquare className="h-4 w-4 text-purple-600" />
+              <div className="rounded-md border border-[#b49aff]/30 bg-[#b49aff]/10 p-2">
+                <MessageSquare className="h-4 w-4 text-[#b49aff]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-zinc-900">{feedbackNotes.length}</p>
-                <p className="text-xs text-zinc-500">Feedback Notes</p>
+                <p className="font-display text-2xl font-medium text-ink-50">{feedbackNotes.length}</p>
+                <p className="text-xs text-muted-foreground">Feedback Notes</p>
               </div>
             </div>
           </CardContent>
@@ -199,12 +199,12 @@ export default function LearningPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-indigo-100 p-2">
-                <Brain className="h-4 w-4 text-indigo-600" />
+              <div className="rounded-md border border-signal-500/30 bg-signal-500/10 p-2">
+                <Brain className="h-4 w-4 text-signal-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-zinc-900">{mcpDecisions.length}</p>
-                <p className="text-xs text-zinc-500">MCP Decisions</p>
+                <p className="font-display text-2xl font-medium text-ink-50">{mcpDecisions.length}</p>
+                <p className="text-xs text-muted-foreground">MCP Decisions</p>
               </div>
             </div>
           </CardContent>
@@ -212,16 +212,16 @@ export default function LearningPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-emerald-100 p-2">
-                <TrendingUp className="h-4 w-4 text-emerald-600" />
+              <div className="rounded-md border border-success/30 bg-success/10 p-2">
+                <TrendingUp className="h-4 w-4 text-success" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-zinc-900">
+                <p className="font-display text-2xl font-medium text-ink-50">
                   {mcpDecisions.length > 0
                     ? (mcpDecisions.reduce((s, d) => s + d.confidence, 0) / mcpDecisions.length * 100).toFixed(0)
                     : 0}%
                 </p>
-                <p className="text-xs text-zinc-500">Avg Confidence</p>
+                <p className="text-xs text-muted-foreground">Avg Confidence</p>
               </div>
             </div>
           </CardContent>
@@ -229,14 +229,14 @@ export default function LearningPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-amber-100 p-2">
-                <BarChart3 className="h-4 w-4 text-amber-600" />
+              <div className="rounded-md border border-warning/30 bg-warning/10 p-2">
+                <BarChart3 className="h-4 w-4 text-warning" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-zinc-900">
+                <p className="font-display text-2xl font-medium text-ink-50">
                   {new Set(mcpDecisions.map((d) => d.decision_type)).size}
                 </p>
-                <p className="text-xs text-zinc-500">Decision Types</p>
+                <p className="text-xs text-muted-foreground">Decision Types</p>
               </div>
             </div>
           </CardContent>
@@ -260,8 +260,8 @@ export default function LearningPage() {
             {/* Add New Note Form */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Plus className="h-4 w-4 text-zinc-400" />
+                <CardTitle className="flex items-center gap-2 font-display text-base">
+                  <Plus className="h-4 w-4 text-ink-500" />
                   Add Feedback Note
                 </CardTitle>
               </CardHeader>
@@ -313,15 +313,15 @@ export default function LearningPage() {
             {loading ? (
               <div className="flex h-48 items-center justify-center">
                 <div className="flex flex-col items-center gap-3">
-                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
-                  <p className="text-sm text-zinc-500">Loading feedback notes...</p>
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
+                  <p className="text-sm text-muted-foreground">Loading feedback notes...</p>
                 </div>
               </div>
             ) : feedbackNotes.length === 0 ? (
               <div className="flex h-48 flex-col items-center justify-center text-center">
-                <MessageSquare className="h-10 w-10 text-zinc-300" />
-                <p className="mt-3 text-sm font-medium text-zinc-500">No feedback notes yet</p>
-                <p className="text-xs text-zinc-400">Add your first note above to start building the knowledge base.</p>
+                <MessageSquare className="h-10 w-10 text-ink-600" />
+                <p className="mt-3 text-sm font-medium text-muted-foreground">No feedback notes yet</p>
+                <p className="text-xs text-ink-500">Add your first note above to start building the knowledge base.</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -332,20 +332,20 @@ export default function LearningPage() {
                     <Card key={note.id}>
                       <CardContent className="pt-6">
                         <div className="flex items-start gap-4">
-                          <div className={cn("rounded-lg p-2 shrink-0", catConfig.bg)}>
-                            <CatIcon className={cn("h-4 w-4", catConfig.text)} />
+                          <div className={cn("shrink-0 rounded-md p-2", catConfig.box)}>
+                            <CatIcon className="h-4 w-4" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <Badge className={cn(catConfig.bg, catConfig.text, "text-[10px]")}>
+                              <Badge variant={catConfig.variant} className="text-[10px]">
                                 {formatStatus(note.category)}
                               </Badge>
-                              <span className="text-xs font-medium text-zinc-500">{note.author}</span>
-                              <span className="text-xs text-zinc-400">{timeAgo(note.created_at)}</span>
+                              <span className="text-xs font-medium text-ink-400">{note.author}</span>
+                              <span className="font-mono text-xs text-ink-500">{timeAgo(note.created_at)}</span>
                             </div>
-                            <p className="mt-2 text-sm leading-relaxed text-zinc-700">{note.note}</p>
+                            <p className="mt-2 text-sm leading-relaxed text-ink-200">{note.note}</p>
                             {(note.task_title || note.agent_name) && (
-                              <div className="mt-2 flex items-center gap-3 text-xs text-zinc-400">
+                              <div className="mt-2 flex items-center gap-3 text-xs text-ink-500">
                                 {note.agent_name && (
                                   <span className="flex items-center gap-1">
                                     <Bot className="h-3 w-3" />
@@ -378,7 +378,7 @@ export default function LearningPage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-zinc-400" />
+                  <Filter className="h-4 w-4 text-ink-500" />
                   <Select
                     value={decisionTypeFilter}
                     onChange={(e) => setDecisionTypeFilter(e.target.value)}
@@ -389,7 +389,7 @@ export default function LearningPage() {
                       <option key={dt} value={dt}>{formatStatus(dt)}</option>
                     ))}
                   </Select>
-                  <span className="text-sm text-zinc-400">
+                  <span className="font-mono text-sm text-ink-500">
                     {filteredDecisions.length} decision{filteredDecisions.length !== 1 ? "s" : ""}
                   </span>
                 </div>
@@ -399,13 +399,13 @@ export default function LearningPage() {
             {/* Decisions List */}
             {loading ? (
               <div className="flex h-48 items-center justify-center">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
               </div>
             ) : filteredDecisions.length === 0 ? (
               <div className="flex h-48 flex-col items-center justify-center text-center">
-                <Brain className="h-10 w-10 text-zinc-300" />
-                <p className="mt-3 text-sm font-medium text-zinc-500">No MCP decisions found</p>
-                <p className="text-xs text-zinc-400">Try adjusting the filter or wait for MCP to process items.</p>
+                <Brain className="h-10 w-10 text-ink-600" />
+                <p className="mt-3 text-sm font-medium text-muted-foreground">No MCP decisions found</p>
+                <p className="text-xs text-ink-500">Try adjusting the filter or wait for MCP to process items.</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -413,40 +413,40 @@ export default function LearningPage() {
                   <Card key={decision.id}>
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3 flex-1 min-w-0">
-                          <div className="rounded-lg bg-indigo-100 p-2 shrink-0">
-                            <Brain className="h-4 w-4 text-indigo-600" />
+                        <div className="flex min-w-0 flex-1 items-start gap-3">
+                          <div className="shrink-0 rounded-md border border-signal-500/30 bg-signal-500/10 p-2">
+                            <Brain className="h-4 w-4 text-signal-400" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <Badge variant={(decisionTypeColors[decision.decision_type] as "info" | "purple" | "default" | "warning" | "success" | "destructive") || "secondary"}>
                                 {formatStatus(decision.decision_type)}
                               </Badge>
-                              <span className="text-sm font-medium text-zinc-700">
+                              <span className="text-sm font-medium text-ink-200">
                                 {decision.entity_type}: {decision.entity_name}
                               </span>
                             </div>
-                            <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                            <p className="mt-2 text-sm leading-relaxed text-ink-300">
                               {decision.reasoning}
                             </p>
-                            <div className="mt-2 rounded-md bg-zinc-50 p-2 text-xs text-zinc-500">
+                            <div className="mt-2 rounded-md border border-ink-800 bg-ink-900 p-2 font-mono text-xs text-ink-400">
                               <span className="font-medium">Input:</span> {decision.input_data_summary}
                             </div>
                           </div>
                         </div>
-                        <div className="text-right shrink-0">
+                        <div className="shrink-0 text-right">
                           <div className="flex flex-col items-end gap-1">
                             <div className={cn(
-                              "text-lg font-bold",
-                              decision.confidence >= 0.9 ? "text-emerald-600" :
-                              decision.confidence >= 0.8 ? "text-blue-600" :
-                              decision.confidence >= 0.7 ? "text-amber-600" :
-                              "text-red-600"
+                              "font-display text-lg font-medium",
+                              decision.confidence >= 0.9 ? "text-success" :
+                              decision.confidence >= 0.8 ? "text-info" :
+                              decision.confidence >= 0.7 ? "text-warning" :
+                              "text-danger"
                             )}>
                               {(decision.confidence * 100).toFixed(0)}%
                             </div>
-                            <p className="text-[10px] font-medium uppercase tracking-wider text-zinc-400">Confidence</p>
-                            <p className="mt-1 text-xs text-zinc-400">{timeAgo(decision.created_at)}</p>
+                            <p className="eyebrow text-ink-500">Confidence</p>
+                            <p className="mt-1 font-mono text-xs text-ink-500">{timeAgo(decision.created_at)}</p>
                           </div>
                         </div>
                       </div>

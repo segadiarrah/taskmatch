@@ -48,14 +48,14 @@ function Toggle({
       disabled={disabled}
       onClick={() => onChange(!enabled)}
       className={cn(
-        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 focus-visible:ring-offset-2",
-        enabled ? "bg-brand-800" : "bg-stone-300",
+        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-900",
+        enabled ? "bg-signal-500" : "bg-ink-700",
         disabled && "opacity-60 cursor-not-allowed"
       )}
     >
       <span
         className={cn(
-          "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out",
+          "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-ink-50 shadow-sm ring-0 transition duration-200 ease-in-out",
           enabled ? "translate-x-5" : "translate-x-0"
         )}
       />
@@ -84,14 +84,14 @@ function CookieCategory({
     <div className="flex items-start justify-between gap-4 py-3">
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-stone-900">{name}</span>
+          <span className="text-sm font-medium text-ink-50">{name}</span>
           {disabled && (
-            <span className="text-xs text-stone-500 bg-stone-100 rounded px-1.5 py-0.5">
+            <span className="rounded-sm border border-ink-700 bg-ink-800 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-ink-400">
               Always on
             </span>
           )}
         </div>
-        <p className="text-xs text-stone-500 mt-0.5">{description}</p>
+        <p className="text-xs text-ink-400 mt-0.5">{description}</p>
       </div>
       <Toggle enabled={enabled} disabled={disabled} onChange={onChange} />
     </div>
@@ -173,21 +173,21 @@ export function CookieBanner() {
           role="dialog"
           aria-label="Cookie consent"
         >
-          <div className="border-t border-stone-200 bg-white shadow-lg">
+          <div className="border-t border-ink-700 bg-ink-900 text-ink-200 shadow-panel">
             <div className="mx-auto max-w-5xl px-4 py-4 sm:px-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 {/* Message */}
                 <div className="flex items-start gap-3 flex-1">
-                  <Cookie className="h-5 w-5 text-stone-500 mt-0.5 shrink-0" />
+                  <Cookie className="h-5 w-5 text-signal-400 mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-sm text-stone-700">
+                    <p className="text-sm text-ink-200">
                       We use cookies to enhance your experience, analyze
                       platform usage, and support our marketing efforts. You can
                       customize your preferences or accept/reject all cookies.
                     </p>
                     <Link
                       href="/legal/compliance#cookie-policy"
-                      className="text-xs text-stone-500 hover:text-stone-900 underline mt-1 inline-block"
+                      className="text-xs text-ink-400 hover:text-signal-400 underline mt-1 inline-block"
                     >
                       Read our Cookie Policy
                     </Link>
@@ -237,7 +237,7 @@ export function CookieBanner() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="divide-y divide-stone-100">
+          <div className="divide-y divide-ink-800">
             <CookieCategory
               name="Necessary Cookies"
               description="Required for authentication, security, and core platform functionality. These cookies cannot be disabled."

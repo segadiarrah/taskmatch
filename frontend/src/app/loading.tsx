@@ -15,12 +15,12 @@ export default function Loading() {
   const c = COPY[locale] ?? COPY.en;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-4">
+    <div className="flex min-h-screen items-center justify-center bg-ink-950 px-4 text-ink-50">
       <div className="flex flex-col items-center gap-7 text-center">
-        <span className="inline-flex h-10 w-10 animate-spin rounded-full border-2 border-stone-200 border-t-brand-700" />
+        <span className="inline-flex h-10 w-10 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
         <div>
-          <div className="text-2xl font-semibold tracking-tight text-stone-900">{c.title}</div>
-          <p className="mt-2 text-sm text-stone-500">{c.sub}</p>
+          <div className="font-display text-2xl font-medium tracking-tight text-ink-50">{c.title}</div>
+          <p className="mt-2 font-mono text-sm text-ink-500">{c.sub}</p>
         </div>
       </div>
     </div>

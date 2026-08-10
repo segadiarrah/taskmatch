@@ -215,8 +215,8 @@ export default function ProvidersPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">AI Providers</h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">AI Providers</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Plug in the major market LLMs so they compete as executors alongside
           developer-registered agents. Enabled providers can pick up and execute
           incoming requests immediately, without waiting for a developer agent to sign up.
@@ -224,9 +224,9 @@ export default function ProvidersPage() {
       </div>
 
       {/* Explainer callout */}
-      <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
-        <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
-        <p className="text-sm leading-relaxed text-blue-800">
+      <div className="flex items-start gap-3 rounded-md border border-info/30 bg-info/10 p-4">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-info" />
+        <p className="text-sm leading-relaxed text-info">
           Providers you enable here register as platform agents that bid on and execute
           tasks automatically &mdash; before any developer agent signs up. Keys are stored
           server-side and never displayed again.
@@ -237,36 +237,36 @@ export default function ProvidersPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <div className="rounded-lg bg-zinc-100 p-2">
-              <Cpu className="h-4 w-4 text-zinc-700" />
+            <div className="rounded-md border border-ink-700 bg-ink-800 p-2">
+              <Cpu className="h-4 w-4 text-ink-300" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-zinc-900">{providers.length}</p>
-              <p className="text-xs text-zinc-500">Providers</p>
+              <p className="font-display text-2xl font-medium text-ink-50">{providers.length}</p>
+              <p className="text-xs text-muted-foreground">Providers</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <div className="rounded-lg bg-emerald-100 p-2">
-              <Zap className="h-4 w-4 text-emerald-700" />
+            <div className="rounded-md border border-success/30 bg-success/10 p-2">
+              <Zap className="h-4 w-4 text-success" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-zinc-900">{competingCount}</p>
-              <p className="text-xs text-zinc-500">Competing Now</p>
+              <p className="font-display text-2xl font-medium text-ink-50">{competingCount}</p>
+              <p className="text-xs text-muted-foreground">Competing Now</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 pt-6">
-            <div className="rounded-lg bg-blue-100 p-2">
-              <KeyRound className="h-4 w-4 text-blue-700" />
+            <div className="rounded-md border border-info/30 bg-info/10 p-2">
+              <KeyRound className="h-4 w-4 text-info" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-zinc-900">
+              <p className="font-display text-2xl font-medium text-ink-50">
                 {providers.filter((p) => p.key_set).length}
               </p>
-              <p className="text-xs text-zinc-500">Keys Configured</p>
+              <p className="text-xs text-muted-foreground">Keys Configured</p>
             </div>
           </CardContent>
         </Card>
@@ -276,16 +276,16 @@ export default function ProvidersPage() {
       {loading ? (
         <div className="flex h-48 items-center justify-center">
           <div className="flex flex-col items-center gap-3">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
-            <p className="text-sm text-zinc-500">Loading providers...</p>
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
+            <p className="text-sm text-muted-foreground">Loading providers...</p>
           </div>
         </div>
       ) : providers.length === 0 ? (
         <Card>
           <CardContent className="flex h-48 flex-col items-center justify-center text-center pt-6">
-            <Plug className="h-10 w-10 text-zinc-300" />
-            <p className="mt-3 text-sm font-medium text-zinc-500">No providers available</p>
-            <p className="text-xs text-zinc-400">Providers will appear here once configured on the backend.</p>
+            <Plug className="h-10 w-10 text-ink-600" />
+            <p className="mt-3 text-sm font-medium text-muted-foreground">No providers available</p>
+            <p className="text-xs text-ink-500">Providers will appear here once configured on the backend.</p>
           </CardContent>
         </Card>
       ) : (
@@ -300,22 +300,22 @@ export default function ProvidersPage() {
                   {/* Top row: identity + status + toggle */}
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-100 text-lg font-bold text-zinc-700">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-md border border-ink-700 bg-ink-800 font-display text-lg font-medium text-ink-100">
                         {p.label.charAt(0)}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-zinc-900">{p.label}</h3>
+                          <h3 className="font-semibold text-foreground">{p.label}</h3>
                           <Badge variant={status.variant} className="text-[10px]">
                             {status.label}
                           </Badge>
                         </div>
-                        <p className="font-mono text-xs text-zinc-400">{p.base_url}</p>
+                        <p className="font-mono text-xs text-ink-500">{p.base_url}</p>
                       </div>
                     </div>
 
                     {/* Enable / disable toggle */}
-                    <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-600">
+                    <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-300">
                       <span>{draft.enabled ? "Enabled" : "Disabled"}</span>
                       <button
                         type="button"
@@ -331,12 +331,12 @@ export default function ProvidersPage() {
                         }
                         className={cn(
                           "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors",
-                          draft.enabled ? "bg-emerald-500" : "bg-zinc-300"
+                          draft.enabled ? "bg-signal-500" : "bg-ink-700"
                         )}
                       >
                         <span
                           className={cn(
-                            "inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform",
+                            "inline-block h-4 w-4 transform rounded-full bg-ink-50 shadow transition-transform",
                             draft.enabled ? "translate-x-4" : "translate-x-0.5"
                           )}
                         />
@@ -348,7 +348,7 @@ export default function ProvidersPage() {
                   <div className="mt-5 grid gap-4 sm:grid-cols-2">
                     {/* Model select */}
                     <div>
-                      <label className="mb-1 block text-xs font-medium text-zinc-500">
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
                         Model version
                       </label>
                       <Select
@@ -371,7 +371,7 @@ export default function ProvidersPage() {
 
                     {/* API key */}
                     <div>
-                      <label className="mb-1 block text-xs font-medium text-zinc-500">
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
                         API key
                       </label>
                       <Input
@@ -391,7 +391,7 @@ export default function ProvidersPage() {
                           })
                         }
                       />
-                      <p className="mt-1 flex items-center gap-1 text-[11px] text-zinc-400">
+                      <p className="mt-1 flex items-center gap-1 text-[11px] text-ink-500">
                         <KeyRound className="h-3 w-3" />
                         {p.key_set && p.key_hint ? (
                           <span>
@@ -408,13 +408,13 @@ export default function ProvidersPage() {
                   <div className="mt-5 flex items-center justify-between gap-3">
                     <div className="min-h-[20px] text-sm">
                       {draft.saveState === "success" && (
-                        <span className="flex items-center gap-1 text-emerald-600">
+                        <span className="flex items-center gap-1 text-success">
                           <CheckCircle2 className="h-4 w-4" />
                           {draft.message}
                         </span>
                       )}
                       {draft.saveState === "error" && (
-                        <span className="flex items-center gap-1 text-red-600">
+                        <span className="flex items-center gap-1 text-danger">
                           <AlertCircle className="h-4 w-4" />
                           {draft.message}
                         </span>

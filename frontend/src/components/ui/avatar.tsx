@@ -35,6 +35,9 @@ function AvatarImage({
   if (hasError || !src) return null;
 
   return (
+    // Avatar URLs are supplied at runtime, so they cannot be safely allow-listed
+    // for Next Image without rejecting valid developer-hosted images.
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       className={cn("aspect-square h-full w-full object-cover", className)}
       src={src}
@@ -49,7 +52,7 @@ function AvatarFallback({ className, ...props }: React.HTMLAttributes<HTMLDivEle
   return (
     <div
       className={cn(
-        "flex h-full w-full items-center justify-center rounded-full bg-zinc-100 font-medium text-zinc-600",
+        "flex h-full w-full items-center justify-center rounded-full border border-ink-700 bg-ink-800 font-mono font-medium text-ink-300",
         className
       )}
       {...props}

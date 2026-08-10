@@ -100,14 +100,14 @@ export default function DeveloperDashboardPage() {
   }
 
   const kpiCards = [
-    { label: "My Agents", value: stats?.my_agents ?? 0, icon: Bot, color: "text-blue-600" },
-    { label: "Active Assignments", value: stats?.active_assignments ?? 0, icon: ListChecks, color: "text-indigo-600" },
-    { label: "Completed Tasks", value: stats?.completed_tasks ?? 0, icon: CheckCircle2, color: "text-emerald-600" },
+    { label: "My Agents", value: stats?.my_agents ?? 0, icon: Bot, color: "text-info" },
+    { label: "Active Assignments", value: stats?.active_assignments ?? 0, icon: ListChecks, color: "text-signal-400" },
+    { label: "Completed Tasks", value: stats?.completed_tasks ?? 0, icon: CheckCircle2, color: "text-success" },
     {
       label: "Total Earnings",
       value: formatCurrency(stats?.total_earnings ?? 0),
       icon: DollarSign,
-      color: "text-violet-600",
+      color: "text-warning",
     },
   ];
 
@@ -116,7 +116,7 @@ export default function DeveloperDashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">
             Welcome back, {user?.full_name?.split(" ")[0] ?? "there"}
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -144,11 +144,11 @@ export default function DeveloperDashboardPage() {
         {kpiCards.map((kpi) => (
           <Card key={kpi.label}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardDescription className="text-sm font-medium">{kpi.label}</CardDescription>
+              <CardDescription className="eyebrow">{kpi.label}</CardDescription>
               <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{kpi.value}</div>
+              <div className="font-display text-3xl font-medium text-ink-50">{kpi.value}</div>
             </CardContent>
           </Card>
         ))}
@@ -189,11 +189,11 @@ export default function DeveloperDashboardPage() {
                 <Link
                   key={assignment.id}
                   href={`/developer/tasks/${assignment.task_id}`}
-                  className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                  className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:border-signal-500/30 hover:bg-ink-800/60"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3">
-                      <p className="font-medium truncate">{assignment.task_title}</p>
+                      <p className="font-medium truncate text-ink-100">{assignment.task_title}</p>
                       <Badge variant={statusBadgeVariant(assignment.status)}>
                         {formatStatus(assignment.status)}
                       </Badge>
@@ -203,7 +203,7 @@ export default function DeveloperDashboardPage() {
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                    <div className="mt-1 flex items-center gap-4 font-mono text-xs text-muted-foreground">
                       <span>Job: {assignment.job_title}</span>
                       <span>Agent: {assignment.agent_name}</span>
                       <span>{formatCurrency(assignment.budget, assignment.currency)}</span>
@@ -221,9 +221,9 @@ export default function DeveloperDashboardPage() {
       {/* Quick Links */}
       <div className="grid gap-4 sm:grid-cols-3">
         <Link href="/developer/agents">
-          <Card className="cursor-pointer transition-colors hover:bg-muted/50">
+          <Card className="hover-lift cursor-pointer hover:border-signal-500/40">
             <CardContent className="flex items-center gap-4 p-6">
-              <Bot className="h-8 w-8 text-blue-600" />
+              <Bot className="h-8 w-8 text-info" />
               <div>
                 <p className="font-medium">My Agents</p>
                 <p className="text-sm text-muted-foreground">Manage your registered agents</p>
@@ -232,9 +232,9 @@ export default function DeveloperDashboardPage() {
           </Card>
         </Link>
         <Link href="/developer/tasks">
-          <Card className="cursor-pointer transition-colors hover:bg-muted/50">
+          <Card className="hover-lift cursor-pointer hover:border-signal-500/40">
             <CardContent className="flex items-center gap-4 p-6">
-              <Search className="h-8 w-8 text-indigo-600" />
+              <Search className="h-8 w-8 text-signal-400" />
               <div>
                 <p className="font-medium">Available Tasks</p>
                 <p className="text-sm text-muted-foreground">Find and bid on open tasks</p>
@@ -243,9 +243,9 @@ export default function DeveloperDashboardPage() {
           </Card>
         </Link>
         <Link href="/developer/earnings">
-          <Card className="cursor-pointer transition-colors hover:bg-muted/50">
+          <Card className="hover-lift cursor-pointer hover:border-signal-500/40">
             <CardContent className="flex items-center gap-4 p-6">
-              <DollarSign className="h-8 w-8 text-emerald-600" />
+              <DollarSign className="h-8 w-8 text-success" />
               <div>
                 <p className="font-medium">Earnings</p>
                 <p className="text-sm text-muted-foreground">View your payment history</p>

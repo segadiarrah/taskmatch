@@ -257,10 +257,10 @@ export default function ExecutionPlan({
   // ---- Draft: prompt to submit ----
   if (isDraft) {
     return (
-      <Card className="border-primary/40 bg-gradient-to-br from-emerald-50/60 to-blue-50/40">
+      <Card className="corner-brackets border-signal-500/40 bg-signal-500/5">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Rocket className="h-5 w-5 text-emerald-600" />
+            <Rocket className="h-5 w-5 text-signal-400" />
             Execution plan
           </CardTitle>
           <CardDescription>
@@ -278,7 +278,6 @@ export default function ExecutionPlan({
           <Button
             onClick={handleSubmit}
             disabled={submitting}
-            className="bg-emerald-600 hover:bg-emerald-700"
           >
             {submitting ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -314,10 +313,10 @@ export default function ExecutionPlan({
     const activeStage = Math.min(tick, stages.length - 1);
     const progressValue = Math.min(92, 12 + tick * 14);
     return (
-      <Card className="overflow-hidden border-primary/30">
+      <Card className="overflow-hidden border-signal-500/30">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-emerald-600 animate-pulse" />
+            <Sparkles className="h-5 w-5 text-signal-400 animate-pulse" />
             We are planning your request…
           </CardTitle>
           <CardDescription>
@@ -337,17 +336,17 @@ export default function ExecutionPlan({
                   key={stage.key}
                   className={cn(
                     "flex items-start gap-3 rounded-lg border p-3 transition-colors",
-                    current && "border-emerald-300 bg-emerald-50/70",
-                    done && "border-emerald-200 bg-emerald-50/30",
-                    !done && !current && "border-zinc-200 bg-white"
+                    current && "border-signal-500/50 bg-signal-500/10",
+                    done && "border-success/40 bg-success/10",
+                    !done && !current && "border-border bg-ink-900"
                   )}
                 >
                   <span
                     className={cn(
-                      "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full",
-                      done && "bg-emerald-100 text-emerald-700",
-                      current && "bg-emerald-600 text-white",
-                      !done && !current && "bg-zinc-100 text-zinc-400"
+                      "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-sm",
+                      done && "bg-success/15 text-success",
+                      current && "bg-signal-500 text-ink-950",
+                      !done && !current && "bg-ink-800 text-ink-500"
                     )}
                   >
                     {done ? (
@@ -362,7 +361,7 @@ export default function ExecutionPlan({
                     <p
                       className={cn(
                         "text-sm font-medium",
-                        current ? "text-emerald-700" : done ? "text-foreground" : "text-zinc-500"
+                        current ? "text-signal-400" : done ? "text-foreground" : "text-ink-500"
                       )}
                     >
                       {stage.label}
@@ -395,7 +394,7 @@ export default function ExecutionPlan({
     <Card>
       <CardHeader>
         <CardTitle className="text-xl flex items-center gap-2">
-          <Rocket className="h-5 w-5 text-emerald-600" />
+          <Rocket className="h-5 w-5 text-signal-400" />
           Execution plan
           {ready && (
             <Badge variant="success" className="ml-1">
@@ -412,15 +411,15 @@ export default function ExecutionPlan({
         {payment && (canRelease || jobDone) && (
           <section
             className={cn(
-              "rounded-xl border p-4",
-              jobDone ? "border-emerald-300 bg-emerald-50/70" : "border-blue-300 bg-blue-50/60"
+              "rounded-lg border p-4",
+              jobDone ? "border-success/40 bg-success/10" : "border-info/40 bg-info/10"
             )}
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-3">
-                <CheckCircle2 className={cn("mt-0.5 h-5 w-5", jobDone ? "text-emerald-600" : "text-blue-600")} />
+                <CheckCircle2 className={cn("mt-0.5 h-5 w-5", jobDone ? "text-success" : "text-info")} />
                 <div>
-                  <p className="text-sm font-semibold text-zinc-800">
+                  <p className="text-sm font-semibold text-ink-50">
                     {jobDone ? "Work accepted — escrow released" : "Work delivered — held in escrow for your review"}
                   </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
@@ -456,8 +455,8 @@ export default function ExecutionPlan({
             </div>
 
             {canRelease && !jobDone && showDispute && (
-              <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50/70 p-3">
-                <p className="text-xs font-medium text-zinc-700">
+              <div className="mt-4 rounded-lg border border-warning/40 bg-warning/10 p-3">
+                <p className="text-xs font-medium text-ink-200">
                   What did the deliverable miss? Your payment stays held in escrow while the
                   executor revises the work against your success criteria.
                 </p>
@@ -466,7 +465,7 @@ export default function ExecutionPlan({
                   onChange={(e) => setDisputeReason(e.target.value)}
                   rows={3}
                   placeholder="e.g. Section 2 doesn't cover the EU market as requested; tone is too informal."
-                  className="mt-2 w-full rounded-md border border-zinc-300 bg-white p-2 text-sm text-zinc-800 focus:border-amber-400 focus:outline-none"
+                  className="mt-2 w-full rounded-md border border-input bg-ink-900 p-2 text-sm text-ink-100 placeholder:text-ink-500 focus:border-signal-500 focus:outline-none focus:ring-1 focus:ring-signal-500"
                 />
                 <div className="mt-2 flex justify-end gap-2">
                   <Button
@@ -494,8 +493,8 @@ export default function ExecutionPlan({
             </h3>
           </div>
           {spec.objective && (
-            <div className="rounded-lg border bg-zinc-50/60 p-4">
-              <p className="text-xs font-medium text-muted-foreground">Objective</p>
+            <div className="rounded-lg border bg-ink-900 p-4">
+              <p className="eyebrow text-muted-foreground">Objective</p>
               <p className="mt-1 text-sm leading-relaxed">{spec.objective}</p>
             </div>
           )}
@@ -503,13 +502,13 @@ export default function ExecutionPlan({
             {spec.deliverables.length > 0 && (
               <div className="rounded-lg border p-4">
                 <div className="flex items-center gap-2">
-                  <ListChecks className="h-4 w-4 text-emerald-600" />
+                  <ListChecks className="h-4 w-4 text-success" />
                   <p className="text-sm font-medium">Deliverables</p>
                 </div>
                 <ul className="mt-2 space-y-1.5">
                   {spec.deliverables.map((d, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm">
-                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-emerald-500" />
+                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-success" />
                       <span>{d}</span>
                     </li>
                   ))}
@@ -519,13 +518,13 @@ export default function ExecutionPlan({
             {spec.success_criteria.length > 0 && (
               <div className="rounded-lg border p-4">
                 <div className="flex items-center gap-2">
-                  <Trophy className="h-4 w-4 text-amber-500" />
+                  <Trophy className="h-4 w-4 text-warning" />
                   <p className="text-sm font-medium">Success criteria</p>
                 </div>
                 <ul className="mt-2 space-y-1.5">
                   {spec.success_criteria.map((s, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm">
-                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-500" />
+                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-warning" />
                       <span>{s}</span>
                     </li>
                   ))}
@@ -534,9 +533,9 @@ export default function ExecutionPlan({
             )}
           </div>
           {spec.constraints.length > 0 && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4">
+            <div className="rounded-lg border border-warning/40 bg-warning/10 p-4">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-amber-600" />
+                <ShieldCheck className="h-4 w-4 text-warning" />
                 <p className="text-sm font-medium">Constraints</p>
               </div>
               <ul className="mt-2 flex flex-wrap gap-2">
@@ -578,15 +577,15 @@ export default function ExecutionPlan({
                   (a, b) => b.total_score - a.total_score
                 );
                 return (
-                  <div key={task.id} className="rounded-xl border p-4 sm:p-5">
+                  <div key={task.id} className="rounded-lg border p-4 sm:p-5">
                     {/* Task header */}
                     <div className="flex items-start gap-3">
-                      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-sm bg-primary font-mono text-xs font-semibold text-primary-foreground">
                         {idx + 1}
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-medium text-sm">{task.title}</p>
+                          <p className="font-medium text-sm text-ink-100">{task.title}</p>
                           <Badge variant="info" className="capitalize">
                             {formatStatus(task.task_type)}
                           </Badge>
@@ -600,7 +599,7 @@ export default function ExecutionPlan({
                               Revised{task.revision_count > 1 ? ` ×${task.revision_count}` : ""}
                             </Badge>
                           )}
-                          <span className="text-xs font-medium text-emerald-700">
+                          <span className="font-mono text-xs font-medium text-success">
                             {formatCurrency(task.budget, currency)}
                           </span>
                         </div>
@@ -634,16 +633,16 @@ export default function ExecutionPlan({
                                 className={cn(
                                   "rounded-lg border p-3",
                                   best
-                                    ? "border-emerald-300 bg-emerald-50/60 ring-1 ring-emerald-200"
-                                    : "border-zinc-200"
+                                    ? "border-success/40 bg-success/10 ring-1 ring-success/30"
+                                    : "border-border"
                                 )}
                               >
                                 <div className="flex items-center justify-between gap-3">
                                   <div className="flex items-center gap-2 min-w-0">
-                                    <span className="text-xs font-semibold text-muted-foreground">
+                                    <span className="font-mono text-xs font-semibold text-muted-foreground">
                                       #{aIdx + 1}
                                     </span>
-                                    <span className="truncate text-sm font-medium">
+                                    <span className="truncate text-sm font-medium text-ink-100">
                                       {agent.agent_name}
                                     </span>
                                     {best && (
@@ -670,7 +669,7 @@ export default function ExecutionPlan({
                       )}
                     </div>
                     {task.delivered && task.delivered.result_preview ? (
-                      <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50/50 p-3">
+                      <div className="mt-3 rounded-lg border border-success/40 bg-success/10 p-3">
                         <div className="flex items-center gap-2">
                           <Badge variant="success" className="flex-shrink-0">
                             <CheckCircle2 className="mr-1 h-3 w-3" />
@@ -683,11 +682,11 @@ export default function ExecutionPlan({
                           ) : null}
                         </div>
                         {task.delivered.summary ? (
-                          <p className="mt-2 text-sm font-medium text-zinc-800">
+                          <p className="mt-2 text-sm font-medium text-ink-100">
                             {task.delivered.summary}
                           </p>
                         ) : null}
-                        <pre className="mt-2 max-h-52 overflow-auto whitespace-pre-wrap rounded-md bg-white/70 p-2.5 text-xs leading-relaxed text-zinc-700">
+                        <pre className="mt-2 max-h-52 overflow-auto whitespace-pre-wrap rounded-md border border-ink-800 bg-ink-950/70 p-2.5 font-mono text-xs leading-relaxed text-ink-200">
                           {task.delivered.result_preview}
                         </pre>
                       </div>

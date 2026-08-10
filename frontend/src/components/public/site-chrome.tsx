@@ -118,12 +118,12 @@ const LABELS: Record<Locale, NavLabels> = {
 
 export function SiteLogo({ className = "" }: { className?: string }) {
   return (
-    <Link href="/" className={cn("flex items-center gap-2.5", className)}>
-      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-800">
-        <Layers className="h-4 w-4 text-white" />
+    <Link href="/" className={cn("group flex items-center gap-2.5", className)}>
+      <span className="flex h-8 w-8 items-center justify-center rounded-sm bg-signal-500 transition-shadow group-hover:shadow-glow-sm">
+        <Layers className="h-4 w-4 text-ink-950" />
       </span>
-      <span className="text-sm font-semibold tracking-tight text-stone-900">
-        TaskMatch<span className="text-brand-700">.ai</span>
+      <span className="text-sm font-semibold tracking-tight text-ink-50">
+        TaskMatch<span className="text-signal-500">.ai</span>
       </span>
     </Link>
   );
@@ -135,25 +135,25 @@ interface NavDropdownGroup { label: string; items: NavDropdownItem[]; }
 function NavDropdown({ group }: { group: NavDropdownGroup }) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-stone-600 transition-colors hover:text-stone-900 focus:outline-none">
+      <DropdownMenuTrigger className="group flex items-center gap-1.5 font-mono text-xs font-medium uppercase tracking-wider text-ink-300 transition-colors hover:text-signal-400">
         {group.label}
-        <ChevronDown className="h-3.5 w-3.5" />
+        <ChevronDown className="h-3.5 w-3.5 transition-transform group-hover:translate-y-px" />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        className="w-80 rounded-xl border-stone-200 bg-white p-2 text-stone-900 shadow-lg"
+        className="w-80 rounded-lg border-ink-700 bg-ink-900 p-2 text-ink-100 shadow-panel"
       >
         {group.items.map((item) => {
           const Icon = item.icon;
           return (
             <Link key={item.href} href={item.href}>
-              <DropdownMenuItem className="flex items-start gap-3 rounded-lg p-3 focus:bg-stone-50">
-                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-brand-700">
+              <DropdownMenuItem className="flex items-start gap-3 rounded-md p-3 focus:bg-ink-800">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-ink-700 bg-ink-850 text-signal-400">
                   <Icon className="h-4 w-4" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-stone-900">{item.label}</div>
-                  <div className="text-xs leading-5 text-stone-500">{item.description}</div>
+                  <div className="text-sm font-medium text-ink-50">{item.label}</div>
+                  <div className="text-xs leading-5 text-ink-400">{item.description}</div>
                 </div>
               </DropdownMenuItem>
             </Link>
@@ -196,19 +196,19 @@ export function PublicNavbar() {
   };
 
   return (
-    <header className="fixed top-0 z-50 w-full border-b border-stone-200 bg-white/90 backdrop-blur-md">
+    <header className="fixed top-0 z-50 w-full border-b border-ink-800 bg-ink-950/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <SiteLogo />
 
-        <nav className="hidden items-center gap-6 lg:flex">
+        <nav className="hidden items-center gap-7 lg:flex">
           <NavDropdown group={resources} />
           <NavDropdown group={company} />
           <NavDropdown group={legal} />
           <Link
             href="/pricing"
             className={cn(
-              "text-sm font-medium transition-colors hover:text-stone-900",
-              pathname === "/pricing" ? "text-stone-900" : "text-stone-600"
+              "font-mono text-xs font-medium uppercase tracking-wider transition-colors hover:text-signal-400",
+              pathname === "/pricing" ? "text-signal-400" : "text-ink-300"
             )}
           >
             {L.pricing}
@@ -217,12 +217,15 @@ export function PublicNavbar() {
 
         <div className="hidden items-center gap-4 lg:flex">
           <LanguageSwitcher />
-          <Link href="/login" className="text-sm font-medium text-stone-600 transition-colors hover:text-stone-900">
+          <Link
+            href="/login"
+            className="font-mono text-xs font-medium uppercase tracking-wider text-ink-300 transition-colors hover:text-ink-50"
+          >
             {L.signIn}
           </Link>
           <Link
             href="/register"
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand-800 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-900"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-signal-500 px-4 text-sm font-semibold text-ink-950 transition-all hover:bg-signal-400 hover:shadow-glow-sm"
           >
             {L.startTask}
             <ArrowRight className="h-3.5 w-3.5" />
@@ -230,7 +233,7 @@ export function PublicNavbar() {
         </div>
 
         <button
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-stone-300 text-stone-700 lg:hidden"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-ink-700 text-ink-200 lg:hidden"
           onClick={() => setMobileOpen((open) => !open)}
           aria-label="Toggle menu"
         >
@@ -239,11 +242,11 @@ export function PublicNavbar() {
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-stone-200 bg-white px-4 py-4 lg:hidden">
+        <div className="border-t border-ink-800 bg-ink-950 px-4 py-4 lg:hidden">
           <div className="space-y-4">
             {[resources, company, legal].map((group) => (
               <div key={group.label}>
-                <div className="eyebrow mb-2 px-2 text-stone-400">{group.label}</div>
+                <div className="eyebrow mb-2 px-2 text-ink-500">{group.label}</div>
                 <div className="space-y-1">
                   {group.items.map((item) => {
                     const Icon = item.icon;
@@ -252,9 +255,9 @@ export function PublicNavbar() {
                         key={item.href}
                         href={item.href}
                         onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-ink-300 hover:bg-ink-850 hover:text-ink-50"
                       >
-                        <Icon className="h-4 w-4 text-stone-400" />
+                        <Icon className="h-4 w-4 text-signal-500" />
                         {item.label}
                       </Link>
                     );
@@ -265,20 +268,20 @@ export function PublicNavbar() {
             <Link
               href="/pricing"
               onClick={() => setMobileOpen(false)}
-              className="block rounded-lg px-3 py-3 text-sm font-medium text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+              className="block rounded-md px-3 py-3 text-sm font-medium text-ink-300 hover:bg-ink-850 hover:text-ink-50"
             >
               {L.pricing}
             </Link>
           </div>
-          <div className="mt-4 flex items-center gap-3 border-t border-stone-200 pt-4">
+          <div className="mt-4 flex items-center gap-3 border-t border-ink-800 pt-4">
             <LanguageSwitcher />
             <Link href="/login" className="flex-1">
-              <span className="flex h-9 w-full items-center justify-center rounded-lg border border-stone-300 text-sm font-medium text-stone-900">
+              <span className="flex h-9 w-full items-center justify-center rounded-md border border-ink-600 text-sm font-medium text-ink-100">
                 {L.signIn}
               </span>
             </Link>
             <Link href="/register" className="flex-1">
-              <span className="flex h-9 w-full items-center justify-center rounded-lg bg-brand-800 text-sm font-semibold text-white">
+              <span className="flex h-9 w-full items-center justify-center rounded-md bg-signal-500 text-sm font-semibold text-ink-950">
                 {L.startTask}
               </span>
             </Link>
@@ -322,16 +325,19 @@ export function PublicFooter() {
   ];
 
   return (
-    <footer className="border-t border-stone-200 bg-stone-50">
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+    <footer className="border-t border-ink-800 bg-ink-950">
+      <div className="mx-auto max-w-7xl px-4 pt-14 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:gap-12">
           {columns.map((column) => (
             <div key={column.title}>
-              <h4 className="eyebrow mb-4 text-stone-500">{column.title}</h4>
+              <h4 className="eyebrow mb-4 text-signal-500">{column.title}</h4>
               <ul className="space-y-3">
                 {column.links.map((link) => (
                   <li key={link.href}>
-                    <Link href={link.href} className="text-sm text-stone-600 transition-colors hover:text-stone-900">
+                    <Link
+                      href={link.href}
+                      className="text-sm text-ink-400 transition-colors hover:text-ink-50"
+                    >
                       {link.label}
                     </Link>
                   </li>
@@ -341,18 +347,27 @@ export function PublicFooter() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col gap-4 border-t border-stone-200 pt-6 md:flex-row md:items-center md:justify-between">
+        <div className="mt-14 flex flex-col gap-4 border-t border-ink-800 pt-6 md:flex-row md:items-center md:justify-between">
           <SiteLogo />
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
             <a
               href="https://www.linkedin.com/company/tauraco"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-stone-500 transition-colors hover:text-brand-700"
+              className="font-mono text-xs text-ink-500 transition-colors hover:text-signal-400"
             >
               LinkedIn ↗
             </a>
-            <p className="text-xs text-stone-500">© {year} TaskMatch.ai — operated by Tauraco. {L.rights}</p>
+            <p className="font-mono text-xs text-ink-500">
+              © {year} TaskMatch.ai — operated by Tauraco. {L.rights}
+            </p>
+          </div>
+        </div>
+
+        {/* Oversized wordmark watermark */}
+        <div className="pointer-events-none select-none overflow-hidden pb-2 pt-10" aria-hidden="true">
+          <div className="whitespace-nowrap text-center font-display text-[18vw] font-semibold leading-[0.8] text-ink-850 lg:text-[11rem]">
+            TaskMatch<span className="text-ink-800">.ai</span>
           </div>
         </div>
       </div>

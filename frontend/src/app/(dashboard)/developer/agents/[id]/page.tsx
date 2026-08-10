@@ -226,16 +226,16 @@ export default function AgentDetailPage() {
             </Button>
           </Link>
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+            <div className="flex h-12 w-12 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10">
               {agent.kind === "human" ? (
-                <UserRound className="h-6 w-6 text-primary" />
+                <UserRound className="h-6 w-6 text-signal-400" />
               ) : (
-                <Bot className="h-6 w-6 text-primary" />
+                <Bot className="h-6 w-6 text-signal-400" />
               )}
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-3xl font-bold tracking-tight">{agent.name}</h1>
+                <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">{agent.name}</h1>
                 <Badge variant={statusBadgeVariant(agent.status)}>
                   {agent.status}
                 </Badge>
@@ -281,16 +281,16 @@ export default function AgentDetailPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Success Rate</span>
-                  <span className="font-semibold">{Math.round(agent.success_rate)}%</span>
+                  <span className="font-mono font-semibold">{Math.round(agent.success_rate)}%</span>
                 </div>
                 <Progress
                   value={agent.success_rate}
                   indicatorClassName={
                     agent.success_rate >= 80
-                      ? "bg-emerald-500"
+                      ? "bg-success"
                       : agent.success_rate >= 50
-                        ? "bg-amber-500"
-                        : "bg-red-500"
+                        ? "bg-warning"
+                        : "bg-danger"
                   }
                 />
               </div>
@@ -298,24 +298,24 @@ export default function AgentDetailPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Average Score</span>
-                  <span className="font-semibold">{agent.avg_score.toFixed(1)} / 100</span>
+                  <span className="font-mono font-semibold">{agent.avg_score.toFixed(1)} / 100</span>
                 </div>
                 <Progress
                   value={agent.avg_score}
-                  indicatorClassName="bg-blue-500"
+                  indicatorClassName="bg-info"
                 />
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Completed Tasks</span>
-                  <span className="font-semibold">
+                  <span className="font-mono font-semibold">
                     {agent.completed_tasks} / {agent.total_assignments}
                   </span>
                 </div>
                 <Progress
                   value={agent.total_assignments > 0 ? (agent.completed_tasks / agent.total_assignments) * 100 : 0}
-                  indicatorClassName="bg-violet-500"
+                  indicatorClassName="bg-signal-500"
                 />
               </div>
             </CardContent>
@@ -377,13 +377,15 @@ export default function AgentDetailPage() {
                   {agent.capabilities.map((cap) => (
                     <div
                       key={cap.id}
-                      className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1"
+                      className="inline-flex items-center gap-1.5 rounded-sm border px-3 py-1"
                     >
-                      <span className="text-sm font-medium">{cap.name}</span>
+                      <span className="font-mono text-xs font-medium">{cap.name}</span>
                       {cap.version && (
-                        <span className="text-xs text-muted-foreground">v{cap.version}</span>
+                        <span className="font-mono text-[11px] text-muted-foreground">v{cap.version}</span>
                       )}
                       <button
+                        type="button"
+                        aria-label={`Remove ${cap.name}`}
                         onClick={() => handleRemoveCapability(cap.id)}
                         className="ml-1 text-muted-foreground hover:text-destructive transition-colors"
                         disabled={actionLoading}
@@ -431,11 +433,11 @@ export default function AgentDetailPage() {
                     <Link
                       key={assignment.id}
                       href={`/developer/tasks/${assignment.task_id}`}
-                      className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                      className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:border-signal-500/30 hover:bg-ink-800/60"
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{assignment.task_title}</p>
-                        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                        <p className="text-sm font-medium truncate text-ink-100">{assignment.task_title}</p>
+                        <div className="mt-1 flex items-center gap-3 font-mono text-xs text-muted-foreground">
                           <span>{assignment.job_title}</span>
                           <span>{formatCurrency(assignment.budget, assignment.currency)}</span>
                           {assignment.completed_at && (
@@ -445,7 +447,7 @@ export default function AgentDetailPage() {
                       </div>
                       <div className="flex items-center gap-2 ml-3">
                         {assignment.score !== null && (
-                          <span className="text-xs font-medium">{assignment.score}/100</span>
+                          <span className="font-mono text-xs font-medium text-ink-100">{assignment.score}/100</span>
                         )}
                         <Badge variant={statusBadgeVariant(assignment.status)} className="text-xs">
                           {formatStatus(assignment.status)}
@@ -474,8 +476,8 @@ export default function AgentDetailPage() {
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium">{fb.task_title}</p>
                       <div className="flex items-center gap-1">
-                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                        <span className="text-sm font-medium">{fb.score}/100</span>
+                        <Star className="h-3.5 w-3.5 fill-warning text-warning" />
+                        <span className="font-mono text-sm font-medium">{fb.score}/100</span>
                       </div>
                     </div>
                     <p className="text-sm text-muted-foreground">{fb.note}</p>
@@ -522,14 +524,14 @@ export default function AgentDetailPage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-emerald-600" />
+                <DollarSign className="h-5 w-5 text-success" />
                 Earnings
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Total Earned</span>
-                <span className="font-semibold text-emerald-600">
+                <span className="font-mono font-semibold text-success">
                   {formatCurrency(agent.earnings?.total ?? 0, agent.earnings?.currency ?? "USD")}
                 </span>
               </div>

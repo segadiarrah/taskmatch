@@ -16,9 +16,9 @@ type Release = {
 };
 
 const typeStyles: Record<EntryType, string> = {
-  Feature: "bg-brand-800 text-white",
-  Improvement: "border border-stone-300 bg-white text-brand-700",
-  Fix: "border border-stone-200 bg-stone-100 text-stone-700",
+  Feature: "border border-signal-500/40 bg-signal-500/10 text-signal-400",
+  Improvement: "border border-info/40 bg-info/10 text-info",
+  Fix: "border border-ink-600 bg-ink-800 text-ink-300",
 };
 
 /* Release entry text stays in English (operational record). */
@@ -147,7 +147,7 @@ export default function ChangelogPage() {
     });
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-ink-950 text-ink-50">
       <PageHero
         eyebrow={c.eyebrow}
         title={c.title}
@@ -162,7 +162,7 @@ export default function ChangelogPage() {
             {(["Feature", "Improvement", "Fix"] as EntryType[]).map((type) => (
               <span
                 key={type}
-                className={`rounded-full px-3 py-1 eyebrow ${typeStyles[type]}`}
+                className={`eyebrow rounded-sm px-3 py-1 ${typeStyles[type]}`}
               >
                 {c.typeLabels[type]}
               </span>
@@ -170,7 +170,7 @@ export default function ChangelogPage() {
           </div>
 
           <div className="relative">
-            <div className="absolute bottom-2 left-[7px] top-2 w-px bg-stone-200 sm:left-[calc(9rem+7px)]" />
+            <div className="absolute bottom-2 left-[7px] top-2 w-px bg-ink-800 sm:left-[calc(9rem+7px)]" />
             <div className="space-y-12">
               {releases.map((release, ri) => (
                 <Reveal
@@ -179,24 +179,24 @@ export default function ChangelogPage() {
                   className="relative pl-8 sm:grid sm:grid-cols-[9rem_1fr] sm:gap-8 sm:pl-0"
                 >
                   <div className="sm:relative sm:pr-8 sm:text-right">
-                    <span className="inline-flex items-center rounded-md bg-brand-50 px-2.5 py-1 font-mono text-sm font-semibold text-brand-700">
+                    <span className="inline-flex items-center rounded-sm border border-signal-500/40 bg-signal-500/10 px-2.5 py-1 font-mono text-sm font-semibold text-signal-400">
                       {release.version}
                     </span>
-                    <div className="mt-2 font-mono text-xs text-stone-500">{formatDate(release.date)}</div>
-                    <span className="absolute left-[-1.72rem] top-2 h-3.5 w-3.5 rounded-full border-2 border-brand-700 bg-white sm:left-auto sm:right-[-0.44rem]" />
+                    <div className="mt-2 font-mono text-xs text-ink-500">{formatDate(release.date)}</div>
+                    <span className="absolute left-[-1.72rem] top-2 h-3.5 w-3.5 rounded-full border-2 border-signal-500 bg-ink-950 sm:left-auto sm:right-[-0.44rem]" />
                   </div>
 
-                  <div className="hover-lift rounded-xl border border-stone-200 bg-white p-7 hover:border-stone-300 hover:shadow-sm">
-                    <p className="text-base font-semibold text-stone-900">{release.summary}</p>
+                  <div className="hover-lift rounded-lg border border-ink-700 bg-ink-900 p-7 hover:border-signal-500/40">
+                    <p className="text-base font-semibold text-ink-50">{release.summary}</p>
                     <ul className="mt-5 space-y-4">
                       {release.entries.map((entry, index) => (
                         <li key={index} className="flex gap-3">
                           <span
-                            className={`mt-0.5 shrink-0 rounded-full px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.14em] ${typeStyles[entry.type]}`}
+                            className={`mt-0.5 shrink-0 rounded-sm px-2.5 py-1 font-mono text-[0.62rem] font-semibold uppercase tracking-[0.14em] ${typeStyles[entry.type]}`}
                           >
                             {c.typeLabels[entry.type]}
                           </span>
-                          <span className="text-sm leading-7 text-stone-600">{entry.text}</span>
+                          <span className="text-sm leading-7 text-ink-400">{entry.text}</span>
                         </li>
                       ))}
                     </ul>

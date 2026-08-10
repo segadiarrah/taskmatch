@@ -287,34 +287,36 @@ export default function ForDevelopersPage() {
   const c = COPY[locale] ?? COPY.en;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-ink-950 text-ink-50">
       {/* Hero + code sample */}
-      <section className="border-b border-stone-200 bg-white px-4 pb-16 pt-28 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_0.95fr] lg:items-center">
+      <section className="relative overflow-hidden border-b border-ink-800 bg-ink-950 px-4 pb-16 pt-28 sm:px-6 lg:px-8">
+        <div className="pointer-events-none absolute inset-0 bg-grid" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-0 bg-signal-glow" aria-hidden="true" />
+        <div className="relative mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_0.95fr] lg:items-center">
           <div>
-            <Reveal className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-4 py-1.5 eyebrow text-stone-600">
-              <Terminal className="h-3.5 w-3.5 text-brand-700" />
+            <Reveal className="eyebrow inline-flex items-center gap-2 rounded-full border border-ink-700 bg-ink-900/80 px-4 py-1.5 text-ink-300">
+              <Terminal className="h-3.5 w-3.5 text-signal-400" />
               {c.eyebrow}
             </Reveal>
             <Reveal delay={80}>
-              <h1 className="mt-8 text-4xl font-semibold leading-[1.05] tracking-tight text-stone-900 sm:text-5xl lg:text-6xl">
+              <h1 className="mt-8 font-display text-4xl font-medium leading-[1.05] text-ink-50 sm:text-5xl lg:text-6xl">
                 {c.title}
-                <span className="block text-brand-800">{c.accent}</span>
+                <span className="block font-display italic text-signal-500">{c.accent}</span>
               </h1>
             </Reveal>
             <Reveal delay={160}>
-              <p className="mt-6 max-w-xl text-lg leading-8 text-stone-600">{c.description}</p>
+              <p className="mt-6 max-w-xl text-lg leading-8 text-ink-300">{c.description}</p>
             </Reveal>
             <Reveal delay={220} className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a
                 href="/register"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-brand-800 px-7 text-sm font-semibold text-white transition-colors hover:bg-brand-900"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-signal-500 px-7 text-sm font-semibold text-ink-950 transition-all hover:bg-signal-400 hover:shadow-glow-sm"
               >
                 {c.ctaRegister}
               </a>
               <a
                 href="/resources/sdk"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-stone-300 bg-white px-7 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-ink-600 bg-transparent px-7 text-sm font-medium text-ink-100 transition-colors hover:border-ink-400 hover:bg-ink-800"
               >
                 {c.ctaSdk}
               </a>
@@ -323,14 +325,14 @@ export default function ForDevelopersPage() {
 
           <Reveal
             delay={220}
-            className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm"
+            className="overflow-hidden rounded-lg border border-ink-700 bg-ink-900 shadow-panel"
           >
-            <div className="flex items-center justify-between border-b border-stone-200 bg-stone-50 px-5 py-3 font-mono text-xs uppercase tracking-wider text-stone-600">
+            <div className="flex items-center justify-between border-b border-ink-800 bg-ink-850 px-5 py-3 font-mono text-xs uppercase tracking-wider text-ink-400">
               <span>{c.sdkLabel}</span>
-              <span className="text-brand-700">@taskmatch/sdk</span>
+              <span className="text-signal-400">@taskmatch/sdk</span>
             </div>
             <div className="overflow-x-auto p-5">
-              <pre className="font-mono text-xs leading-7 text-stone-600 sm:text-sm">
+              <pre className="font-mono text-xs leading-7 text-ink-300 sm:text-sm">
                 <code>{codeExample}</code>
               </pre>
             </div>
@@ -345,43 +347,44 @@ export default function ForDevelopersPage() {
             <Reveal
               key={step.n}
               delay={i * 70}
-              className="hover-lift rounded-xl border border-stone-200 bg-white p-6 hover:border-stone-300 hover:shadow-sm"
+              className="hover-lift rounded-lg border border-ink-700 bg-ink-900 p-6 hover:border-signal-500/40"
             >
-              <span className="font-mono text-sm text-brand-700">{step.n}</span>
-              <h3 className="mt-4 text-lg font-semibold text-stone-900">{step.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-stone-600">{step.body}</p>
+              <span className="font-mono text-sm text-signal-400">{step.n}</span>
+              <h3 className="mt-4 text-lg font-semibold text-ink-50">{step.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-ink-400">{step.body}</p>
             </Reveal>
           ))}
         </div>
       </section>
 
       {/* Advantages + stats */}
-      <section className="border-y border-stone-200 bg-stone-50 px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+      <section className="relative border-y border-paper-ink/15 bg-paper px-4 py-20 text-paper-ink sm:px-6 lg:px-8">
+        <div className="pointer-events-none absolute inset-0 bg-grid-paper" aria-hidden="true" />
+        <div className="relative mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
-            <Reveal className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-1.5 eyebrow text-stone-600">
-              <Bot className="h-3.5 w-3.5 text-brand-700" />
+            <Reveal className="eyebrow inline-flex items-center gap-2 rounded-full border border-paper-ink/20 bg-paper px-4 py-1.5 text-paper-ink/70">
+              <Bot className="h-3.5 w-3.5 text-signal-600" />
               {c.advEyebrow}
             </Reveal>
             <Reveal delay={80}>
-              <h2 className="mt-6 text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
+              <h2 className="mt-6 font-display text-3xl font-medium text-paper-ink sm:text-4xl">
                 {c.advTitle}
               </h2>
             </Reveal>
             <Reveal delay={140}>
-              <p className="mt-5 max-w-xl text-lg leading-8 text-stone-600">{c.advBody}</p>
+              <p className="mt-5 max-w-xl text-lg leading-8 text-paper-ink/70">{c.advBody}</p>
             </Reveal>
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
               {c.stats.map((stat, i) => (
                 <Reveal
                   key={stat.label}
                   delay={i * 80}
-                  className="rounded-xl border border-stone-200 bg-white p-5"
+                  className="rounded-md border border-paper-ink/15 bg-paper p-5"
                 >
-                  <div className="text-4xl font-semibold tracking-tight text-stone-900">
+                  <div className="font-display text-4xl font-medium text-paper-ink">
                     <Counter value={stat.value} suffix={stat.suffix} />
                   </div>
-                  <p className="mt-2 text-xs leading-6 text-stone-600">{stat.label}</p>
+                  <p className="mt-2 text-xs leading-6 text-paper-ink/70">{stat.label}</p>
                 </Reveal>
               ))}
             </div>
@@ -394,13 +397,13 @@ export default function ForDevelopersPage() {
                 <Reveal
                   key={item.title}
                   delay={i * 70}
-                  className="hover-lift rounded-xl border border-stone-200 bg-white p-6 hover:border-stone-300 hover:shadow-sm"
+                  className="hover-lift rounded-md border border-paper-ink/15 bg-paper p-6 hover:border-paper-ink/40"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-brand-700">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-sm border border-signal-600/30 bg-signal-500/10 text-signal-600">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="mt-5 text-lg font-semibold text-stone-900">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-stone-600">{item.body}</p>
+                  <h3 className="mt-5 text-lg font-semibold text-paper-ink">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-paper-ink/70">{item.body}</p>
                 </Reveal>
               );
             })}
@@ -411,27 +414,27 @@ export default function ForDevelopersPage() {
       {/* Reputation + DX */}
       <section className="px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-2">
-          <Reveal className="rounded-2xl border border-stone-200 bg-white p-8">
-            <div className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-4 py-1.5 eyebrow text-stone-600">
-              <Trophy className="h-3.5 w-3.5 text-brand-700" />
+          <Reveal className="rounded-lg border border-ink-700 bg-ink-900 p-8 shadow-panel">
+            <div className="eyebrow inline-flex items-center gap-2 rounded-full border border-ink-700 bg-ink-850 px-4 py-1.5 text-ink-300">
+              <Trophy className="h-3.5 w-3.5 text-signal-400" />
               {c.repEyebrow}
             </div>
             <div className="mt-8 space-y-4">
               {c.repItems.map((line) => (
                 <div
                   key={line}
-                  className="flex items-start gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-4 font-mono text-sm text-stone-600"
+                  className="flex items-start gap-3 rounded-md border border-ink-700 bg-ink-850 px-4 py-4 font-mono text-sm text-ink-300"
                 >
-                  <span className="text-brand-700">{"→"}</span>
+                  <span className="text-signal-400">{"→"}</span>
                   <span>{line}</span>
                 </div>
               ))}
             </div>
           </Reveal>
 
-          <Reveal delay={120} className="rounded-2xl border border-stone-200 bg-white p-8">
-            <div className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-4 py-1.5 eyebrow text-stone-600">
-              <Code2 className="h-3.5 w-3.5 text-brand-700" />
+          <Reveal delay={120} className="rounded-lg border border-ink-700 bg-ink-900 p-8 shadow-panel">
+            <div className="eyebrow inline-flex items-center gap-2 rounded-full border border-ink-700 bg-ink-850 px-4 py-1.5 text-ink-300">
+              <Code2 className="h-3.5 w-3.5 text-signal-400" />
               {c.dxEyebrow}
             </div>
             <div className="mt-8 space-y-5">
@@ -439,12 +442,12 @@ export default function ForDevelopersPage() {
                 const Icon = DX_ICONS[i] ?? FileCode2;
                 return (
                   <div key={item.title} className="flex gap-4">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-brand-700">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="text-base font-semibold text-stone-900">{item.title}</h3>
-                      <p className="mt-2 text-sm leading-7 text-stone-600">{item.body}</p>
+                      <h3 className="text-base font-semibold text-ink-50">{item.title}</h3>
+                      <p className="mt-2 text-sm leading-7 text-ink-400">{item.body}</p>
                     </div>
                   </div>
                 );
@@ -456,9 +459,9 @@ export default function ForDevelopersPage() {
 
       {/* Integration details */}
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl rounded-2xl border border-stone-200 bg-white p-8">
+        <div className="mx-auto max-w-6xl rounded-lg border border-ink-700 bg-ink-900 p-8 shadow-panel">
           <Reveal>
-            <h2 className="text-2xl font-semibold tracking-tight text-stone-900 sm:text-3xl">
+            <h2 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">
               {c.integrationTitle}
             </h2>
           </Reveal>
@@ -467,7 +470,7 @@ export default function ForDevelopersPage() {
               <Reveal
                 key={item}
                 delay={i * 70}
-                className="rounded-lg border border-stone-200 bg-stone-50 p-5 text-sm leading-7 text-stone-600"
+                className="rounded-md border border-ink-700 bg-ink-850 p-5 text-sm leading-7 text-ink-300"
               >
                 {item}
               </Reveal>

@@ -7,12 +7,15 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const buttonVariants: Record<string, string> = {
-  default: "bg-brand-800 text-white hover:bg-brand-900 shadow-sm",
-  destructive: "bg-red-600 text-white hover:bg-red-700 shadow-sm",
-  outline: "border border-stone-300 bg-white hover:bg-stone-50 text-stone-900",
-  secondary: "bg-stone-100 text-stone-900 hover:bg-stone-200",
-  ghost: "hover:bg-stone-100 text-stone-900",
-  link: "text-brand-700 underline-offset-4 hover:underline",
+  default:
+    "bg-primary text-primary-foreground font-semibold hover:bg-signal-400 hover:shadow-glow-sm",
+  destructive:
+    "bg-destructive text-destructive-foreground font-semibold hover:brightness-110",
+  outline:
+    "border border-ink-600 bg-transparent text-foreground hover:border-ink-400 hover:bg-ink-800",
+  secondary: "bg-ink-800 text-foreground hover:bg-ink-700 border border-ink-700",
+  ghost: "text-ink-300 hover:bg-ink-800 hover:text-foreground",
+  link: "text-primary underline-offset-4 hover:underline",
 };
 
 const buttonSizes: Record<string, string> = {
@@ -27,7 +30,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         className={cn(
-          "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-700 disabled:pointer-events-none disabled:opacity-50",
+          "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
           buttonVariants[variant],
           buttonSizes[size],
           className

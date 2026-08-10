@@ -58,19 +58,19 @@ interface AuditEntry {
 }
 
 const statusColors: Record<string, string> = {
-  draft: "bg-zinc-300",
-  submitted: "bg-blue-400",
-  formatted: "bg-indigo-400",
-  bidding: "bg-amber-400",
-  in_progress: "bg-orange-400",
-  under_review: "bg-purple-400",
-  completed: "bg-emerald-400",
-  cancelled: "bg-red-400",
-  open: "bg-blue-400",
-  assigned: "bg-orange-400",
-  pending_validation: "bg-purple-400",
-  approved: "bg-emerald-400",
-  rejected: "bg-red-400",
+  draft: "bg-ink-500",
+  submitted: "bg-info",
+  formatted: "bg-signal-500",
+  bidding: "bg-warning",
+  in_progress: "bg-signal-400",
+  under_review: "bg-[#b49aff]",
+  completed: "bg-success",
+  cancelled: "bg-danger",
+  open: "bg-info",
+  assigned: "bg-signal-400",
+  pending_validation: "bg-[#b49aff]",
+  approved: "bg-success",
+  rejected: "bg-danger",
 };
 
 function KPICard({
@@ -89,24 +89,24 @@ function KPICard({
   return (
     <Card className="relative overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-zinc-500">{title}</CardTitle>
-        <div className="rounded-lg bg-zinc-100 p-2">
-          <Icon className="h-4 w-4 text-zinc-600" />
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+        <div className="rounded-md border border-ink-700 bg-ink-800 p-2">
+          <Icon className="h-4 w-4 text-signal-400" />
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-zinc-900">{value}</div>
+        <div className="font-display text-3xl font-medium text-ink-50">{value}</div>
         <div className="mt-1 flex items-center gap-1">
           {trend && (
-            <span className="flex items-center text-xs font-medium text-emerald-600">
+            <span className="flex items-center text-xs font-medium text-success">
               <TrendingUp className="mr-0.5 h-3 w-3" />
               {trend}
             </span>
           )}
-          <p className="text-xs text-zinc-500">{description}</p>
+          <p className="text-xs text-muted-foreground">{description}</p>
         </div>
       </CardContent>
-      <div className="absolute -bottom-2 -right-2 h-24 w-24 rounded-full bg-zinc-50 opacity-50" />
+      <div className="absolute -bottom-2 -right-2 h-24 w-24 rounded-full bg-ink-800/50" />
     </Card>
   );
 }
@@ -125,16 +125,16 @@ function StatusBar({
   const pct = total > 0 ? (count / total) * 100 : 0;
   return (
     <div className="flex items-center gap-3">
-      <span className="w-28 text-sm text-zinc-600 capitalize">{label.replace(/_/g, " ")}</span>
+      <span className="w-28 text-sm text-ink-300 capitalize">{label.replace(/_/g, " ")}</span>
       <div className="flex-1">
-        <div className="h-2.5 w-full overflow-hidden rounded-full bg-zinc-100">
+        <div className="h-2.5 w-full overflow-hidden rounded-full bg-ink-800">
           <div
             className={cn("h-full rounded-full transition-all duration-500", color)}
             style={{ width: `${pct}%` }}
           />
         </div>
       </div>
-      <span className="w-10 text-right text-sm font-medium text-zinc-700">{count}</span>
+      <span className="w-10 text-right font-mono text-sm font-medium text-ink-200">{count}</span>
     </div>
   );
 }
@@ -142,22 +142,22 @@ function StatusBar({
 function ActivityItem({ entry }: { entry: AuditEntry }) {
   return (
     <div className="flex items-start gap-3 py-3">
-      <div className="mt-0.5 rounded-full bg-zinc-100 p-1.5">
-        <Activity className="h-3 w-3 text-zinc-500" />
+      <div className="mt-0.5 rounded-full border border-ink-700 bg-ink-800 p-1.5">
+        <Activity className="h-3 w-3 text-ink-400" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-zinc-700">
+        <p className="text-sm text-ink-200">
           <span className="font-medium">{entry.actor_type}</span>
           {" "}
-          <span className="text-zinc-500">{entry.action}</span>
+          <span className="text-ink-400">{entry.action}</span>
           {" "}
           <span className="font-medium">{entry.entity_type}</span>
         </p>
         {entry.details && (
-          <p className="mt-0.5 truncate text-xs text-zinc-400">{entry.details}</p>
+          <p className="mt-0.5 truncate text-xs text-ink-500">{entry.details}</p>
         )}
       </div>
-      <span className="shrink-0 text-xs text-zinc-400">
+      <span className="shrink-0 font-mono text-xs text-ink-500">
         <Clock className="mr-1 inline h-3 w-3" />
         {timeAgo(entry.created_at)}
       </span>
@@ -221,8 +221,8 @@ export default function AdminOverviewPage() {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
-          <p className="text-sm text-zinc-500">Loading dashboard...</p>
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
+          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -232,7 +232,7 @@ export default function AdminOverviewPage() {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <div className="text-center">
-          <p className="text-zinc-500">Failed to load dashboard data.</p>
+          <p className="text-muted-foreground">Failed to load dashboard data.</p>
           <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
             Retry
           </Button>
@@ -248,15 +248,15 @@ export default function AdminOverviewPage() {
     <div className="space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Mission Control</h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Mission Control</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Real-time overview of your TaskMatch platform operations.
         </p>
       </div>
 
       {/* Marketplace economics — the numbers investors ask for first */}
       <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-400">
+        <h2 className="eyebrow mb-3 text-ink-400">
           Marketplace economics
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -335,7 +335,7 @@ export default function AdminOverviewPage() {
         {/* Jobs by Status */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Jobs by Status</CardTitle>
+            <CardTitle className="font-display text-base">Jobs by Status</CardTitle>
             <CardDescription>Distribution across the job lifecycle</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -345,7 +345,7 @@ export default function AdminOverviewPage() {
                 label={status}
                 count={count}
                 total={jobsTotal}
-                color={statusColors[status] || "bg-zinc-400"}
+                color={statusColors[status] || "bg-ink-500"}
               />
             ))}
           </CardContent>
@@ -354,7 +354,7 @@ export default function AdminOverviewPage() {
         {/* Tasks by Status */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Tasks by Status</CardTitle>
+            <CardTitle className="font-display text-base">Tasks by Status</CardTitle>
             <CardDescription>Current task pipeline breakdown</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -364,7 +364,7 @@ export default function AdminOverviewPage() {
                 label={status}
                 count={count}
                 total={tasksTotal}
-                color={statusColors[status] || "bg-zinc-400"}
+                color={statusColors[status] || "bg-ink-500"}
               />
             ))}
           </CardContent>
@@ -376,16 +376,16 @@ export default function AdminOverviewPage() {
         {/* Recent Activity */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base">Recent Activity</CardTitle>
+            <CardTitle className="font-display text-base">Recent Activity</CardTitle>
             <CardDescription>Latest platform events</CardDescription>
           </CardHeader>
           <CardContent>
             {!data.recent_activity || data.recent_activity.length === 0 ? (
-              <div className="flex h-32 items-center justify-center text-sm text-zinc-400">
+              <div className="flex h-32 items-center justify-center text-sm text-ink-500">
                 No recent activity
               </div>
             ) : (
-              <div className="divide-y divide-zinc-100">
+              <div className="divide-y divide-ink-800">
                 {data.recent_activity.map((entry) => (
                   <ActivityItem key={entry.id} entry={entry} />
                 ))}
@@ -397,7 +397,7 @@ export default function AdminOverviewPage() {
         {/* Quick Actions */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Quick Actions</CardTitle>
+            <CardTitle className="font-display text-base">Quick Actions</CardTitle>
             <CardDescription>Common operator workflows</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -407,7 +407,7 @@ export default function AdminOverviewPage() {
               onClick={() => router.push("/admin/jobs")}
             >
               <span className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-indigo-500" />
+                <Sparkles className="h-4 w-4 text-signal-400" />
                 Format Next Job
               </span>
               <ArrowRight className="h-4 w-4" />
@@ -418,7 +418,7 @@ export default function AdminOverviewPage() {
               onClick={() => router.push("/admin/validations")}
             >
               <span className="flex items-center gap-2">
-                <FileSearch className="h-4 w-4 text-purple-500" />
+                <FileSearch className="h-4 w-4 text-[#b49aff]" />
                 Review Submissions
               </span>
               <ArrowRight className="h-4 w-4" />
@@ -429,7 +429,7 @@ export default function AdminOverviewPage() {
               onClick={() => router.push("/admin/agents")}
             >
               <span className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-blue-500" />
+                <Users className="h-4 w-4 text-info" />
                 Agent Directory
               </span>
               <ArrowRight className="h-4 w-4" />
@@ -440,7 +440,7 @@ export default function AdminOverviewPage() {
               onClick={() => router.push("/admin/payments")}
             >
               <span className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-emerald-500" />
+                <DollarSign className="h-4 w-4 text-success" />
                 Process Payments
               </span>
               <ArrowRight className="h-4 w-4" />
@@ -451,7 +451,7 @@ export default function AdminOverviewPage() {
               onClick={() => router.push("/admin/audit")}
             >
               <span className="flex items-center gap-2">
-                <ScrollText className="h-4 w-4 text-amber-500" />
+                <ScrollText className="h-4 w-4 text-warning" />
                 View Audit Log
               </span>
               <ArrowRight className="h-4 w-4" />

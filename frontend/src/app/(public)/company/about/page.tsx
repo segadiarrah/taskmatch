@@ -198,7 +198,7 @@ export default function AboutPage() {
   const c = COPY[locale] ?? COPY.en;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-ink-950 text-ink-50">
       <PageHero
         eyebrow={c.eyebrow}
         title={c.title}
@@ -216,33 +216,33 @@ export default function AboutPage() {
       <HighlightBand title={c.bandTitle} body={c.bandBody} items={c.bandItems} />
 
       <section className="px-4 py-20 sm:px-6 lg:px-8">
-        <Reveal className="mx-auto max-w-6xl rounded-2xl border border-stone-200 bg-white p-8">
-          <h2 className="text-3xl font-semibold tracking-tight text-stone-900">{c.teamTitle}</h2>
+        <Reveal className="mx-auto max-w-6xl rounded-lg border border-ink-700 bg-ink-900 p-8 shadow-panel">
+          <h2 className="font-display text-3xl font-medium text-ink-50">{c.teamTitle}</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-[minmax(0,320px)_1fr] md:items-center">
-            <div className="rounded-xl border border-stone-200 bg-stone-50 p-6">
+            <div className="rounded-lg border border-ink-700 bg-ink-950 p-6">
               <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-800 text-2xl font-bold text-white">
+                <div className="flex h-16 w-16 items-center justify-center rounded-sm bg-signal-500 font-mono text-2xl font-bold text-ink-950">
                   S
                 </div>
                 <div>
-                  <div className="text-lg font-semibold text-stone-900">Sega Diarrah</div>
-                  <div className="text-sm text-brand-700">{c.founderRole}</div>
+                  <div className="text-lg font-semibold text-ink-50">Sega Diarrah</div>
+                  <div className="font-mono text-xs uppercase tracking-wider text-signal-400">{c.founderRole}</div>
                 </div>
               </div>
-              <p className="mt-5 text-sm leading-7 text-stone-600">{c.founderBio}</p>
+              <p className="mt-5 text-sm leading-7 text-ink-300">{c.founderBio}</p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <a
                   href="https://www.linkedin.com/in/segadiarrah"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-1.5 text-sm text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900"
+                  className="inline-flex items-center gap-2 rounded-full border border-ink-700 bg-ink-900 px-4 py-1.5 font-mono text-xs text-ink-300 transition-colors hover:border-signal-500/50 hover:text-signal-400"
                 >
                   <Linkedin className="h-4 w-4" />
                   LinkedIn
                 </a>
                 <a
                   href="mailto:sega@tauraco.ai"
-                  className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white px-4 py-1.5 text-sm text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900"
+                  className="inline-flex items-center gap-2 rounded-full border border-ink-700 bg-ink-900 px-4 py-1.5 font-mono text-xs text-ink-300 transition-colors hover:border-signal-500/50 hover:text-signal-400"
                 >
                   <Mail className="h-4 w-4" />
                   sega@tauraco.ai
@@ -250,12 +250,12 @@ export default function AboutPage() {
               </div>
             </div>
             <div>
-              <p className="text-base leading-8 text-stone-600">{c.teamNote}</p>
+              <p className="text-base leading-8 text-ink-300">{c.teamNote}</p>
               <a
                 href="https://www.linkedin.com/company/tauraco"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand-700 hover:underline"
+                className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-signal-400 hover:underline"
               >
                 <Linkedin className="h-4 w-4" />
                 Tauraco on LinkedIn
@@ -266,40 +266,40 @@ export default function AboutPage() {
       </section>
 
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <Reveal className="mx-auto max-w-6xl rounded-2xl border border-stone-200 bg-white p-8">
-          <h2 className="text-3xl font-semibold tracking-tight text-stone-900">{c.posTitle}</h2>
+        <Reveal className="mx-auto max-w-6xl rounded-lg border border-ink-700 bg-ink-900 p-8 shadow-panel">
+          <h2 className="font-display text-3xl font-medium text-ink-50">{c.posTitle}</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {c.posItems.map((item, i) => (
               <Reveal
                 key={item.label}
                 delay={i * 70}
-                className="rounded-xl border border-stone-200 bg-stone-50 p-5 hover-lift hover:border-stone-300"
+                className="hover-lift rounded-lg border border-ink-700 bg-ink-950 p-5 hover:border-signal-500/40"
               >
-                <div className="eyebrow text-brand-700">{item.label}</div>
-                <div className="mt-3 text-lg font-semibold text-stone-900">{item.value}</div>
+                <div className="eyebrow text-signal-400">{item.label}</div>
+                <div className="mt-3 text-lg font-semibold text-ink-50">{item.value}</div>
               </Reveal>
             ))}
           </div>
-          <p className="mt-6 text-sm leading-7 text-stone-600">{c.posNote}</p>
+          <p className="mt-6 text-sm leading-7 text-ink-300">{c.posNote}</p>
         </Reveal>
       </section>
 
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <Reveal className="mx-auto max-w-6xl rounded-2xl border border-stone-200 bg-stone-50 p-8">
-          <h2 className="text-3xl font-semibold tracking-tight text-stone-900">{c.stackTitle}</h2>
+        <Reveal className="mx-auto max-w-6xl rounded-lg border border-ink-700 bg-ink-900 p-8 shadow-panel">
+          <h2 className="font-display text-3xl font-medium text-ink-50">{c.stackTitle}</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-4">
             {c.stackItems.map((item, i) => (
               <Reveal
                 key={item}
                 delay={i * 70}
-                className="rounded-lg border border-stone-200 bg-white px-5 py-5 font-mono text-sm text-stone-600 hover-lift hover:border-stone-300"
+                className="hover-lift rounded-lg border border-ink-700 bg-ink-950 px-5 py-5 font-mono text-sm text-ink-300 hover:border-signal-500/40"
               >
-                <span className="mr-1.5 font-semibold text-brand-700">→</span>
+                <span className="mr-1.5 font-semibold text-signal-400">→</span>
                 {item}
               </Reveal>
             ))}
           </div>
-          <p className="mt-6 text-sm leading-7 text-stone-600">{c.stackNote}</p>
+          <p className="mt-6 text-sm leading-7 text-ink-300">{c.stackNote}</p>
         </Reveal>
       </section>
 

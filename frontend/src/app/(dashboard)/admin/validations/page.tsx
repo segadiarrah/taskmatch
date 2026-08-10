@@ -299,7 +299,7 @@ export default function ValidationsPage() {
       <Card className={cn(
         "transition-shadow",
         isPending && "border-l-4",
-        isPending && mcpVal?.passed ? "border-l-emerald-400" : isPending && !mcpVal?.passed ? "border-l-amber-400" : ""
+        isPending && mcpVal?.passed ? "border-l-success" : isPending && !mcpVal?.passed ? "border-l-warning" : ""
       )}>
         <CardContent className="pt-6">
           {/* Header */}
@@ -307,7 +307,7 @@ export default function ValidationsPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3
-                  className="font-semibold text-zinc-900 hover:text-zinc-600 cursor-pointer"
+                  className="cursor-pointer font-semibold text-foreground hover:text-signal-400"
                   onClick={() => router.push(`/admin/tasks/${submission.task_id}`)}
                 >
                   {submission.task_title}
@@ -323,32 +323,32 @@ export default function ValidationsPage() {
                   {formatStatus(submission.status)}
                 </Badge>
               </div>
-              <p className="mt-0.5 text-sm text-zinc-500">{submission.job_title}</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">{submission.job_title}</p>
             </div>
-            <div className="text-right shrink-0">
-              <p className="text-xs text-zinc-400">Submitted</p>
-              <p className="text-sm font-medium text-zinc-600">{timeAgo(submission.submitted_at)}</p>
+            <div className="shrink-0 text-right">
+              <p className="text-xs text-ink-500">Submitted</p>
+              <p className="font-mono text-sm font-medium text-ink-300">{timeAgo(submission.submitted_at)}</p>
             </div>
           </div>
 
           {/* Agent info */}
           <div className="mt-3 flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-100 text-[10px] font-bold text-zinc-600">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full border border-ink-700 bg-ink-800 font-mono text-[10px] font-bold text-ink-300">
               {submission.agent_name.slice(0, 2).toUpperCase()}
             </div>
-            <span className="text-sm font-medium text-zinc-700">{submission.agent_name}</span>
-            <span className="text-xs text-zinc-400">by {submission.developer_name}</span>
+            <span className="text-sm font-medium text-ink-200">{submission.agent_name}</span>
+            <span className="text-xs text-ink-500">by {submission.developer_name}</span>
           </div>
 
           {/* Summary */}
-          <p className="mt-3 text-sm leading-relaxed text-zinc-600">{submission.summary}</p>
+          <p className="mt-3 text-sm leading-relaxed text-ink-300">{submission.summary}</p>
 
           {submission.deliverable_url && (
             <a
               href={submission.deliverable_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800"
+              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-info hover:text-info/80"
             >
               <ExternalLink className="h-3 w-3" />
               View Deliverable
@@ -358,48 +358,48 @@ export default function ValidationsPage() {
           {/* MCP Auto-Validation */}
           {mcpVal && (
             <div className={cn(
-              "mt-4 rounded-lg border p-4",
-              mcpVal.passed ? "border-emerald-200 bg-emerald-50/50" : "border-amber-200 bg-amber-50/50"
+              "mt-4 rounded-md border p-4",
+              mcpVal.passed ? "border-success/40 bg-success/5" : "border-warning/40 bg-warning/5"
             )}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Brain className="h-4 w-4 text-purple-500" />
-                  <span className="text-sm font-semibold text-zinc-700">MCP Auto-Validation</span>
+                  <Brain className="h-4 w-4 text-[#b49aff]" />
+                  <span className="text-sm font-semibold text-ink-200">MCP Auto-Validation</span>
                 </div>
                 <div className="flex items-center gap-2">
                   {mcpVal.passed ? (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                   ) : (
-                    <AlertTriangle className="h-4 w-4 text-amber-500" />
+                    <AlertTriangle className="h-4 w-4 text-warning" />
                   )}
                   <span className={cn(
-                    "text-lg font-bold",
-                    mcpVal.score >= 80 ? "text-emerald-600" :
-                    mcpVal.score >= 60 ? "text-amber-600" :
-                    "text-red-600"
+                    "font-display text-lg font-medium",
+                    mcpVal.score >= 80 ? "text-success" :
+                    mcpVal.score >= 60 ? "text-warning" :
+                    "text-danger"
                   )}>
                     {mcpVal.score}/100
                   </span>
                 </div>
               </div>
-              <p className="mt-2 text-sm text-zinc-600">{mcpVal.notes}</p>
+              <p className="mt-2 text-sm text-ink-300">{mcpVal.notes}</p>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {mcpVal.checks.map((check) => (
                   <div
                     key={check.name}
                     className={cn(
                       "flex items-start gap-2 rounded-md p-2 text-xs",
-                      check.passed ? "bg-white/60" : "bg-white/80"
+                      check.passed ? "bg-ink-900/60" : "bg-ink-900/80"
                     )}
                   >
                     {check.passed ? (
-                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
                     ) : (
-                      <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-500" />
+                      <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-danger" />
                     )}
                     <div>
-                      <p className="font-medium text-zinc-700">{check.name}</p>
-                      <p className="text-zinc-500">{check.detail}</p>
+                      <p className="font-medium text-ink-200">{check.name}</p>
+                      <p className="text-ink-400">{check.detail}</p>
                     </div>
                   </div>
                 ))}
@@ -409,18 +409,18 @@ export default function ValidationsPage() {
 
           {/* Review result for already reviewed */}
           {submission.review_result && submission.reviewed_at && (
-            <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+            <div className="mt-4 rounded-md border border-ink-800 bg-ink-900/60 p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-zinc-500" />
-                  <span className="text-sm font-medium text-zinc-700">
+                  <ShieldCheck className="h-4 w-4 text-ink-400" />
+                  <span className="text-sm font-medium text-ink-200">
                     Reviewed by {submission.reviewer}
                   </span>
                 </div>
-                <span className="text-xs text-zinc-400">{formatDate(submission.reviewed_at)}</span>
+                <span className="font-mono text-xs text-ink-500">{formatDate(submission.reviewed_at)}</span>
               </div>
               {submission.review_notes && (
-                <p className="mt-2 text-sm text-zinc-600">{submission.review_notes}</p>
+                <p className="mt-2 text-sm text-ink-300">{submission.review_notes}</p>
               )}
             </div>
           )}
@@ -439,7 +439,7 @@ export default function ValidationsPage() {
               <div className="flex flex-wrap gap-2">
                 <Button
                   size="sm"
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="bg-success text-ink-950 hover:brightness-110"
                   onClick={() => handleReview(submission.id, "approved")}
                   disabled={actionLoading === submission.id}
                 >
@@ -457,7 +457,7 @@ export default function ValidationsPage() {
                 </Button>
                 <Button
                   size="sm"
-                  className="bg-amber-500 hover:bg-amber-600 text-white"
+                  className="bg-warning text-ink-950 hover:brightness-110"
                   onClick={() => handleReview(submission.id, "rework_requested")}
                   disabled={actionLoading === submission.id}
                 >
@@ -476,8 +476,8 @@ export default function ValidationsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Validation Center</h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Validation Center</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Review agent submissions, validate deliverables, and manage quality assurance.
         </p>
       </div>
@@ -487,12 +487,12 @@ export default function ValidationsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-purple-100 p-2">
-                <Clock className="h-4 w-4 text-purple-600" />
+              <div className="rounded-md border border-[#b49aff]/30 bg-[#b49aff]/10 p-2">
+                <Clock className="h-4 w-4 text-[#b49aff]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-zinc-900">{pendingSubmissions.length}</p>
-                <p className="text-xs text-zinc-500">Pending Review</p>
+                <p className="font-display text-2xl font-medium text-ink-50">{pendingSubmissions.length}</p>
+                <p className="text-xs text-muted-foreground">Pending Review</p>
               </div>
             </div>
           </CardContent>
@@ -500,14 +500,14 @@ export default function ValidationsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-emerald-100 p-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <div className="rounded-md border border-success/30 bg-success/10 p-2">
+                <CheckCircle2 className="h-4 w-4 text-success" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-zinc-900">
+                <p className="font-display text-2xl font-medium text-ink-50">
                   {submissions.filter((s) => s.review_result === "approved").length}
                 </p>
-                <p className="text-xs text-zinc-500">Approved</p>
+                <p className="text-xs text-muted-foreground">Approved</p>
               </div>
             </div>
           </CardContent>
@@ -515,14 +515,14 @@ export default function ValidationsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-red-100 p-2">
-                <XCircle className="h-4 w-4 text-red-600" />
+              <div className="rounded-md border border-danger/30 bg-danger/10 p-2">
+                <XCircle className="h-4 w-4 text-danger" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-zinc-900">
+                <p className="font-display text-2xl font-medium text-ink-50">
                   {submissions.filter((s) => s.review_result === "rejected").length}
                 </p>
-                <p className="text-xs text-zinc-500">Rejected</p>
+                <p className="text-xs text-muted-foreground">Rejected</p>
               </div>
             </div>
           </CardContent>
@@ -530,14 +530,14 @@ export default function ValidationsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-amber-100 p-2">
-                <RotateCcw className="h-4 w-4 text-amber-600" />
+              <div className="rounded-md border border-warning/30 bg-warning/10 p-2">
+                <RotateCcw className="h-4 w-4 text-warning" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-zinc-900">
+                <p className="font-display text-2xl font-medium text-ink-50">
                   {submissions.filter((s) => s.review_result === "rework_requested").length}
                 </p>
-                <p className="text-xs text-zinc-500">Rework Requested</p>
+                <p className="text-xs text-muted-foreground">Rework Requested</p>
               </div>
             </div>
           </CardContent>
@@ -559,15 +559,15 @@ export default function ValidationsPage() {
           {loading ? (
             <div className="flex h-48 items-center justify-center">
               <div className="flex flex-col items-center gap-3">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
-                <p className="text-sm text-zinc-500">Loading submissions...</p>
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
+                <p className="text-sm text-muted-foreground">Loading submissions...</p>
               </div>
             </div>
           ) : pendingSubmissions.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
-              <Inbox className="h-10 w-10 text-zinc-300" />
-              <p className="mt-3 text-sm font-medium text-zinc-500">All caught up!</p>
-              <p className="text-xs text-zinc-400">No submissions pending review right now.</p>
+              <Inbox className="h-10 w-10 text-ink-600" />
+              <p className="mt-3 text-sm font-medium text-muted-foreground">All caught up!</p>
+              <p className="text-xs text-ink-500">No submissions pending review right now.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -581,13 +581,13 @@ export default function ValidationsPage() {
         <TabsContent value="reviewed">
           {loading ? (
             <div className="flex h-48 items-center justify-center">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
             </div>
           ) : reviewedSubmissions.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
-              <ShieldCheck className="h-10 w-10 text-zinc-300" />
-              <p className="mt-3 text-sm font-medium text-zinc-500">No reviewed submissions yet</p>
-              <p className="text-xs text-zinc-400">Submissions will appear here after review.</p>
+              <ShieldCheck className="h-10 w-10 text-ink-600" />
+              <p className="mt-3 text-sm font-medium text-muted-foreground">No reviewed submissions yet</p>
+              <p className="text-xs text-ink-500">Submissions will appear here after review.</p>
             </div>
           ) : (
             <div className="space-y-4">

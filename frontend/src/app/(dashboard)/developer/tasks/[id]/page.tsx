@@ -329,7 +329,7 @@ export default function TaskDetailPage() {
           </Link>
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-3xl font-bold tracking-tight">{task.title}</h1>
+              <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">{task.title}</h1>
               <Badge variant={statusBadgeVariant(task.status)}>
                 {formatStatus(task.status)}
               </Badge>
@@ -369,7 +369,7 @@ export default function TaskDetailPage() {
               {task.input_spec && Object.keys(task.input_spec).length > 0 && (
                 <div>
                   <h4 className="text-sm font-medium mb-2">Input Specification</h4>
-                  <pre className="text-xs bg-zinc-50 border rounded-lg p-4 overflow-auto max-h-[300px]">
+                  <pre className="max-h-[300px] overflow-auto rounded-lg border border-border bg-ink-950 p-4 font-mono text-xs text-ink-200">
                     {JSON.stringify(task.input_spec, null, 2)}
                   </pre>
                 </div>
@@ -378,7 +378,7 @@ export default function TaskDetailPage() {
               {task.output_spec && Object.keys(task.output_spec).length > 0 && (
                 <div>
                   <h4 className="text-sm font-medium mb-2">Output Specification</h4>
-                  <pre className="text-xs bg-zinc-50 border rounded-lg p-4 overflow-auto max-h-[300px]">
+                  <pre className="max-h-[300px] overflow-auto rounded-lg border border-border bg-ink-950 p-4 font-mono text-xs text-ink-200">
                     {JSON.stringify(task.output_spec, null, 2)}
                   </pre>
                 </div>
@@ -400,9 +400,9 @@ export default function TaskDetailPage() {
               </CardHeader>
               <CardContent>
                 {bidSuccess && (
-                  <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 mb-4">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
-                    <p className="text-sm text-emerald-700">Bid submitted successfully.</p>
+                  <div className="flex items-center gap-3 rounded-lg border border-success/40 bg-success/10 p-4 mb-4">
+                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
+                    <p className="text-sm text-success">Bid submitted successfully.</p>
                   </div>
                 )}
                 {bidError && (
@@ -522,9 +522,9 @@ export default function TaskDetailPage() {
               </CardHeader>
               <CardContent>
                 {subSuccess && (
-                  <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 mb-4">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
-                    <p className="text-sm text-emerald-700">Work submitted successfully.</p>
+                  <div className="flex items-center gap-3 rounded-lg border border-success/40 bg-success/10 p-4 mb-4">
+                    <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
+                    <p className="text-sm text-success">Work submitted successfully.</p>
                   </div>
                 )}
                 {subError && (
@@ -622,11 +622,11 @@ export default function TaskDetailPage() {
                             <span className="font-medium">{bid.agent_name}</span>
                           </div>
                         </TableCell>
-                        <TableCell className="font-medium">
+                        <TableCell className="font-mono text-xs font-medium text-ink-100">
                           {formatCurrency(bid.price, bid.currency)}
                         </TableCell>
-                        <TableCell>{bid.eta_hours}h</TableCell>
-                        <TableCell>{(bid.confidence_score * 100).toFixed(0)}%</TableCell>
+                        <TableCell className="font-mono text-xs">{bid.eta_hours}h</TableCell>
+                        <TableCell className="font-mono text-xs">{(bid.confidence_score * 100).toFixed(0)}%</TableCell>
                         <TableCell>
                           <Badge variant={statusBadgeVariant(bid.status)} className="text-xs">
                             {formatStatus(bid.status)}
@@ -663,7 +663,7 @@ export default function TaskDetailPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         {sub.score !== null && (
-                          <span className="text-sm font-medium">{sub.score}/100</span>
+                          <span className="font-mono text-sm font-medium text-ink-100">{sub.score}/100</span>
                         )}
                         <Badge variant={statusBadgeVariant(sub.status)} className="text-xs">
                           {formatStatus(sub.status)}
@@ -683,7 +683,7 @@ export default function TaskDetailPage() {
                             href={url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                            className="inline-flex items-center gap-1 text-xs text-signal-400 hover:underline"
                           >
                             <LinkIcon className="h-3 w-3" />
                             Artifact {idx + 1}
@@ -737,14 +737,14 @@ export default function TaskDetailPage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-emerald-600" />
+                <DollarSign className="h-5 w-5 text-success" />
                 Budget & Deadline
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Budget</span>
-                <span className="font-semibold text-emerald-600">
+                <span className="font-mono font-semibold text-success">
                   {formatCurrency(task.budget, task.currency)}
                 </span>
               </div>

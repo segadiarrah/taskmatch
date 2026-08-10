@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { apiGet, apiPost } from "@/lib/api";
 import { cn, formatCurrency, formatDate, formatStatus, formatDateTime, timeAgo } from "@/lib/utils";
@@ -121,11 +121,7 @@ export default function TaskDetailPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
-  useEffect(() => {
-    fetchTask();
-  }, [taskId]);
-
-  async function fetchTask() {
+  const fetchTask = useCallback(async () => {
     setLoading(true);
     try {
       const data = await apiGet<TaskDetail>(`/v1/tasks/${taskId}`);
@@ -179,7 +175,11 @@ export default function TaskDetailPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [taskId]);
+
+  useEffect(() => {
+    fetchTask();
+  }, [fetchTask]);
 
   async function handleAction(action: string) {
     setActionLoading(true);
@@ -196,7 +196,7 @@ export default function TaskDetailPage() {
   if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
       </div>
     );
   }
@@ -204,7 +204,7 @@ export default function TaskDetailPage() {
   if (!task) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <p className="text-zinc-500">Task not found.</p>
+        <p className="text-muted-foreground">Task not found.</p>
       </div>
     );
   }
@@ -217,7 +217,7 @@ export default function TaskDetailPage() {
           variant="ghost"
           size="sm"
           onClick={() => router.push("/admin/tasks")}
-          className="mb-4 text-zinc-500"
+          className="mb-4 text-muted-foreground"
         >
           <ArrowLeft className="mr-1 h-4 w-4" />
           Back to Tasks
@@ -225,21 +225,21 @@ export default function TaskDetailPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">{task.title}</h1>
+              <h1 className="font-display text-2xl font-medium tracking-tight text-ink-50">{task.title}</h1>
               <Badge variant={statusBadgeVariant[task.status] || "secondary"}>
                 {formatStatus(task.status)}
               </Badge>
               <span className={cn(
-                "text-sm font-bold",
-                task.priority === 1 ? "text-red-600" :
-                task.priority === 2 ? "text-amber-600" : "text-zinc-400"
+                "font-mono text-sm font-bold",
+                task.priority === 1 ? "text-danger" :
+                task.priority === 2 ? "text-warning" : "text-ink-500"
               )}>
                 P{task.priority}
               </span>
             </div>
-            <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-zinc-500">
+            <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <button
-                className="flex items-center gap-1 hover:text-zinc-700"
+                className="flex items-center gap-1 hover:text-signal-400"
                 onClick={() => router.push(`/admin/jobs/${task.job_id}`)}
               >
                 Job: {task.job_title}
@@ -285,10 +285,10 @@ export default function TaskDetailPage() {
       {/* Task info */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Description</CardTitle>
+          <CardTitle className="font-display text-base">Description</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm leading-relaxed text-zinc-600">{task.description}</p>
+          <p className="text-sm leading-relaxed text-ink-300">{task.description}</p>
         </CardContent>
       </Card>
 
@@ -297,41 +297,41 @@ export default function TaskDetailPage() {
         {/* Current Assignment */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <UserCheck className="h-4 w-4 text-emerald-500" />
+            <CardTitle className="flex items-center gap-2 font-display text-base">
+              <UserCheck className="h-4 w-4 text-success" />
               Assignment
             </CardTitle>
           </CardHeader>
           <CardContent>
             {task.assigned_agent ? (
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-lg font-bold text-emerald-700">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full border border-success/30 bg-success/10 font-display text-lg font-medium text-success">
                   {task.assigned_agent.agent_name.charAt(0)}
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-zinc-900">{task.assigned_agent.agent_name}</p>
-                  <p className="text-sm text-zinc-500">by {task.assigned_agent.developer_name}</p>
-                  <div className="mt-2 flex gap-4 text-xs text-zinc-500">
+                  <p className="font-semibold text-foreground">{task.assigned_agent.agent_name}</p>
+                  <p className="text-sm text-muted-foreground">by {task.assigned_agent.developer_name}</p>
+                  <div className="mt-2 flex gap-4 text-xs text-ink-400">
                     <span className="flex items-center gap-1">
-                      <Star className="h-3 w-3 text-amber-500" />
+                      <Star className="h-3 w-3 text-warning" />
                       {task.assigned_agent.avg_score.toFixed(1)}
                     </span>
                     <span className="flex items-center gap-1">
-                      <TrendingUp className="h-3 w-3 text-emerald-500" />
+                      <TrendingUp className="h-3 w-3 text-success" />
                       {(task.assigned_agent.success_rate * 100).toFixed(0)}%
                     </span>
                     <span>{task.assigned_agent.completed_tasks} completed</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-zinc-400">Match Score</p>
-                  <p className="text-xl font-bold text-emerald-600">
+                  <p className="text-xs text-ink-500">Match Score</p>
+                  <p className="font-display text-xl font-medium text-success">
                     {(task.assigned_agent.match_score * 100).toFixed(0)}%
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="flex h-20 items-center justify-center text-sm text-zinc-400">
+              <div className="flex h-20 items-center justify-center text-sm text-ink-500">
                 No agent assigned yet
               </div>
             )}
@@ -341,15 +341,15 @@ export default function TaskDetailPage() {
         {/* Matched Agents Ranking */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Target className="h-4 w-4 text-blue-500" />
+            <CardTitle className="flex items-center gap-2 font-display text-base">
+              <Target className="h-4 w-4 text-info" />
               Agent Matching
             </CardTitle>
             <CardDescription>Ranked by composite score</CardDescription>
           </CardHeader>
           <CardContent>
             {task.matched_agents.length === 0 ? (
-              <div className="flex h-20 items-center justify-center text-sm text-zinc-400">
+              <div className="flex h-20 items-center justify-center text-sm text-ink-500">
                 No agents matched. Run matching to find candidates.
               </div>
             ) : (
@@ -357,22 +357,22 @@ export default function TaskDetailPage() {
                 {task.matched_agents.map((agent, i) => (
                   <div key={agent.agent_id} className="flex items-center gap-3">
                     <span className={cn(
-                      "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold",
-                      i === 0 ? "bg-amber-100 text-amber-700" :
-                      i === 1 ? "bg-zinc-200 text-zinc-600" :
-                      i === 2 ? "bg-orange-100 text-orange-700" :
-                      "bg-zinc-100 text-zinc-400"
+                      "flex h-6 w-6 items-center justify-center rounded-full font-mono text-xs font-bold",
+                      i === 0 ? "bg-signal-500/15 text-signal-400" :
+                      i === 1 ? "bg-ink-700 text-ink-200" :
+                      i === 2 ? "bg-warning/15 text-warning" :
+                      "bg-ink-800 text-ink-500"
                     )}>
                       {i + 1}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-zinc-900 truncate">{agent.agent_name}</p>
-                      <p className="text-xs text-zinc-400">{agent.developer_name}</p>
+                      <p className="truncate text-sm font-medium text-foreground">{agent.agent_name}</p>
+                      <p className="text-xs text-ink-500">{agent.developer_name}</p>
                     </div>
                     <div className="w-24">
                       <Progress value={agent.match_score * 100} />
                     </div>
-                    <span className="w-12 text-right text-sm font-bold text-zinc-700">
+                    <span className="w-12 text-right font-mono text-sm font-semibold text-ink-200">
                       {(agent.match_score * 100).toFixed(0)}%
                     </span>
                   </div>
@@ -386,15 +386,15 @@ export default function TaskDetailPage() {
       {/* Bids */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Gavel className="h-4 w-4 text-amber-500" />
+          <CardTitle className="flex items-center gap-2 font-display text-base">
+            <Gavel className="h-4 w-4 text-warning" />
             Bids ({task.bids.length})
           </CardTitle>
           <CardDescription>Agent proposals ranked by score</CardDescription>
         </CardHeader>
         <CardContent>
           {task.bids.length === 0 ? (
-            <div className="flex h-24 items-center justify-center text-sm text-zinc-400">
+            <div className="flex h-24 items-center justify-center text-sm text-ink-500">
               No bids received yet.
             </div>
           ) : (
@@ -414,21 +414,21 @@ export default function TaskDetailPage() {
                   <TableRow key={bid.id}>
                     <TableCell>
                       <span className={cn(
-                        "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold",
-                        bid.ranking === 1 ? "bg-amber-100 text-amber-700" :
-                        bid.ranking === 2 ? "bg-zinc-200 text-zinc-600" :
-                        "bg-zinc-100 text-zinc-400"
+                        "flex h-6 w-6 items-center justify-center rounded-full font-mono text-xs font-bold",
+                        bid.ranking === 1 ? "bg-signal-500/15 text-signal-400" :
+                        bid.ranking === 2 ? "bg-ink-700 text-ink-200" :
+                        "bg-ink-800 text-ink-500"
                       )}>
                         {bid.ranking}
                       </span>
                     </TableCell>
-                    <TableCell className="font-medium">{bid.agent_name}</TableCell>
-                    <TableCell className="text-right font-semibold text-zinc-900">
+                    <TableCell className="font-medium text-foreground">{bid.agent_name}</TableCell>
+                    <TableCell className="text-right font-mono font-semibold text-foreground">
                       {formatCurrency(bid.amount)}
                     </TableCell>
-                    <TableCell className="text-right text-zinc-600">{bid.estimated_hours}h</TableCell>
-                    <TableCell className="max-w-xs truncate text-zinc-500">{bid.message}</TableCell>
-                    <TableCell className="text-zinc-400">{timeAgo(bid.created_at)}</TableCell>
+                    <TableCell className="text-right font-mono text-ink-300">{bid.estimated_hours}h</TableCell>
+                    <TableCell className="max-w-xs truncate text-ink-400">{bid.message}</TableCell>
+                    <TableCell className="font-mono text-xs text-ink-500">{timeAgo(bid.created_at)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -440,36 +440,36 @@ export default function TaskDetailPage() {
       {/* Submissions */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <FileCheck className="h-4 w-4 text-blue-500" />
+          <CardTitle className="flex items-center gap-2 font-display text-base">
+            <FileCheck className="h-4 w-4 text-info" />
             Submissions ({task.submissions.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
           {task.submissions.length === 0 ? (
-            <div className="flex h-24 items-center justify-center text-sm text-zinc-400">
+            <div className="flex h-24 items-center justify-center text-sm text-ink-500">
               No submissions yet.
             </div>
           ) : (
             <div className="space-y-4">
               {task.submissions.map((sub) => (
-                <div key={sub.id} className="rounded-lg border border-zinc-100 p-4">
+                <div key={sub.id} className="rounded-md border border-ink-800 bg-ink-900/40 p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-zinc-900">{sub.agent_name}</span>
+                      <span className="font-medium text-foreground">{sub.agent_name}</span>
                       <Badge variant={statusBadgeVariant[sub.status] || "secondary"}>
                         {formatStatus(sub.status)}
                       </Badge>
                     </div>
-                    <span className="text-xs text-zinc-400">{timeAgo(sub.submitted_at)}</span>
+                    <span className="font-mono text-xs text-ink-500">{timeAgo(sub.submitted_at)}</span>
                   </div>
-                  <p className="mt-2 text-sm text-zinc-600">{sub.summary}</p>
+                  <p className="mt-2 text-sm text-ink-300">{sub.summary}</p>
                   {sub.deliverable_url && (
                     <a
                       href={sub.deliverable_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-2 inline-block text-xs font-medium text-blue-600 hover:underline"
+                      className="mt-2 inline-block text-xs font-medium text-info hover:text-info/80 hover:underline"
                     >
                       View Deliverable &rarr;
                     </a>
@@ -484,49 +484,49 @@ export default function TaskDetailPage() {
       {/* Validations */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <ShieldCheck className="h-4 w-4 text-purple-500" />
+          <CardTitle className="flex items-center gap-2 font-display text-base">
+            <ShieldCheck className="h-4 w-4 text-[#b49aff]" />
             Validation Reviews ({task.validations.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
           {task.validations.length === 0 ? (
-            <div className="flex h-24 items-center justify-center text-sm text-zinc-400">
+            <div className="flex h-24 items-center justify-center text-sm text-ink-500">
               No validations yet.
             </div>
           ) : (
             <div className="space-y-4">
               {task.validations.map((val) => (
-                <div key={val.id} className="rounded-lg border border-zinc-100 p-4">
+                <div key={val.id} className="rounded-md border border-ink-800 bg-ink-900/40 p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {val.result === "approved" ? (
-                        <CheckCircle className="h-5 w-5 text-emerald-500" />
+                        <CheckCircle className="h-5 w-5 text-success" />
                       ) : val.result === "rejected" ? (
-                        <XCircle className="h-5 w-5 text-red-500" />
+                        <XCircle className="h-5 w-5 text-danger" />
                       ) : (
-                        <AlertCircle className="h-5 w-5 text-amber-500" />
+                        <AlertCircle className="h-5 w-5 text-warning" />
                       )}
                       <div>
-                        <p className="text-sm font-medium text-zinc-900">
+                        <p className="text-sm font-medium text-foreground">
                           Reviewed by {val.reviewer}
                         </p>
-                        <p className="text-xs text-zinc-400">
+                        <p className="font-mono text-xs text-ink-500">
                           {formatDateTime(val.created_at)}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 text-amber-500" />
-                        <span className="text-sm font-bold text-zinc-700">{val.score.toFixed(1)}</span>
+                        <Star className="h-4 w-4 text-warning" />
+                        <span className="font-mono text-sm font-semibold text-ink-200">{val.score.toFixed(1)}</span>
                       </div>
                       <Badge variant={val.result === "approved" ? "success" : val.result === "rejected" ? "destructive" : "warning"}>
                         {formatStatus(val.result)}
                       </Badge>
                     </div>
                   </div>
-                  <p className="mt-2 text-sm text-zinc-600">{val.notes}</p>
+                  <p className="mt-2 text-sm text-ink-300">{val.notes}</p>
                 </div>
               ))}
             </div>
@@ -537,14 +537,14 @@ export default function TaskDetailPage() {
       {/* Status History Timeline */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Clock className="h-4 w-4 text-zinc-400" />
+          <CardTitle className="flex items-center gap-2 font-display text-base">
+            <Clock className="h-4 w-4 text-ink-500" />
             Status Timeline
           </CardTitle>
         </CardHeader>
         <CardContent>
           {task.status_history.length === 0 ? (
-            <div className="flex h-16 items-center justify-center text-sm text-zinc-400">
+            <div className="flex h-16 items-center justify-center text-sm text-ink-500">
               No status changes recorded.
             </div>
           ) : (
@@ -552,20 +552,20 @@ export default function TaskDetailPage() {
               {task.status_history.map((change, i) => (
                 <div key={i} className="relative flex gap-4 pb-6 last:pb-0">
                   {i < task.status_history.length - 1 && (
-                    <div className="absolute left-[11px] top-6 bottom-0 w-px bg-zinc-200" />
+                    <div className="absolute left-[11px] top-6 bottom-0 w-px bg-ink-700" />
                   )}
-                  <div className="relative z-10 mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-100">
-                    <div className="h-2 w-2 rounded-full bg-zinc-400" />
+                  <div className="relative z-10 mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-ink-700 bg-ink-800">
+                    <div className="h-2 w-2 rounded-full bg-signal-500" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary">{formatStatus(change.from_status)}</Badge>
-                      <span className="text-zinc-400">&rarr;</span>
+                      <span className="text-ink-600">&rarr;</span>
                       <Badge variant={statusBadgeVariant[change.to_status] || "secondary"}>
                         {formatStatus(change.to_status)}
                       </Badge>
                     </div>
-                    <p className="mt-1 text-xs text-zinc-400">
+                    <p className="mt-1 font-mono text-xs text-ink-500">
                       by {change.changed_by} &middot; {formatDateTime(change.changed_at)}
                     </p>
                   </div>

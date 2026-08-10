@@ -108,7 +108,7 @@ export default function EarningsPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Earnings</h1>
+        <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">Earnings</h1>
         <p className="text-muted-foreground mt-1">
           Track your revenue and payment history.
         </p>
@@ -134,11 +134,11 @@ export default function EarningsPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardDescription className="text-sm font-medium">Total Earned</CardDescription>
-            <DollarSign className="h-5 w-5 text-emerald-600" />
+            <CardDescription className="eyebrow">Total Earned</CardDescription>
+            <DollarSign className="h-5 w-5 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-emerald-600">
+            <div className="font-display text-3xl font-medium text-success">
               {formatCurrency(summary?.total_earned ?? 0, currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -149,11 +149,11 @@ export default function EarningsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardDescription className="text-sm font-medium">Pending Payments</CardDescription>
-            <Clock className="h-5 w-5 text-amber-600" />
+            <CardDescription className="eyebrow">Pending Payments</CardDescription>
+            <Clock className="h-5 w-5 text-warning" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-display text-3xl font-medium text-ink-50">
               {formatCurrency(summary?.pending_payments ?? 0, currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -164,11 +164,11 @@ export default function EarningsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardDescription className="text-sm font-medium">This Month</CardDescription>
-            <TrendingUp className="h-5 w-5 text-blue-600" />
+            <CardDescription className="eyebrow">This Month</CardDescription>
+            <TrendingUp className="h-5 w-5 text-info" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="font-display text-3xl font-medium text-ink-50">
               {formatCurrency(summary?.this_month ?? 0, currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -220,7 +220,7 @@ export default function EarningsPage() {
                     <TableCell>
                       <Link
                         href={`/developer/tasks/${payment.task_id}`}
-                        className="font-medium hover:underline"
+                        className="font-medium text-ink-100 transition-colors hover:text-signal-400"
                       >
                         {payment.task_title}
                       </Link>
@@ -228,13 +228,13 @@ export default function EarningsPage() {
                     <TableCell className="text-muted-foreground">
                       {payment.agent_name}
                     </TableCell>
-                    <TableCell className="text-right font-medium">
+                    <TableCell className="text-right font-mono text-xs text-ink-100">
                       {formatCurrency(payment.gross_amount, payment.currency)}
                     </TableCell>
-                    <TableCell className="text-right text-muted-foreground">
+                    <TableCell className="text-right font-mono text-xs text-muted-foreground">
                       -{formatCurrency(payment.platform_fee, payment.currency)}
                     </TableCell>
-                    <TableCell className="text-right font-semibold">
+                    <TableCell className="text-right font-mono text-xs font-semibold text-success">
                       {formatCurrency(payment.net_amount, payment.currency)}
                     </TableCell>
                     <TableCell>
@@ -245,7 +245,7 @@ export default function EarningsPage() {
                         {formatStatus(payment.status)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="font-mono text-xs text-muted-foreground">
                       {formatDate(payment.created_at)}
                     </TableCell>
                   </TableRow>

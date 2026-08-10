@@ -365,41 +365,43 @@ export default function ForClientsPage() {
   const c = COPY[locale] ?? COPY.en;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-ink-950 text-ink-50">
       {/* Hero with panel */}
-      <section className="border-b border-stone-200 bg-white px-4 pb-16 pt-28 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+      <section className="relative overflow-hidden border-b border-ink-800 bg-ink-950 px-4 pb-16 pt-28 sm:px-6 lg:px-8">
+        <div className="pointer-events-none absolute inset-0 bg-grid" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-0 bg-signal-glow" aria-hidden="true" />
+        <div className="relative mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div>
-            <Reveal className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-4 py-1.5 eyebrow text-stone-600">
-              <Building2 className="h-3.5 w-3.5 text-brand-700" />
+            <Reveal className="eyebrow inline-flex items-center gap-2 rounded-full border border-ink-700 bg-ink-900/80 px-4 py-1.5 text-ink-300">
+              <Building2 className="h-3.5 w-3.5 text-signal-400" />
               {c.eyebrow}
             </Reveal>
             <Reveal delay={80}>
-              <h1 className="mt-8 text-4xl font-semibold leading-[1.05] tracking-tight text-stone-900 sm:text-5xl lg:text-6xl">
+              <h1 className="mt-8 font-display text-4xl font-medium leading-[1.05] text-ink-50 sm:text-5xl lg:text-6xl">
                 {c.title}
-                <span className="block text-brand-800">{c.accent}</span>
+                <span className="block font-display italic text-signal-500">{c.accent}</span>
               </h1>
             </Reveal>
             <Reveal delay={160}>
-              <p className="mt-6 max-w-xl text-lg leading-8 text-stone-600">{c.description}</p>
+              <p className="mt-6 max-w-xl text-lg leading-8 text-ink-300">{c.description}</p>
             </Reveal>
           </div>
 
           <Reveal
             delay={220}
-            className="rounded-2xl border border-stone-200 bg-white p-7 shadow-sm"
+            className="corner-brackets relative rounded-lg border border-ink-700 bg-ink-900 p-7 shadow-panel"
           >
-            <p className="eyebrow text-brand-700">{c.panelLabel}</p>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-stone-900">
+            <p className="eyebrow text-signal-400">{c.panelLabel}</p>
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-ink-50">
               {c.panelTitle}
             </h2>
             <div className="mt-6 space-y-3">
               {c.panelItems.map((item) => (
                 <div
                   key={item}
-                  className="flex items-center gap-3 rounded-lg border border-stone-200 bg-stone-50 px-4 py-4 text-sm text-stone-900"
+                  className="flex items-center gap-3 rounded-md border border-ink-700 bg-ink-850 px-4 py-4 text-sm text-ink-200"
                 >
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-brand-700" />
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-signal-400" />
                   <span>{item}</span>
                 </div>
               ))}
@@ -411,9 +413,9 @@ export default function ForClientsPage() {
       {/* Benefits */}
       <section className="px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
-          <Reveal className="eyebrow text-brand-700">{c.benefitsEyebrow}</Reveal>
+          <Reveal className="eyebrow text-signal-500">{c.benefitsEyebrow}</Reveal>
           <Reveal delay={70}>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
+            <h2 className="mt-3 font-display text-3xl font-medium text-ink-50 sm:text-4xl">
               {c.benefitsTitle}
             </h2>
           </Reveal>
@@ -424,13 +426,13 @@ export default function ForClientsPage() {
                 <Reveal
                   key={b.title}
                   delay={i * 70}
-                  className="hover-lift rounded-xl border border-stone-200 bg-white p-7 hover:border-stone-300 hover:shadow-sm"
+                  className="hover-lift rounded-lg border border-ink-700 bg-ink-900 p-7 hover:border-signal-500/40"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-brand-700">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="mt-5 text-lg font-semibold text-stone-900">{b.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-stone-600">{b.body}</p>
+                  <h3 className="mt-5 text-lg font-semibold text-ink-50">{b.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-ink-400">{b.body}</p>
                 </Reveal>
               );
             })}
@@ -439,11 +441,12 @@ export default function ForClientsPage() {
       </section>
 
       {/* Process + stats band */}
-      <section className="border-y border-stone-200 bg-stone-50 px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <Reveal className="eyebrow text-brand-700">{c.processEyebrow}</Reveal>
+      <section className="relative border-y border-paper-ink/15 bg-paper px-4 py-20 text-paper-ink sm:px-6 lg:px-8">
+        <div className="pointer-events-none absolute inset-0 bg-grid-paper" aria-hidden="true" />
+        <div className="relative mx-auto max-w-6xl">
+          <Reveal className="eyebrow text-signal-600">{c.processEyebrow}</Reveal>
           <Reveal delay={70}>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
+            <h2 className="mt-3 font-display text-3xl font-medium text-paper-ink sm:text-4xl">
               {c.processTitle}
             </h2>
           </Reveal>
@@ -452,11 +455,11 @@ export default function ForClientsPage() {
               <Reveal
                 key={p.title}
                 delay={i * 70}
-                className="hover-lift rounded-xl border border-stone-200 bg-white p-6 hover:border-stone-300 hover:shadow-sm"
+                className="hover-lift rounded-md border border-paper-ink/15 bg-paper p-6 hover:border-paper-ink/40"
               >
-                <span className="font-mono text-sm text-brand-700">{`0${i + 1}`}</span>
-                <h3 className="mt-4 text-lg font-semibold text-stone-900">{p.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-stone-600">{p.body}</p>
+                <span className="font-mono text-sm text-signal-600">{`0${i + 1}`}</span>
+                <h3 className="mt-4 text-lg font-semibold text-paper-ink">{p.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-paper-ink/70">{p.body}</p>
               </Reveal>
             ))}
           </div>
@@ -466,12 +469,12 @@ export default function ForClientsPage() {
               <Reveal
                 key={stat.label}
                 delay={i * 80}
-                className="rounded-xl border border-stone-200 bg-white p-7"
+                className="rounded-md border border-paper-ink/15 bg-paper p-7"
               >
-                <div className="text-5xl font-semibold tracking-tight text-stone-900">
+                <div className="font-display text-5xl font-medium text-paper-ink">
                   <Counter value={stat.value} suffix={stat.suffix} />
                 </div>
-                <p className="mt-3 text-sm leading-7 text-stone-600">{stat.label}</p>
+                <p className="mt-3 text-sm leading-7 text-paper-ink/70">{stat.label}</p>
               </Reveal>
             ))}
           </div>
@@ -481,12 +484,12 @@ export default function ForClientsPage() {
       {/* Trust + comparison */}
       <section className="px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1fr_1.05fr]">
-          <Reveal className="rounded-2xl border border-stone-200 bg-white p-8">
-            <div className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-4 py-1.5 eyebrow text-stone-600">
-              <ScanSearch className="h-3.5 w-3.5 text-brand-700" />
+          <Reveal className="rounded-lg border border-ink-700 bg-ink-900 p-8 shadow-panel">
+            <div className="eyebrow inline-flex items-center gap-2 rounded-full border border-ink-700 bg-ink-850 px-4 py-1.5 text-ink-300">
+              <ScanSearch className="h-3.5 w-3.5 text-signal-400" />
               {c.trustEyebrow}
             </div>
-            <h2 className="mt-6 text-2xl font-semibold tracking-tight text-stone-900 sm:text-3xl">
+            <h2 className="mt-6 font-display text-2xl font-medium text-ink-50 sm:text-3xl">
               {c.trustTitle}
             </h2>
             <div className="mt-8 space-y-5">
@@ -494,12 +497,12 @@ export default function ForClientsPage() {
                 const Icon = TRUST_ICONS[i] ?? Lock;
                 return (
                   <div key={item.title} className="flex gap-4">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-brand-700">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="text-base font-semibold text-stone-900">{item.title}</h3>
-                      <p className="mt-2 text-sm leading-7 text-stone-600">{item.body}</p>
+                      <h3 className="text-base font-semibold text-ink-50">{item.title}</h3>
+                      <p className="mt-2 text-sm leading-7 text-ink-400">{item.body}</p>
                     </div>
                   </div>
                 );
@@ -507,19 +510,19 @@ export default function ForClientsPage() {
             </div>
           </Reveal>
 
-          <Reveal delay={120} className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
-            <div className="border-b border-stone-200 px-6 py-5">
-              <h2 className="text-xl font-semibold tracking-tight text-stone-900">
+          <Reveal delay={120} className="overflow-hidden rounded-lg border border-ink-700 bg-ink-900 shadow-panel">
+            <div className="border-b border-ink-800 px-6 py-5">
+              <h2 className="text-xl font-semibold tracking-tight text-ink-50">
                 {c.compareTitle}
               </h2>
             </div>
             <div className="overflow-x-auto">
               <div className="min-w-[520px]">
-                <div className="grid grid-cols-4 border-b border-stone-200 bg-stone-50 font-mono text-xs uppercase tracking-wider text-stone-600">
+                <div className="grid grid-cols-4 border-b border-ink-800 bg-ink-850 font-mono text-xs uppercase tracking-wider text-ink-400">
                   {c.compareCols.map((col, i) => (
                     <div
                       key={col}
-                      className={`px-4 py-4 ${i === 1 ? "text-brand-700" : ""} ${i > 0 ? "text-center" : ""}`}
+                      className={`px-4 py-4 ${i === 1 ? "text-signal-400" : ""} ${i > 0 ? "text-center" : ""}`}
                     >
                       {col}
                     </div>
@@ -528,10 +531,10 @@ export default function ForClientsPage() {
                 {c.compareRows.map((row) => (
                   <div
                     key={row[0]}
-                    className="grid grid-cols-4 border-b border-stone-200 text-sm text-stone-600 last:border-b-0"
+                    className="grid grid-cols-4 border-b border-ink-800 text-sm text-ink-400 last:border-b-0"
                   >
-                    <div className="px-4 py-4 font-medium text-stone-900">{row[0]}</div>
-                    <div className="px-4 py-4 text-center font-medium text-stone-900">{row[1]}</div>
+                    <div className="px-4 py-4 font-medium text-ink-50">{row[0]}</div>
+                    <div className="px-4 py-4 text-center font-medium text-ink-100">{row[1]}</div>
                     <div className="px-4 py-4 text-center">{row[2]}</div>
                     <div className="px-4 py-4 text-center">{row[3]}</div>
                   </div>

@@ -140,8 +140,8 @@ export default function JobsPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Job Intake</h1>
-          <p className="mt-1 text-sm text-zinc-500">
+          <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Job Intake</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Manage incoming jobs through the intake pipeline.
           </p>
         </div>
@@ -156,7 +156,7 @@ export default function JobsPage() {
         <CardContent className="pt-6">
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-500" />
               <Input
                 placeholder="Search by title or client..."
                 className="pl-10"
@@ -165,7 +165,7 @@ export default function JobsPage() {
               />
             </div>
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-zinc-400" />
+              <Filter className="h-4 w-4 text-ink-500" />
               <Select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -188,13 +188,13 @@ export default function JobsPage() {
         <CardContent className="pt-6">
           {loading ? (
             <div className="flex h-48 items-center justify-center">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
             </div>
           ) : filteredJobs.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
-              <Briefcase className="h-10 w-10 text-zinc-300" />
-              <p className="mt-3 text-sm font-medium text-zinc-500">No jobs found</p>
-              <p className="text-xs text-zinc-400">Try adjusting your filters</p>
+              <Briefcase className="h-10 w-10 text-ink-600" />
+              <p className="mt-3 text-sm font-medium text-muted-foreground">No jobs found</p>
+              <p className="text-xs text-ink-500">Try adjusting your filters</p>
             </div>
           ) : (
             <Table>
@@ -218,25 +218,25 @@ export default function JobsPage() {
                   >
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-zinc-900">{job.title}</span>
+                        <span className="font-medium text-foreground">{job.title}</span>
                         {job.task_count > 0 && (
-                          <span className="text-xs text-zinc-400">
+                          <span className="font-mono text-xs text-ink-500">
                             {job.task_count} tasks
                           </span>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-zinc-600">{job.client_name}</TableCell>
+                    <TableCell className="text-ink-300">{job.client_name}</TableCell>
                     <TableCell>
                       <Badge variant={statusBadgeVariant[job.status] || "secondary"}>
                         {formatStatus(job.status)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right font-medium text-zinc-900">
+                    <TableCell className="text-right font-mono font-medium text-foreground">
                       {formatCurrency(job.budget_min)} - {formatCurrency(job.budget_max)}
                     </TableCell>
-                    <TableCell className="text-zinc-600">{formatDate(job.deadline)}</TableCell>
-                    <TableCell className="text-zinc-500">{formatDate(job.created_at)}</TableCell>
+                    <TableCell className="font-mono text-ink-300">{formatDate(job.deadline)}</TableCell>
+                    <TableCell className="font-mono text-ink-400">{formatDate(job.created_at)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                         {job.status === "submitted" && (

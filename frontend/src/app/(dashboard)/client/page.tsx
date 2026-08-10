@@ -98,14 +98,14 @@ export default function ClientDashboardPage() {
   }
 
   const kpiCards = [
-    { label: "My Jobs", value: stats?.my_jobs ?? 0, icon: Briefcase, color: "text-blue-600" },
-    { label: "Active Tasks", value: stats?.active_tasks ?? 0, icon: ListChecks, color: "text-indigo-600" },
-    { label: "Pending Reviews", value: stats?.pending_reviews ?? 0, icon: ClipboardCheck, color: "text-amber-600" },
+    { label: "My Jobs", value: stats?.my_jobs ?? 0, icon: Briefcase, color: "text-info" },
+    { label: "Active Tasks", value: stats?.active_tasks ?? 0, icon: ListChecks, color: "text-signal-400" },
+    { label: "Pending Reviews", value: stats?.pending_reviews ?? 0, icon: ClipboardCheck, color: "text-warning" },
     {
       label: "Total Spent",
       value: formatCurrency(stats?.total_spent ?? 0),
       icon: DollarSign,
-      color: "text-emerald-600",
+      color: "text-success",
     },
   ];
 
@@ -114,7 +114,7 @@ export default function ClientDashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">
             Welcome back, {user?.full_name?.split(" ")[0] ?? "there"}
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -134,11 +134,11 @@ export default function ClientDashboardPage() {
         {kpiCards.map((kpi) => (
           <Card key={kpi.label}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardDescription className="text-sm font-medium">{kpi.label}</CardDescription>
+              <CardDescription className="eyebrow">{kpi.label}</CardDescription>
               <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{kpi.value}</div>
+              <div className="font-display text-3xl font-medium text-ink-50">{kpi.value}</div>
             </CardContent>
           </Card>
         ))}
@@ -179,16 +179,16 @@ export default function ClientDashboardPage() {
                 <Link
                   key={job.id}
                   href={`/client/jobs/${job.id}`}
-                  className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                  className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:border-signal-500/30 hover:bg-ink-800/60"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3">
-                      <p className="font-medium truncate">{job.title}</p>
+                      <p className="font-medium truncate text-ink-100">{job.title}</p>
                       <Badge variant={statusBadgeVariant(job.status)}>
                         {formatStatus(job.status)}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                    <div className="mt-1 flex items-center gap-4 font-mono text-xs text-muted-foreground">
                       <span>
                         {formatCurrency(job.budget_min, job.currency)} - {formatCurrency(job.budget_max, job.currency)}
                       </span>

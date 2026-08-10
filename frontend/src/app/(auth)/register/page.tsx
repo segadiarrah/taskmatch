@@ -176,17 +176,17 @@ export default function RegisterPage() {
   };
 
   const inputClass =
-    "w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600";
+    "w-full rounded-md border border-input bg-ink-950/60 px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 focus:border-signal-500 focus:outline-none focus:ring-1 focus:ring-signal-500";
 
   return (
     <Reveal>
       <div className="mb-6 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight text-stone-900">{c.title}</h1>
-        <p className="mt-1.5 text-sm text-stone-600">{c.subtitle}</p>
+        <h1 className="font-display text-3xl font-medium text-ink-50">{c.title}</h1>
+        <p className="mt-1.5 text-sm text-ink-400">{c.subtitle}</p>
       </div>
 
       {error && (
-        <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="mb-4 flex items-center gap-2 rounded-md border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {error}
         </div>
@@ -194,42 +194,42 @@ export default function RegisterPage() {
 
       {/* Role selection */}
       <div className="mb-6">
-        <label className="mb-2 block text-sm font-medium text-stone-900">{c.intent}</label>
+        <label className="mb-2 block text-sm font-medium text-ink-200">{c.intent}</label>
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
             onClick={() => setRole("client")}
             className={cn(
-              "flex flex-col items-center gap-2 rounded-xl border p-4 text-center transition-colors",
+              "flex flex-col items-center gap-2 rounded-md border p-4 text-center transition-all",
               role === "client"
-                ? "border-brand-600 bg-brand-50 text-stone-900"
-                : "border-stone-200 bg-white text-stone-600 hover:border-stone-300"
+                ? "border-signal-500 bg-signal-500/10 text-ink-50"
+                : "border-ink-700 bg-ink-900 text-ink-400 hover:border-ink-500"
             )}
           >
-            <Briefcase className={cn("h-6 w-6", role === "client" ? "text-brand-700" : "text-stone-400")} />
-            <span className="text-sm font-semibold text-stone-900">{c.postTasks}</span>
-            <span className="text-xs text-stone-500">{c.postTasksHint}</span>
+            <Briefcase className={cn("h-6 w-6", role === "client" ? "text-signal-400" : "text-ink-500")} />
+            <span className="text-sm font-semibold text-ink-50">{c.postTasks}</span>
+            <span className="text-xs text-ink-500">{c.postTasksHint}</span>
           </button>
           <button
             type="button"
             onClick={() => setRole("agent_developer")}
             className={cn(
-              "flex flex-col items-center gap-2 rounded-xl border p-4 text-center transition-colors",
+              "flex flex-col items-center gap-2 rounded-md border p-4 text-center transition-all",
               role === "agent_developer"
-                ? "border-brand-600 bg-brand-50 text-stone-900"
-                : "border-stone-200 bg-white text-stone-600 hover:border-stone-300"
+                ? "border-signal-500 bg-signal-500/10 text-ink-50"
+                : "border-ink-700 bg-ink-900 text-ink-400 hover:border-ink-500"
             )}
           >
-            <Bot className={cn("h-6 w-6", role === "agent_developer" ? "text-brand-700" : "text-stone-400")} />
-            <span className="text-sm font-semibold text-stone-900">{c.runAgents}</span>
-            <span className="text-xs text-stone-500">{c.runAgentsHint}</span>
+            <Bot className={cn("h-6 w-6", role === "agent_developer" ? "text-signal-400" : "text-ink-500")} />
+            <span className="text-sm font-semibold text-ink-50">{c.runAgents}</span>
+            <span className="text-xs text-ink-500">{c.runAgentsHint}</span>
           </button>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="full_name" className="mb-1.5 block text-sm font-medium text-stone-900">
+          <label htmlFor="full_name" className="mb-1.5 block text-sm font-medium text-ink-200">
             {c.fullName}
           </label>
           <input
@@ -246,7 +246,7 @@ export default function RegisterPage() {
         </div>
 
         <div>
-          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-stone-900">
+          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-ink-200">
             {c.email}
           </label>
           <input
@@ -262,7 +262,7 @@ export default function RegisterPage() {
         </div>
 
         <div>
-          <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-stone-900">
+          <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-ink-200">
             {c.password}
           </label>
           <input
@@ -281,7 +281,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={isLoading}
-          className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-brand-800 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-900 disabled:opacity-50"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-signal-500 px-6 text-sm font-semibold text-ink-950 transition-all hover:bg-signal-400 hover:shadow-glow-sm disabled:opacity-50"
         >
           {isLoading ? (
             <>
@@ -297,21 +297,21 @@ export default function RegisterPage() {
         </button>
       </form>
 
-      <p className="mt-4 text-center text-xs leading-6 text-stone-500">
+      <p className="mt-4 text-center text-xs leading-6 text-ink-500">
         {c.agreePre}{" "}
-        <a href="#" className="text-stone-600 underline hover:text-stone-900">
+        <a href="#" className="text-ink-300 underline hover:text-ink-50">
           {c.terms}
         </a>{" "}
         {c.and}{" "}
-        <a href="#" className="text-stone-600 underline hover:text-stone-900">
+        <a href="#" className="text-ink-300 underline hover:text-ink-50">
           {c.privacy}
         </a>
         .
       </p>
 
-      <div className="mt-6 text-center text-sm text-stone-600">
+      <div className="mt-6 text-center text-sm text-ink-400">
         {c.haveAccount}{" "}
-        <Link href="/login" className="font-medium text-brand-700 hover:underline">
+        <Link href="/login" className="font-medium text-signal-400 hover:underline">
           {c.signIn}
         </Link>
       </div>

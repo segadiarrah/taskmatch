@@ -44,23 +44,25 @@ export default function NotFound() {
   const c = COPY[locale] ?? COPY.en;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-4">
-      <div className="w-full max-w-lg rounded-2xl border border-stone-200 bg-white p-10 text-center shadow-sm">
-        <div className="eyebrow text-brand-700">{c.eyebrow}</div>
-        <div className="mt-4 text-8xl font-semibold leading-none text-stone-900">404</div>
-        <h1 className="mt-6 text-3xl font-semibold tracking-tight text-stone-900">{c.title}</h1>
-        <p className="mx-auto mt-4 max-w-sm text-sm leading-7 text-stone-600">{c.body}</p>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-ink-950 px-4 text-ink-50">
+      <div className="pointer-events-none absolute inset-0 bg-grid" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-0 bg-signal-glow" aria-hidden="true" />
+      <div className="corner-brackets relative w-full max-w-lg rounded-lg border border-ink-700 bg-ink-900 p-10 text-center shadow-panel">
+        <div className="eyebrow text-signal-400">{c.eyebrow}</div>
+        <div className="mt-4 font-display text-8xl font-medium leading-none text-signal-500 text-glow">404</div>
+        <h1 className="mt-6 font-display text-3xl font-medium tracking-tight text-ink-50">{c.title}</h1>
+        <p className="mx-auto mt-4 max-w-sm font-mono text-xs leading-6 text-ink-400">{c.body}</p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href="/"
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-brand-800 px-7 text-sm font-semibold text-white transition-colors hover:bg-brand-900"
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-signal-500 px-7 text-sm font-semibold text-ink-950 transition-all hover:bg-signal-400 hover:shadow-glow"
           >
             <Home className="h-4 w-4" />
             {c.home}
           </Link>
           <Link
             href="/resources/documentation"
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-stone-300 px-7 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-ink-600 bg-transparent px-7 text-sm font-medium text-ink-100 transition-colors hover:border-ink-400 hover:bg-ink-800"
           >
             {c.docs}
             <ArrowRight className="h-4 w-4" />

@@ -178,7 +178,7 @@ export function DataRightsPanel() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-stone-700" />
+            <Shield className="h-5 w-5 text-signal-400" />
             <CardTitle>Your Data Rights</CardTitle>
           </div>
           <CardDescription>
@@ -186,7 +186,7 @@ export function DataRightsPanel() {
             data. Use the actions below to exercise your rights, or use{" "}
             <a
               href="/company/contact"
-              className="text-brand-700 underline"
+              className="text-signal-400 underline"
             >
               our contact form
             </a>{" "}
@@ -197,13 +197,13 @@ export function DataRightsPanel() {
         <CardContent>
           {/* Success message */}
           {successMessage && (
-            <div className="mb-6 flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-              <Check className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="mb-6 flex items-start gap-3 rounded-lg border border-success/40 bg-success/10 p-4">
+              <Check className="h-5 w-5 text-success shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm text-emerald-800">{successMessage}</p>
+                <p className="text-sm text-success">{successMessage}</p>
                 <button
                   onClick={() => setSuccessMessage(null)}
-                  className="text-xs text-emerald-600 hover:text-emerald-800 underline mt-1"
+                  className="text-xs text-success/80 hover:text-success underline mt-1"
                 >
                   Dismiss
                 </button>
@@ -220,16 +220,16 @@ export function DataRightsPanel() {
                   <button
                     key={action}
                     onClick={() => setDialogAction(action)}
-                    className="flex items-center gap-3 rounded-lg border border-stone-200 bg-white p-4 text-left hover:bg-stone-50 hover:border-stone-300 transition-colors group"
+                    className="flex items-center gap-3 rounded-lg border border-ink-700 bg-ink-950 p-4 text-left hover:border-signal-500/40 hover:bg-ink-900 transition-colors group"
                   >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-stone-100 text-stone-600 group-hover:bg-stone-200 transition-colors shrink-0">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-ink-700 bg-ink-800 text-ink-300 group-hover:border-signal-500/40 group-hover:text-signal-400 transition-colors shrink-0">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div>
-                      <span className="text-sm font-medium text-stone-900">
+                      <span className="text-sm font-medium text-ink-50">
                         {config.label}
                       </span>
-                      <p className="text-xs text-stone-500 mt-0.5">
+                      <p className="font-mono text-[11px] text-ink-500 mt-0.5">
                         {action === "download" && "Article 15 & 20 GDPR"}
                         {action === "deletion" && "Article 17 GDPR"}
                         {action === "rectification" && "Article 16 GDPR"}
@@ -245,7 +245,7 @@ export function DataRightsPanel() {
           {/* Request history */}
           {requests.length > 0 && (
             <div className="mt-8">
-              <h4 className="text-sm font-semibold text-stone-900 mb-3">
+              <h4 className="text-sm font-semibold text-ink-50 mb-3">
                 Request History
               </h4>
               <div className="space-y-2">
@@ -256,17 +256,17 @@ export function DataRightsPanel() {
                   return (
                     <div
                       key={req.id}
-                      className="flex items-center justify-between rounded-lg border border-stone-200 bg-stone-50 px-4 py-3"
+                      className="flex items-center justify-between rounded-lg border border-ink-700 bg-ink-950 px-4 py-3"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded bg-white border border-stone-200">
-                          <actionInfo.icon className="h-4 w-4 text-stone-600" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded bg-ink-900 border border-ink-700">
+                          <actionInfo.icon className="h-4 w-4 text-ink-300" />
                         </div>
                         <div>
-                          <span className="text-sm font-medium text-stone-900">
+                          <span className="text-sm font-medium text-ink-50">
                             {actionInfo.label}
                           </span>
-                          <p className="text-xs text-stone-500">
+                          <p className="font-mono text-xs text-ink-500">
                             {new Date(req.createdAt).toLocaleDateString(
                               "en-US",
                               {
@@ -318,9 +318,9 @@ export function DataRightsPanel() {
             </DialogHeader>
 
             {dialogAction === "deletion" && (
-              <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-3">
-                <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
-                <p className="text-sm text-red-700">
+              <div className="flex items-start gap-3 rounded-lg border border-danger/40 bg-danger/10 p-3">
+                <AlertTriangle className="h-5 w-5 text-danger shrink-0 mt-0.5" />
+                <p className="text-sm text-danger">
                   <strong>Warning:</strong> This action cannot be undone once
                   processed. All your data, including task history, agent
                   configurations, and account information will be permanently

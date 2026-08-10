@@ -172,8 +172,8 @@ export default function PaymentsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Payments</h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Payments</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Track escrow, release funds, and manage payment lifecycle.
         </p>
       </div>
@@ -184,61 +184,61 @@ export default function PaymentsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-zinc-500">Total Pending</p>
-                <p className="mt-1 text-2xl font-bold text-zinc-900">{formatCurrency(summary.total_pending)}</p>
-                <p className="mt-0.5 text-xs text-zinc-400">Awaiting validation</p>
+                <p className="text-sm font-medium text-muted-foreground">Total Pending</p>
+                <p className="mt-1 font-display text-2xl font-medium text-ink-50">{formatCurrency(summary.total_pending)}</p>
+                <p className="mt-0.5 text-xs text-ink-500">Awaiting validation</p>
               </div>
-              <div className="rounded-lg bg-zinc-100 p-3">
-                <Clock className="h-5 w-5 text-zinc-500" />
+              <div className="rounded-md border border-ink-700 bg-ink-800 p-3">
+                <Clock className="h-5 w-5 text-ink-400" />
               </div>
             </div>
           </CardContent>
-          <div className="absolute -bottom-3 -right-3 h-20 w-20 rounded-full bg-zinc-50" />
+          <div className="absolute -bottom-3 -right-3 h-20 w-20 rounded-full bg-ink-800/50" />
         </Card>
         <Card className="relative overflow-hidden">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-blue-600">Releasable</p>
-                <p className="mt-1 text-2xl font-bold text-zinc-900">{formatCurrency(summary.total_releasable)}</p>
-                <p className="mt-0.5 text-xs text-zinc-400">Ready to release</p>
+                <p className="text-sm font-medium text-info">Releasable</p>
+                <p className="mt-1 font-display text-2xl font-medium text-ink-50">{formatCurrency(summary.total_releasable)}</p>
+                <p className="mt-0.5 text-xs text-ink-500">Ready to release</p>
               </div>
-              <div className="rounded-lg bg-blue-100 p-3">
-                <Send className="h-5 w-5 text-blue-600" />
+              <div className="rounded-md border border-info/30 bg-info/10 p-3">
+                <Send className="h-5 w-5 text-info" />
               </div>
             </div>
           </CardContent>
-          <div className="absolute -bottom-3 -right-3 h-20 w-20 rounded-full bg-blue-50" />
+          <div className="absolute -bottom-3 -right-3 h-20 w-20 rounded-full bg-info/5" />
         </Card>
         <Card className="relative overflow-hidden">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-amber-600">Released</p>
-                <p className="mt-1 text-2xl font-bold text-zinc-900">{formatCurrency(summary.total_released)}</p>
-                <p className="mt-0.5 text-xs text-zinc-400">In transit</p>
+                <p className="text-sm font-medium text-warning">Released</p>
+                <p className="mt-1 font-display text-2xl font-medium text-ink-50">{formatCurrency(summary.total_released)}</p>
+                <p className="mt-0.5 text-xs text-ink-500">In transit</p>
               </div>
-              <div className="rounded-lg bg-amber-100 p-3">
-                <ArrowUpRight className="h-5 w-5 text-amber-600" />
+              <div className="rounded-md border border-warning/30 bg-warning/10 p-3">
+                <ArrowUpRight className="h-5 w-5 text-warning" />
               </div>
             </div>
           </CardContent>
-          <div className="absolute -bottom-3 -right-3 h-20 w-20 rounded-full bg-amber-50" />
+          <div className="absolute -bottom-3 -right-3 h-20 w-20 rounded-full bg-warning/5" />
         </Card>
         <Card className="relative overflow-hidden">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-emerald-600">Completed</p>
-                <p className="mt-1 text-2xl font-bold text-zinc-900">{formatCurrency(summary.total_completed)}</p>
-                <p className="mt-0.5 text-xs text-zinc-400">Successfully paid</p>
+                <p className="text-sm font-medium text-success">Completed</p>
+                <p className="mt-1 font-display text-2xl font-medium text-ink-50">{formatCurrency(summary.total_completed)}</p>
+                <p className="mt-0.5 text-xs text-ink-500">Successfully paid</p>
               </div>
-              <div className="rounded-lg bg-emerald-100 p-3">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+              <div className="rounded-md border border-success/30 bg-success/10 p-3">
+                <CheckCircle2 className="h-5 w-5 text-success" />
               </div>
             </div>
           </CardContent>
-          <div className="absolute -bottom-3 -right-3 h-20 w-20 rounded-full bg-emerald-50" />
+          <div className="absolute -bottom-3 -right-3 h-20 w-20 rounded-full bg-success/5" />
         </Card>
       </div>
 
@@ -246,7 +246,7 @@ export default function PaymentsPage() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-zinc-400" />
+            <Filter className="h-4 w-4 text-ink-500" />
             <Select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -257,7 +257,7 @@ export default function PaymentsPage() {
                 <option key={s} value={s}>{formatStatus(s)}</option>
               ))}
             </Select>
-            <span className="text-sm text-zinc-400">
+            <span className="font-mono text-sm text-ink-500">
               {filteredPayments.length} payment{filteredPayments.length !== 1 ? "s" : ""}
             </span>
           </div>
@@ -270,15 +270,15 @@ export default function PaymentsPage() {
           {loading ? (
             <div className="flex h-48 items-center justify-center">
               <div className="flex flex-col items-center gap-3">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
-                <p className="text-sm text-zinc-500">Loading payments...</p>
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
+                <p className="text-sm text-muted-foreground">Loading payments...</p>
               </div>
             </div>
           ) : filteredPayments.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
-              <CircleDollarSign className="h-10 w-10 text-zinc-300" />
-              <p className="mt-3 text-sm font-medium text-zinc-500">No payments found</p>
-              <p className="text-xs text-zinc-400">Try adjusting the status filter</p>
+              <CircleDollarSign className="h-10 w-10 text-ink-600" />
+              <p className="mt-3 text-sm font-medium text-muted-foreground">No payments found</p>
+              <p className="text-xs text-ink-500">Try adjusting the status filter</p>
             </div>
           ) : (
             <Table>
@@ -299,24 +299,24 @@ export default function PaymentsPage() {
                   <TableRow key={payment.id}>
                     <TableCell>
                       <div>
-                        <p className="font-medium text-zinc-900 truncate max-w-[200px]">{payment.task_title}</p>
-                        <p className="text-xs text-zinc-400 truncate max-w-[200px]">{payment.job_title}</p>
+                        <p className="max-w-[200px] truncate font-medium text-foreground">{payment.task_title}</p>
+                        <p className="max-w-[200px] truncate text-xs text-ink-500">{payment.job_title}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-zinc-600">{payment.client_name}</TableCell>
+                    <TableCell className="text-ink-300">{payment.client_name}</TableCell>
                     <TableCell>
                       <div>
-                        <p className="text-zinc-600">{payment.developer_name}</p>
-                        <p className="text-xs text-zinc-400">{payment.agent_name}</p>
+                        <p className="text-ink-300">{payment.developer_name}</p>
+                        <p className="text-xs text-ink-500">{payment.agent_name}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right font-semibold text-zinc-900">
+                    <TableCell className="text-right font-mono font-semibold text-foreground">
                       {formatCurrency(payment.gross_amount)}
                     </TableCell>
-                    <TableCell className="text-right text-zinc-500">
+                    <TableCell className="text-right font-mono text-ink-400">
                       {formatCurrency(payment.platform_fee)}
                     </TableCell>
-                    <TableCell className="text-right font-medium text-emerald-700">
+                    <TableCell className="text-right font-mono font-medium text-success">
                       {formatCurrency(payment.net_amount)}
                     </TableCell>
                     <TableCell>
@@ -329,7 +329,6 @@ export default function PaymentsPage() {
                         {payment.status === "releasable" && (
                           <Button
                             size="sm"
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
                             onClick={() => handleRelease(payment.id)}
                             disabled={actionLoading === payment.id}
                           >
@@ -340,7 +339,7 @@ export default function PaymentsPage() {
                         {payment.status === "released" && (
                           <Button
                             size="sm"
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                            className="bg-success text-ink-950 hover:brightness-110"
                             onClick={() => handleComplete(payment.id)}
                             disabled={actionLoading === payment.id}
                           >
@@ -349,10 +348,10 @@ export default function PaymentsPage() {
                           </Button>
                         )}
                         {payment.status === "pending" && (
-                          <span className="text-xs text-zinc-400">Awaiting review</span>
+                          <span className="text-xs text-ink-500">Awaiting review</span>
                         )}
                         {payment.status === "completed" && (
-                          <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                          <span className="flex items-center gap-1 font-mono text-xs font-medium text-success">
                             <CheckCircle2 className="h-3 w-3" />
                             Paid
                           </span>
@@ -372,25 +371,25 @@ export default function PaymentsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-zinc-500">
+              <span className="text-muted-foreground">
                 Showing {filteredPayments.length} of {payments.length} payments
               </span>
               <div className="flex items-center gap-6">
                 <div className="text-right">
-                  <p className="text-xs text-zinc-400">Gross Total</p>
-                  <p className="font-semibold text-zinc-900">
+                  <p className="text-xs text-ink-500">Gross Total</p>
+                  <p className="font-mono font-semibold text-foreground">
                     {formatCurrency(filteredPayments.reduce((s, p) => s + p.gross_amount, 0))}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-zinc-400">Platform Fees</p>
-                  <p className="font-semibold text-zinc-700">
+                  <p className="text-xs text-ink-500">Platform Fees</p>
+                  <p className="font-mono font-semibold text-ink-200">
                     {formatCurrency(filteredPayments.reduce((s, p) => s + p.platform_fee, 0))}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-zinc-400">Net Total</p>
-                  <p className="font-semibold text-emerald-700">
+                  <p className="text-xs text-ink-500">Net Total</p>
+                  <p className="font-mono font-semibold text-success">
                     {formatCurrency(filteredPayments.reduce((s, p) => s + p.net_amount, 0))}
                   </p>
                 </div>

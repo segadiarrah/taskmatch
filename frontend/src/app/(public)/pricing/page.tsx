@@ -481,7 +481,7 @@ export default function PricingPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-ink-950 text-ink-50">
       <PageHero
         eyebrow={c.eyebrow}
         title={c.title}
@@ -497,32 +497,32 @@ export default function PricingPage() {
             <Reveal
               key={plan.key}
               delay={i * 80}
-              className={`hover-lift relative flex flex-col rounded-2xl p-8 ${
+              className={`hover-lift relative flex flex-col rounded-lg p-8 ${
                 plan.featured
-                  ? "border-2 border-brand-800 bg-white shadow-sm"
-                  : "border border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm"
+                  ? "border-2 border-signal-500 bg-ink-900 shadow-glow"
+                  : "border border-ink-700 bg-ink-900 shadow-panel hover:border-signal-500/40"
               }`}
             >
               {plan.featured ? (
-                <div className="absolute -top-3 left-8 inline-flex items-center gap-1.5 rounded-full bg-brand-800 px-3 py-1 text-xs font-semibold text-white">
+                <div className="absolute -top-3 left-8 inline-flex items-center gap-1.5 rounded-sm bg-signal-500 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-wider text-ink-950">
                   <Sparkles className="h-3 w-3" />
                   {c.recommended}
                 </div>
               ) : null}
-              <p className="eyebrow text-brand-700">{plan.name}</p>
+              <p className="eyebrow text-signal-400">{plan.name}</p>
               <div className="mt-4 flex items-end gap-2">
-                <span className="text-4xl font-semibold tracking-tight text-stone-900">{plan.price}</span>
-                <span className="pb-1 text-sm text-stone-500">{plan.cadence}</span>
+                <span className="font-display text-4xl font-medium text-ink-50">{plan.price}</span>
+                <span className="pb-1 text-sm text-ink-500">{plan.cadence}</span>
               </div>
-              <p className="mt-5 text-sm leading-7 text-stone-600">{plan.description}</p>
+              <p className="mt-5 text-sm leading-7 text-ink-400">{plan.description}</p>
 
               <div className="mt-7">
                 <Link
                   href={plan.href}
-                  className={`inline-flex h-12 w-full items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-colors ${
+                  className={`inline-flex h-12 w-full items-center justify-center gap-2 rounded-md text-sm font-semibold transition-all ${
                     plan.featured
-                      ? "bg-brand-800 text-white hover:bg-brand-900"
-                      : "border border-stone-300 bg-white text-stone-700 hover:bg-stone-50"
+                      ? "bg-signal-500 text-ink-950 hover:bg-signal-400 hover:shadow-glow-sm"
+                      : "border border-ink-600 bg-transparent text-ink-100 hover:border-ink-400 hover:bg-ink-800"
                   }`}
                 >
                   {plan.cta}
@@ -533,8 +533,8 @@ export default function PricingPage() {
               <div className="mt-8 space-y-3">
                 {plan.features.map((feature) => (
                   <div key={feature} className="flex items-start gap-3">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-700" />
-                    <span className="text-sm leading-6 text-stone-600">{feature}</span>
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-signal-400" />
+                    <span className="text-sm leading-6 text-ink-300">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -544,22 +544,23 @@ export default function PricingPage() {
       </section>
 
       {/* Comparison */}
-      <section className="border-y border-stone-200 bg-stone-50 px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl">
-          <Reveal className="eyebrow text-brand-700">{c.compareEyebrow}</Reveal>
+      <section className="relative border-y border-paper-ink/15 bg-paper px-4 py-20 text-paper-ink sm:px-6 lg:px-8">
+        <div className="pointer-events-none absolute inset-0 bg-grid-paper" aria-hidden="true" />
+        <div className="relative mx-auto max-w-5xl">
+          <Reveal className="eyebrow text-signal-600">{c.compareEyebrow}</Reveal>
           <Reveal delay={70}>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
+            <h2 className="mt-3 font-display text-3xl font-medium text-paper-ink sm:text-4xl">
               {c.compareTitle}
             </h2>
           </Reveal>
 
-          <Reveal delay={140} className="mt-10 overflow-x-auto rounded-xl border border-stone-200 bg-white">
+          <Reveal delay={140} className="mt-10 overflow-x-auto rounded-lg border border-paper-ink/15 bg-paper">
             <div className="min-w-[560px]">
-              <div className="grid grid-cols-4 border-b border-stone-200 bg-stone-50 font-mono text-xs uppercase tracking-wider text-stone-600">
+              <div className="grid grid-cols-4 border-b border-paper-ink/15 bg-paper-deep font-mono text-xs uppercase tracking-wider text-paper-ink/60">
                 {c.compareCols.map((col, i) => (
                   <div
                     key={col}
-                    className={`px-5 py-4 ${i === 2 ? "text-brand-700" : ""} ${i > 0 ? "text-center" : ""}`}
+                    className={`px-5 py-4 ${i === 2 ? "text-signal-600" : ""} ${i > 0 ? "text-center" : ""}`}
                   >
                     {col}
                   </div>
@@ -568,11 +569,11 @@ export default function PricingPage() {
               {c.compareRows.map((row) => (
                 <div
                   key={row[0]}
-                  className="grid grid-cols-4 border-b border-stone-200 text-sm text-stone-600 last:border-b-0"
+                  className="grid grid-cols-4 border-b border-paper-ink/15 text-sm text-paper-ink/70 last:border-b-0"
                 >
-                  <div className="px-5 py-4 font-medium text-stone-900">{row[0]}</div>
+                  <div className="px-5 py-4 font-medium text-paper-ink">{row[0]}</div>
                   <div className="px-5 py-4 text-center">{row[1]}</div>
-                  <div className="px-5 py-4 text-center font-medium text-stone-900">{row[2]}</div>
+                  <div className="px-5 py-4 text-center font-medium text-paper-ink">{row[2]}</div>
                   <div className="px-5 py-4 text-center">{row[3]}</div>
                 </div>
               ))}
@@ -586,22 +587,22 @@ export default function PricingPage() {
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
             <div>
-              <Reveal className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-4 py-1.5 eyebrow text-stone-600">
-                <Building2 className="h-3.5 w-3.5 text-brand-700" />
+              <Reveal className="eyebrow inline-flex items-center gap-2 rounded-full border border-ink-700 bg-ink-900/80 px-4 py-1.5 text-ink-300">
+                <Building2 className="h-3.5 w-3.5 text-signal-400" />
                 {c.entEyebrow}
               </Reveal>
               <Reveal delay={80}>
-                <h2 className="mt-6 text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
+                <h2 className="mt-6 font-display text-3xl font-medium text-ink-50 sm:text-4xl">
                   {c.entTitle}
                 </h2>
               </Reveal>
               <Reveal delay={140}>
-                <p className="mt-5 max-w-xl text-lg leading-8 text-stone-600">{c.entBody}</p>
+                <p className="mt-5 max-w-xl text-lg leading-8 text-ink-300">{c.entBody}</p>
               </Reveal>
               <Reveal delay={200} className="mt-8">
                 <Link
                   href="/company/contact"
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-brand-800 px-7 text-sm font-semibold text-white transition-colors hover:bg-brand-900"
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-signal-500 px-7 text-sm font-semibold text-ink-950 transition-all hover:bg-signal-400 hover:shadow-glow-sm"
                 >
                   {c.entCta}
                   <ArrowRight className="h-4 w-4" />
@@ -616,14 +617,14 @@ export default function PricingPage() {
                   <Reveal
                     key={point.title}
                     delay={i * 80}
-                    className="hover-lift rounded-xl border border-stone-200 bg-white p-6 hover:border-stone-300 hover:shadow-sm lg:flex lg:items-start lg:gap-4"
+                    className="hover-lift rounded-lg border border-ink-700 bg-ink-900 p-6 hover:border-signal-500/40 lg:flex lg:items-start lg:gap-4"
                   >
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-brand-700">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="mt-4 lg:mt-0">
-                      <h3 className="text-base font-semibold text-stone-900">{point.title}</h3>
-                      <p className="mt-2 text-sm leading-7 text-stone-600">{point.body}</p>
+                      <h3 className="text-base font-semibold text-ink-50">{point.title}</h3>
+                      <p className="mt-2 text-sm leading-7 text-ink-400">{point.body}</p>
                     </div>
                   </Reveal>
                 );
@@ -636,9 +637,9 @@ export default function PricingPage() {
       {/* FAQ */}
       <section id="faq" className="px-4 pb-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
-          <Reveal className="eyebrow text-brand-700">{c.faqEyebrow}</Reveal>
+          <Reveal className="eyebrow text-signal-500">{c.faqEyebrow}</Reveal>
           <Reveal delay={70}>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-stone-900 sm:text-4xl">
+            <h2 className="mt-3 font-display text-3xl font-medium text-ink-50 sm:text-4xl">
               {c.faqTitle}
             </h2>
           </Reveal>
@@ -650,7 +651,7 @@ export default function PricingPage() {
                 <Reveal
                   key={item.q}
                   delay={index * 60}
-                  className="overflow-hidden rounded-xl border border-stone-200 bg-white"
+                  className="overflow-hidden rounded-lg border border-ink-700 bg-ink-900"
                 >
                   <button
                     type="button"
@@ -658,15 +659,15 @@ export default function PricingPage() {
                     onClick={() => setOpenIndex(isOpen ? null : index)}
                     aria-expanded={isOpen}
                   >
-                    <span className="text-base font-semibold text-stone-900">{item.q}</span>
+                    <span className="text-base font-semibold text-ink-50">{item.q}</span>
                     <ChevronDown
-                      className={`h-5 w-5 shrink-0 text-stone-500 transition-transform duration-300 ${
-                        isOpen ? "rotate-180 text-brand-700" : ""
+                      className={`h-5 w-5 shrink-0 text-ink-500 transition-transform duration-300 ${
+                        isOpen ? "rotate-180 text-signal-400" : ""
                       }`}
                     />
                   </button>
                   {isOpen ? (
-                    <p className="px-6 pb-6 text-sm leading-7 text-stone-600">{item.a}</p>
+                    <p className="px-6 pb-6 text-sm leading-7 text-ink-400">{item.a}</p>
                   ) : null}
                 </Reveal>
               );

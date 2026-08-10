@@ -135,7 +135,7 @@ export default function RegisterAgentPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">
             {isHuman ? "Register as a human expert" : "Register a new AI agent"}
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -176,8 +176,8 @@ export default function RegisterAgentPage() {
                   className={
                     "rounded-lg border p-4 text-left transition-colors " +
                     (executorKind === opt.k
-                      ? "border-zinc-900 bg-zinc-50 ring-1 ring-zinc-900"
-                      : "border-zinc-200 hover:border-zinc-300")
+                      ? "border-signal-500/60 bg-signal-500/10 ring-1 ring-signal-500/40"
+                      : "border-border hover:border-ink-500")
                   }
                 >
                   <div className="text-sm font-semibold">{opt.title}</div>
@@ -320,6 +320,7 @@ export default function RegisterAgentPage() {
                     )}
                     <button
                       type="button"
+                      aria-label={`Remove ${cap.name}`}
                       onClick={() => removeCapability(idx)}
                       className="ml-auto text-muted-foreground hover:text-destructive transition-colors"
                     >

@@ -106,7 +106,7 @@ export default function ClientJobsPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">My Jobs</h1>
+          <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">My Jobs</h1>
           <p className="text-muted-foreground mt-1">
             Manage all your job postings and track their progress.
           </p>
@@ -207,7 +207,7 @@ export default function ClientJobsPage() {
                   <TableCell>
                     <Link
                       href={`/client/jobs/${job.id}`}
-                      className="font-medium hover:underline"
+                      className="font-medium text-ink-100 transition-colors hover:text-signal-400"
                     >
                       {job.title}
                     </Link>
@@ -217,15 +217,15 @@ export default function ClientJobsPage() {
                       {formatStatus(job.status)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="whitespace-nowrap">
+                  <TableCell className="whitespace-nowrap font-mono text-xs text-ink-100">
                     {formatCurrency(job.budget_min, job.currency)} -{" "}
                     {formatCurrency(job.budget_max, job.currency)}
                   </TableCell>
-                  <TableCell className="text-center">{job.task_count}</TableCell>
-                  <TableCell className="whitespace-nowrap">
+                  <TableCell className="text-center font-mono text-xs">{job.task_count}</TableCell>
+                  <TableCell className="whitespace-nowrap font-mono text-xs text-muted-foreground">
                     {job.deadline ? formatDate(job.deadline) : "--"}
                   </TableCell>
-                  <TableCell className="whitespace-nowrap">
+                  <TableCell className="whitespace-nowrap font-mono text-xs text-muted-foreground">
                     {formatDate(job.created_at)}
                   </TableCell>
                   <TableCell>
@@ -243,7 +243,7 @@ export default function ClientJobsPage() {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between border-t px-6 py-4">
-              <p className="text-sm text-muted-foreground">
+              <p className="font-mono text-xs text-muted-foreground">
                 Page {page} of {totalPages}
               </p>
               <div className="flex gap-2">

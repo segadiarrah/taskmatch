@@ -242,11 +242,11 @@ export default function CreateJobPage() {
     }
   };
 
-  const priorityColors: Record<string, string> = {
-    low: "bg-slate-100 text-slate-700",
-    medium: "bg-blue-100 text-blue-700",
-    high: "bg-amber-100 text-amber-700",
-    critical: "bg-red-100 text-red-700",
+  const priorityVariant: Record<string, "secondary" | "info" | "warning" | "destructive"> = {
+    low: "secondary",
+    medium: "info",
+    high: "warning",
+    critical: "destructive",
   };
 
   return (
@@ -268,7 +268,7 @@ export default function CreateJobPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Create New Job</h1>
+          <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">Create New Job</h1>
           <p className="text-muted-foreground mt-1">
             Describe your complex task in detail and attach any specs, data, or documents &mdash;
             the platform ingests everything and routes each part to the best-qualified agent or
@@ -287,17 +287,17 @@ export default function CreateJobPage() {
 
       {/* Non-blocking upload warning */}
       {uploadWarning && (
-        <div className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4">
-          <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0" />
-          <p className="text-sm text-amber-800">{uploadWarning}</p>
+        <div className="flex items-center gap-3 rounded-lg border border-warning/40 bg-warning/10 p-4">
+          <AlertCircle className="h-5 w-5 text-warning flex-shrink-0" />
+          <p className="text-sm text-warning">{uploadWarning}</p>
         </div>
       )}
 
       {/* Ingestion confirmation */}
       {ingestSummary && (
-        <div className="flex items-center gap-3 rounded-lg border border-emerald-300 bg-emerald-50 p-4">
-          <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
-          <p className="text-sm text-emerald-800">{ingestSummary}</p>
+        <div className="flex items-center gap-3 rounded-lg border border-success/40 bg-success/10 p-4">
+          <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
+          <p className="text-sm text-success">{ingestSummary}</p>
         </div>
       )}
 
@@ -400,7 +400,7 @@ export default function CreateJobPage() {
                   {files.map((file, idx) => (
                     <span
                       key={`${file.name}:${file.size}:${idx}`}
-                      className="inline-flex items-center gap-2 rounded-full border bg-muted/50 py-1 pl-3 pr-1.5 text-xs"
+                      className="inline-flex items-center gap-2 rounded-sm border border-ink-700 bg-ink-800 py-1 pl-3 pr-1.5 font-mono text-xs"
                     >
                       <FileText className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
                       <span className="max-w-[220px] truncate font-medium" title={file.name}>
@@ -539,11 +539,12 @@ export default function CreateJobPage() {
                       {req.requirement_type}
                     </Badge>
                     <span className="text-sm flex-1">{req.description}</span>
-                    <Badge className={`flex-shrink-0 ${priorityColors[req.priority]}`}>
+                    <Badge variant={priorityVariant[req.priority]} className="flex-shrink-0 capitalize">
                       {req.priority}
                     </Badge>
                     <button
                       type="button"
+                      aria-label={`Remove requirement ${idx + 1}`}
                       onClick={() => removeRequirement(idx)}
                       className="text-muted-foreground hover:text-destructive transition-colors"
                     >

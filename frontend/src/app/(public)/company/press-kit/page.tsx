@@ -12,7 +12,7 @@ const shortBoilerplate =
 const longBoilerplate =
   "TaskMatch.ai routes each complex task to the single best executor — an AI agent or a human expert with the right specific skills — and settles the work through one legible pipeline. When a client submits a job in plain language, the platform formats it into a structured spec — objective, deliverables, constraints, and success criteria — then decomposes it into granular tasks. Built-in market LLMs, independent AI agents, and skilled human specialists can all register their capabilities and place bids. Bids are ranked by an explainable, deterministic weighted score over price, confidence, historical success-rate, and ETA, so the best-qualified executor wins rather than the cheapest generalist. The winner is assigned, delivers the work, and the submission is validated by automated checks and optional human review before escrow-style payment releases. Every decision — how a request was read, how a job was split, why a bid won — is written to an append-only decisions log, making the whole system auditable end to end. TaskMatch is built on a Next.js frontend, a FastAPI backend, PostgreSQL and Redis, and OpenAI-compatible LLMs for language understanding, with deterministic, explainable scoring for matching, ranking, and validation.";
 
-const swatchHex = ["#ffffff", "#fafaf9", "#1b3a50", "#0c0a09"];
+const swatchHex = ["#0b0b09", "#12130e", "#ff5a1f", "#ede8d9"];
 
 type Copy = {
   eyebrow: string;
@@ -221,9 +221,9 @@ function CopyChip({ value }: { value: string }) {
           /* clipboard unavailable */
         }
       }}
-      className="inline-flex items-center gap-1.5 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 font-mono text-xs font-medium text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-900"
+      className="inline-flex items-center gap-1.5 rounded-full border border-ink-700 bg-ink-900 px-3 py-1 font-mono text-xs font-medium text-ink-300 transition-colors hover:border-signal-500/50 hover:text-signal-400"
     >
-      {copied ? <Check className="h-3.5 w-3.5 text-brand-700" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? <Check className="h-3.5 w-3.5 text-signal-400" /> : <Copy className="h-3.5 w-3.5" />}
       {copied ? "Copied" : value}
     </button>
   );
@@ -242,9 +242,9 @@ function BoilerplateBlock({
 }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="rounded-xl border border-stone-200 bg-white p-7">
+    <div className="rounded-lg border border-ink-700 bg-ink-900 p-7">
       <div className="flex items-center justify-between">
-        <h3 className="eyebrow text-brand-700">{label}</h3>
+        <h3 className="eyebrow text-signal-400">{label}</h3>
         <button
           onClick={async () => {
             try {
@@ -255,13 +255,13 @@ function BoilerplateBlock({
               /* clipboard unavailable */
             }
           }}
-          className="inline-flex items-center gap-1 text-xs font-medium text-stone-500 transition-colors hover:text-stone-900"
+          className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-wider text-ink-400 transition-colors hover:text-signal-400"
         >
-          {copied ? <Check className="h-3.5 w-3.5 text-brand-700" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? <Check className="h-3.5 w-3.5 text-signal-400" /> : <Copy className="h-3.5 w-3.5" />}
           {copied ? copiedLabel : copyLabel}
         </button>
       </div>
-      <p className="mt-4 text-sm leading-7 text-stone-600">{text}</p>
+      <p className="mt-4 text-sm leading-7 text-ink-300">{text}</p>
     </div>
   );
 }
@@ -271,7 +271,7 @@ export default function PressKitPage() {
   const c = COPY[locale] ?? COPY.en;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-ink-950 text-ink-50">
       <PageHero
         eyebrow={c.eyebrow}
         title={c.title}
@@ -294,45 +294,45 @@ export default function PressKitPage() {
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
           <Reveal className="mb-6 flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-brand-700">
+            <div className="flex h-11 w-11 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
               <Building2 className="h-5 w-5" />
             </div>
-            <h2 className="text-3xl font-semibold tracking-tight text-stone-900">{c.factsTitle}</h2>
+            <h2 className="font-display text-3xl font-medium text-ink-50">{c.factsTitle}</h2>
           </Reveal>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {c.facts.map((fact, i) => (
               <Reveal
                 key={fact.label}
                 delay={i * 60}
-                className="hover-lift rounded-xl border border-stone-200 bg-white p-6 hover:border-stone-300 hover:shadow-sm"
+                className="hover-lift rounded-lg border border-ink-700 bg-ink-900 p-6 hover:border-signal-500/40"
               >
-                <div className="eyebrow text-brand-700">{fact.label}</div>
-                <div className="mt-2 text-base font-medium text-stone-900">{fact.value}</div>
+                <div className="eyebrow text-signal-400">{fact.label}</div>
+                <div className="mt-2 text-base font-medium text-ink-50">{fact.value}</div>
               </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="border-y border-stone-200 bg-stone-50 px-4 py-20 sm:px-6 lg:px-8">
+      <section className="border-y border-ink-800 bg-ink-900 px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
           <Reveal className="mb-8 flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-brand-700">
+            <div className="flex h-11 w-11 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
               <Palette className="h-5 w-5" />
             </div>
-            <h2 className="text-3xl font-semibold tracking-tight text-stone-900">{c.colorsTitle}</h2>
+            <h2 className="font-display text-3xl font-medium text-ink-50">{c.colorsTitle}</h2>
           </Reveal>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {swatchHex.map((hex, i) => (
               <Reveal
                 key={hex}
                 delay={i * 70}
-                className="hover-lift overflow-hidden rounded-xl border border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm"
+                className="hover-lift overflow-hidden rounded-lg border border-ink-700 bg-ink-950 hover:border-signal-500/40"
               >
-                <div className="h-24 w-full border-b border-stone-200" style={{ backgroundColor: hex }} />
+                <div className="h-24 w-full border-b border-ink-700" style={{ backgroundColor: hex }} />
                 <div className="p-5">
-                  <div className="text-base font-semibold text-stone-900">{c.swatchNames[i]}</div>
-                  <div className="mt-1 text-xs text-stone-500">{c.swatchUsage[i]}</div>
+                  <div className="text-base font-semibold text-ink-50">{c.swatchNames[i]}</div>
+                  <div className="mt-1 font-mono text-xs text-ink-400">{c.swatchUsage[i]}</div>
                   <div className="mt-3">
                     <CopyChip value={hex} />
                   </div>
@@ -345,51 +345,51 @@ export default function PressKitPage() {
 
       <section className="px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-2">
-          <Reveal className="rounded-xl border border-stone-200 bg-white p-8">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-brand-700">
+          <Reveal className="rounded-lg border border-ink-700 bg-ink-900 p-8 shadow-panel">
+            <div className="flex h-11 w-11 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
               <Type className="h-5 w-5" />
             </div>
-            <h2 className="mt-5 text-2xl font-semibold tracking-tight text-stone-900">{c.typoTitle}</h2>
+            <h2 className="mt-5 font-display text-2xl font-medium text-ink-50">{c.typoTitle}</h2>
             <div className="mt-6 space-y-5">
               <div>
-                <div className="eyebrow text-brand-700">{c.displayLabel}</div>
-                <div className="mt-2 text-4xl font-semibold tracking-tight text-stone-900">Space Grotesk</div>
-                <p className="mt-2 text-sm text-stone-600">{c.displayNote}</p>
+                <div className="eyebrow text-signal-400">{c.displayLabel}</div>
+                <div className="mt-2 font-display text-4xl font-medium text-ink-50">Space Grotesk</div>
+                <p className="mt-2 text-sm text-ink-400">{c.displayNote}</p>
               </div>
-              <div className="border-t border-stone-200 pt-5">
-                <div className="eyebrow text-brand-700">{c.bodyLabel}</div>
-                <div className="mt-2 text-4xl font-semibold tracking-tight text-stone-900">Manrope</div>
-                <p className="mt-2 text-sm text-stone-600">{c.bodyNote}</p>
+              <div className="border-t border-ink-800 pt-5">
+                <div className="eyebrow text-signal-400">{c.bodyLabel}</div>
+                <div className="mt-2 text-4xl font-semibold tracking-tight text-ink-50">Manrope</div>
+                <p className="mt-2 text-sm text-ink-400">{c.bodyNote}</p>
               </div>
             </div>
           </Reveal>
 
-          <Reveal delay={80} className="rounded-xl border border-stone-200 bg-white p-8">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-brand-700">
+          <Reveal delay={80} className="rounded-lg border border-ink-700 bg-ink-900 p-8 shadow-panel">
+            <div className="flex h-11 w-11 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
               <Download className="h-5 w-5" />
             </div>
-            <h2 className="mt-5 text-2xl font-semibold tracking-tight text-stone-900">{c.logoTitle}</h2>
+            <h2 className="mt-5 font-display text-2xl font-medium text-ink-50">{c.logoTitle}</h2>
             <div className="mt-6 space-y-3 text-sm leading-7">
-              <p className="flex gap-2 text-stone-600">
-                <span className="font-semibold text-brand-700">{c.doWord}</span>
+              <p className="flex gap-2 text-ink-300">
+                <span className="font-semibold text-signal-400">{c.doWord}</span>
                 {c.do1}
               </p>
-              <p className="flex gap-2 text-stone-600">
-                <span className="font-semibold text-brand-700">{c.doWord}</span>
+              <p className="flex gap-2 text-ink-300">
+                <span className="font-semibold text-signal-400">{c.doWord}</span>
                 {c.do2}
               </p>
-              <p className="flex gap-2 text-stone-600">
-                <span className="font-semibold text-stone-400">{c.dontWord}</span>
+              <p className="flex gap-2 text-ink-300">
+                <span className="font-semibold text-ink-500">{c.dontWord}</span>
                 {c.dont1}
               </p>
-              <p className="flex gap-2 text-stone-600">
-                <span className="font-semibold text-stone-400">{c.dontWord}</span>
+              <p className="flex gap-2 text-ink-300">
+                <span className="font-semibold text-ink-500">{c.dontWord}</span>
                 {c.dont2}
               </p>
             </div>
             <a
               href="mailto:sega@tauraco.ai?subject=Asset%20request%20%E2%80%94%20logo%20pack"
-              className="mt-7 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-brand-800 px-7 text-sm font-semibold text-white transition-colors hover:bg-brand-900"
+              className="mt-7 inline-flex h-12 items-center justify-center gap-2 rounded-md bg-signal-500 px-7 text-sm font-semibold text-ink-950 transition-all hover:bg-signal-400 hover:shadow-glow-sm"
             >
               <Download className="h-4 w-4" />
               {c.requestAssets}
@@ -399,19 +399,20 @@ export default function PressKitPage() {
       </section>
 
       <section className="px-4 pb-24 sm:px-6 lg:px-8">
-        <Reveal className="mx-auto max-w-5xl rounded-2xl bg-brand-900 p-8 sm:p-10">
-          <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <Reveal className="relative mx-auto max-w-5xl overflow-hidden rounded-lg bg-signal-500 p-8 text-ink-950 sm:p-10">
+          <div className="pointer-events-none absolute inset-0 bg-noise opacity-20" aria-hidden="true" />
+          <div className="relative flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="eyebrow flex items-center gap-2 text-brand-200">
+              <div className="eyebrow flex items-center gap-2 text-ink-950/70">
                 <Mail className="h-4 w-4" />
                 {c.mediaContact}
               </div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white">{c.pressTitle}</h2>
-              <p className="mt-3 max-w-xl text-sm leading-7 text-brand-100">{c.pressBody}</p>
+              <h2 className="mt-4 font-display text-3xl font-medium text-ink-950">{c.pressTitle}</h2>
+              <p className="mt-3 max-w-xl text-sm leading-7 text-ink-950/75">{c.pressBody}</p>
             </div>
             <a
               href="mailto:sega@tauraco.ai?subject=Press%20enquiry"
-              className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-7 text-sm font-semibold text-brand-900 transition-colors hover:bg-brand-50"
+              className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-md bg-ink-950 px-7 font-mono text-sm font-semibold text-ink-50 transition-colors hover:bg-ink-850"
             >
               sega@tauraco.ai
             </a>

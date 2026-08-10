@@ -19,15 +19,15 @@ function CodeBlock({ code, filename }: { code: string; filename: string }) {
     }
   };
   return (
-    <div className="overflow-hidden rounded-lg border border-stone-200 bg-stone-50">
-      <div className="flex items-center justify-between border-b border-stone-200 px-4 py-3">
-        <span className="font-mono text-xs font-semibold text-brand-700">{filename}</span>
-        <button onClick={onCopy} className="inline-flex items-center gap-1 text-xs text-stone-500 transition-colors hover:text-stone-900">
+    <div className="overflow-hidden rounded-md border border-ink-700 bg-ink-950">
+      <div className="flex items-center justify-between border-b border-ink-700 px-4 py-3">
+        <span className="font-mono text-xs font-semibold text-signal-400">{filename}</span>
+        <button onClick={onCopy} className="inline-flex items-center gap-1 text-xs text-ink-400 transition-colors hover:text-ink-100">
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      <pre className="overflow-x-auto p-5 font-mono text-sm leading-7 text-stone-800">
+      <pre className="overflow-x-auto p-5 font-mono text-sm leading-7 text-ink-100">
         <code>{code}</code>
       </pre>
     </div>
@@ -383,7 +383,7 @@ export default function SdkPage() {
   const c = COPY[locale] ?? COPY.en;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-ink-950 text-ink-50">
       <PageHero
         eyebrow={c.eyebrow}
         title={c.title}
@@ -393,14 +393,14 @@ export default function SdkPage() {
       />
 
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
-        <Reveal className="mx-auto max-w-5xl rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
+        <Reveal className="mx-auto max-w-5xl rounded-lg border border-ink-700 bg-ink-900 p-6 sm:p-8">
           <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-stone-50 text-brand-700">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
               <AlertTriangle className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-stone-900">{c.calloutTitle}</h2>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-600">{c.calloutBody}</p>
+              <h2 className="text-xl font-semibold text-ink-50">{c.calloutTitle}</h2>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-ink-300">{c.calloutBody}</p>
             </div>
           </div>
         </Reveal>
@@ -408,24 +408,24 @@ export default function SdkPage() {
 
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-2">
-          <Reveal className="hover-lift group rounded-2xl border border-stone-200 bg-white p-7 hover:border-stone-300 hover:shadow-sm">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-stone-200 bg-stone-50 text-brand-700">
+          <Reveal className="hover-lift group rounded-lg border border-ink-700 bg-ink-900 p-7 hover:border-signal-500/40">
+            <div className="flex h-11 w-11 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
               <Link2 className="h-5 w-5" />
             </div>
-            <h3 className="mt-5 text-lg font-semibold text-stone-900">{c.baseUrlTitle}</h3>
-            <p className="mt-3 text-sm leading-7 text-stone-600">{c.baseUrlBody}</p>
-            <code className="mt-4 block rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 font-mono text-sm text-brand-700">
+            <h3 className="mt-5 text-lg font-semibold text-ink-50">{c.baseUrlTitle}</h3>
+            <p className="mt-3 text-sm leading-7 text-ink-400">{c.baseUrlBody}</p>
+            <code className="mt-4 block rounded-md border border-ink-700 bg-ink-950 px-4 py-3 font-mono text-sm text-signal-400">
               https://taskmatch.ai/api
             </code>
           </Reveal>
 
-          <Reveal delay={80} className="hover-lift group rounded-2xl border border-stone-200 bg-white p-7 hover:border-stone-300 hover:shadow-sm">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-stone-200 bg-stone-50 text-brand-700">
+          <Reveal delay={80} className="hover-lift group rounded-lg border border-ink-700 bg-ink-900 p-7 hover:border-signal-500/40">
+            <div className="flex h-11 w-11 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
               <KeyRound className="h-5 w-5" />
             </div>
-            <h3 className="mt-5 text-lg font-semibold text-stone-900">{c.authTitle}</h3>
-            <p className="mt-3 text-sm leading-7 text-stone-600">{c.authBody}</p>
-            <code className="mt-4 block rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 font-mono text-sm text-brand-700">
+            <h3 className="mt-5 text-lg font-semibold text-ink-50">{c.authTitle}</h3>
+            <p className="mt-3 text-sm leading-7 text-ink-400">{c.authBody}</p>
+            <code className="mt-4 block rounded-md border border-ink-700 bg-ink-950 px-4 py-3 font-mono text-sm text-signal-400">
               Authorization: Bearer &lt;access_token&gt;
             </code>
           </Reveal>
@@ -435,8 +435,8 @@ export default function SdkPage() {
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl space-y-8">
           <Reveal>
-            <h2 className="text-3xl font-semibold tracking-tight text-stone-900">{c.quickTitle}</h2>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-600">{c.quickBody}</p>
+            <h2 className="font-display text-3xl font-medium text-ink-50">{c.quickTitle}</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-ink-300">{c.quickBody}</p>
           </Reveal>
           <Reveal>
             <CodeBlock filename="install.sh" code={installExample} />
@@ -452,18 +452,18 @@ export default function SdkPage() {
 
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
-          <Reveal className="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
+          <Reveal className="rounded-lg border border-ink-700 bg-ink-900 p-6 sm:p-8">
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-stone-50 text-brand-700">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
                 <Workflow className="h-5 w-5" />
               </div>
               <div className="w-full">
-                <h2 className="text-2xl font-semibold tracking-tight text-stone-900">{c.agentTitle}</h2>
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-600">{c.agentBody}</p>
+                <h2 className="font-display text-2xl font-medium text-ink-50">{c.agentTitle}</h2>
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-ink-300">{c.agentBody}</p>
                 <ol className="mt-5 space-y-3">
                   {c.agentSteps.map((step, i) => (
-                    <li key={step} className="flex gap-3 text-sm leading-7 text-stone-600">
-                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-stone-200 bg-stone-50 font-mono text-xs text-brand-700">
+                    <li key={step} className="flex gap-3 text-sm leading-7 text-ink-300">
+                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-signal-500/30 bg-signal-500/10 font-mono text-xs text-signal-400">
                         {i + 1}
                       </span>
                       <span>{step}</span>
@@ -481,16 +481,16 @@ export default function SdkPage() {
 
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <Reveal className="rounded-2xl border border-stone-200 bg-white p-7">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-stone-200 bg-stone-50 text-brand-700">
+          <Reveal className="rounded-lg border border-ink-700 bg-ink-900 p-7">
+            <div className="flex h-11 w-11 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
               <Gauge className="h-5 w-5" />
             </div>
-            <h3 className="mt-5 text-lg font-semibold text-stone-900">{c.rateTitle}</h3>
-            <p className="mt-3 text-sm leading-7 text-stone-600">{c.rateBody}</p>
-            <ul className="mt-4 space-y-2 font-mono text-sm text-stone-600">
+            <h3 className="mt-5 text-lg font-semibold text-ink-50">{c.rateTitle}</h3>
+            <p className="mt-3 text-sm leading-7 text-ink-300">{c.rateBody}</p>
+            <ul className="mt-4 space-y-2 font-mono text-sm text-ink-300">
               {c.rateItems.map((item) => (
                 <li key={item}>
-                  <span className="text-brand-700">→ </span>
+                  <span className="text-signal-400">→ </span>
                   {item}
                 </li>
               ))}
@@ -498,33 +498,33 @@ export default function SdkPage() {
           </Reveal>
 
           <Reveal delay={80}>
-            <h3 className="mb-3 text-lg font-semibold text-stone-900">{c.errTitle}</h3>
-            <p className="mb-4 text-sm leading-7 text-stone-600">{c.errBody}</p>
+            <h3 className="mb-3 text-lg font-semibold text-ink-50">{c.errTitle}</h3>
+            <p className="mb-4 text-sm leading-7 text-ink-300">{c.errBody}</p>
             <CodeBlock filename="errors.py" code={errorExample} />
           </Reveal>
         </div>
       </section>
 
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <Reveal className="mx-auto max-w-5xl rounded-2xl border border-stone-200 bg-stone-50 p-8">
-          <h2 className="text-3xl font-semibold tracking-tight text-stone-900">{c.roadmapTitle}</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-stone-600">{c.roadmapBody}</p>
+        <Reveal className="mx-auto max-w-5xl rounded-lg border border-ink-700 bg-ink-850 p-8">
+          <h2 className="font-display text-3xl font-medium text-ink-50">{c.roadmapTitle}</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-ink-300">{c.roadmapBody}</p>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             {c.sdks.map((item, i) => (
               <Reveal
                 key={item.name}
                 delay={i * 70}
-                className="hover-lift rounded-xl border border-stone-200 bg-white p-5 hover:border-stone-300 hover:shadow-sm"
+                className="hover-lift rounded-lg border border-ink-700 bg-ink-900 p-5 hover:border-signal-500/40"
               >
-                <div className="eyebrow text-brand-700">{c.planned}</div>
-                <h3 className="mt-3 text-base font-semibold text-stone-900">{item.name}</h3>
-                <p className="mt-2 text-sm leading-7 text-stone-600">{item.body}</p>
+                <div className="eyebrow text-signal-400">{c.planned}</div>
+                <h3 className="mt-3 text-base font-semibold text-ink-50">{item.name}</h3>
+                <p className="mt-2 text-sm leading-7 text-ink-400">{item.body}</p>
               </Reveal>
             ))}
           </div>
-          <p className="mt-6 text-sm leading-7 text-stone-600">
+          <p className="mt-6 text-sm leading-7 text-ink-300">
             {c.notifyText}{" "}
-            <Link href="/company/contact" className="font-semibold text-brand-700 underline underline-offset-4">
+            <Link href="/company/contact" className="font-semibold text-signal-400 underline underline-offset-4">
               {c.notifyLink}
             </Link>
           </p>

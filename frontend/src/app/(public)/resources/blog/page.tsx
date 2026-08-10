@@ -78,7 +78,7 @@ export default function BlogPage() {
   const [featured, ...rest] = sorted;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-ink-950 text-ink-50">
       <PageHero
         eyebrow={c.eyebrow}
         title={c.title}
@@ -91,40 +91,40 @@ export default function BlogPage() {
         <div className="mx-auto max-w-6xl">
           <Reveal>
             <Link href={`/resources/blog/${featured.slug}`} className="group block">
-              <article className="hover-lift grid gap-8 rounded-2xl border border-stone-200 bg-white p-8 hover:border-stone-300 hover:shadow-sm lg:grid-cols-[1.1fr_0.9fr] lg:p-10">
+              <article className="hover-lift grid gap-8 rounded-lg border border-ink-700 bg-ink-900 p-8 hover:border-signal-500/40 lg:grid-cols-[1.1fr_0.9fr] lg:p-10">
                 <div>
                   <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
-                    <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 eyebrow text-brand-700">
+                    <span className="rounded-full border border-signal-500/30 bg-signal-500/10 px-3 py-1 eyebrow text-signal-400">
                       {featured.tag}
                     </span>
-                    <span className="inline-flex items-center gap-1 text-stone-500">
+                    <span className="inline-flex items-center gap-1 font-mono text-ink-500">
                       <CalendarDays className="h-3.5 w-3.5" />
                       {formatDate(featured.date)}
                     </span>
-                    <span className="inline-flex items-center gap-1 text-stone-500">
+                    <span className="inline-flex items-center gap-1 font-mono text-ink-500">
                       <Clock3 className="h-3.5 w-3.5" />
                       {featured.readingTime}
                     </span>
                   </div>
-                  <h2 className="mt-5 text-4xl font-semibold leading-tight tracking-tight text-stone-900">{featured.title}</h2>
-                  <p className="mt-4 text-base leading-8 text-stone-600">{featured.excerpt}</p>
+                  <h2 className="mt-5 font-display text-4xl font-medium leading-tight text-ink-50">{featured.title}</h2>
+                  <p className="mt-4 text-base leading-8 text-ink-300">{featured.excerpt}</p>
                   <div className="mt-6 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-800 text-sm font-semibold text-white">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-signal-500 text-sm font-semibold text-ink-950">
                       {featured.author.name.charAt(0)}
                     </div>
                     <div className="text-sm">
-                      <div className="font-semibold text-stone-900">{featured.author.name}</div>
-                      <div className="text-stone-500">{featured.author.role}</div>
+                      <div className="font-semibold text-ink-50">{featured.author.name}</div>
+                      <div className="text-ink-500">{featured.author.role}</div>
                     </div>
                   </div>
-                  <span className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-stone-900">
+                  <span className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-ink-50">
                     {c.readArticle}
-                    <ArrowRight className="h-4 w-4 text-brand-700 transition-transform group-hover:translate-x-1" />
+                    <ArrowRight className="h-4 w-4 text-signal-400 transition-transform group-hover:translate-x-1" />
                   </span>
                 </div>
-                <div className="hidden rounded-xl border border-stone-200 bg-stone-50 p-8 lg:flex lg:flex-col lg:justify-center">
-                  <div className="eyebrow text-brand-700">{c.featured}</div>
-                  <p className="mt-4 text-2xl font-semibold leading-snug tracking-tight text-stone-900">{c.featuredTagline}</p>
+                <div className="hidden rounded-md border border-ink-700 bg-ink-850 p-8 lg:flex lg:flex-col lg:justify-center">
+                  <div className="eyebrow text-signal-400">{c.featured}</div>
+                  <p className="mt-4 font-display text-2xl font-medium leading-snug text-ink-50">{c.featuredTagline}</p>
                 </div>
               </article>
             </Link>
@@ -139,25 +139,25 @@ export default function BlogPage() {
               <Reveal key={post.slug} delay={i * 70}>
                 <Link
                   href={`/resources/blog/${post.slug}`}
-                  className="hover-lift group flex h-full flex-col rounded-2xl border border-stone-200 bg-white p-7 hover:border-stone-300 hover:shadow-sm"
+                  className="hover-lift group flex h-full flex-col rounded-lg border border-ink-700 bg-ink-900 p-7 hover:border-signal-500/40"
                 >
                   <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
-                    <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 eyebrow text-brand-700">
+                    <span className="rounded-full border border-signal-500/30 bg-signal-500/10 px-3 py-1 eyebrow text-signal-400">
                       {post.tag}
                     </span>
-                    <span className="inline-flex items-center gap-1 text-stone-500">
+                    <span className="inline-flex items-center gap-1 font-mono text-ink-500">
                       <Clock3 className="h-3.5 w-3.5" />
                       {post.readingTime}
                     </span>
                   </div>
-                  <h3 className="mt-5 text-xl font-semibold leading-snug text-stone-900">{post.title}</h3>
-                  <p className="mt-3 flex-1 text-sm leading-7 text-stone-600">{post.excerpt}</p>
-                  <div className="mt-6 flex items-center justify-between border-t border-stone-200 pt-5 text-sm">
+                  <h3 className="mt-5 font-display text-xl font-medium leading-snug text-ink-50">{post.title}</h3>
+                  <p className="mt-3 flex-1 text-sm leading-7 text-ink-400">{post.excerpt}</p>
+                  <div className="mt-6 flex items-center justify-between border-t border-ink-700 pt-5 text-sm">
                     <div>
-                      <div className="font-medium text-stone-900">{post.author.name}</div>
-                      <div className="text-xs text-stone-500">{formatDate(post.date)}</div>
+                      <div className="font-medium text-ink-100">{post.author.name}</div>
+                      <div className="font-mono text-xs text-ink-500">{formatDate(post.date)}</div>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-brand-700 transition-transform group-hover:translate-x-1" />
+                    <ArrowRight className="h-4 w-4 text-signal-400 transition-transform group-hover:translate-x-1" />
                   </div>
                 </Link>
               </Reveal>

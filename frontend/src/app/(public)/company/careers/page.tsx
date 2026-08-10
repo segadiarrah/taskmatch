@@ -216,15 +216,17 @@ function RoleCard({ role, applyLabel }: { role: Role; applyLabel: string }) {
   const subject = encodeURIComponent(`Application: ${role.title}`);
 
   return (
-    <div className="hover-lift rounded-xl border border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm">
+    <div className="hover-lift rounded-lg border border-ink-700 bg-ink-900 hover:border-signal-500/40">
       <button
+        type="button"
+        aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between gap-6 px-7 py-6 text-left"
       >
         <div>
-          <h3 className="text-xl font-semibold text-stone-900">{role.title}</h3>
-          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs font-medium text-stone-500">
-            <span className="rounded-full bg-brand-50 px-3 py-1 eyebrow text-brand-700">
+          <h3 className="text-xl font-semibold text-ink-50">{role.title}</h3>
+          <div className="mt-2 flex flex-wrap items-center gap-3 font-mono text-xs text-ink-400">
+            <span className="eyebrow rounded-sm border border-signal-500/40 bg-signal-500/10 px-2 py-0.5 text-signal-400">
               {role.team}
             </span>
             <span className="inline-flex items-center gap-1">
@@ -235,25 +237,25 @@ function RoleCard({ role, applyLabel }: { role: Role; applyLabel: string }) {
           </div>
         </div>
         {open ? (
-          <ChevronUp className="h-5 w-5 shrink-0 text-stone-600" />
+          <ChevronUp className="h-5 w-5 shrink-0 text-ink-400" />
         ) : (
-          <ChevronDown className="h-5 w-5 shrink-0 text-stone-600" />
+          <ChevronDown className="h-5 w-5 shrink-0 text-ink-400" />
         )}
       </button>
       {open ? (
-        <div className="border-t border-stone-200 px-7 py-6">
-          <p className="text-sm leading-7 text-stone-600">{role.description}</p>
+        <div className="border-t border-ink-800 px-7 py-6">
+          <p className="text-sm leading-7 text-ink-300">{role.description}</p>
           <ul className="mt-5 space-y-3">
             {role.points.map((point) => (
-              <li key={point} className="flex gap-3 text-sm leading-7 text-stone-600">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-800" />
+              <li key={point} className="flex gap-3 text-sm leading-7 text-ink-300">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-signal-500" />
                 <span>{point}</span>
               </li>
             ))}
           </ul>
           <a
             href={`mailto:sega@tauraco.ai?subject=${subject}`}
-            className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-brand-800 px-7 text-sm font-semibold text-white transition-colors hover:bg-brand-900"
+            className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-md bg-signal-500 px-7 text-sm font-semibold text-ink-950 transition-all hover:bg-signal-400 hover:shadow-glow-sm"
           >
             {applyLabel}
           </a>
@@ -268,7 +270,7 @@ export default function CareersPage() {
   const c = COPY[locale] ?? COPY.en;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-ink-950 text-ink-50">
       <PageHero
         eyebrow={c.eyebrow}
         title={c.title}
@@ -280,8 +282,8 @@ export default function CareersPage() {
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-3xl font-semibold tracking-tight text-stone-900">{c.openRoles}</h2>
-            <span className="font-mono text-sm text-stone-500">{c.positions(roles.length)}</span>
+            <h2 className="font-display text-3xl font-medium text-ink-50">{c.openRoles}</h2>
+            <span className="font-mono text-sm text-ink-500">{c.positions(roles.length)}</span>
           </div>
           <div className="space-y-4">
             {roles.map((role, i) => (
@@ -293,16 +295,16 @@ export default function CareersPage() {
         </div>
       </section>
 
-      <section className="border-y border-stone-200 bg-stone-50 px-4 py-20 sm:px-6 lg:px-8">
+      <section className="border-y border-ink-800 bg-ink-900 px-4 py-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="max-w-2xl">
             <Reveal>
-              <h2 className="text-4xl font-semibold tracking-tight text-stone-900 sm:text-5xl">
+              <h2 className="font-display text-4xl font-medium text-ink-50 sm:text-5xl">
                 {c.cultureTitle}
               </h2>
             </Reveal>
             <Reveal delay={80}>
-              <p className="mt-5 text-lg leading-8 text-stone-600">{c.cultureBody}</p>
+              <p className="mt-5 text-lg leading-8 text-ink-300">{c.cultureBody}</p>
             </Reveal>
           </div>
           <div className="mt-10 grid gap-5 md:grid-cols-2">
@@ -312,13 +314,13 @@ export default function CareersPage() {
                 <Reveal
                   key={item.title}
                   delay={i * 80}
-                  className="hover-lift group rounded-xl border border-stone-200 bg-white p-7 hover:border-stone-300 hover:shadow-sm"
+                  className="hover-lift group rounded-lg border border-ink-700 bg-ink-950 p-7 hover:border-signal-500/40"
                 >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-brand-700">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="mt-5 text-xl font-semibold text-stone-900">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-stone-600">{item.body}</p>
+                  <h3 className="mt-5 text-xl font-semibold text-ink-50">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-ink-400">{item.body}</p>
                 </Reveal>
               );
             })}

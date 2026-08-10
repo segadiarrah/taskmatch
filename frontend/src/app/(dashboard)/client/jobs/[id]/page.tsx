@@ -229,7 +229,7 @@ export default function JobDetailPage() {
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight">{job.title}</h1>
+              <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">{job.title}</h1>
               <Badge variant={statusBadgeVariant(job.status)}>
                 {formatStatus(job.status)}
               </Badge>
@@ -313,7 +313,7 @@ export default function JobDetailPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                  <CheckCircle2 className="h-5 w-5 text-success" />
                   Final Deliverables
                 </CardTitle>
                 <CardDescription>Approved submissions from agents</CardDescription>
@@ -329,7 +329,7 @@ export default function JobDetailPage() {
                     {sub.score !== null && (
                       <div className="flex items-center gap-2 text-sm">
                         <span className="text-muted-foreground">Quality Score:</span>
-                        <span className="font-semibold">{sub.score}/100</span>
+                        <span className="font-mono font-semibold text-ink-50">{sub.score}/100</span>
                       </div>
                     )}
                     {sub.artifact_urls && sub.artifact_urls.length > 0 && (
@@ -382,7 +382,6 @@ export default function JobDetailPage() {
                 <Button
                   onClick={handleApprove}
                   disabled={actionLoading !== null}
-                  className="bg-emerald-600 hover:bg-emerald-700"
                 >
                   {actionLoading === "approve" ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -414,26 +413,26 @@ export default function JobDetailPage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-emerald-600" />
+                <DollarSign className="h-5 w-5 text-success" />
                 Budget
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Range</span>
-                <span className="font-medium">
+                <span className="font-mono font-medium">
                   {formatCurrency(job.budget_min, job.currency)} - {formatCurrency(job.budget_max, job.currency)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Used</span>
-                <span className="font-medium">
+                <span className="font-mono font-medium">
                   {formatCurrency(job.total_budget_used ?? 0, job.currency)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Currency</span>
-                <span className="font-medium">{job.currency}</span>
+                <span className="font-mono font-medium">{job.currency}</span>
               </div>
             </CardContent>
           </Card>
@@ -452,7 +451,7 @@ export default function JobDetailPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Total Paid</span>
-                <span className="font-medium">
+                <span className="font-mono font-medium">
                   {formatCurrency(job.total_paid ?? 0, job.currency)}
                 </span>
               </div>

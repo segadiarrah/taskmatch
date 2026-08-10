@@ -55,35 +55,35 @@ const actorIcons: Record<string, React.ElementType> = {
   System: Settings,
 };
 
-const actorColors: Record<string, string> = {
-  Admin: "bg-zinc-900 text-white",
-  Client: "bg-blue-100 text-blue-700",
-  Agent: "bg-purple-100 text-purple-700",
-  MCP: "bg-indigo-100 text-indigo-700",
-  System: "bg-zinc-100 text-zinc-700",
+const actorColors: Record<string, { variant: "default" | "secondary" | "outline" | "info" | "purple"; box: string }> = {
+  Admin: { variant: "secondary", box: "border border-ink-700 bg-ink-800 text-ink-300" },
+  Client: { variant: "info", box: "bg-info/10 text-info" },
+  Agent: { variant: "purple", box: "bg-[#b49aff]/10 text-[#b49aff]" },
+  MCP: { variant: "default", box: "bg-signal-500/10 text-signal-400" },
+  System: { variant: "outline", box: "bg-ink-800 text-ink-400" },
 };
 
 const actionColors: Record<string, string> = {
-  created: "text-emerald-600",
-  updated: "text-blue-600",
-  deleted: "text-red-600",
-  submitted: "text-blue-600",
-  formatted: "text-indigo-600",
-  decomposed: "text-purple-600",
-  matched: "text-cyan-600",
-  assigned: "text-amber-600",
-  placed_bid: "text-amber-600",
-  ranked_bids: "text-amber-600",
-  approved: "text-emerald-600",
-  rejected: "text-red-600",
-  validated: "text-purple-600",
-  released_payment: "text-emerald-600",
-  completed: "text-emerald-600",
-  paused: "text-amber-600",
-  disabled: "text-red-600",
-  reactivated: "text-emerald-600",
-  flagged: "text-red-600",
-  logged_in: "text-zinc-600",
+  created: "text-success",
+  updated: "text-info",
+  deleted: "text-danger",
+  submitted: "text-info",
+  formatted: "text-signal-400",
+  decomposed: "text-[#b49aff]",
+  matched: "text-info",
+  assigned: "text-warning",
+  placed_bid: "text-warning",
+  ranked_bids: "text-warning",
+  approved: "text-success",
+  rejected: "text-danger",
+  validated: "text-[#b49aff]",
+  released_payment: "text-success",
+  completed: "text-success",
+  paused: "text-warning",
+  disabled: "text-danger",
+  reactivated: "text-success",
+  flagged: "text-danger",
+  logged_in: "text-ink-400",
 };
 
 export default function AuditLogPage() {
@@ -142,8 +142,8 @@ export default function AuditLogPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Audit Log</h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Audit Log</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Chronological record of all platform actions and events.
         </p>
       </div>
@@ -157,12 +157,12 @@ export default function AuditLogPage() {
             <Card key={type}>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
-                  <div className={cn("rounded-lg p-2", actorColors[type] || "bg-zinc-100 text-zinc-700")}>
+                  <div className={cn("rounded-md p-2", actorColors[type]?.box || "bg-ink-800 text-ink-300")}>
                     <Icon className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-xl font-bold text-zinc-900">{count}</p>
-                    <p className="text-xs text-zinc-500">{type}</p>
+                    <p className="font-display text-xl font-medium text-ink-50">{count}</p>
+                    <p className="text-xs text-muted-foreground">{type}</p>
                   </div>
                 </div>
               </CardContent>
@@ -176,8 +176,8 @@ export default function AuditLogPage() {
         <CardContent className="pt-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-zinc-400" />
-              <span className="text-sm text-zinc-500">Filter by:</span>
+              <Filter className="h-4 w-4 text-ink-500" />
+              <span className="text-sm text-muted-foreground">Filter by:</span>
             </div>
             <Select
               value={actorTypeFilter}
@@ -199,7 +199,7 @@ export default function AuditLogPage() {
                 <option key={t} value={t}>{t}</option>
               ))}
             </Select>
-            <span className="text-sm text-zinc-400">
+            <span className="font-mono text-sm text-ink-500">
               {filteredEntries.length} of {entries.length} events
             </span>
           </div>
@@ -212,18 +212,18 @@ export default function AuditLogPage() {
           {loading ? (
             <div className="flex h-48 items-center justify-center">
               <div className="flex flex-col items-center gap-3">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
-                <p className="text-sm text-zinc-500">Loading audit log...</p>
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
+                <p className="text-sm text-muted-foreground">Loading audit log...</p>
               </div>
             </div>
           ) : filteredEntries.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
-              <ScrollText className="h-10 w-10 text-zinc-300" />
-              <p className="mt-3 text-sm font-medium text-zinc-500">No audit entries found</p>
-              <p className="text-xs text-zinc-400">Try adjusting the filters</p>
+              <ScrollText className="h-10 w-10 text-ink-600" />
+              <p className="mt-3 text-sm font-medium text-muted-foreground">No audit entries found</p>
+              <p className="text-xs text-ink-500">Try adjusting the filters</p>
             </div>
           ) : (
-            <Table>
+            <Table className="font-mono text-xs">
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10"></TableHead>
@@ -246,30 +246,30 @@ export default function AuditLogPage() {
                       <TableRow
                         className={cn(
                           hasPayload && "cursor-pointer",
-                          isExpanded && "bg-zinc-50/80"
+                          isExpanded && "bg-ink-900/70"
                         )}
                         onClick={() => hasPayload && toggleExpand(entry.id)}
                       >
                         <TableCell>
                           {hasPayload ? (
                             isExpanded ? (
-                              <ChevronDown className="h-4 w-4 text-zinc-400" />
+                              <ChevronDown className="h-4 w-4 text-ink-500" />
                             ) : (
-                              <ChevronRight className="h-4 w-4 text-zinc-400" />
+                              <ChevronRight className="h-4 w-4 text-ink-500" />
                             )
                           ) : (
                             <span className="h-4 w-4" />
                           )}
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-1.5 text-zinc-500">
+                          <div className="flex items-center gap-1.5 text-ink-500">
                             <Clock className="h-3 w-3 shrink-0" />
                             <span className="text-xs">{formatDateTime(entry.created_at)}</span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Badge className={cn("text-[10px]", actorColors[entry.actor_type] || "bg-zinc-100 text-zinc-700")}>
+                            <Badge variant={actorColors[entry.actor_type]?.variant || "secondary"} className="text-[10px]">
                               <ActorIcon className="mr-1 h-2.5 w-2.5" />
                               {entry.actor_type}
                             </Badge>
@@ -277,8 +277,8 @@ export default function AuditLogPage() {
                         </TableCell>
                         <TableCell>
                           <span className={cn(
-                            "text-sm font-medium",
-                            actionColors[entry.action] || "text-zinc-600"
+                            "font-medium",
+                            actionColors[entry.action] || "text-ink-400"
                           )}>
                             {formatStatus(entry.action)}
                           </span>
@@ -288,26 +288,26 @@ export default function AuditLogPage() {
                             <Badge variant="outline" className="text-[10px]">
                               {entry.entity_type}
                             </Badge>
-                            <span className="text-xs text-zinc-400">{entry.entity_id}</span>
+                            <span className="text-xs text-ink-500">{entry.entity_id}</span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <p className="text-sm text-zinc-600 truncate max-w-[300px]">
+                          <p className="max-w-[300px] truncate text-xs text-ink-300">
                             {entry.details}
                           </p>
                         </TableCell>
                       </TableRow>
                       {isExpanded && (entry.payload_json ?? entry.payload) && (
-                        <TableRow className="bg-zinc-50/80">
+                        <TableRow className="bg-ink-900/70">
                           <TableCell colSpan={6}>
                             <div className="px-4 py-3">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Code className="h-3.5 w-3.5 text-zinc-400" />
-                                <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                              <div className="mb-2 flex items-center gap-2">
+                                <Code className="h-3.5 w-3.5 text-ink-500" />
+                                <span className="eyebrow text-ink-500">
                                   Payload
                                 </span>
                               </div>
-                              <pre className="rounded-lg bg-zinc-900 p-4 text-xs text-zinc-300 overflow-x-auto">
+                              <pre className="overflow-x-auto rounded-md border border-ink-800 bg-ink-950 p-4 text-xs text-ink-300">
                                 {JSON.stringify((entry.payload_json ?? entry.payload), null, 2)}
                               </pre>
                             </div>

@@ -23,7 +23,7 @@ export function LanguageSwitcher() {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium uppercase tracking-widest text-stone-600 transition-colors hover:border-stone-400 hover:text-stone-900 focus:outline-none"
+        className="inline-flex items-center gap-1.5 rounded-md border border-ink-700 bg-ink-900 px-3 py-1.5 font-mono text-xs font-medium uppercase tracking-widest text-ink-300 transition-colors hover:border-ink-500 hover:text-ink-50"
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label="Select language"
@@ -47,15 +47,15 @@ export function LanguageSwitcher() {
       {open && (
         <ul
           role="listbox"
-          className="absolute right-0 z-50 mt-2 w-44 origin-top-right overflow-hidden rounded-xl border border-stone-200 bg-white py-1 shadow-lg"
+          className="absolute right-0 z-50 mt-2 w-44 origin-top-right overflow-hidden rounded-md border border-ink-700 bg-ink-900 py-1 shadow-panel"
         >
           {LOCALES.map((opt) => (
             <li
               key={opt.value}
               role="option"
               aria-selected={opt.value === locale}
-              className={`flex cursor-pointer items-center gap-3 px-3.5 py-2.5 text-sm transition-colors hover:bg-stone-50 ${
-                opt.value === locale ? "text-brand-700" : "text-stone-700"
+              className={`flex cursor-pointer items-center gap-3 px-3.5 py-2.5 text-sm transition-colors hover:bg-ink-800 ${
+                opt.value === locale ? "text-signal-400" : "text-ink-200"
               }`}
               onClick={() => {
                 setLocale(opt.value);
@@ -65,7 +65,7 @@ export function LanguageSwitcher() {
               <span className="text-base leading-none">{opt.flag}</span>
               <span className="font-medium">{opt.native}</span>
               {opt.value === locale && (
-                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-brand-700" />
+                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-signal-500" />
               )}
             </li>
           ))}
