@@ -98,7 +98,7 @@ function inCodeContext(ancestors) {
   return ancestors.some((ancestor) => {
     const tag = jsxTagName(ancestor);
     if (tag === "code" || tag === "pre") return true;
-    if (ts.isPropertyAssignment(ancestor)) return /^(?:code|sample|command|url|href|endpoint|method|status|id|key|value|type|variant|icon|color|className|tone|path|subsets|axes)$/i.test(propertyName(ancestor.name) ?? "");
+    if (ts.isPropertyAssignment(ancestor)) return /^(?:code|sample|command|url|href|endpoint|method|status|id|key|value|type|variant|icon|color|className|tone|path|slug|subsets|axes)$/i.test(propertyName(ancestor.name) ?? "");
     return false;
   });
 }
@@ -130,16 +130,38 @@ function isStandaloneArrayCopy(ancestors) {
   return ancestors.some(ts.isArrayLiteralExpression);
 }
 
-function jsxLiteralRule(node) {
+function templateText(node, sourceFile) {
+  return `${node.head.text}${node.templateSpans
+    .map((span) => `\${${span.expression.getText(sourceFile)}}${span.literal.text}`)
+    .join("")}`;
+}
+
+function literalText(node, sourceFile) {
+  if (ts.isTemplateExpression(node)) return templateText(node, sourceFile);
+  if (ts.isJsxText(node) || ts.isStringLiteralLike(node)) return node.text;
+  return undefined;
+}
+
+function enclosingJsxExpression(node, ancestors) {
+  return ts.isJsxExpression(node.parent)
+    ? node.parent
+    : [...ancestors].reverse().find(ts.isJsxExpression);
+}
+
+function visibleAttributeFor(node, ancestors) {
+  if (ts.isJsxAttribute(node.parent) && visibleAttributes.has(node.parent.name.text)) return node.parent;
+  const jsxExpression = enclosingJsxExpression(node, ancestors);
+  return jsxExpression && ts.isJsxAttribute(jsxExpression.parent) && visibleAttributes.has(jsxExpression.parent.name.text)
+    ? jsxExpression.parent
+    : undefined;
+}
+
+function jsxLiteralRule(node, ancestors) {
   if (ts.isJsxText(node)) return "untranslated-jsx";
-  if (ts.isJsxAttribute(node.parent) && visibleAttributes.has(node.parent.name.text)) {
-    return "untranslated-attribute";
-  }
-  if (ts.isJsxExpression(node.parent)) {
-    const container = node.parent.parent;
-    if (ts.isJsxAttribute(container) && visibleAttributes.has(container.name.text)) {
-      return "untranslated-attribute";
-    }
+  if (visibleAttributeFor(node, ancestors)) return "untranslated-attribute";
+  const jsxExpression = enclosingJsxExpression(node, ancestors);
+  if (jsxExpression) {
+    const container = jsxExpression.parent;
     if (ts.isJsxElement(container) || ts.isJsxFragment(container)) return "untranslated-jsx";
   }
   return undefined;
@@ -154,8 +176,9 @@ export function inspectLocalizationSources(files, options = {}) {
 
   for (const file of parsed) {
     const scanForbidden = (node) => {
-      if (ts.isJsxText(node) || ts.isStringLiteralLike(node)) {
-        const normalized = node.text.replace(/\s+/g, " ").trim();
+      const value = literalText(node, file.sourceFile);
+      if (value !== undefined) {
+        const normalized = value.replace(/\s+/g, " ").trim();
         const forbidden = forbiddenMetaDesignPhrases.find((phrase) =>
           normalized.toLowerCase().includes(phrase),
         );
@@ -228,17 +251,17 @@ export function inspectLocalizationSources(files, options = {}) {
     const walk = (node, ancestors = []) => {
       const nextAncestors = [...ancestors, node];
       const localized = ancestors.some((ancestor) => localizedNodes.includes(ancestor));
-      const value = ts.isJsxText(node) || ts.isStringLiteralLike(node) ? node.text : undefined;
+      const value = literalText(node, file.sourceFile);
 
       if (value !== undefined) {
         const normalized = value.replace(/\s+/g, " ").trim();
 
         if (!localized && !isAllowedLiteral(normalized, ancestors)) {
-          const jsxRule = jsxLiteralRule(node);
+          const jsxRule = jsxLiteralRule(node, ancestors);
           if (jsxRule === "untranslated-jsx") {
             issues.push(issue(file, file.sourceFile, node, "untranslated-jsx", `visible JSX text is not locale-backed: “${normalized.slice(0, 80)}”`));
           } else if (jsxRule === "untranslated-attribute") {
-            const attribute = ts.isJsxAttribute(node.parent) ? node.parent : node.parent.parent;
+            const attribute = visibleAttributeFor(node, ancestors);
             issues.push(issue(file, file.sourceFile, node, "untranslated-attribute", `${attribute.name.text} is not locale-backed: “${normalized.slice(0, 80)}”`));
           } else if (objectDataIsVisible(ancestors) || isStandaloneArrayCopy(ancestors)) {
             issues.push(issue(file, file.sourceFile, node, "untranslated-data", `static object/array copy is not locale-backed: “${normalized.slice(0, 80)}”`));

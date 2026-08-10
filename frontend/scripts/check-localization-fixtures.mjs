@@ -93,6 +93,12 @@ export function runLocalizationFixtures(inspectLocalizationSources) {
     "untranslated-jsx",
   );
 
+  const conditionalJsx = issuesFor([
+    ...dictionaryFiles,
+    entry("src/app/page.tsx", `export default ({ ready }) => <button>{ready ? "Continue" : "Wait"}</button>`),
+  ]).filter((issue) => issue.rule === "untranslated-jsx");
+  assert.equal(conditionalJsx.length, 2, "both branches of a conditional JSX expression must be inspected");
+
   expectRule(
     inspectLocalizationSources,
     "untranslated attribute",
@@ -104,6 +110,19 @@ export function runLocalizationFixtures(inspectLocalizationSources) {
     inspectLocalizationSources,
     "untranslated expression-valued attribute",
     [...dictionaryFiles, entry("src/app/page.tsx", `export default () => <input aria-label={"Search projects"} />`)],
+    "untranslated-attribute",
+  );
+
+  const conditionalAttribute = issuesFor([
+    ...dictionaryFiles,
+    entry("src/app/page.tsx", `export default ({ open }) => <button aria-label={open ? "Close" : "Open"} />`),
+  ]).filter((issue) => issue.rule === "untranslated-attribute");
+  assert.equal(conditionalAttribute.length, 2, "both branches of a conditional visible attribute must be inspected");
+
+  expectRule(
+    inspectLocalizationSources,
+    "untranslated template-valued attribute",
+    [...dictionaryFiles, entry("src/app/page.tsx", "export default ({ name }) => <button aria-label={`Remove ${name}`} />")],
     "untranslated-attribute",
   );
 
@@ -176,6 +195,12 @@ export function runLocalizationFixtures(inspectLocalizationSources) {
     entry("src/app/page.tsx", `const access = { role: "agent_developer", roles: ["admin", "client"] }; export default access;`),
   ]);
   assert.deepEqual(technicalRoles, [], "technical role identifiers should remain allowlisted in role fields");
+
+  const contentSlug = issuesFor([
+    ...dictionaryFiles,
+    entry("src/content/blog.ts", `export const posts = [{ slug: "explainable-agent-matching" }];`),
+  ]);
+  assert.deepEqual(contentSlug, [], "slug values should be allowlisted only in slug identifier fields");
 
   const localized = issuesFor([
     ...dictionaryFiles,
