@@ -57,6 +57,17 @@ export function runLocalizationFixtures(inspectLocalizationSources) {
 
   expectRule(
     inspectLocalizationSources,
+    "English inheritance through an aliased import",
+    dictionaryFiles.map((file) =>
+      file.path.endsWith("es.ts")
+        ? { ...file, source: `import english from "./en"; const messages = { ...english }; export default messages;` }
+        : file,
+    ),
+    "english-inheritance",
+  );
+
+  expectRule(
+    inspectLocalizationSources,
     "forbidden meta prose",
     [
       ...dictionaryFiles,

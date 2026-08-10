@@ -60,6 +60,35 @@ function exportedObject(sourceFile) {
   return undefined;
 }
 
+function englishImportBindings(sourceFile) {
+  const bindings = new Set();
+  for (const statement of sourceFile.statements) {
+    if (
+      !ts.isImportDeclaration(statement) ||
+      !ts.isStringLiteral(statement.moduleSpecifier) ||
+      statement.moduleSpecifier.text !== "./en" ||
+      !statement.importClause
+    ) {
+      continue;
+    }
+    if (statement.importClause.name) bindings.add(statement.importClause.name.text);
+    const namedBindings = statement.importClause.namedBindings;
+    if (namedBindings && ts.isNamespaceImport(namedBindings)) bindings.add(namedBindings.name.text);
+    if (namedBindings && ts.isNamedImports(namedBindings)) {
+      for (const element of namedBindings.elements) bindings.add(element.name.text);
+    }
+  }
+  return bindings;
+}
+
+function rootIdentifier(node) {
+  let current = unwrapExpression(node);
+  while (ts.isPropertyAccessExpression(current) || ts.isElementAccessExpression(current)) {
+    current = unwrapExpression(current.expression);
+  }
+  return ts.isIdentifier(current) ? current.text : undefined;
+}
+
 function shapeOf(node, prefix = "", shape = new Set()) {
   if (ts.isObjectLiteralExpression(node)) {
     for (const property of node.properties) {
@@ -208,8 +237,9 @@ export function inspectLocalizationSources(files, options = {}) {
         continue;
       }
       dictionaries.set(file.path.match(/\/(en|fr|es|zh)\.ts$/)?.[1], { file, root, shape: shapeOf(root) });
+      const englishBindings = englishImportBindings(file.sourceFile);
       const visitSpread = (node) => {
-        if (ts.isSpreadAssignment(node) && /^(?:en)(?:\.|$)/.test(node.expression.getText(file.sourceFile))) {
+        if (ts.isSpreadAssignment(node) && englishBindings.has(rootIdentifier(node.expression))) {
           issues.push(issue(file, file.sourceFile, node, "english-inheritance", "non-English dictionaries must define every key explicitly instead of spreading English"));
         }
         ts.forEachChild(node, visitSpread);
