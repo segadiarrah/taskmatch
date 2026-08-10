@@ -18,7 +18,7 @@ function expectRule(inspectLocalizationSources, name, files, rule) {
   );
 }
 
-export function runLocalizationFixtures(inspectLocalizationSources) {
+export function runLocalizationFixtures(inspectLocalizationSources, findLocalizationManifestGaps) {
   const issuesFor = (sources) => inspectLocalizationSources(sources, { locales, runDictionaryParity: true });
   const completeDictionary = `
     const messages = ({
@@ -130,6 +130,39 @@ export function runLocalizationFixtures(inspectLocalizationSources) {
   ]).filter((issue) => issue.rule === "untranslated-attribute");
   assert.equal(conditionalAttribute.length, 2, "both branches of a conditional visible attribute must be inspected");
 
+  const structuralJsx = issuesFor([
+    ...dictionaryFiles,
+    entry(
+      "src/app/page.tsx",
+      `export default ({ ready, active, items, Icon, Widget }) => <div>{ready ? <Icon className={active ? "text-red" : "text-blue"} data-state="open" /> : items.map((item) => <Widget key={item.id} className="row" variant="compact" size="sm" />)}</div>`,
+    ),
+  ]);
+  assert.deepEqual(structuralJsx, [], "structural props nested inside conditional and map JSX must stay clean");
+
+  const customLabel = issuesFor([
+    ...dictionaryFiles,
+    entry("src/app/page.tsx", `export default () => <Widget label="Visible English" />`),
+  ]).filter((issue) => issue.rule === "untranslated-attribute");
+  assert.equal(customLabel.length, 1, "a custom-component label literal must produce exactly one issue");
+
+  const repositoryTextProps = issuesFor([
+    ...dictionaryFiles,
+    entry("src/app/page.tsx", `export default () => <Widget name="Necessary Cookies" description="Required for sign-in" />`),
+  ]).filter((issue) => issue.rule === "untranslated-attribute");
+  assert.equal(repositoryTextProps.length, 2, "repository custom-component name and description props must be inspected");
+
+  const customConditionalTitle = issuesFor([
+    ...dictionaryFiles,
+    entry("src/app/page.tsx", `export default ({ ready }) => <Widget title={ready ? "Ready title" : "Waiting title"} />`),
+  ]).filter((issue) => issue.rule === "untranslated-attribute");
+  assert.equal(customConditionalTitle.length, 2, "custom-component conditional text props must inspect both branches");
+
+  const customChildren = issuesFor([
+    ...dictionaryFiles,
+    entry("src/app/page.tsx", `export default () => <Widget children="Visible child text" />`),
+  ]).filter((issue) => issue.rule === "untranslated-attribute");
+  assert.equal(customChildren.length, 1, "a literal children prop must produce exactly one issue");
+
   expectRule(
     inspectLocalizationSources,
     "untranslated template-valued attribute",
@@ -213,6 +246,21 @@ export function runLocalizationFixtures(inspectLocalizationSources) {
   ]);
   assert.deepEqual(contentSlug, [], "slug values should be allowlisted only in slug identifier fields");
 
+  const manifestGaps = findLocalizationManifestGaps(
+    [{ path: "src/app/page.tsx" }],
+    [
+      "src/app/page.tsx",
+      "src/app/(public)/new/page.tsx",
+      "src/components/ui/dialog.tsx",
+      "src/content/blog.ts",
+    ],
+  );
+  assert.deepEqual(
+    manifestGaps,
+    ["src/app/(public)/new/page.tsx", "src/components/ui/dialog.tsx", "src/content/blog.ts"],
+    "new routes and designated shared/content sources must require manifest entries",
+  );
+
   const localized = issuesFor([
     ...dictionaryFiles,
     entry(
@@ -224,7 +272,7 @@ export function runLocalizationFixtures(inspectLocalizationSources) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const { inspectLocalizationSources } = await import("./check-localization.mjs");
-  runLocalizationFixtures(inspectLocalizationSources);
+  const { findLocalizationManifestGaps, inspectLocalizationSources } = await import("./check-localization.mjs");
+  runLocalizationFixtures(inspectLocalizationSources, findLocalizationManifestGaps);
   console.log("Localization checker fixtures passed.");
 }

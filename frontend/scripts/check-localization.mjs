@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { join, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import ts from "typescript";
 import {
@@ -10,7 +11,30 @@ import {
 
 const frontendRoot = fileURLToPath(new URL("../", import.meta.url));
 const visibleObjectKeys = /^(?:title|subtitle|heading|label|description|text|name|question|answer|features?|items?|bullets?|placeholder|message|empty|action|cta|caption|helper|note|excerpt|paragraphs?|intro|readingTime|tags?|role)$/i;
-const visibleAttributes = new Set(["aria-label", "placeholder", "title", "alt"]);
+// Reviewed user-facing JSX props. Structural props are intentionally excluded.
+const visibleAttributes = new Set([
+  "aria-label",
+  "alt",
+  "buttonLabel",
+  "cancelLabel",
+  "caption",
+  "children",
+  "confirmLabel",
+  "description",
+  "emptyMessage",
+  "eyebrow",
+  "heading",
+  "helperText",
+  "label",
+  "message",
+  "name",
+  "placeholder",
+  "subtitle",
+  "text",
+  "title",
+  "tooltip",
+  "triggerLabel",
+]);
 const technicalRoleValues = new Set(["admin", "client", "agent_developer"]);
 
 function location(sourceFile, node) {
@@ -177,23 +201,51 @@ function enclosingJsxExpression(node, ancestors) {
     : [...ancestors].reverse().find(ts.isJsxExpression);
 }
 
+function enclosingJsxAttribute(node, ancestors) {
+  if (ts.isJsxAttribute(node.parent)) return node.parent;
+  return [...ancestors].reverse().find(ts.isJsxAttribute);
+}
+
 function visibleAttributeFor(node, ancestors) {
-  if (ts.isJsxAttribute(node.parent) && visibleAttributes.has(node.parent.name.text)) return node.parent;
-  const jsxExpression = enclosingJsxExpression(node, ancestors);
-  return jsxExpression && ts.isJsxAttribute(jsxExpression.parent) && visibleAttributes.has(jsxExpression.parent.name.text)
-    ? jsxExpression.parent
-    : undefined;
+  const attribute = enclosingJsxAttribute(node, ancestors);
+  return attribute && visibleAttributes.has(attribute.name.text) ? attribute : undefined;
 }
 
 function jsxLiteralRule(node, ancestors) {
   if (ts.isJsxText(node)) return "untranslated-jsx";
-  if (visibleAttributeFor(node, ancestors)) return "untranslated-attribute";
+  // A literal inside any JSX attribute belongs only to that prop. Structural props
+  // must not inherit an outer JSX expression's rendered-text context.
+  const attribute = enclosingJsxAttribute(node, ancestors);
+  if (attribute) return visibleAttributes.has(attribute.name.text) ? "untranslated-attribute" : undefined;
   const jsxExpression = enclosingJsxExpression(node, ancestors);
   if (jsxExpression) {
     const container = jsxExpression.parent;
     if (ts.isJsxElement(container) || ts.isJsxFragment(container)) return "untranslated-jsx";
   }
   return undefined;
+}
+
+function isRequiredManifestPath(path) {
+  return (
+    /^src\/app\/.+\/(?:page|layout|error|loading|not-found)\.tsx$/.test(path) ||
+    /^src\/app\/(?:page|layout|error|loading|not-found)\.tsx$/.test(path) ||
+    /^src\/content\/.*\.(?:ts|tsx)$/.test(path) ||
+    /^src\/components\/(?:gdpr|public|ui)\/.*\.tsx$/.test(path) ||
+    path === "src/components/language-switcher.tsx" ||
+    /^src\/i18n\/.*\.ts$/.test(path)
+  );
+}
+
+export function findLocalizationManifestGaps(manifestEntries, sourcePaths) {
+  const listed = new Set(manifestEntries.map((entry) => entry.path));
+  return sourcePaths.filter(isRequiredManifestPath).filter((path) => !listed.has(path)).sort();
+}
+
+function walkSourceFiles(directory) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+    return entry.isDirectory() ? walkSourceFiles(path) : [path];
+  });
 }
 
 export function inspectLocalizationSources(files, options = {}) {
@@ -318,15 +370,36 @@ function parseScope(argv) {
 
 export async function runLocalizationCheck(argv = process.argv.slice(2)) {
   const { runLocalizationFixtures } = await import("./check-localization-fixtures.mjs");
-  runLocalizationFixtures(inspectLocalizationSources);
+  runLocalizationFixtures(inspectLocalizationSources, findLocalizationManifestGaps);
 
   const scope = parseScope(argv);
   const selected = localizationManifest.filter((entry) => !scope || entry.scope === scope);
+  const sourcePaths = walkSourceFiles(join(frontendRoot, "src")).map((path) =>
+    relative(frontendRoot, path).replaceAll("\\", "/"),
+  );
+  const manifestGaps = findLocalizationManifestGaps(localizationManifest, sourcePaths).filter((path) => {
+    if (!scope) return true;
+    if (scope === "resources-legal") return path.includes("/resources/") || path.includes("/legal/") || path.startsWith("src/content/");
+    if (scope === "dashboard-shared") return path.includes("/(dashboard)/") || path.startsWith("src/components/ui/") || path.startsWith("src/i18n/");
+    return !path.includes("/(dashboard)/") && !path.startsWith("src/components/ui/") && !path.startsWith("src/i18n/");
+  });
   const missing = selected.filter((entry) => !existsSync(new URL(entry.path, pathToFileURL(`${frontendRoot}/`))));
   const files = selected
     .filter((entry) => !missing.includes(entry))
     .map((entry) => ({ ...entry, source: readFileSync(new URL(entry.path, pathToFileURL(`${frontendRoot}/`)), "utf8") }));
   const issues = [
+    ...manifestGaps.map((path) => ({
+      scope: path.includes("/(dashboard)/") || path.startsWith("src/components/ui/") || path.startsWith("src/i18n/")
+        ? "dashboard-shared"
+        : path.includes("/resources/") || path.includes("/legal/") || path.startsWith("src/content/")
+          ? "resources-legal"
+          : "public-auth",
+      path,
+      line: 1,
+      column: 1,
+      rule: "manifest-completeness",
+      message: "in-scope source is missing from the localization manifest",
+    })),
     ...missing.map((entry) => ({ ...entry, line: 1, column: 1, rule: "manifest", message: "manifest source does not exist" })),
     ...inspectLocalizationSources(files, { runDictionaryParity: !scope || scope === "dashboard-shared" }),
   ];
