@@ -141,6 +141,7 @@ for (const locale of Object.keys(localeCopy) as Locale[]) {
       await page.addInitScript(() => localStorage.removeItem("tm_cookie_consent"));
       await page.goto("/");
       await expect(page.getByText(localeCopy[locale].cookies, { exact: false })).toBeVisible({ timeout: 4_000 });
+      await expect(page.locator("html")).toHaveAttribute("lang", locale);
     });
 
     test("localizes the authenticated loading state", async ({ page }) => {
@@ -148,6 +149,7 @@ for (const locale of Object.keys(localeCopy) as Locale[]) {
       await page.route("**/api/**", (route) => fulfillDashboard(route, "client", { delayAuth: true }));
       await page.goto("/client");
       await expect(page.getByText(localeCopy[locale].loading)).toBeVisible();
+      await expect(page.locator("html")).toHaveAttribute("lang", locale);
     });
 
     test("localizes dashboard error recovery", async ({ page }) => {
@@ -155,6 +157,7 @@ for (const locale of Object.keys(localeCopy) as Locale[]) {
       await page.route("**/api/**", (route) => fulfillDashboard(route, "client", { failData: true }));
       await page.goto("/client");
       await expect(page.getByRole("button", { name: localeCopy[locale].retry })).toBeVisible();
+      await expect(page.locator("html")).toHaveAttribute("lang", locale);
     });
   });
 }

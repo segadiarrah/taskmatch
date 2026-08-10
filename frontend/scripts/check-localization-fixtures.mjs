@@ -70,6 +70,17 @@ export function runLocalizationFixtures(inspectLocalizationSources) {
 
   expectRule(
     inspectLocalizationSources,
+    "forbidden meta prose in a central dictionary",
+    dictionaryFiles.map((file) =>
+      file.path.endsWith("fr.ts")
+        ? { ...file, source: `const messages = { nav: { home: "Notre visual system", items: ["Un", "Deux"] }, action: "Continuer" }; export default messages;` }
+        : file,
+    ),
+    "forbidden-meta-prose",
+  );
+
+  expectRule(
+    inspectLocalizationSources,
     "untranslated JSX",
     [...dictionaryFiles, entry("src/app/page.tsx", `export default () => <button>Continue now</button>`)],
     "untranslated-jsx",
@@ -77,8 +88,22 @@ export function runLocalizationFixtures(inspectLocalizationSources) {
 
   expectRule(
     inspectLocalizationSources,
+    "untranslated JSX expression string",
+    [...dictionaryFiles, entry("src/app/page.tsx", `export default () => <button>{"Continue now"}</button>`)],
+    "untranslated-jsx",
+  );
+
+  expectRule(
+    inspectLocalizationSources,
     "untranslated attribute",
     [...dictionaryFiles, entry("src/app/page.tsx", `export default () => <input aria-label="Search projects" placeholder="Find work" />`)],
+    "untranslated-attribute",
+  );
+
+  expectRule(
+    inspectLocalizationSources,
+    "untranslated expression-valued attribute",
+    [...dictionaryFiles, entry("src/app/page.tsx", `export default () => <input aria-label={"Search projects"} />`)],
     "untranslated-attribute",
   );
 
@@ -95,6 +120,48 @@ export function runLocalizationFixtures(inspectLocalizationSources) {
     "untranslated-data",
   );
 
+  const editorialFields = issuesFor([
+    ...dictionaryFiles,
+    entry(
+      "src/content/blog.ts",
+      `export const posts = [{ excerpt: "A practical introduction", paragraphs: ["Start with a clear brief"], readingTime: "5 min read", tag: "Operations", role: "Product editor" }];`,
+    ),
+  ]).filter((issue) => issue.rule === "untranslated-data");
+  assert.equal(editorialFields.length, 5, "excerpt, paragraphs, readingTime, tag, and editorial role must each be inspected");
+
+  expectRule(
+    inspectLocalizationSources,
+    "untranslated standalone array",
+    [...dictionaryFiles, entry("src/app/page.tsx", `const safeguards = ["Encrypt sensitive uploads", "Review access quarterly"]; export default () => <ul>{safeguards.map(String)}</ul>`)],
+    "untranslated-data",
+  );
+
+  const guideFields = issuesFor([
+    ...dictionaryFiles,
+    entry("src/content/guides.ts", `export const guides = [{ intro: "Before you begin", paragraphs: ["Create an API key"] }];`),
+  ]).filter((issue) => issue.rule === "untranslated-data");
+  assert.equal(guideFields.length, 2, "guide intro and paragraphs must each be inspected");
+
+  expectRule(
+    inspectLocalizationSources,
+    "untranslated blog editorial fields",
+    [
+      ...dictionaryFiles,
+      entry(
+        "src/content/blog.ts",
+        `export const posts = [{ excerpt: "A practical introduction", paragraphs: ["Start with a clear brief"], readingTime: "5 min read", tag: "Operations", role: "Product editor" }];`,
+      ),
+    ],
+    "untranslated-data",
+  );
+
+  expectRule(
+    inspectLocalizationSources,
+    "untranslated guide editorial fields",
+    [...dictionaryFiles, entry("src/content/guides.ts", `export const guides = [{ intro: "Before you begin", paragraphs: ["Create an API key"] }];`)],
+    "untranslated-data",
+  );
+
   const allowed = issuesFor([
     ...dictionaryFiles,
     entry(
@@ -103,6 +170,12 @@ export function runLocalizationFixtures(inspectLocalizationSources) {
     ),
   ]);
   assert.deepEqual(allowed, [], "reviewed code, URL, protocol, status, and identifier literals should pass");
+
+  const technicalRoles = issuesFor([
+    ...dictionaryFiles,
+    entry("src/app/page.tsx", `const access = { role: "agent_developer", roles: ["admin", "client"] }; export default access;`),
+  ]);
+  assert.deepEqual(technicalRoles, [], "technical role identifiers should remain allowlisted in role fields");
 
   const localized = issuesFor([
     ...dictionaryFiles,

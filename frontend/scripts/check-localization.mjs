@@ -9,8 +9,9 @@ import {
 } from "./localization-manifest.mjs";
 
 const frontendRoot = fileURLToPath(new URL("../", import.meta.url));
-const visibleObjectKeys = /^(?:title|subtitle|heading|label|description|text|name|question|answer|features?|items?|bullets?|placeholder|message|empty|action|cta|caption|helper|note)$/i;
+const visibleObjectKeys = /^(?:title|subtitle|heading|label|description|text|name|question|answer|features?|items?|bullets?|placeholder|message|empty|action|cta|caption|helper|note|excerpt|paragraphs?|intro|readingTime|tags?|role)$/i;
 const visibleAttributes = new Set(["aria-label", "placeholder", "title", "alt"]);
+const technicalRoleValues = new Set(["admin", "client", "agent_developer"]);
 
 function location(sourceFile, node) {
   const { line, character } = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
@@ -97,9 +98,17 @@ function inCodeContext(ancestors) {
   return ancestors.some((ancestor) => {
     const tag = jsxTagName(ancestor);
     if (tag === "code" || tag === "pre") return true;
-    if (ts.isPropertyAssignment(ancestor)) return /^(?:code|sample|command|url|href|endpoint|method|status|id|key|value|role|type|variant|icon|color|className|tone|path)$/i.test(propertyName(ancestor.name) ?? "");
+    if (ts.isPropertyAssignment(ancestor)) return /^(?:code|sample|command|url|href|endpoint|method|status|id|key|value|type|variant|icon|color|className|tone|path|subsets|axes)$/i.test(propertyName(ancestor.name) ?? "");
     return false;
   });
+}
+
+function isTechnicalRoleLiteral(value, ancestors) {
+  if (!technicalRoleValues.has(value)) return false;
+  return ancestors.some(
+    (ancestor) =>
+      ts.isPropertyAssignment(ancestor) && /^(?:role|roles)$/.test(propertyName(ancestor.name) ?? ""),
+  );
 }
 
 function isAllowedLiteral(value, ancestors) {
@@ -108,6 +117,7 @@ function isAllowedLiteral(value, ancestors) {
   if (reviewedLiteralAllowlist.productAndProtocols.has(trimmed)) return true;
   if (reviewedLiteralAllowlist.httpMethods.has(trimmed)) return true;
   if (reviewedLiteralAllowlist.patterns.some((pattern) => pattern.test(trimmed))) return true;
+  if (isTechnicalRoleLiteral(trimmed, ancestors)) return true;
   return inCodeContext(ancestors);
 }
 
@@ -116,12 +126,55 @@ function objectDataIsVisible(ancestors) {
   return property ? visibleObjectKeys.test(propertyName(property.name) ?? "") : false;
 }
 
+function isStandaloneArrayCopy(ancestors) {
+  return ancestors.some(ts.isArrayLiteralExpression);
+}
+
+function jsxLiteralRule(node) {
+  if (ts.isJsxText(node)) return "untranslated-jsx";
+  if (ts.isJsxAttribute(node.parent) && visibleAttributes.has(node.parent.name.text)) {
+    return "untranslated-attribute";
+  }
+  if (ts.isJsxExpression(node.parent)) {
+    const container = node.parent.parent;
+    if (ts.isJsxAttribute(container) && visibleAttributes.has(container.name.text)) {
+      return "untranslated-attribute";
+    }
+    if (ts.isJsxElement(container) || ts.isJsxFragment(container)) return "untranslated-jsx";
+  }
+  return undefined;
+}
+
 export function inspectLocalizationSources(files, options = {}) {
   const issues = [];
   const parsed = files.map((file) => ({
     ...file,
     sourceFile: ts.createSourceFile(file.path, file.source, ts.ScriptTarget.Latest, true, file.path.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS),
   }));
+
+  for (const file of parsed) {
+    const scanForbidden = (node) => {
+      if (ts.isJsxText(node) || ts.isStringLiteralLike(node)) {
+        const normalized = node.text.replace(/\s+/g, " ").trim();
+        const forbidden = forbiddenMetaDesignPhrases.find((phrase) =>
+          normalized.toLowerCase().includes(phrase),
+        );
+        if (forbidden) {
+          issues.push(
+            issue(
+              file,
+              file.sourceFile,
+              node,
+              "forbidden-meta-prose",
+              `remove internal design commentary containing “${forbidden}”`,
+            ),
+          );
+        }
+      }
+      ts.forEachChild(node, scanForbidden);
+    };
+    scanForbidden(file.sourceFile);
+  }
 
   if (options.runDictionaryParity !== false) {
     const dictionaries = new Map();
@@ -179,15 +232,15 @@ export function inspectLocalizationSources(files, options = {}) {
 
       if (value !== undefined) {
         const normalized = value.replace(/\s+/g, " ").trim();
-        const forbidden = forbiddenMetaDesignPhrases.find((phrase) => normalized.toLowerCase().includes(phrase));
-        if (forbidden) issues.push(issue(file, file.sourceFile, node, "forbidden-meta-prose", `remove internal design commentary containing “${forbidden}”`));
 
         if (!localized && !isAllowedLiteral(normalized, ancestors)) {
-          if (ts.isJsxText(node)) {
+          const jsxRule = jsxLiteralRule(node);
+          if (jsxRule === "untranslated-jsx") {
             issues.push(issue(file, file.sourceFile, node, "untranslated-jsx", `visible JSX text is not locale-backed: “${normalized.slice(0, 80)}”`));
-          } else if (ts.isJsxAttribute(node.parent) && visibleAttributes.has(node.parent.name.text)) {
-            issues.push(issue(file, file.sourceFile, node, "untranslated-attribute", `${node.parent.name.text} is not locale-backed: “${normalized.slice(0, 80)}”`));
-          } else if (objectDataIsVisible(ancestors)) {
+          } else if (jsxRule === "untranslated-attribute") {
+            const attribute = ts.isJsxAttribute(node.parent) ? node.parent : node.parent.parent;
+            issues.push(issue(file, file.sourceFile, node, "untranslated-attribute", `${attribute.name.text} is not locale-backed: “${normalized.slice(0, 80)}”`));
+          } else if (objectDataIsVisible(ancestors) || isStandaloneArrayCopy(ancestors)) {
             issues.push(issue(file, file.sourceFile, node, "untranslated-data", `static object/array copy is not locale-backed: “${normalized.slice(0, 80)}”`));
           }
         }
