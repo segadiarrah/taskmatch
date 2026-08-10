@@ -1,9 +1,15 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
+import { runLocalizationCheck } from "./check-localization.mjs";
 
 const root = new URL("../", import.meta.url);
 const read = (path) => readFileSync(new URL(path, root), "utf8");
 const failures = [];
+
+const localizationIssues = await runLocalizationCheck(process.argv.slice(2));
+if (localizationIssues.length) {
+  failures.push(`localization contract reported ${localizationIssues.length} issue(s)`);
+}
 
 function requireMatch(path, pattern, message) {
   if (!pattern.test(read(path))) failures.push(`${path}: ${message}`);

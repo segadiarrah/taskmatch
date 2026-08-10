@@ -9,6 +9,7 @@
     "start": "next start --port 3000",
     "lint": "next lint",
     "check:contrast": "node scripts/check-design-contrast.mjs",
+    "check:localization": "node scripts/check-localization.mjs",
     "check:ui": "node scripts/check-ui-contracts.mjs",
     "type-check": "tsc --noEmit"
   },
@@ -32,6 +33,7 @@
     "postcss": "^8.4.0",
     "autoprefixer": "^10.4.0",
     "eslint": "^8.57.0",
-    "eslint-config-next": "^14.2.0"
+    "eslint-config-next": "^14.2.0",
+    "@playwright/test": "^1.62.1"
   }
 }
