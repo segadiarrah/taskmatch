@@ -1,9 +1,9 @@
 import type { Config } from "tailwindcss";
 
 /**
- * TaskMatch design system — "Dispatch Ledger"
- * Dark mission-control console (warm ink) + editorial paper sections,
- * signal-orange accents, Fraunces display serif / Archivo UI / JetBrains Mono data.
+ * TaskMatch design system — "TaskMatch Router"
+ * Quiet near-white surfaces, graphite type, restrained violet actions,
+ * and precise data-dense components inspired by modern routing consoles.
  */
 const config: Config = {
   darkMode: ["class"],
@@ -41,54 +41,54 @@ const config: Config = {
           DEFAULT: "hsl(var(--card) / <alpha-value>)",
           foreground: "hsl(var(--card-foreground) / <alpha-value>)",
         },
-        /* Status colors tuned for dark surfaces */
+        /* Status colors tuned for light surfaces */
         success: "hsl(var(--success) / <alpha-value>)",
         warning: "hsl(var(--warning) / <alpha-value>)",
         info: "hsl(var(--info) / <alpha-value>)",
         danger: "hsl(var(--danger) / <alpha-value>)",
 
-        /* Warm near-black console scale */
+        /* Graphite-to-canvas scale (names retained for class compatibility) */
         ink: {
-          50: "#f1f2e8",
-          100: "#e7e9db",
-          200: "#d6dac7",
-          300: "#b4bba4",
-          400: "#8b927c",
-          500: "#848c77",
-          600: "#3e4430",
-          700: "#2a2e20",
-          800: "#1d2016",
-          850: "#161810",
-          900: "#12130e",
-          950: "#0b0b09",
+          50: "#111113",
+          100: "#1d1d21",
+          200: "#29292f",
+          300: "#3f4047",
+          400: "#505159",
+          500: "#5c5d65",
+          600: "#91929a",
+          700: "#c9cad0",
+          800: "#e5e5e9",
+          850: "#eeeef1",
+          900: "#f6f6f8",
+          950: "#fbfbfd",
         },
-        /* Signal orange — the dispatch accent */
+        /* Router violet — used only for actions, focus, and live state */
         signal: {
-          300: "#ffb591",
-          400: "#ff8552",
-          500: "#ff5a1f",
-          600: "#e84a0e",
-          700: "#bc3b0c",
+          300: "#8d78ff",
+          400: "#5c3bd7",
+          500: "#6340e8",
+          600: "#5734de",
+          700: "#4326b5",
         },
-        /* Warm editorial paper */
+        /* Secondary editorial surface */
         paper: {
-          DEFAULT: "#ede8d9",
-          deep: "#e2dcc8",
-          ink: "#191b12",
+          DEFAULT: "#f7f7f9",
+          deep: "#efeff3",
+          ink: "#18181b",
         },
-        /* Legacy alias — maps old brand-* classes onto signal so nothing breaks */
+        /* Legacy alias — maps old brand-* classes onto violet so nothing breaks */
         brand: {
-          50: "#fff4ec",
-          100: "#ffe6d5",
-          200: "#ffc9a8",
-          300: "#ffb591",
-          400: "#ff8552",
-          500: "#ff5a1f",
-          600: "#e84a0e",
-          700: "#bc3b0c",
-          800: "#93300b",
-          900: "#6e250a",
-          950: "#3d1404",
+          50: "#f5f2ff",
+          100: "#ebe5ff",
+          200: "#d7ccff",
+          300: "#bbaaff",
+          400: "#8d78ff",
+          500: "#6340e8",
+          600: "#5734de",
+          700: "#4326b5",
+          800: "#35208d",
+          900: "#2c1d70",
+          950: "#190e47",
         },
       },
       fontFamily: {
@@ -102,9 +102,9 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       boxShadow: {
-        panel: "0 1px 0 0 rgba(241,242,232,0.04) inset, 0 12px 32px -12px rgba(0,0,0,0.6)",
-        glow: "0 0 0 1px rgba(255,90,31,0.35), 0 0 24px -6px rgba(255,90,31,0.45)",
-        "glow-sm": "0 0 14px -2px rgba(255,90,31,0.5)",
+        panel: "0 1px 2px rgba(17, 17, 19, 0.04), 0 8px 24px rgba(17, 17, 19, 0.04)",
+        glow: "0 0 0 1px rgba(109,74,255,0.22), 0 10px 30px -12px rgba(109,74,255,0.28)",
+        "glow-sm": "0 6px 18px -8px rgba(109,74,255,0.45)",
       },
       keyframes: {
         marquee: {
@@ -120,8 +120,8 @@ const config: Config = {
           "100%": { transform: "translateY(400%)" },
         },
         "pulse-dot": {
-          "0%, 100%": { opacity: "1", boxShadow: "0 0 0 0 rgba(255,90,31,0.5)" },
-          "50%": { opacity: "0.75", boxShadow: "0 0 0 5px rgba(255,90,31,0)" },
+          "0%, 100%": { opacity: "1", boxShadow: "0 0 0 0 rgba(109,74,255,0.35)" },
+          "50%": { opacity: "0.75", boxShadow: "0 0 0 5px rgba(109,74,255,0)" },
         },
       },
       animation: {

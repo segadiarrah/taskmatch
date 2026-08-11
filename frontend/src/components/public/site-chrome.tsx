@@ -119,10 +119,10 @@ const LABELS: Record<Locale, NavLabels> = {
 export function SiteLogo({ className = "" }: { className?: string }) {
   return (
     <Link href="/" className={cn("group flex items-center gap-2.5", className)}>
-      <span className="flex h-8 w-8 items-center justify-center rounded-sm bg-signal-500 transition-shadow group-hover:shadow-glow-sm">
+      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-signal-500 transition-transform group-hover:scale-[1.04]">
         <Layers className="h-4 w-4 text-ink-950" />
       </span>
-      <span className="text-sm font-semibold tracking-tight text-ink-50">
+      <span className="text-sm font-bold tracking-[-0.025em] text-ink-50">
         TaskMatch<span className="text-signal-500">.ai</span>
       </span>
     </Link>
@@ -135,20 +135,20 @@ interface NavDropdownGroup { label: string; items: NavDropdownItem[]; }
 function NavDropdown({ group }: { group: NavDropdownGroup }) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="group flex items-center gap-1.5 font-mono text-xs font-medium uppercase tracking-wider text-ink-300 transition-colors hover:text-signal-400">
+      <DropdownMenuTrigger className="group flex items-center gap-1.5 text-sm font-medium text-ink-400 transition-colors hover:text-ink-50">
         {group.label}
         <ChevronDown className="h-3.5 w-3.5 transition-transform group-hover:translate-y-px" />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        className="w-80 rounded-lg border-ink-700 bg-ink-900 p-2 text-ink-100 shadow-panel"
+        className="w-80 rounded-xl border-ink-800 bg-white p-2 text-ink-100 shadow-panel"
       >
         {group.items.map((item) => {
           const Icon = item.icon;
           return (
             <Link key={item.href} href={item.href}>
-              <DropdownMenuItem className="flex items-start gap-3 rounded-md p-3 focus:bg-ink-800">
-                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-ink-700 bg-ink-850 text-signal-400">
+              <DropdownMenuItem className="flex items-start gap-3 rounded-lg p-3 focus:bg-ink-900">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-ink-800 bg-ink-950 text-signal-400">
                   <Icon className="h-4 w-4" />
                 </div>
                 <div>
@@ -196,18 +196,18 @@ export function PublicNavbar() {
   };
 
   return (
-    <header className="fixed top-0 z-50 w-full border-b border-ink-800 bg-ink-950/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className="fixed top-0 z-50 w-full border-b border-ink-800 bg-ink-950/92 backdrop-blur-xl">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <SiteLogo />
 
-        <nav className="hidden items-center gap-7 lg:flex">
+        <nav className="hidden items-center gap-6 lg:flex">
           <NavDropdown group={resources} />
           <NavDropdown group={company} />
           <NavDropdown group={legal} />
           <Link
             href="/pricing"
             className={cn(
-              "font-mono text-xs font-medium uppercase tracking-wider transition-colors hover:text-signal-400",
+              "text-sm font-medium transition-colors hover:text-ink-50",
               pathname === "/pricing" ? "text-signal-400" : "text-ink-300"
             )}
           >
@@ -219,13 +219,13 @@ export function PublicNavbar() {
           <LanguageSwitcher />
           <Link
             href="/login"
-            className="font-mono text-xs font-medium uppercase tracking-wider text-ink-300 transition-colors hover:text-ink-50"
+            className="text-sm font-medium text-ink-400 transition-colors hover:text-ink-50"
           >
             {L.signIn}
           </Link>
           <Link
             href="/register"
-            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-signal-500 px-4 text-sm font-semibold text-ink-950 transition-all hover:bg-signal-400 hover:shadow-glow-sm"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-signal-500 px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-signal-400"
           >
             {L.startTask}
             <ArrowRight className="h-3.5 w-3.5" />
@@ -233,7 +233,7 @@ export function PublicNavbar() {
         </div>
 
         <button
-          className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-ink-700 text-ink-200 lg:hidden"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-ink-800 bg-white text-ink-200 lg:hidden"
           onClick={() => setMobileOpen((open) => !open)}
           aria-label="Toggle menu"
         >
@@ -242,7 +242,7 @@ export function PublicNavbar() {
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-ink-800 bg-ink-950 px-4 py-4 lg:hidden">
+        <div className="border-t border-ink-800 bg-white px-4 py-4 shadow-panel lg:hidden">
           <div className="space-y-4">
             {[resources, company, legal].map((group) => (
               <div key={group.label}>
@@ -255,7 +255,7 @@ export function PublicNavbar() {
                         key={item.href}
                         href={item.href}
                         onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-3 rounded-md px-3 py-3 text-sm font-medium text-ink-300 hover:bg-ink-850 hover:text-ink-50"
+                        className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-ink-300 hover:bg-ink-900 hover:text-ink-50"
                       >
                         <Icon className="h-4 w-4 text-signal-500" />
                         {item.label}
@@ -268,7 +268,7 @@ export function PublicNavbar() {
             <Link
               href="/pricing"
               onClick={() => setMobileOpen(false)}
-              className="block rounded-md px-3 py-3 text-sm font-medium text-ink-300 hover:bg-ink-850 hover:text-ink-50"
+              className="block rounded-lg px-3 py-3 text-sm font-medium text-ink-300 hover:bg-ink-900 hover:text-ink-50"
             >
               {L.pricing}
             </Link>
@@ -276,12 +276,12 @@ export function PublicNavbar() {
           <div className="mt-4 flex items-center gap-3 border-t border-ink-800 pt-4">
             <LanguageSwitcher />
             <Link href="/login" className="flex-1">
-              <span className="flex h-9 w-full items-center justify-center rounded-md border border-ink-600 text-sm font-medium text-ink-100">
+              <span className="flex h-9 w-full items-center justify-center rounded-lg border border-ink-800 bg-white text-sm font-medium text-ink-100">
                 {L.signIn}
               </span>
             </Link>
             <Link href="/register" className="flex-1">
-              <span className="flex h-9 w-full items-center justify-center rounded-md bg-signal-500 text-sm font-semibold text-ink-950">
+              <span className="flex h-9 w-full items-center justify-center rounded-lg bg-signal-500 text-sm font-semibold text-white">
                 {L.startTask}
               </span>
             </Link>

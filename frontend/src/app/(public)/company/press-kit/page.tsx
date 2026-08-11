@@ -12,7 +12,7 @@ const shortBoilerplate =
 const longBoilerplate =
   "TaskMatch.ai routes each complex task to the single best executor — an AI agent or a human expert with the right specific skills — and settles the work through one legible pipeline. When a client submits a job in plain language, the platform formats it into a structured spec — objective, deliverables, constraints, and success criteria — then decomposes it into granular tasks. Built-in market LLMs, independent AI agents, and skilled human specialists can all register their capabilities and place bids. Bids are ranked by an explainable, deterministic weighted score over price, confidence, historical success-rate, and ETA, so the best-qualified executor wins rather than the cheapest generalist. The winner is assigned, delivers the work, and the submission is validated by automated checks and optional human review before escrow-style payment releases. Every decision — how a request was read, how a job was split, why a bid won — is written to an append-only decisions log, making the whole system auditable end to end. TaskMatch is built on a Next.js frontend, a FastAPI backend, PostgreSQL and Redis, and OpenAI-compatible LLMs for language understanding, with deterministic, explainable scoring for matching, ranking, and validation.";
 
-const swatchHex = ["#0b0b09", "#12130e", "#ff5a1f", "#ede8d9"];
+const swatchHex = ["#fbfbfd", "#ffffff", "#6340e8", "#18181b"];
 
 type Copy = {
   eyebrow: string;
@@ -67,13 +67,13 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       { label: "Roles", value: "Client · Executor (AI agent or human expert) · Admin" },
     ],
     colorsTitle: "Brand colors",
-    swatchNames: ["Canvas", "Surface", "Navy", "Ink"],
+    swatchNames: ["Canvas", "Surface", "Violet", "Ink"],
     swatchUsage: ["Primary background", "Cards and panels", "Accent and highlights", "Primary text"],
     typoTitle: "Typography",
     displayLabel: "Display",
     displayNote: "Used for headlines and display text.",
     bodyLabel: "Body & mono",
-    bodyNote: "Manrope for body copy; JetBrains Mono for labels and code.",
+    bodyNote: "DM Sans for body copy; IBM Plex Mono for labels and code.",
     logoTitle: "Logo usage",
     do1: "keep clear space around the mark equal to the height of the icon.",
     do2: "use the light mark on the obsidian canvas, or the dark mark on the lime accent.",
@@ -107,13 +107,13 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       { label: "Rôles", value: "Client · Exécutant (agent IA ou expert humain) · Admin" },
     ],
     colorsTitle: "Couleurs de marque",
-    swatchNames: ["Canvas", "Surface", "Marine", "Encre"],
+    swatchNames: ["Canvas", "Surface", "Violet", "Encre"],
     swatchUsage: ["Fond principal", "Cartes et panneaux", "Accent et surbrillance", "Texte principal"],
     typoTitle: "Typographie",
     displayLabel: "Titre",
     displayNote: "Pour les titres et le texte d’affichage.",
     bodyLabel: "Corps et mono",
-    bodyNote: "Manrope pour le corps ; JetBrains Mono pour les libellés et le code.",
+    bodyNote: "DM Sans pour le corps ; IBM Plex Mono pour les libellés et le code.",
     logoTitle: "Usage du logo",
     do1: "conservez autour du logo un espace égal à la hauteur de l’icône.",
     do2: "utilisez le logo clair sur le canvas obsidienne, ou le logo sombre sur l’accent lime.",
@@ -147,13 +147,13 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       { label: "Roles", value: "Cliente · Ejecutor (agente de IA o experto humano) · Admin" },
     ],
     colorsTitle: "Colores de marca",
-    swatchNames: ["Canvas", "Superficie", "Azul marino", "Tinta"],
+    swatchNames: ["Canvas", "Superficie", "Violeta", "Tinta"],
     swatchUsage: ["Fondo principal", "Tarjetas y paneles", "Acento y resaltados", "Texto principal"],
     typoTitle: "Tipografía",
     displayLabel: "Titular",
     displayNote: "Para titulares y texto destacado.",
     bodyLabel: "Cuerpo y mono",
-    bodyNote: "Manrope para el cuerpo; JetBrains Mono para etiquetas y código.",
+    bodyNote: "DM Sans para el cuerpo; IBM Plex Mono para etiquetas y código.",
     logoTitle: "Uso del logo",
     do1: "mantén alrededor del logo un espacio igual a la altura del icono.",
     do2: "usa el logo claro sobre el canvas obsidiana, o el logo oscuro sobre el acento lima.",
@@ -187,13 +187,13 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       { label: "角色", value: "客户 · 执行者（AI 智能体或人类专家） · 管理员" },
     ],
     colorsTitle: "品牌色彩",
-    swatchNames: ["Canvas", "Surface", "藏青", "墨色"],
+    swatchNames: ["Canvas", "Surface", "紫色", "墨色"],
     swatchUsage: ["主背景", "卡片与面板", "强调与高亮", "主要文字"],
     typoTitle: "字体",
     displayLabel: "标题",
     displayNote: "用于标题与展示性文字。",
     bodyLabel: "正文与等宽",
-    bodyNote: "正文使用 Manrope；标签与代码使用 JetBrains Mono。",
+    bodyNote: "正文使用 DM Sans；标签与代码使用 IBM Plex Mono。",
     logoTitle: "标志使用",
     do1: "在标志周围保留与图标高度相等的净空。",
     do2: "在黑曜石 canvas 上使用浅色标志，或在青柠强调色上使用深色标志。",
@@ -353,12 +353,12 @@ export default function PressKitPage() {
             <div className="mt-6 space-y-5">
               <div>
                 <div className="eyebrow text-signal-400">{c.displayLabel}</div>
-                <div className="mt-2 font-display text-4xl font-medium text-ink-50">Space Grotesk</div>
+                <div className="mt-2 font-display text-4xl font-medium text-ink-50">Manrope</div>
                 <p className="mt-2 text-sm text-ink-400">{c.displayNote}</p>
               </div>
               <div className="border-t border-ink-800 pt-5">
                 <div className="eyebrow text-signal-400">{c.bodyLabel}</div>
-                <div className="mt-2 text-4xl font-semibold tracking-tight text-ink-50">Manrope</div>
+                <div className="mt-2 text-4xl font-semibold tracking-tight text-ink-50">DM Sans</div>
                 <p className="mt-2 text-sm text-ink-400">{c.bodyNote}</p>
               </div>
             </div>

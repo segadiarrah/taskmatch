@@ -19,18 +19,17 @@ export function PageHero({
   icon?: React.ElementType;
 }) {
   return (
-    <section className="relative overflow-hidden border-b border-ink-800 bg-ink-950 px-4 pb-16 pt-20 sm:px-6 lg:px-8">
-      <div className="pointer-events-none absolute inset-0 bg-grid" aria-hidden="true" />
+    <section className="relative overflow-hidden border-b border-ink-800 bg-ink-950 px-4 pb-20 pt-24 sm:px-6 lg:px-8">
       <div className="pointer-events-none absolute inset-0 bg-signal-glow" aria-hidden="true" />
-      <div className="relative mx-auto max-w-4xl text-center">
-        <Reveal className="eyebrow inline-flex items-center gap-2 rounded-full border border-ink-700 bg-ink-900/80 px-4 py-1.5 text-ink-300">
+      <div className="relative mx-auto max-w-5xl text-center">
+        <Reveal className="eyebrow inline-flex items-center gap-2 rounded-full border border-ink-800 bg-white px-4 py-1.5 text-ink-400 shadow-sm">
           {Icon ? <Icon className="h-3.5 w-3.5 text-signal-400" /> : null}
           {eyebrow}
         </Reveal>
         <Reveal delay={80}>
-          <h1 className="mt-8 font-display text-5xl font-medium leading-[1.05] text-ink-50 sm:text-6xl">
+          <h1 className="mt-8 font-display text-5xl font-bold leading-[1.02] text-ink-50 sm:text-6xl lg:text-7xl">
             {title}
-            {accent ? <span className="block font-display italic text-signal-500">{accent}</span> : null}
+            {accent ? <span className="block font-display text-signal-500">{accent}</span> : null}
           </h1>
         </Reveal>
         <Reveal delay={160}>
@@ -52,10 +51,10 @@ export function CardGrid({
         <Reveal
           key={item.title}
           delay={i * 70}
-          className="hover-lift group rounded-lg border border-ink-700 bg-ink-900 p-7 hover:border-signal-500/40"
+          className="hover-lift group rounded-xl border border-ink-800 bg-white p-7 hover:border-ink-700"
         >
           {item.icon ? (
-            <div className="flex h-11 w-11 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-signal-500/20 bg-signal-500/5 text-signal-400">
               <item.icon className="h-5 w-5" />
             </div>
           ) : null}
@@ -78,7 +77,6 @@ export function HighlightBand({
 }) {
   return (
     <section className="relative border-y border-paper-ink/15 bg-paper px-4 py-20 text-paper-ink sm:px-6 lg:px-8">
-      <div className="pointer-events-none absolute inset-0 bg-grid-paper" aria-hidden="true" />
       <div className="relative mx-auto max-w-6xl">
         <Reveal>
           <h2 className="font-display text-3xl font-medium text-paper-ink sm:text-4xl">{title}</h2>
@@ -91,7 +89,7 @@ export function HighlightBand({
             <Reveal
               key={item}
               delay={i * 80}
-              className="rounded-md border border-paper-ink/15 bg-paper px-5 py-5 text-sm leading-6 text-paper-ink/80 transition-colors hover:border-paper-ink/40"
+              className="rounded-xl border border-paper-ink/10 bg-white px-5 py-5 text-sm leading-6 text-paper-ink/80 shadow-sm transition-colors hover:border-paper-ink/20"
             >
               <span className="mr-1.5 font-semibold text-signal-600">→</span>
               {item}
@@ -120,15 +118,15 @@ export function PageCta({
 }) {
   return (
     <section className="bg-ink-950 px-4 pb-24 pt-20 sm:px-6 lg:px-8">
-      <Reveal className="relative mx-auto max-w-6xl overflow-hidden rounded-lg bg-signal-500 px-6 py-16 text-center text-ink-950 sm:px-10">
-        <div className="pointer-events-none absolute inset-0 bg-noise opacity-20" aria-hidden="true" />
+      <Reveal className="relative mx-auto max-w-6xl overflow-hidden rounded-2xl border border-ink-800 bg-white px-6 py-16 text-center text-ink-50 shadow-panel sm:px-10">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-signal-glow" aria-hidden="true" />
         <div className="relative">
-          <h2 className="font-display text-4xl font-medium text-ink-950 sm:text-5xl">{title}</h2>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-ink-950/75 sm:text-lg">{body}</p>
+          <h2 className="font-display text-4xl font-bold text-ink-50 sm:text-5xl">{title}</h2>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-ink-400 sm:text-lg">{body}</p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href={primaryHref}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-ink-950 px-7 text-sm font-semibold text-ink-50 transition-colors hover:bg-ink-850"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-signal-500 px-7 text-sm font-semibold text-white transition-colors hover:bg-signal-400"
             >
               {primaryLabel}
               <ArrowRight className="h-4 w-4" />
@@ -136,7 +134,7 @@ export function PageCta({
             {secondaryHref && secondaryLabel ? (
               <Link
                 href={secondaryHref}
-                className="inline-flex h-12 items-center justify-center rounded-md border border-ink-950/40 px-7 text-sm font-medium text-ink-950 transition-colors hover:bg-ink-950/10"
+                className="inline-flex h-11 items-center justify-center rounded-lg border border-ink-800 bg-white px-7 text-sm font-medium text-ink-100 transition-colors hover:bg-ink-900"
               >
                 {secondaryLabel}
               </Link>

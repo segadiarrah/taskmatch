@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
-import { Archivo, Fraunces, JetBrains_Mono } from "next/font/google";
+import { DM_Sans, IBM_Plex_Mono, Manrope } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/lib/query-provider";
 import { AuthProvider } from "@/lib/auth";
@@ -11,19 +11,19 @@ const CookieBanner = dynamic(
   { ssr: false }
 );
 
-const archivo = Archivo({
+const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
 });
 
-const fraunces = Fraunces({
+const manrope = Manrope({
   subsets: ["latin"],
   variable: "--font-display",
-  axes: ["opsz"],
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
   variable: "--font-mono",
 });
 
@@ -42,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
-        className={`${archivo.variable} ${fraunces.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        className={`${dmSans.variable} ${manrope.variable} ${ibmPlexMono.variable} font-sans antialiased`}
       >
         <QueryProvider>
           <AuthProvider>

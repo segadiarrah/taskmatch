@@ -8,13 +8,13 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const buttonVariants: Record<string, string> = {
   default:
-    "bg-primary text-primary-foreground font-semibold hover:bg-signal-400 hover:shadow-glow-sm",
+    "bg-primary text-white font-semibold shadow-sm hover:bg-signal-400",
   destructive:
     "bg-destructive text-destructive-foreground font-semibold hover:brightness-110",
   outline:
-    "border border-ink-600 bg-transparent text-foreground hover:border-ink-400 hover:bg-ink-800",
-  secondary: "bg-ink-800 text-foreground hover:bg-ink-700 border border-ink-700",
-  ghost: "text-ink-300 hover:bg-ink-800 hover:text-foreground",
+    "border border-ink-800 bg-white text-foreground shadow-sm hover:border-ink-700 hover:bg-ink-900",
+  secondary: "bg-ink-900 text-foreground hover:bg-ink-850 border border-ink-800",
+  ghost: "text-ink-400 hover:bg-ink-900 hover:text-foreground",
   link: "text-primary underline-offset-4 hover:underline",
 };
 

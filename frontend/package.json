@@ -9,6 +9,7 @@
     "start": "next start --port 3000",
     "lint": "next lint",
     "check:contrast": "node scripts/check-design-contrast.mjs",
+    "check:visual": "node scripts/check-visual-style.mjs",
     "check:localization": "node scripts/check-localization.mjs",
     "check:ui": "node scripts/check-ui-contracts.mjs",
     "type-check": "tsc --noEmit"

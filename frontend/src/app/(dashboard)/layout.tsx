@@ -103,7 +103,7 @@ export default function DashboardLayout({
     return (
       <div className="flex h-screen items-center justify-center bg-ink-950">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-800 border-t-signal-500" />
           <p className="font-mono text-sm text-ink-500">Loading TaskMatch...</p>
         </div>
       </div>
@@ -128,7 +128,7 @@ export default function DashboardLayout({
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/70 lg:hidden"
+          className="fixed inset-0 z-40 bg-ink-50/25 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -136,29 +136,29 @@ export default function DashboardLayout({
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-ink-800 bg-ink-900 transition-all duration-300 lg:relative lg:z-0",
-          sidebarCollapsed ? "w-[68px]" : "w-64",
+          "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-ink-800 bg-white transition-all duration-300 lg:relative lg:z-0",
+          sidebarCollapsed ? "w-[64px]" : "w-[236px]",
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
         {/* Logo */}
         <div className={cn(
-          "flex h-16 items-center border-b border-ink-800 px-4",
+          "flex h-14 items-center border-b border-ink-800 px-4",
           sidebarCollapsed ? "justify-center" : "justify-between"
         )}>
           {!sidebarCollapsed && (
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-signal-500">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-signal-500">
                 <Layers className="h-4 w-4 text-ink-950" />
               </div>
               <div>
                 <h1 className="text-sm font-bold tracking-tight text-ink-50">TaskMatch</h1>
-                <p className="font-mono text-[10px] uppercase tracking-wider text-ink-500">Mission Control</p>
+                <p className="font-mono text-[9px] uppercase tracking-wider text-ink-500">TaskMatch Console</p>
               </div>
             </div>
           )}
           {sidebarCollapsed && (
-            <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-signal-500">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-signal-500">
               <Layers className="h-4 w-4 text-ink-950" />
             </div>
           )}
@@ -166,7 +166,7 @@ export default function DashboardLayout({
             type="button"
             aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="hidden rounded-md p-1 text-ink-500 hover:bg-ink-800 hover:text-ink-200 lg:block"
+            className="hidden rounded-lg p-1.5 text-ink-500 hover:bg-ink-900 hover:text-ink-200 lg:block"
           >
             <ChevronLeft className={cn("h-4 w-4 transition-transform", sidebarCollapsed && "rotate-180")} />
           </button>
@@ -174,14 +174,14 @@ export default function DashboardLayout({
             type="button"
             aria-label="Close navigation"
             onClick={() => setSidebarOpen(false)}
-            className="rounded-md p-1 text-ink-500 hover:bg-ink-800 hover:text-ink-200 lg:hidden"
+            className="rounded-lg p-1.5 text-ink-500 hover:bg-ink-900 hover:text-ink-200 lg:hidden"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-2.5 py-3">
           {filteredNavItems.map((item) => {
             const active = isActive(item.href);
             const Icon = item.icon;
@@ -193,17 +193,14 @@ export default function DashboardLayout({
                   setSidebarOpen(false);
                 }}
                 className={cn(
-                  "relative flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "relative flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
                   active
-                    ? "bg-ink-800 text-ink-50"
-                    : "text-ink-400 hover:bg-ink-850 hover:text-ink-100",
+                    ? "border-ink-800 bg-ink-950 text-ink-50 shadow-sm"
+                    : "border-transparent text-ink-400 hover:bg-ink-900 hover:text-ink-100",
                   sidebarCollapsed && "justify-center px-2"
                 )}
                 title={sidebarCollapsed ? item.label : undefined}
               >
-                {active && (
-                  <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-signal-500" />
-                )}
                 <Icon className={cn("h-4 w-4 shrink-0", active && "text-signal-400")} />
                 {!sidebarCollapsed && <span>{item.label}</span>}
               </button>
@@ -213,7 +210,7 @@ export default function DashboardLayout({
 
         {/* User section at bottom */}
         {!sidebarCollapsed && (
-          <div className="border-t border-ink-800 p-4">
+          <div className="border-t border-ink-800 p-3">
             <div className="flex items-center gap-3">
               <Avatar size="sm">
                 <AvatarFallback>{getInitials(user.full_name)}</AvatarFallback>
@@ -230,13 +227,13 @@ export default function DashboardLayout({
       {/* Main content area */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="flex h-16 items-center justify-between border-b border-ink-800 bg-ink-900 px-4 lg:px-6">
+        <header className="flex h-14 items-center justify-between border-b border-ink-800 bg-white/90 px-4 backdrop-blur-xl lg:px-6">
           <div className="flex items-center gap-3">
             <button
               type="button"
               aria-label="Open navigation"
               onClick={() => setSidebarOpen(true)}
-              className="rounded-md p-2 text-ink-500 hover:bg-ink-800 hover:text-ink-200 lg:hidden"
+              className="rounded-lg p-2 text-ink-500 hover:bg-ink-900 hover:text-ink-200 lg:hidden"
             >
               <Menu className="h-5 w-5" />
             </button>
@@ -269,7 +266,7 @@ export default function DashboardLayout({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto bg-ink-950 p-4 lg:p-6">
+        <main className="flex-1 overflow-y-auto bg-ink-950 p-4 lg:p-7">
           {children}
         </main>
       </div>
