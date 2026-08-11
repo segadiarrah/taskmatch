@@ -47,6 +47,25 @@ class Settings(BaseSettings):
     LLM_TIMEOUT_SECONDS: int = 30
     LLM_ENABLED: bool = True
 
+    # -- Credential vault -----------------------------------------------------
+    # Key material for encrypting access grants (client credentials shared for an
+    # installation-mode delivery). Falls back to SECRET_KEY when unset; either
+    # way it must not be the default placeholder, or the vault refuses to store
+    # anything rather than pretend the secrets are protected.
+    VAULT_SECRET_KEY: str | None = None
+    # How long an access grant stays valid by default, and how many times it may
+    # be revealed before it must be re-issued.
+    ACCESS_GRANT_TTL_HOURS: int = 168  # 7 days
+    ACCESS_GRANT_MAX_REVEALS: int = 5
+
+    # -- Pricing --------------------------------------------------------------
+    # A quote is honoured for this long; beyond it, provider rates may have moved
+    # and the job must be re-priced before execution.
+    QUOTE_VALIDITY_DAYS: int = 14
+    # Model used to price LLM-routed tasks when no provider is enabled. Only
+    # affects the *estimate* — the executing agent may use a different model.
+    PRICING_DEFAULT_MODEL: str = "claude-sonnet-5"
+
     # -- Contact form email (SMTP, e.g. Brevo relay) --------------------------
     SMTP_HOST: str | None = None
     SMTP_PORT: int = 587

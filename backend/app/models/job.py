@@ -20,7 +20,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base, TimestampMixin
 
 if TYPE_CHECKING:
+    from .delivery import DeliveryPlan
     from .payment import PaymentRecord
+    from .quote import Quote
     from .task import Task
     from .user import User
 
@@ -32,6 +34,11 @@ class JobStatus(str, enum.Enum):
     submitted = "submitted"
     formatted = "formatted"
     decomposed = "decomposed"
+    #: Priced, waiting on the client to accept or reject the quote. Nothing is
+    #: executed while a job sits here — this is the gate.
+    quoted = "quoted"
+    #: Client declined the price. Terminal unless re-quoted.
+    quote_rejected = "quote_rejected"
     bidding = "bidding"
     in_progress = "in_progress"
     under_review = "under_review"
@@ -107,6 +114,21 @@ class Job(TimestampMixin, Base):
         "PaymentRecord",
         back_populates="job",
         foreign_keys="PaymentRecord.job_id",
+        lazy="selectin",
+    )
+
+    quotes: Mapped[List["Quote"]] = relationship(
+        "Quote",
+        back_populates="job",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
+    delivery_plan: Mapped[Optional["DeliveryPlan"]] = relationship(
+        "DeliveryPlan",
+        back_populates="job",
+        cascade="all, delete-orphan",
+        uselist=False,
         lazy="selectin",
     )
 

@@ -34,6 +34,7 @@ from decimal import Decimal
 
 from app.models.agent import Agent, AgentStatus
 from app.models.assignment import Assignment, AssignmentStatus
+from app.models.delivery import DeliveryPlan
 from app.models.audit import MCPDecision, MCPDecisionType
 from app.models.bid import Bid, BidStatus
 from app.models.job import Job, JobRequirement, JobStatus
@@ -42,7 +43,7 @@ from app.models.submission import Submission, SubmissionStatus
 from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.job import JobCreate, JobListResponse, JobResponse, JobUpdate
-from app.services import llm_service, mcp_service
+from app.services import llm_service, mcp_service, quote_service
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 
@@ -50,35 +51,87 @@ router = APIRouter()
 
 
 async def _generate_plan(job_id: uuid.UUID) -> None:
-    """Background: format the brief, decompose into tasks, and match agents.
+    """Background: format the brief, decompose it, and price it.
 
-    Runs in its own DB session so it can execute after the submit response has
-    been returned. Best-effort; failures are logged, not raised.
+    Stops at a quote. Nothing is matched, assigned or executed here — that is
+    deliberate: the client sees what the work costs before any of it happens, and
+    :func:`_execute_job` only runs once they have accepted. Runs in its own DB
+    session so it can execute after the submit response has been returned.
+    Best-effort; failures are logged, not raised.
     """
     async with async_session_factory() as db:
         try:
             await mcp_service.format_job(db, job_id)
             created_tasks = await mcp_service.decompose_job(db, job_id)
-            job = (await db.execute(select(Job).where(Job.id == job_id))).scalar_one_or_none()
-            if job is not None:
-                job.status = JobStatus.bidding
-            await db.flush()
+            quote = await quote_service.create_quote_for_job(db, job_id)
+            await db.commit()
+            logger.info(
+                "plan.quoted",
+                job_id=str(job_id),
+                task_count=len(created_tasks),
+                quote_id=str(quote.id),
+                total=float(quote.total),
+            )
+        except Exception as exc:  # noqa: BLE001
+            await db.rollback()
+            logger.warning("plan.failed", job_id=str(job_id), error=str(exc))
+
+
+async def _execute_job(job_id: uuid.UUID) -> None:
+    """Background: match agents and start execution. Runs only after quote acceptance.
+
+    Everything that costs the client money lives on this side of the gate.
+    """
+    async with async_session_factory() as db:
+        try:
+            job = (
+                await db.execute(select(Job).where(Job.id == job_id))
+            ).scalar_one_or_none()
+            if job is None:
+                logger.warning("execute.job_missing", job_id=str(job_id))
+                return
+
+            tasks = list(
+                (
+                    await db.execute(
+                        select(Task).where(Task.job_id == job_id).order_by(Task.priority)
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            created_tasks = [
+                {
+                    "id": str(t.id),
+                    "title": t.title,
+                    "task_type": t.task_type,
+                    "budget": float(t.budget) if t.budget else None,
+                }
+                for t in tasks
+            ]
+
             for t in created_tasks:
                 try:
                     await mcp_service.match_agents(db, uuid.UUID(t["id"]))
                 except Exception as exc:  # noqa: BLE001
                     logger.warning("plan.match_failed", task_id=t["id"], error=str(exc))
-            # Immediate execution: enabled platform LLM agents auto-bid so work
-            # can start without waiting for developer agents to sign up.
+
+            # Enabled platform LLM agents auto-bid so work can start without
+            # waiting for developer agents to sign up.
             try:
                 await _auto_execute(db, job, created_tasks)
             except Exception as exc:  # noqa: BLE001
-                logger.warning("plan.autoexec_failed", job_id=str(job_id), error=str(exc))
+                logger.warning(
+                    "plan.autoexec_failed", job_id=str(job_id), error=str(exc)
+                )
+
             await db.commit()
-            logger.info("plan.complete", job_id=str(job_id), task_count=len(created_tasks))
+            logger.info(
+                "execute.complete", job_id=str(job_id), task_count=len(created_tasks)
+            )
         except Exception as exc:  # noqa: BLE001
             await db.rollback()
-            logger.warning("plan.failed", job_id=str(job_id), error=str(exc))
+            logger.warning("execute.failed", job_id=str(job_id), error=str(exc))
 
 
 async def _auto_execute(db: AsyncSession, job: Job, created_tasks: list[dict]) -> None:
@@ -650,15 +703,63 @@ async def get_job_plan(
     stages = [
         {"key": "format", "label": "Format", "desc": "Your brief becomes a structured spec."},
         {"key": "decompose", "label": "Decompose", "desc": "The spec is split into assignable tasks."},
+        {"key": "quote", "label": "Price & quote", "desc": "TaskMatch sets a price per task. You approve before anything runs."},
         {"key": "match", "label": "Match & rank", "desc": "AI agents are matched and ranked per task."},
         {"key": "assign", "label": "Assign", "desc": "The best-scored agent is assigned each task."},
         {"key": "validate", "label": "Validate", "desc": "Each result is checked against acceptance criteria."},
         {"key": "pay", "label": "Pay", "desc": "Escrow releases only on validated delivery."},
     ]
 
+    # Quote summary — the plan and the price are one story for the client, so the
+    # panel that renders the breakdown does not need a second round trip.
+    quote = await quote_service.current_quote(db, job_id)
+    quote_summary = None
+    if quote is not None:
+        quote_summary = {
+            "id": str(quote.id),
+            "status": quote.status.value
+            if hasattr(quote.status, "value")
+            else str(quote.status),
+            "currency": quote.currency,
+            "subtotal": float(quote.subtotal),
+            "platform_fee": float(quote.platform_fee),
+            "total": float(quote.total),
+            "savings_vs_human": quote.savings_vs_human,
+            "human_equivalent_low": float(quote.human_equivalent_low)
+            if quote.human_equivalent_low is not None
+            else None,
+            "human_equivalent_high": float(quote.human_equivalent_high)
+            if quote.human_equivalent_high is not None
+            else None,
+            "valid_until": quote.valid_until.isoformat() if quote.valid_until else None,
+            "actionable": quote.is_actionable,
+        }
+
+    delivery_plan = (
+        await db.execute(select(DeliveryPlan).where(DeliveryPlan.job_id == job_id))
+    ).scalar_one_or_none()
+    delivery_summary = None
+    if delivery_plan is not None:
+        delivery_summary = {
+            "mode": delivery_plan.mode.value
+            if hasattr(delivery_plan.mode, "value")
+            else str(delivery_plan.mode),
+            "status": delivery_plan.status.value
+            if hasattr(delivery_plan.status, "value")
+            else str(delivery_plan.status),
+            "target": delivery_plan.target,
+            "needs_access_exchange": delivery_plan.needs_access_exchange,
+            "signed_off_at": delivery_plan.signed_off_at.isoformat()
+            if delivery_plan.signed_off_at
+            else None,
+        }
+
     return {
         "ready": len(tasks) > 0,
         "planning": len(tasks) == 0 and job.status == JobStatus.submitted,
+        "quote": quote_summary,
+        "delivery": delivery_summary,
+        "awaiting_quote_approval": job.status == JobStatus.quoted,
         "job": {
             "id": str(job.id),
             "title": job.title,
@@ -719,6 +820,12 @@ async def accept_job(
             p.payment_status = PaymentStatus.paid
             released += 1
     job.status = JobStatus.completed
+
+    # Closing a job always clears the vault: a client should never have to
+    # remember to rotate credentials they shared to get the work done.
+    from app.api.v1.endpoints.delivery import revoke_job_access_grants
+
+    grants_revoked = await revoke_job_access_grants(db, job.id)
     await db.flush()
 
     await log_audit(
@@ -728,12 +835,13 @@ async def accept_job(
         action="accept_job",
         entity_type="job",
         entity_id=str(job.id),
-        payload={"payments_released": released},
+        payload={"payments_released": released, "grants_revoked": grants_revoked},
     )
     return {
         "job_id": str(job.id),
         "status": job.status.value if hasattr(job.status, "value") else str(job.status),
         "payments_released": released,
+        "grants_revoked": grants_revoked,
     }
 
 

@@ -11,11 +11,13 @@ from app.api.v1.endpoints import (
     bids,
     contact,
     dashboard,
+    delivery,
     demo,
     developer,
     jobs,
     mcp,
     payments,
+    quotes,
     reviews,
     submissions,
     tasks,
@@ -28,6 +30,10 @@ router.include_router(auth.router, prefix="/auth", tags=["auth"])
 router.include_router(users.router, prefix="/users", tags=["users"])
 router.include_router(agents.router, prefix="/agents", tags=["agents"])
 router.include_router(jobs.router, prefix="/jobs", tags=["jobs"])
+# Quotes and delivery hang off /jobs too: they are job-scoped, and keeping the
+# paths together means a client polls one prefix for the whole lifecycle.
+router.include_router(quotes.router, prefix="/jobs", tags=["quotes"])
+router.include_router(delivery.router, prefix="/jobs", tags=["delivery"])
 router.include_router(tasks.router, prefix="/tasks", tags=["tasks"])
 router.include_router(bids.router, tags=["bids"])
 router.include_router(submissions.router, tags=["submissions"])
