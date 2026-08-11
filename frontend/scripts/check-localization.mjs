@@ -225,6 +225,69 @@ function jsxLiteralRule(node, ancestors) {
   return undefined;
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Dictionary-backed translation calls                                       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Names of the translation helper returned by `useTranslation()`. A literal that
+ * is an argument to one of these is copy routed through `src/i18n/*.ts` rather
+ * than hardcoded text, so it must not be reported as untranslated.
+ */
+const translationCallees = new Set(["t", "translate"]);
+
+function enclosingTranslationCall(node, ancestors) {
+  const chain = [...ancestors, node];
+  for (let index = chain.length - 1; index > 0; index -= 1) {
+    const candidate = chain[index - 1];
+    if (!ts.isCallExpression(candidate)) continue;
+    const callee = candidate.expression;
+    const name = ts.isIdentifier(callee)
+      ? callee.text
+      : ts.isPropertyAccessExpression(callee)
+        ? callee.name.text
+        : undefined;
+    if (name && translationCallees.has(name) && candidate.arguments.includes(chain[index])) {
+      return { call: candidate, argumentIndex: candidate.arguments.indexOf(chain[index]) };
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Classify a literal sitting inside a `t(...)` call.
+ *
+ * Returns `"key"` for the first argument (validated against the English
+ * dictionary by the caller), `"fallback"` for a later argument — a development
+ * default that is never rendered once the key resolves — or `undefined` when the
+ * literal is not part of a translation call at all.
+ */
+function translationArgumentRole(node, ancestors) {
+  const match = enclosingTranslationCall(node, ancestors);
+  if (!match) return undefined;
+  return match.argumentIndex === 0 ? "key" : "fallback";
+}
+
+/**
+ * Whether a translation key is backed by the English dictionary.
+ *
+ * A key built from a template (`t(`delivery.mode.${mode}`)`) cannot be resolved
+ * statically, so it is accepted when its literal prefix names a branch that
+ * actually exists — enough to catch a renamed or misspelled section while
+ * still allowing keys selected at runtime.
+ */
+function translationKeyResolves(key, englishKeys) {
+  if (englishKeys.has(key)) return true;
+  const interpolation = key.indexOf("${");
+  if (interpolation === -1) return false;
+  const prefix = key.slice(0, interpolation);
+  if (!prefix) return false;
+  for (const candidate of englishKeys) {
+    if (candidate.startsWith(prefix)) return true;
+  }
+  return false;
+}
+
 function isRequiredManifestPath(path) {
   return (
     /^src\/app\/.+\/(?:page|layout|error|loading|not-found)\.tsx$/.test(path) ||
@@ -280,15 +343,25 @@ export function inspectLocalizationSources(files, options = {}) {
     scanForbidden(file.sourceFile);
   }
 
+  // The English dictionary's key set doubles as the vocabulary a `t("…")` call
+  // may draw on, so it is computed regardless of whether the parity checks run.
+  const dictionaries = new Map();
+  {
+    for (const file of parsed.filter((candidate) => candidate.localization === "dictionary")) {
+      const root = exportedObject(file.sourceFile);
+      if (!root) continue;
+      dictionaries.set(file.path.match(/\/(en|fr|es|zh)\.ts$/)?.[1], { file, root, shape: shapeOf(root) });
+    }
+  }
+  const englishKeys = dictionaries.get("en")?.shape ?? new Set();
+
   if (options.runDictionaryParity !== false) {
-    const dictionaries = new Map();
     for (const file of parsed.filter((candidate) => candidate.localization === "dictionary")) {
       const root = exportedObject(file.sourceFile);
       if (!root) {
         issues.push(issue(file, file.sourceFile, file.sourceFile, "dictionary-shape", "dictionary must default-export an object literal"));
         continue;
       }
-      dictionaries.set(file.path.match(/\/(en|fr|es|zh)\.ts$/)?.[1], { file, root, shape: shapeOf(root) });
       const englishBindings = englishImportBindings(file.sourceFile);
       const visitSpread = (node) => {
         if (ts.isSpreadAssignment(node) && englishBindings.has(rootIdentifier(node.expression))) {
@@ -338,7 +411,18 @@ export function inspectLocalizationSources(files, options = {}) {
       if (value !== undefined) {
         const normalized = value.replace(/\s+/g, " ").trim();
 
-        if (!localized && !isAllowedLiteral(normalized, ancestors)) {
+        // Copy routed through the i18n dictionaries is locale-backed by
+        // construction. Validate the key instead of reporting the call: an
+        // unknown key silently renders the raw path to the user, which the
+        // untranslated-* rules would never catch.
+        const translationRole = translationArgumentRole(node, ancestors);
+        if (translationRole === "key") {
+          if (englishKeys.size && !translationKeyResolves(normalized, englishKeys)) {
+            issues.push(issue(file, file.sourceFile, node, "unknown-translation-key", `t(“${normalized}”) has no matching key in the English dictionary`));
+          }
+        } else if (translationRole === "fallback") {
+          // A development default, never rendered once the key resolves.
+        } else if (!localized && !isAllowedLiteral(normalized, ancestors)) {
           const jsxRule = jsxLiteralRule(node, ancestors);
           if (jsxRule === "untranslated-jsx") {
             issues.push(issue(file, file.sourceFile, node, "untranslated-jsx", `visible JSX text is not locale-backed: “${normalized.slice(0, 80)}”`));

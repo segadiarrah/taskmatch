@@ -52,6 +52,8 @@ const dashboardShared = [
   "src/app/(dashboard)/client/jobs/new/page.tsx",
   "src/app/(dashboard)/client/jobs/[id]/page.tsx",
   "src/app/(dashboard)/client/jobs/[id]/execution-plan.tsx",
+  "src/app/(dashboard)/client/jobs/[id]/quote-panel.tsx",
+  "src/app/(dashboard)/client/jobs/[id]/delivery-panel.tsx",
   "src/app/(dashboard)/developer/page.tsx",
   "src/app/(dashboard)/developer/earnings/page.tsx",
   "src/app/(dashboard)/developer/tasks/page.tsx",
