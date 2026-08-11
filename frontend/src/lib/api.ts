@@ -1,3 +1,6 @@
+// Call sites supply the version segment themselves (`/v1/jobs/...`), so this
+// base stops at "/api". Both the Next rewrite and nginx pass /api/* straight
+// through to the backend, which mounts its routes under settings.API_V1_PREFIX.
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "/api";
 
 export class ApiError extends Error {

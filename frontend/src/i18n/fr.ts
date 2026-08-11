@@ -579,6 +579,99 @@ const fr = {
       security: "S\u00e9curit\u00e9",
     },
   },
+
+  /* ------------------------------------------------------------------------ */
+  /*  Devis \u2014 TaskMatch fixe le prix, le client l\u2019approuve                  */
+  /* ------------------------------------------------------------------------ */
+  quote: {
+    title: "Votre devis",
+    subtitle:
+      "TaskMatch fixe le prix de chaque t\u00e2che \u2014 vous n\u2019ench\u00e9rissez pas sur une place de march\u00e9. Rien n\u2019est ex\u00e9cut\u00e9 ni factur\u00e9 tant que vous n\u2019avez pas approuv\u00e9.",
+    pricingInProgress: "Estimation de votre demande en cours \u2014 quelques secondes.",
+    pricingHint:
+      "TaskMatch fixe un prix par t\u00e2che. Rien ne d\u00e9marre avant votre approbation.",
+    totalLabel: "Total",
+    totalBreakdown: "Dont",
+    platformFee: "de commission plateforme",
+    humanEquivalent: "\u00c9quivalent expert humain",
+    savings: "Vous \u00e9conomisez",
+    validUntil: "Valable jusqu\u2019au",
+    perTask: "Prix par t\u00e2che",
+    routeLlm: "Agent IA",
+    routeHuman: "Expert humain",
+    routeHybrid: "IA + relecture humaine",
+    tokenCost: "Co\u00fbt tokens",
+    compute: "Calcul",
+    orchestration: "Orchestration",
+    validation: "Validation",
+    expertRange: "Fourchette propos\u00e9e aux experts :",
+    humanWouldCost: "Un expert humain co\u00fbterait :",
+    hoursShort: " h",
+    gateNotice:
+      "L\u2019approbation lance l\u2019ex\u00e9cution et place le montant sous s\u00e9questre. Il n\u2019est vers\u00e9 que contre une livraison valid\u00e9e.",
+    accept: "Approuver et lancer",
+    accepting: "Approbation\u2026",
+    decline: "Refuser",
+    rejecting: "Refus\u2026",
+    confirmReject: "Confirmer le refus",
+    cancel: "Annuler",
+    rejectPrompt: "Qu\u2019est-ce qui ne convient pas dans ce prix ?",
+    statusAccepted: "Approuv\u00e9",
+    statusRejected: "Refus\u00e9",
+    statusExpired: "Expir\u00e9",
+    acceptedNotice: "Devis approuv\u00e9 \u2014 l\u2019ex\u00e9cution a commenc\u00e9.",
+    rejectedReason: "Motif indiqu\u00e9 :",
+    requoteHint:
+      "Ajustez votre brief ou le mode de livraison, puis demandez un nouveau devis.",
+    errorLoad: "Impossible de charger le devis.",
+    errorAccept: "Impossible d\u2019accepter le devis. Merci de r\u00e9essayer.",
+    errorReject: "Impossible de refuser le devis. Merci de r\u00e9essayer.",
+  },
+
+  /* ------------------------------------------------------------------------ */
+  /*  Livraison et remise                                                     */
+  /* ------------------------------------------------------------------------ */
+  delivery: {
+    title: "Livraison et remise",
+    subtitle:
+      "Comment le travail fini vous parvient \u2014 un document, un d\u00e9p\u00f4t, ou une installation sur votre propre infrastructure.",
+    loading: "Chargement du plan de livraison\u2026",
+    signedOff: "R\u00e9ceptionn\u00e9",
+    modeTitle: "Mode de livraison",
+    mode: {
+      document: "Document",
+      repository: "D\u00e9p\u00f4t",
+      dataset: "Jeu de donn\u00e9es",
+      installation: "Installation",
+      hosted: "H\u00e9berg\u00e9",
+    },
+    requirements: "Ce dont nous avons besoin de votre part",
+    requoteNotice:
+      "Changer le mode de livraison change le travail \u00e0 fournir. Demandez un nouveau devis pour que le prix corresponde.",
+    accessTitle: "Acc\u00e8s et identifiants",
+    accessHelp:
+      "Chiffr\u00e9s au repos, r\u00e9v\u00e9l\u00e9s un nombre limit\u00e9 de fois, chaque acc\u00e8s trac\u00e9, et r\u00e9voqu\u00e9s automatiquement \u00e0 la r\u00e9ception.",
+    vaultUnavailable:
+      "Le coffre d\u2019identifiants n\u2019est pas configur\u00e9 sur cet environnement : aucun acc\u00e8s ne peut \u00eatre stock\u00e9. Contactez votre administrateur.",
+    addGrant: "Partager un acc\u00e8s",
+    grantLabel: "\u00c0 quoi il sert",
+    grantSecret: "Identifiant",
+    store: "Stocker en s\u00e9curit\u00e9",
+    reveal: "R\u00e9v\u00e9ler",
+    reveals: "r\u00e9v\u00e9lations",
+    revoke: "R\u00e9voquer",
+    grantRevoked: "R\u00e9voqu\u00e9",
+    grantExpired: "Expir\u00e9",
+    signOffHelp:
+      "Confirmez la bonne r\u00e9ception. Tous les acc\u00e8s que vous avez partag\u00e9s sont r\u00e9voqu\u00e9s imm\u00e9diatement.",
+    signOffAction: "Confirmer la r\u00e9ception",
+    errorUpdate: "Impossible de modifier le mode de livraison.",
+    errorGrant: "Impossible d\u2019enregistrer l\u2019acc\u00e8s.",
+    errorReveal: "Cet acc\u00e8s ne peut plus \u00eatre r\u00e9v\u00e9l\u00e9.",
+    errorRevoke: "Impossible de r\u00e9voquer l\u2019acc\u00e8s.",
+    errorSignOff: "Impossible de confirmer la r\u00e9ception.",
+  },
+
 } as const;
 
 export default fr;

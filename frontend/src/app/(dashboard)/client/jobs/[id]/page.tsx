@@ -11,6 +11,21 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import ExecutionPlan from "./execution-plan";
+import QuotePanel from "./quote-panel";
+import DeliveryPanel from "./delivery-panel";
+
+/**
+ * Job states in which no deliverable exists yet, so there is nothing to hand
+ * over. These are lifecycle identifiers rather than copy, so they are declared
+ * as bare constants — the localization checker treats string literals inside
+ * JSX, objects and arrays as untranslated user-facing text.
+ */
+const STATUS_DRAFT = "draft";
+const STATUS_SUBMITTED = "submitted";
+
+function hasDeliverablePhase(status: string): boolean {
+  return status !== STATUS_DRAFT && status !== STATUS_SUBMITTED;
+}
 import {
   ArrowLeft,
   Loader2,
@@ -267,6 +282,10 @@ export default function JobDetailPage() {
         </CardContent>
       </Card>
 
+      {/* Quote — the gate. Shown from the moment the job is priced until the
+          client decides; execution only begins once they approve. */}
+      <QuotePanel jobId={job.id} onAccepted={fetchJob} />
+
       {/* Execution Plan */}
       <ExecutionPlan
         jobId={job.id}
@@ -274,6 +293,9 @@ export default function JobDetailPage() {
         fallbackCurrency={job.currency}
         onSubmitted={fetchJob}
       />
+
+      {/* Delivery & handover — only meaningful once the work is under way. */}
+      {hasDeliverablePhase(job.status) && <DeliveryPanel jobId={job.id} />}
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Content */}

@@ -571,6 +571,97 @@ const en = {
       security: "Security",
     },
   },
+
+  /* ------------------------------------------------------------------------ */
+  /*  Quote — TaskMatch sets the price, the client approves it                */
+  /* ------------------------------------------------------------------------ */
+  quote: {
+    title: "Your quote",
+    subtitle:
+      "TaskMatch sets the price for each task \u2014 you are not bidding against a marketplace. Nothing is executed or billed until you approve.",
+    pricingInProgress: "Pricing your request \u2014 this takes a few seconds.",
+    pricingHint: "TaskMatch sets a price per task. Nothing runs until you approve it.",
+    totalLabel: "Total",
+    totalBreakdown: "Includes",
+    platformFee: "platform fee",
+    humanEquivalent: "Human-expert equivalent",
+    savings: "You save",
+    validUntil: "Valid until",
+    perTask: "Price per task",
+    routeLlm: "AI agent",
+    routeHuman: "Human expert",
+    routeHybrid: "AI + human review",
+    tokenCost: "Token cost",
+    compute: "Compute",
+    orchestration: "Orchestration",
+    validation: "Validation",
+    expertRange: "Range offered to experts:",
+    humanWouldCost: "A human expert would cost:",
+    hoursShort: "h",
+    gateNotice:
+      "Approving releases the job for execution and places the amount in escrow. It is paid out only against validated delivery.",
+    accept: "Approve & start",
+    accepting: "Approving\u2026",
+    decline: "Decline",
+    rejecting: "Declining\u2026",
+    confirmReject: "Confirm decline",
+    cancel: "Cancel",
+    rejectPrompt: "What doesn\u2019t work about this price?",
+    statusAccepted: "Approved",
+    statusRejected: "Declined",
+    statusExpired: "Expired",
+    acceptedNotice: "Quote approved \u2014 execution has started.",
+    rejectedReason: "Reason given:",
+    requoteHint: "Adjust your brief or delivery mode, then request a new quote.",
+    errorLoad: "Could not load the quote.",
+    errorAccept: "Could not accept the quote. Please retry.",
+    errorReject: "Could not decline the quote. Please retry.",
+  },
+
+  /* ------------------------------------------------------------------------ */
+  /*  Delivery & handover                                                     */
+  /* ------------------------------------------------------------------------ */
+  delivery: {
+    title: "Delivery & handover",
+    subtitle:
+      "How the finished work reaches you \u2014 a document, a repository, or installed on your own infrastructure.",
+    loading: "Loading the delivery plan\u2026",
+    signedOff: "Signed off",
+    modeTitle: "Delivery mode",
+    mode: {
+      document: "Document",
+      repository: "Repository",
+      dataset: "Dataset",
+      installation: "Installation",
+      hosted: "Hosted",
+    },
+    requirements: "What we need from you",
+    requoteNotice:
+      "Changing the delivery mode changes the work involved. Request a new quote so the price matches.",
+    accessTitle: "Access credentials",
+    accessHelp:
+      "Encrypted at rest, revealed a limited number of times, every access logged, and revoked automatically when you sign off.",
+    vaultUnavailable:
+      "The credential vault is not configured on this environment, so credentials cannot be stored. Contact your administrator.",
+    addGrant: "Share a credential",
+    grantLabel: "What is it for",
+    grantSecret: "Credential",
+    store: "Store securely",
+    reveal: "Reveal",
+    reveals: "reveals",
+    revoke: "Revoke",
+    grantRevoked: "Revoked",
+    grantExpired: "Expired",
+    signOffHelp:
+      "Confirm the delivery landed. Every credential you shared is revoked immediately.",
+    signOffAction: "Confirm handover",
+    errorUpdate: "Could not update the delivery mode.",
+    errorGrant: "Could not store the credential.",
+    errorReveal: "This credential can no longer be revealed.",
+    errorRevoke: "Could not revoke the credential.",
+    errorSignOff: "Could not confirm the handover.",
+  },
+
 } as const;
 
 export default en;
