@@ -98,7 +98,6 @@ const LanguageContext = createContext<LanguageContextValue>({
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("en");
-  const [mounted, setMounted] = useState(false);
 
   /* Initialise locale from localStorage or browser detection (client only). */
   useEffect(() => {
@@ -119,7 +118,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         /* noop */
       }
     }
-    setMounted(true);
   }, []);
 
   /* Persist locale changes. */
@@ -151,11 +149,23 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     [locale],
   );
 
-  /* Avoid hydration mismatch – render children only after locale is resolved. */
-  if (!mounted) {
-    return null;
-  }
-
+  /*
+   * Render on the server with the default locale rather than withholding the
+   * tree until mount.
+   *
+   * This used to `return null` while `mounted` was false, to avoid a hydration
+   * mismatch. The mismatch it guarded against cannot happen: `locale` starts at
+   * "en" and only changes inside an effect, so the server render and the first
+   * client render agree by construction — the stored or detected locale is
+   * applied afterwards, in a normal re-render.
+   *
+   * What the guard did instead was ship every page with an empty <body>. The
+   * markup existed only after JavaScript ran, which costs nothing for a browser
+   * and everything for anything that reads HTML without executing it: link
+   * previews, non-rendering crawlers, reader modes, and a mandatory legal notice
+   * that has to be readable to be worth publishing. A site whose pages are blank
+   * until hydration is exactly a site that looks like it was never published.
+   */
   return (
     <LanguageContext.Provider value={{ locale, setLocale, t }}>
       {children}
