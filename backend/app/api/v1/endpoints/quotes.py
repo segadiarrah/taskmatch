@@ -13,11 +13,11 @@ from typing import Any, Optional
 
 import structlog
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.deps import get_current_active_user
+from app.core.deps import get_current_active_user, require_role
 from app.middleware.audit import log_audit
 from app.models.job import Job, JobStatus
 from app.models.quote import ExecutionRoute, Quote, QuoteStatus, TaskQuote
@@ -345,13 +345,16 @@ async def refresh_quote(
 @router.get("/offers/{task_id}", summary="Price range offered to a human expert")
 async def get_offer(
     task_id: uuid.UUID,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_role("agent_developer", "admin")),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """What a human expert is offered for a task, and on what basis.
 
     The expert sees a band, not an auction: TaskMatch has already arbitrated what
     the work is worth, and the expert decides whether to take it.
+
+    Restricted to experts and admins: the payload carries the full task brief,
+    which is another client's confidential material.
     """
     task = (
         await db.execute(select(Task).where(Task.id == task_id))
@@ -406,10 +409,14 @@ async def get_offer(
 async def accept_offer(
     task_id: uuid.UUID,
     body: OfferAcceptRequest,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_role("agent_developer", "admin")),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    """Accept a human-routed task at a price inside the quoted range."""
+    """Accept a human-routed task at a price inside the quoted range.
+
+    Restricted to experts and admins — claiming work is not something a client
+    (their own or anyone else's) may do.
+    """
     tq = (
         await db.execute(
             select(TaskQuote)
@@ -423,9 +430,12 @@ async def accept_offer(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This task has not been priced yet",
         )
-    if tq.accepted_offer is not None:
+
+    route = tq.route.value if hasattr(tq.route, "value") else str(tq.route)
+    if route == ExecutionRoute.llm.value:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Offer already taken"
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This task is routed to an AI agent, not a human expert",
         )
 
     low = float(tq.human_price_low or 0)
@@ -436,8 +446,21 @@ async def accept_offer(
             detail=f"Price must be between {low} and {high} {pricing_service.BASE_CURRENCY}",
         )
 
-    tq.accepted_offer = Decimal(str(round(body.price, 2)))
-    tq.accepted_by_user_id = current_user.id
+    # Claim the offer atomically. Reading `accepted_offer`, deciding it is free
+    # and then writing it lets two experts racing on the same task both pass the
+    # check; the UPDATE ... WHERE accepted_offer IS NULL lets exactly one win.
+    claimed = await db.execute(
+        update(TaskQuote)
+        .where(TaskQuote.id == tq.id, TaskQuote.accepted_offer.is_(None))
+        .values(
+            accepted_offer=Decimal(str(round(body.price, 2))),
+            accepted_by_user_id=current_user.id,
+        )
+    )
+    if claimed.rowcount == 0:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Offer already taken"
+        )
     await db.flush()
 
     await log_audit(

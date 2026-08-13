@@ -13,7 +13,7 @@ from typing import Any, Optional
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -345,7 +345,22 @@ async def reveal_access_grant(
         raise HTTPException(
             status_code=status.HTTP_410_GONE, detail="This credential has expired"
         )
-    if grant.is_exhausted():
+    # Consume one reveal *before* decrypting. Checking `access_count` and then
+    # incrementing it lets concurrent requests both pass the ceiling test and
+    # both receive the secret; the conditional UPDATE makes the database the
+    # arbiter, so the budget can never be overspent. Claiming first also means a
+    # decryption failure costs a reveal rather than handing out a free retry
+    # loop against the ciphertext.
+    consumed = await db.execute(
+        update(AccessGrant)
+        .where(
+            AccessGrant.id == grant.id,
+            AccessGrant.revoked_at.is_(None),
+            AccessGrant.access_count < AccessGrant.max_accesses,
+        )
+        .values(access_count=AccessGrant.access_count + 1, last_accessed_at=now)
+    )
+    if consumed.rowcount == 0:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail=(
@@ -353,17 +368,16 @@ async def reveal_access_grant(
                 "times and must be re-issued"
             ),
         )
+    await db.refresh(grant)
 
     try:
         secret = vault_service.decrypt(grant.secret_ciphertext or "")
     except vault_service.VaultUnavailableError as exc:
+        # The reveal is already spent; committing keeps that record honest.
+        await db.commit()
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)
         ) from exc
-
-    grant.access_count += 1
-    grant.last_accessed_at = now
-    await db.flush()
 
     await log_audit(
         db,

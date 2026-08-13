@@ -46,6 +46,38 @@ class TestKeyHandling:
         assert vault_service.decrypt(vault_service.encrypt("value")) == "value"
 
 
+class TestKeyDerivation:
+    """The KDF must resist an offline attack on a leaked database.
+
+    ``VAULT_SECRET_KEY`` is typed by an operator, so it is exactly the
+    low-entropy input a single fast hash fails to protect.
+    """
+
+    def test_key_is_stretched_not_merely_hashed(self):
+        import base64
+        import hashlib
+
+        secret = "operator-chosen-passphrase"
+        derived = base64.urlsafe_b64decode(vault_service._derive_key(secret))
+        naive = hashlib.sha256(secret.encode("utf-8")).digest()
+        assert derived != naive, "key material must not be a bare SHA-256 digest"
+
+    def test_iteration_count_meets_the_owasp_floor(self):
+        assert vault_service._KDF_ITERATIONS >= 600_000
+
+    def test_derivation_is_deterministic(self):
+        """Same configuration must reopen yesterday's ciphertext."""
+        assert vault_service._derive_key("k") == vault_service._derive_key("k")
+
+    def test_distinct_secrets_derive_distinct_keys(self):
+        assert vault_service._derive_key("a") != vault_service._derive_key("b")
+
+    def test_derived_key_is_a_valid_fernet_key(self):
+        from cryptography.fernet import Fernet
+
+        Fernet(vault_service._derive_key("any-passphrase"))
+
+
 class TestRoundTrip:
     def test_round_trip_preserves_the_secret(self, configured_key):
         secret = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI deploy@client"

@@ -15,6 +15,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import re
+from functools import lru_cache
 from typing import Optional
 
 import structlog
@@ -28,13 +29,35 @@ class VaultUnavailableError(RuntimeError):
     """Raised when encryption is impossible — never fall back to plaintext."""
 
 
-def _derive_key(secret: str) -> bytes:
-    """Derive a urlsafe-base64 32-byte Fernet key from arbitrary key material.
+#: Application-specific salt. The vault key has to derive deterministically from
+#: configuration alone — there is nowhere to store a per-deployment random salt
+#: that would itself be available before the first decryption — so this acts as
+#: a pepper: it does not add per-secret entropy, but it does mean a precomputed
+#: rainbow table has to be built against TaskMatch specifically.
+_KDF_SALT = b"taskmatch.vault.v1"
 
-    A plain SHA-256 is sufficient here: the input is a high-entropy server-side
-    secret, not a user password, so a slow KDF would buy nothing.
+#: OWASP's floor for PBKDF2-HMAC-SHA256. The cost is paid once per process
+#: thanks to the cache below, so it does not sit on the request path.
+_KDF_ITERATIONS = 600_000
+
+
+@lru_cache(maxsize=4)
+def _derive_key(secret: str) -> bytes:
+    """Derive a urlsafe-base64 32-byte Fernet key from configured key material.
+
+    Uses PBKDF2 rather than a bare digest. An earlier version hashed the secret
+    once with SHA-256 on the argument that it is high-entropy server-side
+    material — but ``VAULT_SECRET_KEY`` is set by hand by an operator, and a
+    typed passphrase is exactly the low-entropy input a single fast hash fails
+    to protect. Stretching makes an offline attack on a leaked database
+    expensive instead of instant.
+
+    Cached because the derivation is deliberately slow and the input is a
+    process-lifetime constant.
     """
-    digest = hashlib.sha256(secret.encode("utf-8")).digest()
+    digest = hashlib.pbkdf2_hmac(
+        "sha256", secret.encode("utf-8"), _KDF_SALT, _KDF_ITERATIONS, dklen=32
+    )
     return base64.urlsafe_b64encode(digest)
 
 
