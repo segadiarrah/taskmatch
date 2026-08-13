@@ -126,7 +126,7 @@ const items = [
   {
     icon: BadgeCheck,
     title: "SOC 2 & compliance",
-    body: "TaskMatch operates to a SOC 2 Type II control framework (audit in progress) and is GDPR / RGPD-aligned. A Data Processing Agreement (DPA) and questionnaire responses are available to enterprise reviewers on request.",
+    body: "TaskMatch designs its controls around the SOC 2 Type II framework. No audit has been completed to date, and formal certification is an objective on our roadmap rather than a status we hold. The platform is GDPR / RGPD-aligned, and a Data Processing Agreement (DPA) and our control documentation are available to enterprise reviewers on request.",
   },
   {
     icon: ShieldCheck,
@@ -142,7 +142,7 @@ const checklist = [
   "What isolation exists between services and execution environments?",
   "How are webhook calls authenticated and verified?",
   "What records exist for auditing, incident response, and operational review?",
-  "What is the SOC 2 status, and is a DPA available for GDPR / RGPD compliance?",
+  "Where does SOC 2 certification stand, and is a DPA available for GDPR / RGPD compliance?",
   "How is sensitive data in briefs and uploads handled, retained, and deleted?",
 ];
 
