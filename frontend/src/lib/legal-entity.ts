@@ -38,15 +38,25 @@ export interface LegalEntity {
     security: string;
   };
   /**
-   * Hosting provider. LCEN requires the host's name, address and phone number
-   * to be reachable from the site.
+   * Hosting providers. LCEN art. 6 III-1 requires the host's name, address and
+   * phone number to be reachable from the site. Where the serving chain has
+   * more than one provider, each is listed with the role it plays — a visitor
+   * (or a regulator) needs to know who actually holds the data as opposed to
+   * who terminates the connection.
    */
-  host: {
-    name: string | null;
-    address: string[] | null;
-    phone: string | null;
-    website: string | null;
-  };
+  hosts: HostingProvider[];
+}
+
+export interface HostingProvider {
+  name: string;
+  /** Translation key describing what this provider does in the chain. */
+  role: "infrastructure" | "proxy";
+  address: string[];
+  /** Null when the provider publishes no phone number for this purpose. */
+  phone: string | null;
+  website: string | null;
+  /** Company registration, e.g. "RCS Lille Métropole 424 761 419". */
+  registration: string | null;
 }
 
 export const LEGAL_ENTITY: LegalEntity = {
@@ -81,14 +91,29 @@ export const LEGAL_ENTITY: LegalEntity = {
     security: "security@tauraco.ai",
   },
 
-  // TODO(legal): identify the actual hosting provider of the production
-  // deployment and supply its postal address and phone number.
-  host: {
-    name: null,
-    address: null,
-    phone: null,
-    website: null,
-  },
+  // Application and data sit on AWS; OVHcloud fronts it with the proxy layer.
+  // Both are named because LCEN asks who hosts the content, and answering with
+  // only the edge would point at the wrong company.
+  hosts: [
+    {
+      name: "Amazon Web Services EMEA SARL",
+      role: "infrastructure",
+      address: ["38 avenue John F. Kennedy", "L-1855 Luxembourg", "Luxembourg"],
+      // AWS publishes no general telephone number for this purpose; stating one
+      // we cannot stand behind would be worse than omitting it.
+      phone: null,
+      website: "https://aws.amazon.com",
+      registration: "RCS Luxembourg B 186284",
+    },
+    {
+      name: "OVH SAS (OVHcloud)",
+      role: "proxy",
+      address: ["2 rue Kellermann", "59100 Roubaix", "France"],
+      phone: "1007",
+      website: "https://www.ovhcloud.com",
+      registration: "RCS Lille Métropole 424 761 419",
+    },
+  ],
 };
 
 /** Whether the registration details are complete enough to display. */
@@ -96,9 +121,9 @@ export function isRegistrationPublished(entity: LegalEntity = LEGAL_ENTITY): boo
   return Boolean(entity.siren && entity.rcsCity && entity.address?.length);
 }
 
-/** Whether the hosting details are complete enough to display. */
+/** Whether any hosting provider is documented well enough to display. */
 export function isHostPublished(entity: LegalEntity = LEGAL_ENTITY): boolean {
-  return Boolean(entity.host.name && entity.host.address?.length);
+  return entity.hosts.some((host) => host.name && host.address.length > 0);
 }
 
 /**

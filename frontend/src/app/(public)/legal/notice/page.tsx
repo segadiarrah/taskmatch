@@ -46,6 +46,8 @@ type Copy = {
     property: string;
     mediationIntro: string;
     mediationPending: string;
+    phone: string;
+    role: { infrastructure: string; proxy: string };
   };
 };
 
@@ -80,6 +82,11 @@ const COPY: Record<Locale, Copy> = {
         "Under article L612-1 of the French Consumer Code, a consumer may refer a dispute to a consumer ombudsman free of charge, after having first submitted a written complaint to us.",
       mediationPending:
         "The appointed ombudsman will be named here. Consumers may also use the European Commission's online dispute resolution platform.",
+      phone: "Telephone:",
+      role: {
+        infrastructure: "infrastructure and data storage",
+        proxy: "proxy and traffic delivery",
+      },
     },
   },
   fr: {
@@ -112,6 +119,11 @@ const COPY: Record<Locale, Copy> = {
         "Conformément à l’article L612-1 du Code de la consommation, tout consommateur peut recourir gratuitement à un médiateur de la consommation, après avoir adressé une réclamation écrite à nos services.",
       mediationPending:
         "Le médiateur désigné sera indiqué ici. Les consommateurs peuvent également recourir à la plateforme de règlement en ligne des litiges de la Commission européenne.",
+      phone: "Téléphone :",
+      role: {
+        infrastructure: "infrastructure et stockage des données",
+        proxy: "proxy et acheminement du trafic",
+      },
     },
   },
   es: {
@@ -144,6 +156,11 @@ const COPY: Record<Locale, Copy> = {
         "Conforme al artículo L612-1 del Código de Consumo francés, todo consumidor puede recurrir gratuitamente a un mediador de consumo, tras haber presentado una reclamación por escrito a nuestros servicios.",
       mediationPending:
         "El mediador designado se indicará aquí. Los consumidores también pueden recurrir a la plataforma europea de resolución de litigios en línea.",
+      phone: "Teléfono:",
+      role: {
+        infrastructure: "infraestructura y almacenamiento de datos",
+        proxy: "proxy y entrega de tráfico",
+      },
     },
   },
   zh: {
@@ -174,6 +191,11 @@ const COPY: Record<Locale, Copy> = {
         "根据法国《消费法典》第 L612-1 条，消费者在向我们提交书面投诉后，可免费向消费者调解员提请争议解决。",
       mediationPending:
         "指定的调解员将在此列明。消费者亦可使用欧盟委员会的在线争议解决平台。",
+      phone: "电话：",
+      role: {
+        infrastructure: "基础设施与数据存储",
+        proxy: "代理与流量分发",
+      },
     },
   },
 };
@@ -240,20 +262,28 @@ export default function LegalNoticePage() {
       </LegalSection>
 
       <LegalSection id="host" title={c.s.host}>
-        {hosted && entity.host.address ? (
+        {hosted ? (
           <>
             <p>{c.body.hostIntro}</p>
-            <p>
-              <strong>{entity.host.name}</strong>
-              <br />
-              {entity.host.address.map((line) => (
-                <React.Fragment key={line}>
-                  {line}
-                  <br />
-                </React.Fragment>
-              ))}
-              {entity.host.phone}
-            </p>
+            {entity.hosts.map((host) => (
+              <p key={host.name}>
+                <strong>{host.name}</strong> — {c.body.role[host.role]}
+                <br />
+                {host.address.map((line) => (
+                  <React.Fragment key={line}>
+                    {line}
+                    <br />
+                  </React.Fragment>
+                ))}
+                {host.registration}
+                {host.phone && (
+                  <>
+                    <br />
+                    {c.body.phone} {host.phone}
+                  </>
+                )}
+              </p>
+            ))}
           </>
         ) : (
           <p>{c.body.hostPending}</p>
