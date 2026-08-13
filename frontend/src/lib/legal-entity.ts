@@ -53,14 +53,24 @@ export const LEGAL_ENTITY: LegalEntity = {
   name: "Tauraco",
 
   // -- Registration --------------------------------------------------------
-  // TODO(legal): supply from the Kbis. Until then the pages say so plainly.
-  legalForm: null,
-  shareCapital: null,
-  siren: null,
-  siret: null,
-  rcsCity: null,
-  vatNumber: null,
-  address: null,
+  // Identifiers below are taken from the public registry (Annuaire des
+  // Entreprises / INSEE Sirene, SIREN 879 829 646, dirigeant Sega Diarrah).
+  //
+  // `legalForm` and `shareCapital` are the two values that the registry had not
+  // yet reflected when this was written: it still showed "SARL" at a capital of
+  // 100 €, last updated 12/08/2026, while the company has converted to a SAS
+  // with a capital of 100 000 €. They are recorded here from the Kbis.
+  // Re-check them against the registry once the change has propagated — a
+  // legal notice that contradicts the public register is the first thing a
+  // counterparty's diligence flags.
+  legalForm: "SAS",
+  shareCapital: 100_000,
+  siren: "879829646",
+  siret: "87982964600014",
+  // Corbeil-Essonnes falls under the Tribunal de commerce d'Évry.
+  rcsCity: "Évry",
+  vatNumber: "FR 28 879 829 646",
+  address: ["59 boulevard Jean Jaurès", "91100 Corbeil-Essonnes"],
 
   country: "France",
   publicationDirector: "Sega Diarrah",
@@ -120,6 +130,14 @@ export function publisherLine(entity: LegalEntity = LEGAL_ENTITY): string {
 export function formatSiren(siren: string): string {
   const digits = siren.replace(/\D/g, "");
   return digits.length === 9 ? digits.replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3") : siren;
+}
+
+/** French convention: SIRET as SIREN plus the five-digit establishment number. */
+export function formatSiret(siret: string): string {
+  const digits = siret.replace(/\D/g, "");
+  return digits.length === 14
+    ? digits.replace(/(\d{3})(\d{3})(\d{3})(\d{5})/, "$1 $2 $3 $4")
+    : siret;
 }
 
 function formatCapital(amount: number): string {

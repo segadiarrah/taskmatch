@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { LEGAL_ENTITY } from "@/content/legal-entity";
+import { LEGAL_ENTITY } from "@/lib/legal-entity";
 import { SITE_URL } from "@/lib/site";
 import dynamic from "next/dynamic";
 import { DM_Sans, IBM_Plex_Mono, Manrope } from "next/font/google";

@@ -5,17 +5,19 @@ import { LegalPageShell, LegalSection } from "@/components/public/legal-shell";
 import { useTranslation, type Locale } from "@/lib/i18n";
 import {
   LEGAL_ENTITY,
+  formatSiren,
+  formatSiret,
   isHostPublished,
   isRegistrationPublished,
   publisherLine,
-} from "@/content/legal-entity";
+} from "@/lib/legal-entity";
 
 /**
  * Mentions légales — mandatory for any French-published online service under
  * LCEN art. 6 III-1: publisher identity and registration, director of
  * publication, and how to reach the host.
  *
- * Entity facts come from `@/content/legal-entity`. Where a registration detail
+ * Entity facts come from `@/lib/legal-entity`. Where a registration detail
  * has not been supplied, the page says so explicitly instead of printing a
  * plausible placeholder, because an inaccurate mandatory notice is a worse
  * outcome than an acknowledged gap.
@@ -223,11 +225,11 @@ export default function LegalNoticePage() {
         {registered ? (
           <ul className="list-disc space-y-1 pl-5">
             {entity.legalForm && <li>{entity.legalForm}</li>}
-            {entity.siren && <li>SIREN {entity.siren}</li>}
-            {entity.siret && <li>SIRET {entity.siret}</li>}
+            {entity.siren && <li>SIREN {formatSiren(entity.siren)}</li>}
+            {entity.siret && <li>SIRET {formatSiret(entity.siret)}</li>}
             {entity.rcsCity && entity.siren && (
               <li>
-                RCS {entity.rcsCity} {entity.siren}
+                RCS {entity.rcsCity} {formatSiren(entity.siren)}
               </li>
             )}
             {entity.vatNumber && <li>TVA {entity.vatNumber}</li>}

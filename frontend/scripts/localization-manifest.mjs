@@ -15,7 +15,6 @@ const resourcesLegal = [
   "src/app/(public)/legal/compliance/page.tsx",
   "src/components/public/legal-shell.tsx",
   "src/content/blog.ts",
-  "src/content/legal-entity.ts",
   "src/content/guides.ts",
 ];
 
