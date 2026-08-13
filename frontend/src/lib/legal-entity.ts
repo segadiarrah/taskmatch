@@ -96,27 +96,40 @@ export const LEGAL_ENTITY: LegalEntity = {
     security: "security@tauraco.ai",
   },
 
-  // Application and data sit on AWS; OVHcloud fronts it with the proxy layer.
-  // Both are named because LCEN asks who hosts the content, and answering with
-  // only the edge would point at the wrong company.
+  // The application, its database and its object storage run on a dedicated
+  // server operated by OVH in France, with Cloudflare in front terminating
+  // public traffic. Verified from the running deployment rather than assumed:
+  // the host has no cloud metadata service, its public address resolves to an
+  // OVH SAS range, and object storage is a self-hosted MinIO alongside the
+  // application. The origin address itself is deliberately not written down
+  // here — this repository is public, and publishing the address that sits
+  // behind Cloudflare is an invitation to skip straight past it.
+  //
+  // This is what backs the "hosted in the European Union" statement in the
+  // privacy policy and the data-residency section — the origin is in France.
+  // If the deployment moves provider or region, this list and those two
+  // statements move with it.
+  //
+  // Both providers are named because LCEN asks who hosts the content, and
+  // answering with only the edge would point at the wrong company.
   hosts: [
     {
-      name: "Amazon Web Services EMEA SARL",
-      role: "infrastructure",
-      address: ["38 avenue John F. Kennedy", "L-1855 Luxembourg", "Luxembourg"],
-      // AWS publishes no general telephone number for this purpose; stating one
-      // we cannot stand behind would be worse than omitting it.
-      phone: null,
-      website: "https://aws.amazon.com",
-      registration: "RCS Luxembourg B 186284",
-    },
-    {
       name: "OVH SAS (OVHcloud)",
-      role: "proxy",
+      role: "infrastructure",
       address: ["2 rue Kellermann", "59100 Roubaix", "France"],
       phone: "1007",
       website: "https://www.ovhcloud.com",
       registration: "RCS Lille Métropole 424 761 419",
+    },
+    {
+      name: "Cloudflare, Inc.",
+      role: "proxy",
+      address: ["101 Townsend Street", "San Francisco, CA 94107", "United States"],
+      // Cloudflare publishes no general telephone number for this purpose;
+      // stating one we cannot stand behind is worse than an omission.
+      phone: null,
+      website: "https://www.cloudflare.com",
+      registration: null,
     },
   ],
 };
