@@ -64,7 +64,7 @@ const COPY: Record<Locale, Copy> = {
       host: "3. Hosting",
       contact: "4. Contact",
       property: "5. Intellectual property",
-      mediation: "6. Consumer mediation",
+      mediation: "6. Professional use and disputes",
     },
     body: {
       publishedBy: "TaskMatch.ai is published by",
@@ -79,9 +79,9 @@ const COPY: Record<Locale, Copy> = {
       property:
         "The TaskMatch.ai name, the platform interface, its source code, and the documentation are the property of the publisher. Deliverables produced through the platform belong to the client who commissioned them, on the terms set out in the Terms of Service.",
       mediationIntro:
-        "Under article L612-1 of the French Consumer Code, a consumer may refer a dispute to a consumer ombudsman free of charge, after having first submitted a written complaint to us.",
+        "TaskMatch.ai is offered exclusively to professionals — businesses, sole traders and public bodies acting for business purposes. It is not offered to consumers, and no consumer contract is formed.",
       mediationPending:
-        "The appointed ombudsman will be named here. Consumers may also use the European Commission's online dispute resolution platform.",
+        "Because the service contracts only with professionals, the consumer mediation scheme of article L612-1 of the French Consumer Code does not apply. Disputes are first addressed directly with us; failing an amicable resolution, the competent French courts have jurisdiction.",
       phone: "Telephone:",
       role: {
         infrastructure: "infrastructure and data storage",
@@ -101,7 +101,7 @@ const COPY: Record<Locale, Copy> = {
       host: "3. Hébergement",
       contact: "4. Contact",
       property: "5. Propriété intellectuelle",
-      mediation: "6. Médiation de la consommation",
+      mediation: "6. Usage professionnel et litiges",
     },
     body: {
       publishedBy: "TaskMatch.ai est édité par",
@@ -116,9 +116,9 @@ const COPY: Record<Locale, Copy> = {
       property:
         "La dénomination TaskMatch.ai, l’interface de la plateforme, son code source et la documentation sont la propriété de l’éditeur. Les livrables produits via la plateforme appartiennent au client qui les a commandés, dans les conditions prévues par les conditions d’utilisation.",
       mediationIntro:
-        "Conformément à l’article L612-1 du Code de la consommation, tout consommateur peut recourir gratuitement à un médiateur de la consommation, après avoir adressé une réclamation écrite à nos services.",
+        "TaskMatch.ai est proposé exclusivement à des professionnels — entreprises, entrepreneurs individuels et organismes publics agissant dans le cadre de leur activité. Le service n’est pas proposé aux consommateurs et aucun contrat de consommation n’est conclu.",
       mediationPending:
-        "Le médiateur désigné sera indiqué ici. Les consommateurs peuvent également recourir à la plateforme de règlement en ligne des litiges de la Commission européenne.",
+        "Le service ne contractant qu’avec des professionnels, le dispositif de médiation de la consommation prévu à l’article L612-1 du Code de la consommation ne s’applique pas. Les litiges sont d’abord traités directement avec nous ; à défaut de résolution amiable, les tribunaux français compétents sont saisis.",
       phone: "Téléphone :",
       role: {
         infrastructure: "infrastructure et stockage des données",
@@ -138,7 +138,7 @@ const COPY: Record<Locale, Copy> = {
       host: "3. Alojamiento",
       contact: "4. Contacto",
       property: "5. Propiedad intelectual",
-      mediation: "6. Mediación de consumo",
+      mediation: "6. Uso profesional y litigios",
     },
     body: {
       publishedBy: "TaskMatch.ai es publicado por",
@@ -153,9 +153,9 @@ const COPY: Record<Locale, Copy> = {
       property:
         "La denominación TaskMatch.ai, la interfaz de la plataforma, su código fuente y la documentación son propiedad del editor. Los entregables producidos a través de la plataforma pertenecen al cliente que los encargó, en las condiciones previstas en los términos del servicio.",
       mediationIntro:
-        "Conforme al artículo L612-1 del Código de Consumo francés, todo consumidor puede recurrir gratuitamente a un mediador de consumo, tras haber presentado una reclamación por escrito a nuestros servicios.",
+        "TaskMatch.ai se ofrece exclusivamente a profesionales — empresas, autónomos y organismos públicos que actúan en el marco de su actividad. No se ofrece a consumidores y no se celebra ningún contrato de consumo.",
       mediationPending:
-        "El mediador designado se indicará aquí. Los consumidores también pueden recurrir a la plataforma europea de resolución de litigios en línea.",
+        "Dado que el servicio solo contrata con profesionales, el régimen de mediación de consumo del artículo L612-1 del Código de Consumo francés no resulta aplicable. Los litigios se tratan primero directamente con nosotros; a falta de acuerdo amistoso, son competentes los tribunales franceses.",
       phone: "Teléfono:",
       role: {
         infrastructure: "infraestructura y almacenamiento de datos",
@@ -174,7 +174,7 @@ const COPY: Record<Locale, Copy> = {
       host: "3. 托管",
       contact: "4. 联系方式",
       property: "5. 知识产权",
-      mediation: "6. 消费者调解",
+      mediation: "6. 专业用途与争议",
     },
     body: {
       publishedBy: "TaskMatch.ai 由以下主体发布：",
@@ -188,9 +188,9 @@ const COPY: Record<Locale, Copy> = {
       property:
         "TaskMatch.ai 名称、平台界面、源代码及文档归发布方所有。通过平台产出的交付物归委托该工作的客户所有，具体以服务条款为准。",
       mediationIntro:
-        "根据法国《消费法典》第 L612-1 条，消费者在向我们提交书面投诉后，可免费向消费者调解员提请争议解决。",
+        "TaskMatch.ai 仅面向专业主体提供——即在其经营活动范围内行事的企业、个体经营者和公共机构。本服务不面向消费者，亦不构成消费者合同。",
       mediationPending:
-        "指定的调解员将在此列明。消费者亦可使用欧盟委员会的在线争议解决平台。",
+        "由于本服务仅与专业主体订约，法国《消费法典》第 L612-1 条的消费者调解机制不适用。争议应先与我们直接处理；协商不成的，由法国有管辖权的法院管辖。",
       phone: "电话：",
       role: {
         infrastructure: "基础设施与数据存储",

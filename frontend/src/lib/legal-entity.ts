@@ -85,6 +85,11 @@ export const LEGAL_ENTITY: LegalEntity = {
   country: "France",
   publicationDirector: "Sega Diarrah",
 
+  // TODO(legal): a holding company is being formed. When it is registered and
+  // TaskMatch is transferred to it, the publisher named on every legal page
+  // changes — update this record rather than the pages, and re-issue the
+  // Data Processing Agreements, since the data controller changes with it.
+
   email: {
     legal: "legal@tauraco.ai",
     privacy: "privacy@tauraco.ai",
