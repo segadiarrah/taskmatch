@@ -47,6 +47,7 @@ type NavLabels = {
   fProduct: string; fSolutions: string; fCompany: string; fLegal: string;
   enterprise: string; agentSDK: string; about: string; careers: string;
   contact: string; blog: string; compliance: string; rights: string;
+  notice: string;
 };
 
 const LABELS: Record<Locale, NavLabels> = {
@@ -64,7 +65,7 @@ const LABELS: Record<Locale, NavLabels> = {
     security: "Security", securityDesc: "Security posture and controls",
     fProduct: "Product", fSolutions: "Solutions", fCompany: "Company", fLegal: "Legal",
     enterprise: "Enterprise", agentSDK: "Agent SDK", about: "About", careers: "Careers",
-    contact: "Contact", blog: "Blog", compliance: "Compliance", rights: "All rights reserved.",
+    contact: "Contact", blog: "Blog", compliance: "Compliance", rights: "All rights reserved.", notice: "Legal notice",
   },
   fr: {
     resources: "Ressources", company: "Entreprise", legal: "Légal", pricing: "Tarifs",
@@ -80,7 +81,7 @@ const LABELS: Record<Locale, NavLabels> = {
     security: "Sécurité", securityDesc: "Posture et contrôles de sécurité",
     fProduct: "Produit", fSolutions: "Solutions", fCompany: "Entreprise", fLegal: "Légal",
     enterprise: "Entreprise", agentSDK: "SDK Agent", about: "À propos", careers: "Carrières",
-    contact: "Contact", blog: "Blog", compliance: "Conformité", rights: "Tous droits réservés.",
+    contact: "Contact", blog: "Blog", compliance: "Conformité", rights: "Tous droits réservés.", notice: "Mentions légales",
   },
   es: {
     resources: "Recursos", company: "Empresa", legal: "Legal", pricing: "Precios",
@@ -96,7 +97,7 @@ const LABELS: Record<Locale, NavLabels> = {
     security: "Seguridad", securityDesc: "Postura y controles de seguridad",
     fProduct: "Producto", fSolutions: "Soluciones", fCompany: "Empresa", fLegal: "Legal",
     enterprise: "Empresas", agentSDK: "SDK de agentes", about: "Acerca de", careers: "Empleo",
-    contact: "Contacto", blog: "Blog", compliance: "Cumplimiento", rights: "Todos los derechos reservados.",
+    contact: "Contacto", blog: "Blog", compliance: "Cumplimiento", rights: "Todos los derechos reservados.", notice: "Aviso legal",
   },
   zh: {
     resources: "资源", company: "公司", legal: "法律", pricing: "定价",
@@ -112,7 +113,7 @@ const LABELS: Record<Locale, NavLabels> = {
     security: "安全", securityDesc: "安全态势与控制",
     fProduct: "产品", fSolutions: "解决方案", fCompany: "公司", fLegal: "法律",
     enterprise: "企业版", agentSDK: "智能体 SDK", about: "关于", careers: "招聘",
-    contact: "联系我们", blog: "博客", compliance: "合规", rights: "版权所有。",
+    contact: "联系我们", blog: "博客", compliance: "合规", rights: "版权所有。", notice: "法律声明",
   },
 };
 
@@ -321,6 +322,7 @@ export function PublicFooter() {
       { label: L.terms, href: "/legal/terms" },
       { label: L.security, href: "/legal/security" },
       { label: L.compliance, href: "/legal/compliance" },
+      { label: L.notice, href: "/legal/notice" },
     ]},
   ];
 

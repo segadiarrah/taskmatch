@@ -8,12 +8,14 @@ const resourcesLegal = [
   "src/app/(public)/resources/guides/[slug]/page.tsx",
   "src/app/(public)/resources/blog/page.tsx",
   "src/app/(public)/resources/blog/[slug]/page.tsx",
+  "src/app/(public)/legal/notice/page.tsx",
   "src/app/(public)/legal/privacy/page.tsx",
   "src/app/(public)/legal/terms/page.tsx",
   "src/app/(public)/legal/security/page.tsx",
   "src/app/(public)/legal/compliance/page.tsx",
   "src/components/public/legal-shell.tsx",
   "src/content/blog.ts",
+  "src/content/legal-entity.ts",
   "src/content/guides.ts",
 ];
 
@@ -117,6 +119,15 @@ export const reviewedLiteralAllowlist = {
     "Python",
     "GitHub",
     "Stripe",
+    // Publisher name and French statutory identifiers. Proper nouns and
+    // registry acronyms are written identically in every language, so
+    // translating them would be wrong rather than merely unnecessary.
+    "Tauraco",
+    "SIREN",
+    "SIRET",
+    "RCS",
+    "TVA",
+    "CNIL",
   ]),
   httpMethods: new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]),
   // Code, URLs, identifiers, status codes, and dynamic-data selectors are structural, not prose.
@@ -132,6 +143,9 @@ export const reviewedLiteralAllowlist = {
     /^(?:npm|npx|pnpm|yarn|curl|pip)\s/,
     /^@[a-z0-9._/-]+$/i,
     /^(?:application\/json|Bearer|Content-Type|Authorization)$/,
+    // BCP-47 language tags ("fr", "fr_FR", "zh-CN") — metadata for crawlers and
+    // Open Graph, never rendered to a reader.
+    /^[a-z]{2}(?:[_-][A-Za-z]{2,4})?$/,
   ],
 };
 
