@@ -16,6 +16,22 @@ const resourcesLegal = [
   "src/components/public/legal-shell.tsx",
   "src/content/blog.ts",
   "src/content/guides.ts",
+  // Route layouts. Each one exists only to attach a server-rendered title,
+  // description and canonical URL to a client-rendered page; the copy itself
+  // lives in src/lib/page-metadata.ts, which is crawler-facing and
+  // single-locale by design.
+  "src/app/(public)/resources/documentation/layout.tsx",
+  "src/app/(public)/resources/api-reference/layout.tsx",
+  "src/app/(public)/resources/sdk/layout.tsx",
+  "src/app/(public)/resources/guides/layout.tsx",
+  "src/app/(public)/resources/guides/[slug]/layout.tsx",
+  "src/app/(public)/resources/blog/layout.tsx",
+  "src/app/(public)/resources/blog/[slug]/layout.tsx",
+  "src/app/(public)/legal/notice/layout.tsx",
+  "src/app/(public)/legal/privacy/layout.tsx",
+  "src/app/(public)/legal/terms/layout.tsx",
+  "src/app/(public)/legal/security/layout.tsx",
+  "src/app/(public)/legal/compliance/layout.tsx",
 ];
 
 const publicAuth = [
@@ -43,6 +59,19 @@ const publicAuth = [
   "src/components/gdpr/cookie-banner.tsx",
   "src/components/gdpr/data-rights-panel.tsx",
   "src/lib/landing-copy.ts",
+  // Route layouts. Each one exists only to attach a server-rendered title,
+  // description and canonical URL to a client-rendered page; the copy itself
+  // lives in src/lib/page-metadata.ts, which is crawler-facing and
+  // single-locale by design.
+  "src/app/(public)/how-it-works/layout.tsx",
+  "src/app/(public)/for-clients/layout.tsx",
+  "src/app/(public)/for-developers/layout.tsx",
+  "src/app/(public)/pricing/layout.tsx",
+  "src/app/(public)/changelog/layout.tsx",
+  "src/app/(public)/company/about/layout.tsx",
+  "src/app/(public)/company/careers/layout.tsx",
+  "src/app/(public)/company/contact/layout.tsx",
+  "src/app/(public)/company/press-kit/layout.tsx",
 ];
 
 const dashboardShared = [

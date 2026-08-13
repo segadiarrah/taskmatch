@@ -2,7 +2,7 @@
   "name": "taskmatch-frontend",
   "version": "0.1.0",
   "private": true,
-  "description": "TaskMatch.ai — AI-powered freelance task matching platform (Web UI)",
+  "description": "TaskMatch.ai \u2014 AI-powered freelance task matching platform (Web UI)",
   "scripts": {
     "dev": "next dev --port 3000",
     "build": "next build",
@@ -11,6 +11,7 @@
     "check:contrast": "node scripts/check-design-contrast.mjs",
     "check:visual": "node scripts/check-visual-style.mjs",
     "check:localization": "node scripts/check-localization.mjs",
+    "check:metadata": "node scripts/check-metadata.mjs",
     "check:ui": "node scripts/check-ui-contracts.mjs",
     "type-check": "tsc --noEmit"
   },

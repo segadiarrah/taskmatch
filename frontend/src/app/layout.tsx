@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { LEGAL_ENTITY } from "@/lib/legal-entity";
+import { serializeJsonLd } from "@/lib/json-ld";
 import { SITE_URL } from "@/lib/site";
 import dynamic from "next/dynamic";
 import { DM_Sans, IBM_Plex_Mono, Manrope } from "next/font/google";
@@ -108,9 +109,7 @@ export default function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          // Structured data is a static, developer-authored object — no user
-          // input reaches it.
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(organizationJsonLd) }}
         />
       </head>
       <body
