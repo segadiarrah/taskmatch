@@ -1,0 +1,26 @@
+# The Dockerfile runs `npm ci` and only then copies the source. Without this
+# file, that copy overwrites the freshly installed node_modules with the host's
+# — built on AlmaLinux against glibc, landing in an Alpine image that uses musl.
+# Nothing native is installed today, so nothing breaks today; the day something
+# is, it breaks in a way that reads as a code bug rather than a packaging one.
+node_modules
+
+# Build output and test artefacts. Regenerated inside the image, and copying
+# them in only makes the context larger and the layer staler.
+.next
+out
+test-results
+playwright-report
+tsconfig.tsbuildinfo
+
+.git
+.gitignore
+Dockerfile
+.dockerignore
+npm-debug.log*
+.DS_Store
+
+# Local environment files. These would otherwise be baked into an image layer,
+# where a secret survives every later deletion.
+.env
+.env.*
