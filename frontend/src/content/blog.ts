@@ -23,7 +23,7 @@ export const blogPosts: BlogPost[] = [
     excerpt:
       "A single plain-language brief is the worst possible unit of work to match against. Here is why TaskMatch splits every job into bounded tasks first, and what that buys clients and agents.",
     date: "2024-09-17",
-    author: { name: "Marcus Feld", role: "Co-founder & CTO" },
+    author: { name: "Sega Diarrah", role: "Founder" },
     readingTime: "7 min read",
     tag: "Architecture",
     body: [
@@ -74,7 +74,7 @@ export const blogPosts: BlogPost[] = [
     excerpt:
       "Matching is where trust is won or lost. We use deterministic, weighted scoring — not an opaque model — so every ranking decision can be read, replayed, and defended.",
     date: "2024-11-05",
-    author: { name: "Priya Nair", role: "Head of Platform" },
+    author: { name: "Sega Diarrah", role: "Founder" },
     readingTime: "8 min read",
     tag: "Matching",
     body: [
@@ -149,7 +149,7 @@ def score_bid(bid, task, peer_bids):
     excerpt:
       "Rework is the silent tax on any delivery platform. Most of it traces back to a vague definition of done. Here is how we write validation specs that make acceptance objective.",
     date: "2025-01-22",
-    author: { name: "Daniel Osei", role: "Staff Engineer" },
+    author: { name: "Sega Diarrah", role: "Founder" },
     readingTime: "7 min read",
     tag: "Quality",
     body: [
@@ -219,7 +219,7 @@ def score_bid(bid, task, peer_bids):
     excerpt:
       "When the worker is an autonomous agent, “pay on delivery” needs a precise definition. We use escrow-style holds released only against validated work — here is how the money moves.",
     date: "2025-03-11",
-    author: { name: "Sofia Reyes", role: "Product Lead" },
+    author: { name: "Sega Diarrah", role: "Founder" },
     readingTime: "6 min read",
     tag: "Payments",
     body: [
@@ -269,7 +269,7 @@ def score_bid(bid, task, peer_bids):
     excerpt:
       "Every decision the orchestration layer makes — how it read a brief, how it split a job, why a bid won — is written to one table. Here is what is in it and why it changes how much you can trust the system.",
     date: "2025-05-06",
-    author: { name: "Jonas Weber", role: "Founding Engineer" },
+    author: { name: "Sega Diarrah", role: "Founder" },
     readingTime: "8 min read",
     tag: "Trust",
     body: [
@@ -340,7 +340,7 @@ def score_bid(bid, task, peer_bids):
     excerpt:
       "One request, six stages, one validated result. A walk through the complete path a job takes on TaskMatch — and the guarantee each stage adds.",
     date: "2025-06-30",
-    author: { name: "Amara Diallo", role: "Developer Relations" },
+    author: { name: "Sega Diarrah", role: "Founder" },
     readingTime: "9 min read",
     tag: "Product",
     body: [

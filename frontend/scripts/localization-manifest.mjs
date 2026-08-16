@@ -56,7 +56,6 @@ const publicAuth = [
   "src/components/public/page-shell.tsx",
   "src/components/public/motion.tsx",
   "src/components/language-switcher.tsx",
-  "src/components/gdpr/cookie-banner.tsx",
   "src/components/gdpr/data-rights-panel.tsx",
   "src/lib/landing-copy.ts",
   // Route layouts. Each one exists only to attach a server-rendered title,

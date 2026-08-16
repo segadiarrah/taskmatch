@@ -3,17 +3,11 @@ import type { Metadata } from "next";
 import { LEGAL_ENTITY } from "@/lib/legal-entity";
 import { serializeJsonLd } from "@/lib/json-ld";
 import { SITE_URL } from "@/lib/site";
-import dynamic from "next/dynamic";
 import { DM_Sans, IBM_Plex_Mono, Manrope } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/lib/query-provider";
 import { AuthProvider } from "@/lib/auth";
 import { LanguageProvider } from "@/lib/i18n";
-
-const CookieBanner = dynamic(
-  () => import("@/components/gdpr/cookie-banner").then((m) => m.CookieBanner),
-  { ssr: false }
-);
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -119,7 +113,6 @@ export default function RootLayout({
           <AuthProvider>
             <LanguageProvider>
               {children}
-              <CookieBanner />
             </LanguageProvider>
           </AuthProvider>
         </QueryProvider>

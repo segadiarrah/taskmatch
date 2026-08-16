@@ -89,7 +89,7 @@ const ACTION_CONFIG: Record<
     label: "Withdraw Consent",
     title: "Withdraw Consent",
     description:
-      "You may withdraw your consent for optional data processing activities at any time, pursuant to Article 7(3) GDPR. Withdrawing consent will not affect the lawfulness of processing based on consent before its withdrawal. This action will disable analytics cookies, marketing communications, and any other consent-based processing. Core platform functionality (which is based on contract performance) will not be affected.",
+      "You may withdraw your consent for optional data processing activities at any time, pursuant to Article 7(3) GDPR. Withdrawing consent will not affect the lawfulness of processing based on consent before its withdrawal. This action will stop the optional product announcements you opted into. It does not affect cookies: the site sets only the ones strictly necessary to run it, which need no consent. Core platform functionality (which is based on contract performance) will not be affected.",
     confirmLabel: "Withdraw Consent",
     variant: "default",
   },
