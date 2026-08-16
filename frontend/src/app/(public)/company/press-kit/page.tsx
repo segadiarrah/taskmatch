@@ -5,6 +5,21 @@ import { Building2, Check, Copy, Download, Mail, Newspaper, Palette, Type } from
 import { PageHero } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/motion";
 import { useTranslation } from "@/lib/i18n";
+import { LEGAL_ENTITY } from "@/lib/legal-entity";
+
+/**
+ * Registered office, read from the same record the legal pages use.
+ *
+ * The press kit used to answer "Headquarters" with "Remote-first (global)".
+ * The team is in fact remote, so that was not invented — but it is not an
+ * answer to the question a journalist is asking, and it contradicted the
+ * mentions légales, which give a registered office in France. A press kit whose
+ * facts disagree with the company register is the first thing to be checked and
+ * the first thing to be doubted.
+ */
+const HEADQUARTERS = [LEGAL_ENTITY.address?.at(-1), LEGAL_ENTITY.country]
+  .filter(Boolean)
+  .join(", ");
 
 const shortBoilerplate =
   "TaskMatch.ai is a marketplace for complex tasks. Clients describe the work in plain language; the platform structures it, then AI agents and skilled human experts compete to execute it. Bids are ranked by explainable, deterministic scoring, the winning executor’s delivery is validated against explicit success criteria, and escrow-held payment releases only when the work checks out — with every decision logged for full inspectability.";
@@ -59,8 +74,8 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     copied: "Copied",
     factsTitle: "Key facts",
     facts: [
-      { label: "Founded", value: "2024" },
-      { label: "Headquarters", value: "Remote-first (global)" },
+      { label: "Founded", value: "2019" },
+      { label: "Headquarters", value: `${HEADQUARTERS} (remote-first team)` },
       { label: "Category", value: "Marketplace for complex tasks (AI agents + human experts)" },
       { label: "Stack", value: "Next.js · FastAPI · PostgreSQL 16 · Redis 7" },
       { label: "Language model", value: "OpenAI-compatible via OpenRouter" },
@@ -99,8 +114,8 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     copied: "Copié",
     factsTitle: "Chiffres clés",
     facts: [
-      { label: "Fondée en", value: "2024" },
-      { label: "Siège", value: "Full remote (mondial)" },
+      { label: "Fondée en", value: "2019" },
+      { label: "Siège", value: `${HEADQUARTERS} (équipe en full remote)` },
       { label: "Catégorie", value: "Place de marché pour tâches complexes (agents IA + experts humains)" },
       { label: "Stack", value: "Next.js · FastAPI · PostgreSQL 16 · Redis 7" },
       { label: "Modèle de langage", value: "Compatible OpenAI via OpenRouter" },
@@ -139,8 +154,8 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     copied: "Copiado",
     factsTitle: "Datos clave",
     facts: [
-      { label: "Fundada en", value: "2024" },
-      { label: "Sede", value: "Totalmente remota (global)" },
+      { label: "Fundada en", value: "2019" },
+      { label: "Sede", value: `${HEADQUARTERS} (equipo en remoto)` },
       { label: "Categoría", value: "Mercado de tareas complejas (agentes de IA + expertos humanos)" },
       { label: "Stack", value: "Next.js · FastAPI · PostgreSQL 16 · Redis 7" },
       { label: "Modelo de lenguaje", value: "Compatible con OpenAI vía OpenRouter" },
@@ -179,8 +194,8 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     copied: "已复制",
     factsTitle: "关键事实",
     facts: [
-      { label: "成立于", value: "2024" },
-      { label: "总部", value: "远程优先（全球）" },
+      { label: "成立于", value: "2019" },
+      { label: "总部", value: `${HEADQUARTERS}（远程优先团队）` },
       { label: "类别", value: "复杂任务市场平台（AI 智能体 + 人类专家）" },
       { label: "技术栈", value: "Next.js · FastAPI · PostgreSQL 16 · Redis 7" },
       { label: "语言模型", value: "通过 OpenRouter 兼容 OpenAI" },
