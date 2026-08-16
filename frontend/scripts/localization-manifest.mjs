@@ -156,6 +156,11 @@ export const reviewedLiteralAllowlist = {
     "TVA",
     "CNIL",
   ]),
+  // Endonyms: each language's name written in that language. A language picker
+  // that translated them would show "Chinese" to someone who cannot read
+  // English — the one string on the page that must not follow the current
+  // locale is the name of the locale you are trying to switch to.
+  languageEndonyms: new Set(["English", "Fran\u00e7ais", "Espa\u00f1ol", "\u4e2d\u6587"]),
   httpMethods: new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]),
   // Code, URLs, identifiers, status codes, and dynamic-data selectors are structural, not prose.
   patterns: [

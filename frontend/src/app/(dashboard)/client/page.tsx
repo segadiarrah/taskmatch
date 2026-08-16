@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
+import { useTranslation } from "@/lib/i18n";
 import { apiGet } from "@/lib/api";
 import { formatCurrency, formatDate, formatStatus } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,6 +53,7 @@ const statusBadgeVariant = (status: string) => {
 
 export default function ClientDashboardPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentJobs, setRecentJobs] = useState<RecentJob[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,7 +71,7 @@ export default function ClientDashboardPage() {
         setStats(statsData);
         setRecentJobs((jobsData as any).jobs ?? jobsData.items ?? []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load dashboard data");
+        setError(err instanceof Error ? err.message : t("client.loadFailed"));
       } finally {
         setLoading(false);
       }
@@ -91,18 +93,18 @@ export default function ClientDashboardPage() {
         <AlertCircle className="h-12 w-12 text-destructive" />
         <p className="text-lg text-muted-foreground">{error}</p>
         <Button onClick={() => window.location.reload()} variant="outline">
-          Try Again
+          {t("client.tryAgain")}
         </Button>
       </div>
     );
   }
 
   const kpiCards = [
-    { label: "My Jobs", value: stats?.my_jobs ?? 0, icon: Briefcase, color: "text-info" },
-    { label: "Active Tasks", value: stats?.active_tasks ?? 0, icon: ListChecks, color: "text-signal-400" },
-    { label: "Pending Reviews", value: stats?.pending_reviews ?? 0, icon: ClipboardCheck, color: "text-warning" },
+    { label: t("client.kpi.myJobs"), value: stats?.my_jobs ?? 0, icon: Briefcase, color: "text-info" },
+    { label: t("client.kpi.activeTasks"), value: stats?.active_tasks ?? 0, icon: ListChecks, color: "text-signal-400" },
+    { label: t("client.kpi.pendingReviews"), value: stats?.pending_reviews ?? 0, icon: ClipboardCheck, color: "text-warning" },
     {
-      label: "Total Spent",
+      label: t("client.kpi.totalSpent"),
       value: formatCurrency(stats?.total_spent ?? 0),
       icon: DollarSign,
       color: "text-success",
@@ -115,16 +117,18 @@ export default function ClientDashboardPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">
-            Welcome back, {user?.full_name?.split(" ")[0] ?? "there"}
+            {t("client.welcome", {
+              name: user?.full_name?.split(" ")[0] ?? t("client.welcomeFallbackName"),
+            })}
           </h1>
           <p className="text-muted-foreground mt-1">
-            Here is an overview of your projects and tasks.
+            {t("client.overview")}
           </p>
         </div>
         <Link href="/client/jobs/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Create New Job
+            {t("client.createJob")}
           </Button>
         </Link>
       </div>
@@ -148,12 +152,12 @@ export default function ClientDashboardPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-lg">Recent Jobs</CardTitle>
-            <CardDescription>Your latest 5 job postings</CardDescription>
+            <CardTitle className="text-lg">{t("client.recent.title")}</CardTitle>
+            <CardDescription>{t("client.recent.subtitle")}</CardDescription>
           </div>
           <Link href="/client/jobs">
             <Button variant="ghost" size="sm">
-              View All
+              {t("client.recent.viewAll")}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
@@ -162,14 +166,14 @@ export default function ClientDashboardPage() {
           {recentJobs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Briefcase className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <p className="text-muted-foreground mb-2">No jobs yet</p>
+              <p className="text-muted-foreground mb-2">{t("client.recent.emptyTitle")}</p>
               <p className="text-sm text-muted-foreground mb-4">
-                Create your first job to get started with TaskMatch.
+                {t("client.recent.emptyBody")}
               </p>
               <Link href="/client/jobs/new">
                 <Button variant="outline" size="sm">
                   <Plus className="mr-2 h-4 w-4" />
-                  Create Job
+                  {t("client.recent.emptyCta")}
                 </Button>
               </Link>
             </div>
@@ -192,7 +196,7 @@ export default function ClientDashboardPage() {
                       <span>
                         {formatCurrency(job.budget_min, job.currency)} - {formatCurrency(job.budget_max, job.currency)}
                       </span>
-                      <span>{job.task_count} tasks</span>
+                      <span>{t("client.recent.taskCount", { count: job.task_count })}</span>
                       <span>{formatDate(job.created_at)}</span>
                     </div>
                   </div>

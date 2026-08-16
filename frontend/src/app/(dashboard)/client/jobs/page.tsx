@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { apiGet } from "@/lib/api";
+import { useTranslation } from "@/lib/i18n";
 import { formatCurrency, formatDate, formatStatus } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,15 +43,17 @@ interface JobsResponse {
   total: number;
 }
 
-const JOB_STATUSES = [
-  { value: "", label: "All Statuses" },
-  { value: "draft", label: "Draft" },
-  { value: "pending", label: "Pending" },
-  { value: "active", label: "Active" },
-  { value: "in_progress", label: "In Progress" },
-  { value: "client_review", label: "Client Review" },
-  { value: "completed", label: "Completed" },
-  { value: "cancelled", label: "Cancelled" },
+/* Les libellés dépendent de la langue courante : la liste est construite
+   dans le composant plutôt qu'au chargement du module. */
+const jobStatuses = (t: (key: string) => string) => [
+  { value: "", label: t("client.jobs.allStatuses") },
+  { value: "draft", label: t("client.jobs.status.draft") },
+  { value: "pending", label: t("client.jobs.status.pending") },
+  { value: "active", label: t("client.jobs.status.active") },
+  { value: "in_progress", label: t("client.jobs.status.in_progress") },
+  { value: "client_review", label: t("client.jobs.status.client_review") },
+  { value: "completed", label: t("client.jobs.status.completed") },
+  { value: "cancelled", label: t("client.jobs.status.cancelled") },
 ];
 
 const statusBadgeVariant = (status: string) => {
@@ -67,6 +70,7 @@ const statusBadgeVariant = (status: string) => {
 };
 
 export default function ClientJobsPage() {
+  const { t } = useTranslation();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -106,15 +110,15 @@ export default function ClientJobsPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">My Jobs</h1>
+          <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">{t("client.jobs.title")}</h1>
           <p className="text-muted-foreground mt-1">
-            Manage all your job postings and track their progress.
+            {t("client.jobs.subtitle")}
           </p>
         </div>
         <Link href="/client/jobs/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Create Job
+            {t("client.jobs.create")}
           </Button>
         </Link>
       </div>
@@ -131,7 +135,7 @@ export default function ClientJobsPage() {
                   setPage(1);
                 }}
               >
-                {JOB_STATUSES.map((s) => (
+                {jobStatuses(t).map((s) => (
                   <option key={s.value} value={s.value}>
                     {s.label}
                   </option>
@@ -139,7 +143,7 @@ export default function ClientJobsPage() {
               </Select>
             </div>
             <p className="text-sm text-muted-foreground">
-              {total} job{total !== 1 ? "s" : ""} found
+              {t("client.jobs.found", { count: total })}
             </p>
           </div>
         </CardContent>
@@ -151,7 +155,7 @@ export default function ClientJobsPage() {
           <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
           <p className="text-sm text-destructive">{error}</p>
           <Button variant="outline" size="sm" onClick={fetchJobs} className="ml-auto">
-            Retry
+            {t("client.jobs.retry")}
           </Button>
         </div>
       )}
@@ -168,17 +172,17 @@ export default function ClientJobsPage() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Briefcase className="h-16 w-16 text-muted-foreground/30 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No jobs found</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("client.jobs.emptyTitle")}</h3>
             <p className="text-muted-foreground text-center max-w-sm mb-6">
               {statusFilter
-                ? "No jobs match the current filter. Try changing the status filter."
-                : "You have not created any jobs yet. Post your first job to get started."}
+                ? t("client.jobs.emptyFiltered")
+                : t("client.jobs.emptyAll")}
             </p>
             {!statusFilter && (
               <Link href="/client/jobs/new">
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
-                  Create Your First Job
+                  {t("client.jobs.createFirst")}
                 </Button>
               </Link>
             )}
@@ -192,12 +196,12 @@ export default function ClientJobsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Budget</TableHead>
-                <TableHead className="text-center">Tasks</TableHead>
-                <TableHead>Deadline</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead>{t("client.jobs.column.title")}</TableHead>
+                <TableHead>{t("client.jobs.column.status")}</TableHead>
+                <TableHead>{t("client.jobs.column.budget")}</TableHead>
+                <TableHead className="text-center">{t("client.jobs.column.tasks")}</TableHead>
+                <TableHead>{t("client.jobs.column.deadline")}</TableHead>
+                <TableHead>{t("client.jobs.column.created")}</TableHead>
                 <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
@@ -244,7 +248,7 @@ export default function ClientJobsPage() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between border-t px-6 py-4">
               <p className="font-mono text-xs text-muted-foreground">
-                Page {page} of {totalPages}
+                {t("client.jobs.page", { page, total: totalPages })}
               </p>
               <div className="flex gap-2">
                 <Button
@@ -253,7 +257,7 @@ export default function ClientJobsPage() {
                   disabled={page <= 1}
                   onClick={() => setPage((p) => p - 1)}
                 >
-                  Previous
+                  {t("client.jobs.previous")}
                 </Button>
                 <Button
                   variant="outline"
@@ -261,7 +265,7 @@ export default function ClientJobsPage() {
                   disabled={page >= totalPages}
                   onClick={() => setPage((p) => p + 1)}
                 >
-                  Next
+                  {t("client.jobs.next")}
                 </Button>
               </div>
             </div>

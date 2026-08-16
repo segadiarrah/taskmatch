@@ -8,6 +8,67 @@
  */
 
 const zh = {
+  client: {
+    welcome: "\u6b22\u8fce\u56de\u6765\uff0c{name}",
+    welcomeFallbackName: "\u4f60",
+    overview: "\u4ee5\u4e0b\u662f\u4f60\u7684\u9879\u76ee\u4e0e\u4efb\u52a1\u6982\u89c8\u3002",
+    createJob: "\u521b\u5efa\u65b0\u4efb\u52a1",
+    tryAgain: "\u91cd\u8bd5",
+    loadFailed: "\u65e0\u6cd5\u52a0\u8f7d\u4eea\u8868\u76d8\u6570\u636e",
+    kpi: {
+      myJobs: "\u6211\u7684\u4efb\u52a1",
+      activeTasks: "\u8fdb\u884c\u4e2d\u7684\u5b50\u4efb\u52a1",
+      pendingReviews: "\u5f85\u5ba1\u9605",
+      totalSpent: "\u603b\u652f\u51fa",
+    },
+    jobs: {
+      title: "\u6211\u7684\u4efb\u52a1",
+      subtitle: "\u7ba1\u7406\u4f60\u53d1\u5e03\u7684\u5168\u90e8\u4efb\u52a1\u5e76\u8ddf\u8e2a\u8fdb\u5c55\u3002",
+      create: "\u521b\u5efa\u4efb\u52a1",
+      createFirst: "\u521b\u5efa\u7b2c\u4e00\u4e2a\u4efb\u52a1",
+      retry: "\u91cd\u8bd5",
+      // Le chinois n'a qu'une forme ; les deux cat\u00e9gories portent le m\u00eame texte
+      // pour que la forme du dictionnaire reste identique \u00e0 celle de l'anglais.
+      found: {
+        one: "\u627e\u5230 {count} \u4e2a\u4efb\u52a1",
+        other: "\u627e\u5230 {count} \u4e2a\u4efb\u52a1",
+      },
+      emptyTitle: "\u672a\u627e\u5230\u4efb\u52a1",
+      emptyFiltered: "\u6ca1\u6709\u4efb\u52a1\u7b26\u5408\u5f53\u524d\u7b5b\u9009\u3002\u8bf7\u5c1d\u8bd5\u66f4\u6539\u72b6\u6001\u7b5b\u9009\u3002",
+      emptyAll: "\u4f60\u8fd8\u6ca1\u6709\u521b\u5efa\u4efb\u4f55\u4efb\u52a1\u3002\u53d1\u5e03\u7b2c\u4e00\u4e2a\u4efb\u52a1\u5f00\u59cb\u4f7f\u7528\u3002",
+      allStatuses: "\u5168\u90e8\u72b6\u6001",
+      status: {
+        draft: "\u8349\u7a3f",
+        pending: "\u5f85\u5904\u7406",
+        active: "\u8fdb\u884c\u4e2d",
+        in_progress: "\u6267\u884c\u4e2d",
+        client_review: "\u5ba2\u6237\u5ba1\u9605",
+        completed: "\u5df2\u5b8c\u6210",
+        cancelled: "\u5df2\u53d6\u6d88",
+      },
+      column: {
+        title: "\u6807\u9898",
+        status: "\u72b6\u6001",
+        budget: "\u9884\u7b97",
+        tasks: "\u5b50\u4efb\u52a1",
+        deadline: "\u622a\u6b62\u65e5\u671f",
+        created: "\u521b\u5efa\u65f6\u95f4",
+      },
+      page: "\u7b2c {page} \u9875\uff0c\u5171 {total} \u9875",
+      previous: "\u4e0a\u4e00\u9875",
+      next: "\u4e0b\u4e00\u9875",
+    },
+    recent: {
+      title: "\u6700\u8fd1\u7684\u4efb\u52a1",
+      subtitle: "\u4f60\u6700\u8fd1\u53d1\u5e03\u7684 5 \u4e2a\u4efb\u52a1",
+      viewAll: "\u67e5\u770b\u5168\u90e8",
+      emptyTitle: "\u8fd8\u6ca1\u6709\u4efb\u52a1",
+      emptyBody: "\u521b\u5efa\u7b2c\u4e00\u4e2a\u4efb\u52a1\uff0c\u5f00\u59cb\u4f7f\u7528 TaskMatch\u3002",
+      emptyCta: "\u521b\u5efa\u4efb\u52a1",
+      taskCount: "{count} \u4e2a\u5b50\u4efb\u52a1",
+    },
+  },
+
   dashboard: {
     overview: "\u6982\u89c8",
     jobs: "\u4efb\u52a1",

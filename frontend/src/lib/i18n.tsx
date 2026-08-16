@@ -80,16 +80,19 @@ function resolve(dict: Record<string, any>, key: string): any {
 /*  Context                                                                   */
 /* -------------------------------------------------------------------------- */
 
+/** A fallback string, or values to interpolate into `{tokens}`. */
+export type TranslateOptions = string | Record<string, string | number>;
+
 interface LanguageContextValue {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (key: string, fallback?: string) => any;
+  t: (key: string, options?: TranslateOptions) => any;
 }
 
 const LanguageContext = createContext<LanguageContextValue>({
   locale: "en",
   setLocale: () => {},
-  t: (key: string, fallback?: string) => fallback ?? key,
+  t: (key: string, options?: TranslateOptions) => (typeof options === "string" ? options : key),
 });
 
 /* -------------------------------------------------------------------------- */
@@ -134,17 +137,45 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  /* Translation function. Accepts an optional fallback for backward compat. */
+  /*
+   * Translation function.
+   *
+   * The second argument is either a fallback string (the original signature) or
+   * a bag of values to interpolate into `{tokens}` in the translated string.
+   *
+   * Interpolation rather than string concatenation, because word order is not
+   * universal: "Welcome back, {name}" can put the name first, last or in the
+   * middle depending on the language, and a sentence assembled in JSX from two
+   * halves forces English order on every locale. `{year}` keeps working with no
+   * argument, as it did before.
+   */
   const t = useCallback(
-    (key: string, fallback?: string): any => {
+    (key: string, options?: string | Record<string, string | number>): any => {
       const value = resolve(dictionaries[locale], key);
+      const fallback = typeof options === "string" ? options : undefined;
       /* If resolve returned the key itself (not found), use fallback if provided. */
-      const resolved = value === key && fallback !== undefined ? fallback : value;
-      /* Lightweight token interpolation for dynamic values (e.g. {year}). */
-      if (typeof resolved === "string" && resolved.includes("{year}")) {
-        return resolved.replace(/\{year\}/g, String(new Date().getFullYear()));
+      let resolved = value === key && fallback !== undefined ? fallback : value;
+      const params = typeof options === "object" && options !== null ? options : undefined;
+
+      /*
+       * Plural selection. A dictionary entry may be an object of plural
+       * categories instead of a string; passing a `count` picks the right one
+       * through Intl.PluralRules, which knows that English needs two forms,
+       * French treats zero as singular, and Chinese needs one form for
+       * everything. Writing `job{count !== 1 ? "s" : ""}` in JSX encodes
+       * English grammar into every locale at once.
+       */
+      if (resolved && typeof resolved === "object" && params?.count !== undefined) {
+        const category = new Intl.PluralRules(locale).select(Number(params.count));
+        resolved = resolved[category] ?? resolved.other ?? resolved.one;
       }
-      return resolved;
+
+      if (typeof resolved !== "string") return resolved;
+      return resolved.replace(/\{(\w+)\}/g, (match, token: string) => {
+        if (token === "year") return String(new Date().getFullYear());
+        const replacement = params?.[token];
+        return replacement === undefined ? match : String(replacement);
+      });
     },
     [locale],
   );

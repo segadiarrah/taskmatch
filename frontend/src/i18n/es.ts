@@ -8,6 +8,62 @@
  */
 
 const es = {
+  client: {
+    welcome: "Hola de nuevo, {name}",
+    welcomeFallbackName: "\u00a1hola!",
+    overview: "Este es un resumen de tus proyectos y tareas.",
+    createJob: "Crear encargo",
+    tryAgain: "Reintentar",
+    loadFailed: "No se pudieron cargar los datos del panel",
+    kpi: {
+      myJobs: "Mis encargos",
+      activeTasks: "Tareas activas",
+      pendingReviews: "Revisiones pendientes",
+      totalSpent: "Total gastado",
+    },
+    jobs: {
+      title: "Mis encargos",
+      subtitle: "Gestiona todos tus encargos publicados y sigue su progreso.",
+      create: "Crear encargo",
+      createFirst: "Crear mi primer encargo",
+      retry: "Reintentar",
+      found: { one: "{count} encargo encontrado", other: "{count} encargos encontrados" },
+      emptyTitle: "No se encontraron encargos",
+      emptyFiltered: "Ning\u00fan encargo coincide con el filtro actual. Prueba a cambiar el estado.",
+      emptyAll: "Todav\u00eda no has creado ning\u00fan encargo. Publica el primero para empezar.",
+      allStatuses: "Todos los estados",
+      status: {
+        draft: "Borrador",
+        pending: "Pendiente",
+        active: "Activo",
+        in_progress: "En curso",
+        client_review: "Revisi\u00f3n del cliente",
+        completed: "Completado",
+        cancelled: "Cancelado",
+      },
+      column: {
+        title: "T\u00edtulo",
+        status: "Estado",
+        budget: "Presupuesto",
+        tasks: "Tareas",
+        deadline: "Fecha l\u00edmite",
+        created: "Creado",
+      },
+      page: "P\u00e1gina {page} de {total}",
+      previous: "Anterior",
+      next: "Siguiente",
+    },
+    recent: {
+      title: "Encargos recientes",
+      subtitle: "Tus 5 encargos m\u00e1s recientes",
+      viewAll: "Ver todo",
+      emptyTitle: "A\u00fan no hay encargos",
+      emptyBody: "Crea tu primer encargo para empezar con TaskMatch.",
+      emptyCta: "Crear encargo",
+      taskCount: "{count} tareas",
+    },
+  },
+
   dashboard: {
     overview: "Resumen",
     jobs: "Encargos",

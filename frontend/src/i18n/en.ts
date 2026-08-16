@@ -35,6 +35,62 @@ const en = {
   /* ------------------------------------------------------------------------ */
   /*  Dashboard                                                               */
   /* ------------------------------------------------------------------------ */
+  client: {
+    welcome: "Welcome back, {name}",
+    welcomeFallbackName: "there",
+    overview: "Here is an overview of your projects and tasks.",
+    createJob: "Create New Job",
+    tryAgain: "Try Again",
+    loadFailed: "Failed to load dashboard data",
+    kpi: {
+      myJobs: "My Jobs",
+      activeTasks: "Active Tasks",
+      pendingReviews: "Pending Reviews",
+      totalSpent: "Total Spent",
+    },
+    jobs: {
+      title: "My Jobs",
+      subtitle: "Manage all your job postings and track their progress.",
+      create: "Create Job",
+      createFirst: "Create Your First Job",
+      retry: "Retry",
+      found: { one: "{count} job found", other: "{count} jobs found" },
+      emptyTitle: "No jobs found",
+      emptyFiltered: "No jobs match the current filter. Try changing the status filter.",
+      emptyAll: "You have not created any jobs yet. Post your first job to get started.",
+      allStatuses: "All Statuses",
+      status: {
+        draft: "Draft",
+        pending: "Pending",
+        active: "Active",
+        in_progress: "In Progress",
+        client_review: "Client Review",
+        completed: "Completed",
+        cancelled: "Cancelled",
+      },
+      column: {
+        title: "Title",
+        status: "Status",
+        budget: "Budget",
+        tasks: "Tasks",
+        deadline: "Deadline",
+        created: "Created",
+      },
+      page: "Page {page} of {total}",
+      previous: "Previous",
+      next: "Next",
+    },
+    recent: {
+      title: "Recent Jobs",
+      subtitle: "Your latest 5 job postings",
+      viewAll: "View All",
+      emptyTitle: "No jobs yet",
+      emptyBody: "Create your first job to get started with TaskMatch.",
+      emptyCta: "Create Job",
+      taskCount: "{count} tasks",
+    },
+  },
+
   dashboard: {
     overview: "Overview",
     jobs: "Jobs",

@@ -35,6 +35,62 @@ const fr = {
   /* ------------------------------------------------------------------------ */
   /*  Dashboard                                                               */
   /* ------------------------------------------------------------------------ */
+  client: {
+    welcome: "Bon retour, {name}",
+    welcomeFallbackName: "vous",
+    overview: "Voici un aper\u00e7u de vos projets et de vos t\u00e2ches.",
+    createJob: "Cr\u00e9er une mission",
+    tryAgain: "R\u00e9essayer",
+    loadFailed: "\u00c9chec du chargement des donn\u00e9es du tableau de bord",
+    kpi: {
+      myJobs: "Mes missions",
+      activeTasks: "T\u00e2ches en cours",
+      pendingReviews: "Revues en attente",
+      totalSpent: "Total d\u00e9pens\u00e9",
+    },
+    jobs: {
+      title: "Mes missions",
+      subtitle: "G\u00e9rez toutes vos missions publi\u00e9es et suivez leur avancement.",
+      create: "Cr\u00e9er une mission",
+      createFirst: "Cr\u00e9er ma premi\u00e8re mission",
+      retry: "R\u00e9essayer",
+      found: { one: "{count} mission trouv\u00e9e", other: "{count} missions trouv\u00e9es" },
+      emptyTitle: "Aucune mission trouv\u00e9e",
+      emptyFiltered: "Aucune mission ne correspond au filtre actuel. Essayez de changer le statut.",
+      emptyAll: "Vous n\u2019avez encore cr\u00e9\u00e9 aucune mission. Publiez la premi\u00e8re pour d\u00e9marrer.",
+      allStatuses: "Tous les statuts",
+      status: {
+        draft: "Brouillon",
+        pending: "En attente",
+        active: "Active",
+        in_progress: "En cours",
+        client_review: "Revue client",
+        completed: "Termin\u00e9e",
+        cancelled: "Annul\u00e9e",
+      },
+      column: {
+        title: "Titre",
+        status: "Statut",
+        budget: "Budget",
+        tasks: "T\u00e2ches",
+        deadline: "\u00c9ch\u00e9ance",
+        created: "Cr\u00e9\u00e9e le",
+      },
+      page: "Page {page} sur {total}",
+      previous: "Pr\u00e9c\u00e9dent",
+      next: "Suivant",
+    },
+    recent: {
+      title: "Missions r\u00e9centes",
+      subtitle: "Vos 5 derni\u00e8res missions publi\u00e9es",
+      viewAll: "Tout voir",
+      emptyTitle: "Aucune mission",
+      emptyBody: "Cr\u00e9ez votre premi\u00e8re mission pour d\u00e9marrer avec TaskMatch.",
+      emptyCta: "Cr\u00e9er une mission",
+      taskCount: "{count} t\u00e2ches",
+    },
+  },
+
   dashboard: {
     overview: "Vue d\u2019ensemble",
     jobs: "Missions",

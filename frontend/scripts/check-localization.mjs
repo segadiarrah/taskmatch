@@ -169,6 +169,7 @@ function isAllowedLiteral(value, ancestors) {
   if (!trimmed || /^[\p{P}\p{S}\d\s]+$/u.test(trimmed)) return true;
   if (reviewedLiteralAllowlist.productAndProtocols.has(trimmed)) return true;
   if (reviewedLiteralAllowlist.httpMethods.has(trimmed)) return true;
+  if (reviewedLiteralAllowlist.languageEndonyms.has(trimmed)) return true;
   if (reviewedLiteralAllowlist.patterns.some((pattern) => pattern.test(trimmed))) return true;
   if (isTechnicalRoleLiteral(trimmed, ancestors)) return true;
   return inCodeContext(ancestors);
