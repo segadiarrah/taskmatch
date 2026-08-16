@@ -20,8 +20,14 @@ import { PUBLIC_ROUTES, SITE_URL } from "@/lib/site";
 export default function sitemap(): MetadataRoute.Sitemap {
   // Static generation has no request clock to read, and a build-time timestamp
   // would churn the whole sitemap on every deploy. A fixed publication date is
-  // the honest signal: it changes when the content does.
-  const lastModified = new Date("2026-08-13");
+  // the honest signal: it changes when the content does — so move it when you
+  // change a public page, and leave it alone when you do not. A sitemap that
+  // claims every page changed on every deploy teaches a crawler to ignore the
+  // field; one that never moves teaches it the pages are stale.
+  //
+  // 2026-08-16: the terms, the privacy policy, the careers page and the press
+  // kit were rewritten.
+  const lastModified = new Date("2026-08-16");
 
   const pages: MetadataRoute.Sitemap = PUBLIC_ROUTES.map((route) => ({
     url: `${SITE_URL}${route === "/" ? "" : route}`,
