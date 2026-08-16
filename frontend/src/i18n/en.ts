@@ -366,6 +366,10 @@ const en = {
     loading: "Loading\u2026",
     empty: "Nothing here yet.",
     error: "Something went wrong. Please try again.",
+    loadErrorTitle: "Couldn't load this data",
+    loadErrorBody:
+      "The request to the server failed. The page shows nothing rather than data that might be wrong.",
+    retry: "Try again",
   },
 
   /* ------------------------------------------------------------------------ */

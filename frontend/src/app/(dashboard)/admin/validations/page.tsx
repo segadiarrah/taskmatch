@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { useRouter } from "next/navigation";
 import { apiGet, apiPost } from "@/lib/api";
 import { cn, formatStatus, formatDate, timeAgo } from "@/lib/utils";
@@ -60,6 +61,7 @@ export default function ValidationsPage() {
   const router = useRouter();
   const [submissions, setSubmissions] = useState<SubmissionForReview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [activeTab, setActiveTab] = useState("pending");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({});
@@ -70,180 +72,13 @@ export default function ValidationsPage() {
 
   async function fetchSubmissions() {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await apiGet<SubmissionForReview[]>("/v1/admin/submissions");
       setSubmissions(data);
-    } catch {
-      setSubmissions([
-        {
-          id: "s-1",
-          task_id: "t-5",
-          task_title: "Mobile App UI Screens",
-          job_title: "Mobile App API Integration",
-          agent_id: "a-5",
-          agent_name: "DesignPro",
-          developer_name: "Bob Builder",
-          summary: "Completed all 12 mobile screens including onboarding flow, dashboard, settings, and profile pages. All screens follow the design system and support both light and dark themes.",
-          deliverable_url: "https://github.com/example/pr/55",
-          submitted_at: "2026-03-21T14:00:00Z",
-          status: "pending_review",
-          review_result: null,
-          review_notes: null,
-          reviewed_at: null,
-          reviewer: null,
-          mcp_auto_validation: {
-            passed: true,
-            score: 91,
-            notes: "All acceptance criteria met. Code quality is high with consistent patterns.",
-            checks: [
-              { name: "Code Quality", passed: true, detail: "ESLint score: 98/100. No critical issues." },
-              { name: "Test Coverage", passed: true, detail: "85% coverage across components." },
-              { name: "Acceptance Criteria", passed: true, detail: "All 8 criteria satisfied." },
-              { name: "Performance", passed: true, detail: "Lighthouse score: 94. Under budget." },
-            ],
-          },
-        },
-        {
-          id: "s-2",
-          task_id: "t-7",
-          task_title: "ETL Pipeline Setup",
-          job_title: "Data Pipeline Optimization",
-          agent_id: "a-11",
-          agent_name: "DataBot",
-          developer_name: "Eve Engineer",
-          summary: "Implemented the complete ETL pipeline with Apache Airflow DAGs for data extraction from 3 sources, transformation logic, and loading into the data warehouse. Includes monitoring and alerting.",
-          deliverable_url: "https://github.com/example/pr/58",
-          submitted_at: "2026-03-21T10:00:00Z",
-          status: "pending_review",
-          review_result: null,
-          review_notes: null,
-          reviewed_at: null,
-          reviewer: null,
-          mcp_auto_validation: {
-            passed: false,
-            score: 72,
-            notes: "Most criteria met but test coverage is below threshold and one acceptance criterion is partially addressed.",
-            checks: [
-              { name: "Code Quality", passed: true, detail: "Clean code with good documentation." },
-              { name: "Test Coverage", passed: false, detail: "62% coverage, below the 80% threshold." },
-              { name: "Acceptance Criteria", passed: false, detail: "7 of 8 criteria met. Error handling for source C incomplete." },
-              { name: "Performance", passed: true, detail: "Pipeline executes within SLA requirements." },
-            ],
-          },
-        },
-        {
-          id: "s-3",
-          task_id: "t-9",
-          task_title: "ML Model Training",
-          job_title: "ML Model Deployment",
-          agent_id: "a-4",
-          agent_name: "MLEngine",
-          developer_name: "Carol Coder",
-          summary: "Phase 1 model training complete. Achieved 94.2% accuracy on test set (target was 92%). Model is packaged as a Docker container with REST API endpoint for inference.",
-          deliverable_url: "https://github.com/example/pr/60",
-          submitted_at: "2026-03-20T16:00:00Z",
-          status: "pending_review",
-          review_result: null,
-          review_notes: null,
-          reviewed_at: null,
-          reviewer: null,
-          mcp_auto_validation: {
-            passed: true,
-            score: 96,
-            notes: "Exceptional quality. Model exceeds accuracy targets with efficient inference times.",
-            checks: [
-              { name: "Model Accuracy", passed: true, detail: "94.2% vs 92% target. Exceeds requirements." },
-              { name: "Test Coverage", passed: true, detail: "88% coverage with comprehensive unit and integration tests." },
-              { name: "Acceptance Criteria", passed: true, detail: "All criteria met including containerization." },
-              { name: "Documentation", passed: true, detail: "Complete model card and API documentation." },
-            ],
-          },
-        },
-        {
-          id: "s-4",
-          task_id: "t-6",
-          task_title: "REST API Endpoints",
-          job_title: "Mobile App API Integration",
-          agent_id: "a-6",
-          agent_name: "APIWizard",
-          developer_name: "Dan Dev",
-          summary: "All 24 REST endpoints implemented with full CRUD operations, authentication middleware, rate limiting, and OpenAPI documentation.",
-          deliverable_url: "https://github.com/example/pr/48",
-          submitted_at: "2026-03-18T11:00:00Z",
-          status: "approved",
-          review_result: "approved",
-          review_notes: "Excellent API design with comprehensive documentation. All edge cases handled properly.",
-          reviewed_at: "2026-03-19T09:00:00Z",
-          reviewer: "Admin",
-          mcp_auto_validation: {
-            passed: true,
-            score: 94,
-            notes: "High quality implementation with excellent test coverage.",
-            checks: [
-              { name: "Code Quality", passed: true, detail: "Clean architecture with proper separation of concerns." },
-              { name: "Test Coverage", passed: true, detail: "91% coverage." },
-              { name: "Acceptance Criteria", passed: true, detail: "All 10 criteria met." },
-              { name: "API Spec Compliance", passed: true, detail: "OpenAPI spec is complete and accurate." },
-            ],
-          },
-        },
-        {
-          id: "s-5",
-          task_id: "t-12",
-          task_title: "Authentication System",
-          job_title: "SaaS Platform Build",
-          agent_id: "a-9",
-          agent_name: "FrontendPro",
-          developer_name: "Carol Coder",
-          summary: "JWT-based auth system with OAuth2 social login (Google, GitHub), MFA support, and password reset flow.",
-          deliverable_url: "https://github.com/example/pr/45",
-          submitted_at: "2026-03-16T14:00:00Z",
-          status: "rejected",
-          review_result: "rejected",
-          review_notes: "MFA implementation has security vulnerabilities. TOTP secret storage needs encryption at rest. Rate limiting on auth endpoints is missing.",
-          reviewed_at: "2026-03-17T10:00:00Z",
-          reviewer: "Admin",
-          mcp_auto_validation: {
-            passed: false,
-            score: 58,
-            notes: "Critical security issues identified in MFA implementation.",
-            checks: [
-              { name: "Code Quality", passed: true, detail: "Code is well-structured." },
-              { name: "Security Audit", passed: false, detail: "TOTP secrets stored in plaintext. No rate limiting." },
-              { name: "Acceptance Criteria", passed: false, detail: "5 of 7 criteria met. Security requirements not satisfied." },
-              { name: "Test Coverage", passed: false, detail: "71% coverage. Security edge cases not tested." },
-            ],
-          },
-        },
-        {
-          id: "s-6",
-          task_id: "t-15",
-          task_title: "Dashboard Components",
-          job_title: "Analytics Platform",
-          agent_id: "a-1",
-          agent_name: "ReactMaster",
-          developer_name: "Alice Dev",
-          summary: "Built 15 reusable chart and data visualization components using Recharts. Includes responsive grid layout system.",
-          deliverable_url: "https://github.com/example/pr/42",
-          submitted_at: "2026-03-10T09:00:00Z",
-          status: "approved",
-          review_result: "approved",
-          review_notes: "Beautifully crafted components with excellent accessibility and responsive design.",
-          reviewed_at: "2026-03-10T14:00:00Z",
-          reviewer: "Admin",
-          mcp_auto_validation: {
-            passed: true,
-            score: 97,
-            notes: "Outstanding quality across all dimensions.",
-            checks: [
-              { name: "Code Quality", passed: true, detail: "Exemplary patterns with Storybook documentation." },
-              { name: "Test Coverage", passed: true, detail: "93% coverage." },
-              { name: "Acceptance Criteria", passed: true, detail: "All criteria exceeded." },
-              { name: "Accessibility", passed: true, detail: "WCAG 2.1 AA compliant." },
-            ],
-          },
-        },
-      ]);
+        } catch {
+      setLoadError(true);
+      setSubmissions([]);
     } finally {
       setLoading(false);
     }
@@ -563,6 +398,8 @@ export default function ValidationsPage() {
                 <p className="text-sm text-muted-foreground">Loading submissions...</p>
               </div>
             </div>
+          ) : loadError ? (
+            <DataLoadError onRetry={fetchSubmissions} />
           ) : pendingSubmissions.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
               <Inbox className="h-10 w-10 text-ink-600" />
@@ -583,6 +420,8 @@ export default function ValidationsPage() {
             <div className="flex h-48 items-center justify-center">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
             </div>
+          ) : loadError ? (
+            <DataLoadError onRetry={fetchSubmissions} />
           ) : reviewedSubmissions.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
               <ShieldCheck className="h-10 w-10 text-ink-600" />

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { useParams, useRouter } from "next/navigation";
 import { apiGet, apiPost } from "@/lib/api";
 import { cn, formatCurrency, formatDate, formatStatus, formatDateTime, timeAgo } from "@/lib/utils";
@@ -119,59 +120,18 @@ export default function TaskDetailPage() {
   const taskId = params.id as string;
   const [task, setTask] = useState<TaskDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   const fetchTask = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await apiGet<TaskDetail>(`/v1/tasks/${taskId}`);
       setTask(data);
-    } catch {
-      setTask({
-        id: taskId,
-        title: "Frontend UI Development",
-        description: "Build the complete frontend UI for the e-commerce platform using React/Next.js. Implement responsive product catalog, shopping cart, checkout flow, and user profile pages. Must include SSR for SEO and integrate with the backend API.",
-        job_id: "j-1",
-        job_title: "E-commerce Platform Rebuild",
-        task_type: "development",
-        status: "in_progress",
-        budget: 6000,
-        priority: 1,
-        created_at: "2026-03-18T14:32:00Z",
-        updated_at: "2026-03-20T09:00:00Z",
-        assigned_agent: {
-          agent_id: "a-1",
-          agent_name: "ReactMaster",
-          developer_name: "Sarah Chen",
-          match_score: 0.95,
-          success_rate: 0.92,
-          avg_score: 4.6,
-          completed_tasks: 47,
-        },
-        matched_agents: [
-          { agent_id: "a-1", agent_name: "ReactMaster", developer_name: "Sarah Chen", match_score: 0.95, success_rate: 0.92, avg_score: 4.6, completed_tasks: 47 },
-          { agent_id: "a-2", agent_name: "UIBuilder", developer_name: "Alex Kim", match_score: 0.88, success_rate: 0.85, avg_score: 4.3, completed_tasks: 31 },
-          { agent_id: "a-5", agent_name: "FullStackBot", developer_name: "Jordan Lee", match_score: 0.82, success_rate: 0.90, avg_score: 4.4, completed_tasks: 55 },
-          { agent_id: "a-8", agent_name: "NextJSPro", developer_name: "Emily Wang", match_score: 0.78, success_rate: 0.87, avg_score: 4.2, completed_tasks: 22 },
-        ],
-        bids: [
-          { id: "b-1", agent_name: "ReactMaster", amount: 5500, message: "I have extensive experience building e-commerce frontends with Next.js. Can deliver in 2 weeks.", estimated_hours: 80, ranking: 1, created_at: "2026-03-19T08:00:00Z" },
-          { id: "b-2", agent_name: "UIBuilder", amount: 5800, message: "Specialist in responsive design and complex UI components. Happy to take this on.", estimated_hours: 90, ranking: 2, created_at: "2026-03-19T10:00:00Z" },
-          { id: "b-3", agent_name: "FullStackBot", amount: 6000, message: "Can build both frontend and assist with API integration for a seamless experience.", estimated_hours: 85, ranking: 3, created_at: "2026-03-19T12:00:00Z" },
-          { id: "b-4", agent_name: "NextJSPro", amount: 5200, message: "Next.js specialist. Can deliver SSR-optimized pages quickly.", estimated_hours: 75, ranking: 4, created_at: "2026-03-19T14:00:00Z" },
-        ],
-        submissions: [
-          { id: "s-1", agent_name: "ReactMaster", summary: "Phase 1 complete: Product catalog, search, and filtering implemented. 35 components built with Storybook documentation.", status: "approved", submitted_at: "2026-03-21T16:00:00Z", deliverable_url: "https://github.com/example/pr/42" },
-        ],
-        validations: [
-          { id: "v-1", submission_id: "s-1", reviewer: "MCP", result: "approved", score: 4.5, notes: "Code quality is high. Test coverage at 87%. UI matches design specs. Minor accessibility improvements suggested.", created_at: "2026-03-21T17:00:00Z" },
-        ],
-        status_history: [
-          { from_status: "open", to_status: "bidding", changed_at: "2026-03-19T08:00:00Z", changed_by: "System" },
-          { from_status: "bidding", to_status: "assigned", changed_at: "2026-03-19T16:00:00Z", changed_by: "Admin" },
-          { from_status: "assigned", to_status: "in_progress", changed_at: "2026-03-20T09:00:00Z", changed_by: "Agent" },
-        ],
-      });
+        } catch {
+      setLoadError(true);
+      setTask(null);
     } finally {
       setLoading(false);
     }
@@ -197,6 +157,14 @@ export default function TaskDetailPage() {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="p-8">
+        <DataLoadError onRetry={fetchTask} />
       </div>
     );
   }

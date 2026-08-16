@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { useParams, useRouter } from "next/navigation";
 import { apiGet, apiPost } from "@/lib/api";
 import { cn, formatCurrency, formatDate, formatStatus, formatDateTime } from "@/lib/utils";
@@ -84,44 +85,20 @@ export default function AgentDetailPage() {
   const agentId = params.id as string;
   const [agent, setAgent] = useState<AgentDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [newNote, setNewNote] = useState("");
   const [noteCategory, setNoteCategory] = useState("general");
 
   const fetchAgent = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await apiGet<AgentDetail>(`/v1/agents/${agentId}`);
       setAgent(data);
-    } catch {
-      setAgent({
-        id: agentId,
-        name: "ReactMaster",
-        developer_id: "u-10",
-        developer_name: "Sarah Chen",
-        developer_email: "sarah.chen@example.com",
-        status: "active",
-        capabilities: ["react", "nextjs", "typescript", "testing", "tailwindcss"],
-        description: "Specialized in building modern, performant React/Next.js applications with a focus on clean code, accessibility, and comprehensive testing. 5+ years of frontend experience.",
-        success_rate: 0.92,
-        avg_score: 4.6,
-        completed_tasks: 47,
-        active_tasks: 2,
-        total_earnings: 84500,
-        created_at: "2025-11-01T00:00:00Z",
-        assignment_history: [
-          { id: "as-1", task_id: "t-1", task_title: "Frontend UI Development", job_title: "E-commerce Rebuild", status: "in_progress", amount: 5500, score: null, completed_at: null, assigned_at: "2026-03-19T16:00:00Z" },
-          { id: "as-2", task_id: "t-15", task_title: "Dashboard Components", job_title: "Analytics Platform", status: "completed", amount: 3200, score: 4.8, completed_at: "2026-03-10T14:00:00Z", assigned_at: "2026-02-25T10:00:00Z" },
-          { id: "as-3", task_id: "t-22", task_title: "Landing Page Redesign", job_title: "SaaS Marketing Site", status: "completed", amount: 2000, score: 4.5, completed_at: "2026-02-20T16:00:00Z", assigned_at: "2026-02-15T09:00:00Z" },
-          { id: "as-4", task_id: "t-30", task_title: "Form Builder Component", job_title: "CRM Platform", status: "completed", amount: 4000, score: 4.7, completed_at: "2026-02-08T11:00:00Z", assigned_at: "2026-01-28T10:00:00Z" },
-          { id: "as-5", task_id: "t-35", task_title: "Mobile Responsive Fix", job_title: "E-commerce v1", status: "completed", amount: 1200, score: 4.2, completed_at: "2026-01-22T15:00:00Z", assigned_at: "2026-01-20T09:00:00Z" },
-        ],
-        feedback_notes: [
-          { id: "fn-1", author: "Admin", category: "quality", content: "Consistently delivers high-quality, well-tested code. Excellent attention to accessibility.", created_at: "2026-03-10T14:00:00Z" },
-          { id: "fn-2", author: "MCP", category: "performance", content: "Above-average delivery speed while maintaining quality scores. Recommended for priority tasks.", created_at: "2026-02-28T10:00:00Z" },
-          { id: "fn-3", author: "Client", category: "communication", content: "Clear submission summaries and good documentation. Easy to review.", created_at: "2026-02-20T16:00:00Z" },
-        ],
-      });
+        } catch {
+      setLoadError(true);
+      setAgent(null);
     } finally {
       setLoading(false);
     }
@@ -179,6 +156,14 @@ export default function AgentDetailPage() {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="p-8">
+        <DataLoadError onRetry={fetchAgent} />
       </div>
     );
   }

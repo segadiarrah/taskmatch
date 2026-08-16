@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { apiGet } from "@/lib/api";
 import { cn, formatStatus, formatDateTime } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,6 +90,7 @@ const actionColors: Record<string, string> = {
 export default function AuditLogPage() {
   const [entries, setEntries] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [actorTypeFilter, setActorTypeFilter] = useState("all");
   const [entityTypeFilter, setEntityTypeFilter] = useState("all");
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
@@ -99,30 +101,13 @@ export default function AuditLogPage() {
 
   async function fetchAuditLog() {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await apiGet<AuditEntry[]>("/v1/dashboard/audit-logs");
       setEntries(data);
     } catch {
-      setEntries([
-        { id: "au-1", actor_type: "MCP", actor_id: "system", action: "validated", entity_type: "Submission", entity_id: "s-1", details: "Auto-validation completed for Mobile App UI Screens submission. Score: 91/100. Result: Pass.", payload_json: { score: 91, passed: true, checks_passed: 4, checks_total: 4 }, created_at: "2026-03-22T09:05:00Z" },
-        { id: "au-2", actor_type: "Agent", actor_id: "a-5", action: "submitted", entity_type: "Submission", entity_id: "s-1", details: "DesignPro submitted deliverable for Mobile App UI Screens task.", payload_json: { deliverable_url: "https://github.com/example/pr/55", summary_length: 180 }, created_at: "2026-03-22T09:00:00Z" },
-        { id: "au-3", actor_type: "Admin", actor_id: "u-1", action: "released_payment", entity_type: "Payment", entity_id: "p-1", details: "$5,500 payment released to Alice Dev for Frontend UI Development.", payload_json: { amount: 5500, developer: "Alice Dev", agent: "ReactMaster" }, created_at: "2026-03-21T10:00:00Z" },
-        { id: "au-4", actor_type: "MCP", actor_id: "system", action: "ranked_bids", entity_type: "Task", entity_id: "t-2", details: "Ranked 3 bids for Backend API Development. NodeNinja selected as top candidate.", payload_json: { bid_count: 3, top_bid: { agent: "NodeNinja", score: 0.91 } }, created_at: "2026-03-20T15:00:00Z" },
-        { id: "au-5", actor_type: "Admin", actor_id: "u-1", action: "assigned", entity_type: "Task", entity_id: "t-2", details: "Assigned NodeNinja to Backend API Development task.", payload_json: { agent_id: "a-2", agent_name: "NodeNinja", bid_amount: 5000 }, created_at: "2026-03-20T16:00:00Z" },
-        { id: "au-6", actor_type: "Agent", actor_id: "a-11", action: "placed_bid", entity_type: "Bid", entity_id: "b-5", details: "DataBot bid $3,800 on ETL Pipeline Setup task.", payload_json: { amount: 3800, estimated_hours: 45, task_id: "t-7" }, created_at: "2026-03-20T11:00:00Z" },
-        { id: "au-7", actor_type: "MCP", actor_id: "system", action: "matched", entity_type: "Task", entity_id: "t-1", details: "4 agents matched for Frontend UI Development. Top match: ReactMaster (95%).", payload_json: { matched_count: 4, top_match: { agent: "ReactMaster", score: 0.95 }, algorithm: "capability_hybrid_v2" }, created_at: "2026-03-19T08:00:00Z" },
-        { id: "au-8", actor_type: "MCP", actor_id: "system", action: "decomposed", entity_type: "Job", entity_id: "j-1", details: "E-commerce Platform Rebuild decomposed into 5 tasks.", payload_json: { task_count: 5, task_types: ["development", "development", "development", "integration", "testing"] }, created_at: "2026-03-18T14:32:00Z" },
-        { id: "au-9", actor_type: "MCP", actor_id: "system", action: "formatted", entity_type: "Job", entity_id: "j-1", details: "Job description auto-formatted from raw client submission.", payload_json: { raw_length: 1200, formatted_length: 2400, sections: 5, confidence: 0.94 }, created_at: "2026-03-18T14:30:00Z" },
-        { id: "au-10", actor_type: "Client", actor_id: "u-5", action: "created", entity_type: "Job", entity_id: "j-1", details: "TechCorp Inc submitted new job: E-commerce Platform Rebuild.", payload_json: { title: "E-commerce Platform Rebuild", budget_min: 15000, budget_max: 25000 }, created_at: "2026-03-18T10:00:00Z" },
-        { id: "au-11", actor_type: "Admin", actor_id: "u-1", action: "approved", entity_type: "Submission", entity_id: "s-4", details: "Approved REST API Endpoints submission from APIWizard. Score: 4.5/5.", payload_json: { score: 4.5, notes: "Excellent API design with comprehensive documentation." }, created_at: "2026-03-19T09:00:00Z" },
-        { id: "au-12", actor_type: "Admin", actor_id: "u-1", action: "rejected", entity_type: "Submission", entity_id: "s-5", details: "Rejected Authentication System submission from FrontendPro. Security vulnerabilities found.", payload_json: { score: 2.8, reason: "MFA security vulnerabilities", rework_possible: true }, created_at: "2026-03-17T10:00:00Z" },
-        { id: "au-13", actor_type: "MCP", actor_id: "system", action: "flagged", entity_type: "Agent", entity_id: "a-8", details: "TestRunner flagged for performance review. 3 of 5 recent submissions rejected.", payload_json: { rejection_rate: 0.6, quality_trend: "declining", recommendation: "pause" }, created_at: "2026-03-17T10:00:00Z" },
-        { id: "au-14", actor_type: "Admin", actor_id: "u-1", action: "disabled", entity_type: "Agent", entity_id: "a-8", details: "TestRunner disabled pending developer review.", payload_json: { previous_status: "active", reason: "quality_issues" }, created_at: "2026-03-17T10:30:00Z" },
-        { id: "au-15", actor_type: "System", actor_id: "system", action: "completed", entity_type: "Payment", entity_id: "p-3", details: "Payment of $3,000 completed for REST API Endpoints. Funds transferred to Dan Dev.", payload_json: { gross_amount: 3000, platform_fee: 300, net_amount: 2700 }, created_at: "2026-03-19T09:00:00Z" },
-        { id: "au-16", actor_type: "Client", actor_id: "u-8", action: "created", entity_type: "Job", entity_id: "j-3", details: "DataDriven LLC submitted new job: Data Pipeline Optimization.", payload_json: { title: "Data Pipeline Optimization", budget_min: 8000, budget_max: 12000 }, created_at: "2026-03-12T14:00:00Z" },
-        { id: "au-17", actor_type: "Agent", actor_id: "a-1", action: "submitted", entity_type: "Submission", entity_id: "s-6", details: "ReactMaster submitted Dashboard Components deliverable.", payload_json: { deliverable_url: "https://github.com/example/pr/42", components_count: 15 }, created_at: "2026-03-10T09:00:00Z" },
-        { id: "au-18", actor_type: "Admin", actor_id: "u-1", action: "approved", entity_type: "Submission", entity_id: "s-6", details: "Approved Dashboard Components from ReactMaster. Score: 4.8/5.", payload_json: { score: 4.8, notes: "Beautifully crafted components" }, created_at: "2026-03-10T14:00:00Z" },
-      ]);
+      setLoadError(true);
+      setEntries([]);
     } finally {
       setLoading(false);
     }
@@ -216,6 +201,8 @@ export default function AuditLogPage() {
                 <p className="text-sm text-muted-foreground">Loading audit log...</p>
               </div>
             </div>
+          ) : loadError ? (
+            <DataLoadError onRetry={fetchAuditLog} />
           ) : filteredEntries.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
               <ScrollText className="h-10 w-10 text-ink-600" />

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { useRouter } from "next/navigation";
 import { apiGet } from "@/lib/api";
 import { cn, formatStatus } from "@/lib/utils";
@@ -49,6 +50,7 @@ export default function AgentsPage() {
   const router = useRouter();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [capabilityFilter, setCapabilityFilter] = useState("all");
@@ -59,22 +61,13 @@ export default function AgentsPage() {
 
   async function fetchAgents() {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await apiGet<Agent[]>("/v1/admin/agents");
       setAgents(data);
-    } catch {
-      setAgents([
-        { id: "a-1", name: "ReactMaster", developer_name: "Sarah Chen", status: "active", capabilities: ["react", "nextjs", "typescript"], success_rate: 0.92, avg_score: 4.6, completed_tasks: 47, active_tasks: 2, created_at: "2025-11-01T00:00:00Z" },
-        { id: "a-2", name: "UIBuilder", developer_name: "Alex Kim", status: "active", capabilities: ["react", "typescript", "testing"], success_rate: 0.85, avg_score: 4.3, completed_tasks: 31, active_tasks: 1, created_at: "2025-12-15T00:00:00Z" },
-        { id: "a-3", name: "DataWiz", developer_name: "Marcus Johnson", status: "active", capabilities: ["python", "postgresql", "ml"], success_rate: 0.94, avg_score: 4.8, completed_tasks: 62, active_tasks: 3, created_at: "2025-10-01T00:00:00Z" },
-        { id: "a-4", name: "NodeNinja", developer_name: "Priya Patel", status: "active", capabilities: ["nodejs", "typescript", "api-design", "postgresql"], success_rate: 0.88, avg_score: 4.4, completed_tasks: 38, active_tasks: 1, created_at: "2025-11-20T00:00:00Z" },
-        { id: "a-5", name: "FullStackBot", developer_name: "Jordan Lee", status: "paused", capabilities: ["react", "nodejs", "postgresql", "docker"], success_rate: 0.90, avg_score: 4.4, completed_tasks: 55, active_tasks: 0, created_at: "2025-09-15T00:00:00Z" },
-        { id: "a-6", name: "MLEngine", developer_name: "Dr. Wei Zhang", status: "active", capabilities: ["python", "ml", "aws"], success_rate: 0.96, avg_score: 4.9, completed_tasks: 28, active_tasks: 2, created_at: "2026-01-10T00:00:00Z" },
-        { id: "a-7", name: "DevOpsGuard", developer_name: "Carlos Rivera", status: "active", capabilities: ["docker", "aws", "devops"], success_rate: 0.91, avg_score: 4.5, completed_tasks: 44, active_tasks: 1, created_at: "2025-10-20T00:00:00Z" },
-        { id: "a-8", name: "NextJSPro", developer_name: "Emily Wang", status: "disabled", capabilities: ["react", "nextjs"], success_rate: 0.72, avg_score: 3.8, completed_tasks: 15, active_tasks: 0, created_at: "2026-02-01T00:00:00Z" },
-        { id: "a-9", name: "APIWizard", developer_name: "Tom Baker", status: "active", capabilities: ["nodejs", "api-design", "testing"], success_rate: 0.89, avg_score: 4.3, completed_tasks: 36, active_tasks: 2, created_at: "2025-11-05T00:00:00Z" },
-        { id: "a-10", name: "DesignPro", developer_name: "Nina Sato", status: "active", capabilities: ["react", "typescript"], success_rate: 0.93, avg_score: 4.7, completed_tasks: 41, active_tasks: 1, created_at: "2025-12-01T00:00:00Z" },
-      ]);
+        } catch {
+      setLoadError(true);
+      setAgents([]);
     } finally {
       setLoading(false);
     }
@@ -94,6 +87,14 @@ export default function AgentsPage() {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="p-8">
+        <DataLoadError onRetry={fetchAgents} />
       </div>
     );
   }

@@ -31,6 +31,26 @@ const es = {
     getStarted: "Empezar",
     language: "Idioma",
   },
+  dashboard: {
+    overview: "Resumen",
+    jobs: "Encargos",
+    tasks: "Tareas",
+    agents: "Agentes",
+    bids: "Ofertas",
+    submissions: "Entregas",
+    validations: "Validaciones",
+    payments: "Pagos",
+    learning: "Aprendizaje",
+    audit: "Registro de auditor\u00eda",
+    loading: "Cargando\u2026",
+    empty: "Todav\u00eda no hay nada aqu\u00ed.",
+    error: "Algo ha salido mal. Int\u00e9ntalo de nuevo.",
+    loadErrorTitle: "No se pudieron cargar estos datos",
+    loadErrorBody:
+      "La solicitud al servidor ha fallado. La p\u00e1gina no muestra nada en lugar de datos que podr\u00edan ser incorrectos.",
+    retry: "Reintentar",
+  },
+
   footer: {
     ...en.footer,
     product: "Producto",

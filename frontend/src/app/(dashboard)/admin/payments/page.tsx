@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { apiGet, apiPut } from "@/lib/api";
 import { cn, formatCurrency, formatDate, formatStatus } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -74,6 +75,7 @@ export default function PaymentsPage() {
     total_completed: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -83,6 +85,7 @@ export default function PaymentsPage() {
 
   async function fetchPayments() {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await apiGet<Payment[]>("/v1/payments");
       setPayments(data);
@@ -92,26 +95,9 @@ export default function PaymentsPage() {
         total_released: data.filter((p) => p.status === "released").reduce((s, p) => s + p.gross_amount, 0),
         total_completed: data.filter((p) => p.status === "completed").reduce((s, p) => s + p.gross_amount, 0),
       });
-    } catch {
-      const fallbackPayments: Payment[] = [
-        { id: "p-1", job_id: "j-1", job_title: "E-commerce Platform Rebuild", task_id: "t-1", task_title: "Frontend UI Development", client_name: "TechCorp Inc", developer_name: "Alice Dev", agent_name: "ReactMaster", gross_amount: 5500, platform_fee: 550, net_amount: 4950, status: "released", created_at: "2026-03-19T16:00:00Z", released_at: "2026-03-21T10:00:00Z", completed_at: null },
-        { id: "p-2", job_id: "j-1", job_title: "E-commerce Platform Rebuild", task_id: "t-2", task_title: "Backend API Development", client_name: "TechCorp Inc", developer_name: "Alice Dev", agent_name: "NodeNinja", gross_amount: 5000, platform_fee: 500, net_amount: 4500, status: "releasable", created_at: "2026-03-20T09:00:00Z", released_at: null, completed_at: null },
-        { id: "p-3", job_id: "j-2", job_title: "Mobile App API Integration", task_id: "t-6", task_title: "REST API Endpoints", client_name: "StartupXYZ", developer_name: "Dan Dev", agent_name: "APIWizard", gross_amount: 3000, platform_fee: 300, net_amount: 2700, status: "completed", created_at: "2026-03-14T08:00:00Z", released_at: "2026-03-18T11:00:00Z", completed_at: "2026-03-19T09:00:00Z" },
-        { id: "p-4", job_id: "j-3", job_title: "Data Pipeline Optimization", task_id: "t-7", task_title: "ETL Pipeline Setup", client_name: "DataDriven LLC", developer_name: "Eve Engineer", agent_name: "DataBot", gross_amount: 4000, platform_fee: 400, net_amount: 3600, status: "pending", created_at: "2026-03-21T10:00:00Z", released_at: null, completed_at: null },
-        { id: "p-5", job_id: "j-4", job_title: "ML Model Deployment", task_id: "t-9", task_title: "ML Model Training", client_name: "AI Solutions", developer_name: "Carol Coder", agent_name: "MLEngine", gross_amount: 8000, platform_fee: 800, net_amount: 7200, status: "releasable", created_at: "2026-03-20T16:00:00Z", released_at: null, completed_at: null },
-        { id: "p-6", job_id: "j-5", job_title: "Security Audit & Remediation", task_id: "t-11", task_title: "Penetration Testing", client_name: "SecureFirst", developer_name: "Grace Guard", agent_name: "SecurityBot", gross_amount: 3500, platform_fee: 350, net_amount: 3150, status: "completed", created_at: "2026-03-08T11:00:00Z", released_at: "2026-03-15T09:00:00Z", completed_at: "2026-03-16T10:00:00Z" },
-        { id: "p-7", job_id: "j-6", job_title: "CRM Integration Suite", task_id: "t-14", task_title: "Salesforce Connector", client_name: "SalesForce Pro", developer_name: "Dan Dev", agent_name: "APIWizard", gross_amount: 4500, platform_fee: 450, net_amount: 4050, status: "completed", created_at: "2026-02-28T10:00:00Z", released_at: "2026-03-10T14:00:00Z", completed_at: "2026-03-12T09:00:00Z" },
-        { id: "p-8", job_id: "j-1", job_title: "E-commerce Platform Rebuild", task_id: "t-3", task_title: "Database Design & Setup", client_name: "TechCorp Inc", developer_name: "Bob Builder", agent_name: "DataWiz", gross_amount: 2000, platform_fee: 200, net_amount: 1800, status: "pending", created_at: "2026-03-21T14:00:00Z", released_at: null, completed_at: null },
-        { id: "p-9", job_id: "j-2", job_title: "Mobile App API Integration", task_id: "t-5", task_title: "Mobile App UI Screens", client_name: "StartupXYZ", developer_name: "Bob Builder", agent_name: "DesignPro", gross_amount: 2500, platform_fee: 250, net_amount: 2250, status: "releasable", created_at: "2026-03-21T14:00:00Z", released_at: null, completed_at: null },
-        { id: "p-10", job_id: "j-4", job_title: "ML Model Deployment", task_id: "t-13", task_title: "API Gateway Setup", client_name: "AI Solutions", developer_name: "Eve Engineer", agent_name: "DevOpsBot", gross_amount: 3200, platform_fee: 320, net_amount: 2880, status: "released", created_at: "2026-03-15T10:00:00Z", released_at: "2026-03-20T11:00:00Z", completed_at: null },
-      ];
-      setPayments(fallbackPayments);
-      setSummary({
-        total_pending: fallbackPayments.filter((p) => p.status === "pending").reduce((s, p) => s + p.gross_amount, 0),
-        total_releasable: fallbackPayments.filter((p) => p.status === "releasable").reduce((s, p) => s + p.gross_amount, 0),
-        total_released: fallbackPayments.filter((p) => p.status === "released").reduce((s, p) => s + p.gross_amount, 0),
-        total_completed: fallbackPayments.filter((p) => p.status === "completed").reduce((s, p) => s + p.gross_amount, 0),
-      });
+        } catch {
+      setLoadError(true);
+      setPayments([]);
     } finally {
       setLoading(false);
     }
@@ -274,6 +260,8 @@ export default function PaymentsPage() {
                 <p className="text-sm text-muted-foreground">Loading payments...</p>
               </div>
             </div>
+          ) : loadError ? (
+            <DataLoadError onRetry={fetchPayments} />
           ) : filteredPayments.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
               <CircleDollarSign className="h-10 w-10 text-ink-600" />

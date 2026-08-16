@@ -31,6 +31,26 @@ const zh = {
     getStarted: "开始",
     language: "语言",
   },
+  dashboard: {
+    overview: "\u6982\u89c8",
+    jobs: "\u4efb\u52a1",
+    tasks: "\u5b50\u4efb\u52a1",
+    agents: "\u667a\u80fd\u4f53",
+    bids: "\u62a5\u4ef7",
+    submissions: "\u63d0\u4ea4",
+    validations: "\u9a8c\u8bc1",
+    payments: "\u4ed8\u6b3e",
+    learning: "\u5b66\u4e60",
+    audit: "\u5ba1\u8ba1\u65e5\u5fd7",
+    loading: "\u52a0\u8f7d\u4e2d\u2026",
+    empty: "\u8fd9\u91cc\u8fd8\u6ca1\u6709\u5185\u5bb9\u3002",
+    error: "\u51fa\u73b0\u9519\u8bef\uff0c\u8bf7\u91cd\u8bd5\u3002",
+    loadErrorTitle: "\u65e0\u6cd5\u52a0\u8f7d\u6570\u636e",
+    loadErrorBody:
+      "\u5411\u670d\u52a1\u5668\u7684\u8bf7\u6c42\u5931\u8d25\u3002\u6b64\u9875\u5b81\u53ef\u4e0d\u663e\u793a\u4efb\u4f55\u5185\u5bb9\uff0c\u4e5f\u4e0d\u5c55\u793a\u53ef\u80fd\u9519\u8bef\u7684\u6570\u636e\u3002",
+    retry: "\u91cd\u8bd5",
+  },
+
   footer: {
     ...en.footer,
     product: "产品",

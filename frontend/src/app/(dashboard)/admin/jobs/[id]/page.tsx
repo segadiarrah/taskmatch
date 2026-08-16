@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { useParams, useRouter } from "next/navigation";
 import { apiGet, apiPost, apiPut } from "@/lib/api";
 import { cn, formatCurrency, formatDate, formatStatus, formatDateTime } from "@/lib/utils";
@@ -158,45 +159,20 @@ export default function JobDetailPage() {
 
   const [job, setJob] = useState<JobDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [editingStatus, setEditingStatus] = useState(false);
   const [newStatus, setNewStatus] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
   const fetchJob = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await apiGet<JobDetail>(`/v1/jobs/${jobId}`);
       setJob(data);
-    } catch {
-      setJob({
-        id: jobId,
-        title: "E-commerce Platform Rebuild",
-        description_raw: "We need a complete rebuild of our e-commerce platform. Current tech stack is outdated (PHP/jQuery). Need modern React frontend with Node.js backend. Must support 10k concurrent users, have Stripe integration, inventory management, and admin dashboard. Budget is $15k-25k, need it done by May 2026.",
-        description_formatted: "## Project Overview\nComplete rebuild of an existing e-commerce platform, migrating from a legacy PHP/jQuery stack to a modern architecture.\n\n## Technical Requirements\n- **Frontend**: React/Next.js with responsive design\n- **Backend**: Node.js/Express or NestJS REST API\n- **Database**: PostgreSQL with Redis caching\n- **Payment**: Stripe integration (checkout, subscriptions, refunds)\n- **Performance**: Support 10,000+ concurrent users\n\n## Key Deliverables\n1. Product catalog with search and filtering\n2. Shopping cart and checkout flow\n3. Inventory management system\n4. Admin dashboard with analytics\n5. User authentication and profiles\n\n## Constraints\n- Budget: $15,000 - $25,000\n- Deadline: May 1, 2026\n- Must include comprehensive test coverage",
-        client_id: "u-5",
-        client_name: "TechCorp Inc",
-        status: "formatted",
-        budget_min: 15000,
-        budget_max: 25000,
-        deadline: "2026-05-01",
-        created_at: "2026-03-15T10:00:00Z",
-        updated_at: "2026-03-18T14:30:00Z",
-        status_history: [
-          { from_status: "draft", to_status: "submitted", changed_at: "2026-03-15T10:05:00Z", changed_by: "Client" },
-          { from_status: "submitted", to_status: "formatted", changed_at: "2026-03-18T14:30:00Z", changed_by: "MCP", reason: "Auto-formatted by AI" },
-        ],
-        tasks: [
-          { id: "t-1", title: "Frontend UI Development", task_type: "development", status: "open", budget: 6000, priority: 1 },
-          { id: "t-2", title: "Backend API Development", task_type: "development", status: "open", budget: 5000, priority: 1 },
-          { id: "t-3", title: "Database Design & Setup", task_type: "development", status: "open", budget: 2000, priority: 2 },
-          { id: "t-4", title: "Stripe Integration", task_type: "integration", status: "open", budget: 3000, priority: 2 },
-          { id: "t-5", title: "Testing & QA", task_type: "testing", status: "open", budget: 2000, priority: 3 },
-        ],
-        mcp_decisions: [
-          { id: "d-1", decision_type: "format", reasoning: "Structured raw description into standardized format with clear requirements, deliverables, and constraints.", created_at: "2026-03-18T14:30:00Z", confidence: 0.94 },
-          { id: "d-2", decision_type: "decompose", reasoning: "Split into 5 tasks based on functional boundaries. Frontend and backend are highest priority for parallel development.", created_at: "2026-03-18T14:32:00Z", confidence: 0.88 },
-        ],
-      });
+        } catch {
+      setLoadError(true);
+      setJob(null);
     } finally {
       setLoading(false);
     }
@@ -250,6 +226,14 @@ export default function JobDetailPage() {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="p-8">
+        <DataLoadError onRetry={fetchJob} />
       </div>
     );
   }

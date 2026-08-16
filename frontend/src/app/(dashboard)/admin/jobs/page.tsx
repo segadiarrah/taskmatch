@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { useRouter } from "next/navigation";
 import { apiGet, apiPost } from "@/lib/api";
 import { cn, formatCurrency, formatDate, formatStatus } from "@/lib/utils";
@@ -65,6 +66,7 @@ export default function JobsPage() {
   const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -75,21 +77,13 @@ export default function JobsPage() {
 
   async function fetchJobs() {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await apiGet<Job[]>("/v1/admin/jobs");
       setJobs(data);
-    } catch {
-      setJobs([
-        { id: "j-1", title: "E-commerce Platform Rebuild", client_name: "TechCorp Inc", status: "submitted", budget_min: 15000, budget_max: 25000, deadline: "2026-05-01", created_at: "2026-03-15T10:00:00Z", task_count: 0 },
-        { id: "j-2", title: "Mobile App API Integration", client_name: "StartupXYZ", status: "formatted", budget_min: 5000, budget_max: 8000, deadline: "2026-04-15", created_at: "2026-03-14T08:00:00Z", task_count: 3 },
-        { id: "j-3", title: "Data Pipeline Optimization", client_name: "DataDriven LLC", status: "bidding", budget_min: 8000, budget_max: 12000, deadline: "2026-04-30", created_at: "2026-03-12T14:00:00Z", task_count: 5 },
-        { id: "j-4", title: "ML Model Deployment", client_name: "AI Solutions", status: "in_progress", budget_min: 20000, budget_max: 35000, deadline: "2026-06-01", created_at: "2026-03-10T09:00:00Z", task_count: 8 },
-        { id: "j-5", title: "Security Audit & Remediation", client_name: "SecureFirst", status: "under_review", budget_min: 10000, budget_max: 15000, deadline: "2026-04-20", created_at: "2026-03-08T11:00:00Z", task_count: 4 },
-        { id: "j-6", title: "CRM Integration Suite", client_name: "SalesForce Pro", status: "completed", budget_min: 12000, budget_max: 18000, deadline: "2026-03-30", created_at: "2026-02-20T13:00:00Z", task_count: 6 },
-        { id: "j-7", title: "Real-time Chat System", client_name: "ChatNow", status: "draft", budget_min: 7000, budget_max: 10000, deadline: "2026-05-15", created_at: "2026-03-20T16:00:00Z", task_count: 0 },
-        { id: "j-8", title: "Analytics Dashboard Redesign", client_name: "MetricsHub", status: "submitted", budget_min: 6000, budget_max: 9000, deadline: "2026-04-25", created_at: "2026-03-19T10:00:00Z", task_count: 0 },
-        { id: "j-9", title: "Microservices Migration", client_name: "LegacyCorp", status: "cancelled", budget_min: 30000, budget_max: 50000, deadline: "2026-07-01", created_at: "2026-03-01T08:00:00Z", task_count: 0 },
-      ]);
+        } catch {
+      setLoadError(true);
+      setJobs([]);
     } finally {
       setLoading(false);
     }
@@ -190,6 +184,8 @@ export default function JobsPage() {
             <div className="flex h-48 items-center justify-center">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
             </div>
+          ) : loadError ? (
+            <DataLoadError onRetry={fetchJobs} />
           ) : filteredJobs.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
               <Briefcase className="h-10 w-10 text-ink-600" />

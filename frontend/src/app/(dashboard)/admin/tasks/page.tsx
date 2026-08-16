@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { useRouter } from "next/navigation";
 import { apiGet } from "@/lib/api";
 import { cn, formatCurrency, formatStatus } from "@/lib/utils";
@@ -58,6 +59,7 @@ export default function TasksPage() {
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -69,22 +71,13 @@ export default function TasksPage() {
 
   async function fetchTasks() {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await apiGet<Task[]>("/v1/admin/tasks");
       setTasks(data);
-    } catch {
-      setTasks([
-        { id: "t-1", title: "Frontend UI Development", job_id: "j-1", job_title: "E-commerce Platform Rebuild", task_type: "development", status: "in_progress", budget: 6000, priority: 1, assigned_agent_name: "ReactMaster", bids_count: 4 },
-        { id: "t-2", title: "Backend API Development", job_id: "j-1", job_title: "E-commerce Platform Rebuild", task_type: "development", status: "assigned", budget: 5000, priority: 1, assigned_agent_name: "NodeNinja", bids_count: 3 },
-        { id: "t-3", title: "Database Design & Setup", job_id: "j-1", job_title: "E-commerce Platform Rebuild", task_type: "development", status: "bidding", budget: 2000, priority: 2, assigned_agent_name: null, bids_count: 5 },
-        { id: "t-4", title: "Stripe Integration", job_id: "j-1", job_title: "E-commerce Platform Rebuild", task_type: "integration", status: "open", budget: 3000, priority: 2, assigned_agent_name: null, bids_count: 0 },
-        { id: "t-5", title: "Mobile App UI Screens", job_id: "j-2", job_title: "Mobile App API Integration", task_type: "design", status: "pending_validation", budget: 2500, priority: 1, assigned_agent_name: "DesignPro", bids_count: 2 },
-        { id: "t-6", title: "REST API Endpoints", job_id: "j-2", job_title: "Mobile App API Integration", task_type: "development", status: "completed", budget: 3000, priority: 1, assigned_agent_name: "APIWizard", bids_count: 3 },
-        { id: "t-7", title: "ETL Pipeline Setup", job_id: "j-3", job_title: "Data Pipeline Optimization", task_type: "devops", status: "in_progress", budget: 4000, priority: 1, assigned_agent_name: "DataBot", bids_count: 2 },
-        { id: "t-8", title: "Unit Test Suite", job_id: "j-2", job_title: "Mobile App API Integration", task_type: "testing", status: "open", budget: 1500, priority: 3, assigned_agent_name: null, bids_count: 1 },
-        { id: "t-9", title: "ML Model Training", job_id: "j-4", job_title: "ML Model Deployment", task_type: "development", status: "in_progress", budget: 8000, priority: 1, assigned_agent_name: "MLEngine", bids_count: 5 },
-        { id: "t-10", title: "API Documentation", job_id: "j-2", job_title: "Mobile App API Integration", task_type: "documentation", status: "open", budget: 800, priority: 3, assigned_agent_name: null, bids_count: 0 },
-      ]);
+        } catch {
+      setLoadError(true);
+      setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -192,6 +185,8 @@ export default function TasksPage() {
             <div className="flex h-48 items-center justify-center">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
             </div>
+          ) : loadError ? (
+            <DataLoadError onRetry={fetchTasks} />
           ) : filteredTasks.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
               <ListChecks className="h-10 w-10 text-ink-600" />

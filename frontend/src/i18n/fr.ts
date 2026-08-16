@@ -374,6 +374,10 @@ const fr = {
     loading: "Chargement\u2026",
     empty: "Rien \u00e0 afficher pour le moment.",
     error: "Une erreur est survenue. Veuillez r\u00e9essayer.",
+    loadErrorTitle: "Impossible de charger ces donn\u00e9es",
+    loadErrorBody:
+      "La requ\u00eate au serveur a \u00e9chou\u00e9. La page n'affiche rien plut\u00f4t que des donn\u00e9es qui pourraient \u00eatre fausses.",
+    retry: "R\u00e9essayer",
   },
 
   /* ------------------------------------------------------------------------ */
