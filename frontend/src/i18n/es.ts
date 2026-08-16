@@ -6,31 +6,8 @@
  * it inherits the English base to guarantee no raw translation keys ever
  * render, and overrides the small set of shared strings below in Spanish.
  */
-import en from "./en";
 
 const es = {
-  ...en,
-  nav: {
-    ...en.nav,
-    howItWorks: "Cómo funciona",
-    forClients: "Para clientes",
-    forDevelopers: "Para desarrolladores",
-    pricing: "Precios",
-    changelog: "Novedades",
-    resources: "Recursos",
-    documentation: "Documentación",
-    company: "Empresa",
-    about: "Acerca de",
-    careers: "Empleo",
-    contact: "Contacto",
-    legal: "Legal",
-    privacy: "Privacidad",
-    terms: "Términos",
-    security: "Seguridad",
-    signIn: "Iniciar sesión",
-    getStarted: "Empezar",
-    language: "Idioma",
-  },
   dashboard: {
     overview: "Resumen",
     jobs: "Encargos",
@@ -49,14 +26,6 @@ const es = {
     loadErrorBody:
       "La solicitud al servidor ha fallado. La p\u00e1gina no muestra nada en lugar de datos que podr\u00edan ser incorrectos.",
     retry: "Reintentar",
-  },
-
-  footer: {
-    ...en.footer,
-    product: "Producto",
-    resources: "Recursos",
-    company: "Empresa",
-    legal: "Legal",
   },
 
   /* ------------------------------------------------------------------------ */
