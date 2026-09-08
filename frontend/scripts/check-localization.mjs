@@ -151,6 +151,23 @@ function inCodeContext(ancestors) {
   return ancestors.some((ancestor) => {
     const tag = jsxTagName(ancestor);
     if (tag === "code" || tag === "pre") return true;
+    // A string being compared against is a value, not copy. `phase === "creating"`
+    // and `status !== "draft"` read the wire vocabulary; translating either side
+    // would break the comparison rather than the wording. Only equality operators
+    // qualify — `a + "text"` really is building visible copy.
+    if (
+      ts.isBinaryExpression(ancestor) &&
+      [
+        ts.SyntaxKind.EqualsEqualsToken,
+        ts.SyntaxKind.EqualsEqualsEqualsToken,
+        ts.SyntaxKind.ExclamationEqualsToken,
+        ts.SyntaxKind.ExclamationEqualsEqualsToken,
+      ].includes(ancestor.operatorToken.kind)
+    ) {
+      return true;
+    }
+    // Likewise `case "approve":` and `switch (x)` discriminants.
+    if (ts.isCaseClause(ancestor)) return true;
     if (ts.isPropertyAssignment(ancestor)) return /^(?:code|sample|command|url|href|endpoint|method|status|id|key|value|type|variant|icon|color|className|tone|path|slug|subsets|axes)$/i.test(propertyName(ancestor.name) ?? "");
     return false;
   });

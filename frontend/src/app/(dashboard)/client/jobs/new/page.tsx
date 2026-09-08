@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiPost } from "@/lib/api";
+import { useTranslation } from "@/lib/i18n";
+import { PRIORITIES, REQUIREMENT_TYPES } from "@/lib/job-requirements";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,8 +48,6 @@ interface UploadResult {
 }
 
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD"];
-const REQUIREMENT_TYPES = ["skill", "experience", "certification", "tool", "language", "other"];
-const PRIORITIES: Requirement["priority"][] = ["low", "medium", "high", "critical"];
 
 const ACCEPTED_DOC_TYPES = ".pdf,.doc,.docx,.txt,.md,.csv,.json,.rtf,.xls,.xlsx,.ppt,.pptx";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "/api";
@@ -61,6 +61,7 @@ function formatBytes(bytes: number): string {
 type SubmitPhase = "creating" | "uploading" | "planning";
 
 export default function CreateJobPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [phase, setPhase] = useState<SubmitPhase | null>(null);
@@ -254,10 +255,10 @@ export default function CreateJobPage() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/client/jobs" className="hover:text-foreground transition-colors">
-          My Jobs
+          {t("client.new.breadcrumb")}
         </Link>
         <ChevronRight className="h-4 w-4" />
-        <span className="text-foreground">Create New Job</span>
+        <span className="text-foreground">{t("client.new.title")}</span>
       </div>
 
       {/* Header */}
@@ -268,11 +269,9 @@ export default function CreateJobPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">Create New Job</h1>
+          <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">{t("client.new.title")}</h1>
           <p className="text-muted-foreground mt-1">
-            Describe your complex task in detail and attach any specs, data, or documents &mdash;
-            the platform ingests everything and routes each part to the best-qualified agent or
-            human expert.
+            {t("client.new.subtitle")}
           </p>
         </div>
       </div>
@@ -305,17 +304,17 @@ export default function CreateJobPage() {
         {/* Basic Info */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Job Details</CardTitle>
-            <CardDescription>Provide the basic information about your project.</CardDescription>
+            <CardTitle className="text-lg">{t("client.new.details.title")}</CardTitle>
+            <CardDescription>{t("client.new.details.subtitle")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="title" className="text-sm font-medium">
-                Title <span className="text-destructive">*</span>
+                {t("client.new.jobTitle")} <span className="text-destructive">*</span>
               </label>
               <Input
                 id="title"
-                placeholder="e.g., Build a REST API for e-commerce platform"
+                placeholder={t("client.new.jobTitlePlaceholder")}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
@@ -324,26 +323,25 @@ export default function CreateJobPage() {
 
             <div className="space-y-2">
               <label htmlFor="description" className="text-sm font-medium">
-                Detailed description <span className="text-destructive">*</span>
+                {t("client.new.description")} <span className="text-destructive">*</span>
               </label>
               <Textarea
                 id="description"
-                placeholder="Describe your complex task in full: the outcome you need, the context and background, deliverables, technical requirements, constraints, and success criteria. The more detail you provide, the better the platform can decompose the work and route each part to the right agent or human expert."
+                placeholder={t("client.new.descriptionPlaceholder")}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="min-h-[260px]"
                 required
               />
               <p className="text-xs text-muted-foreground">
-                Write as much as you need &mdash; this is not a one-line prompt. Attach supporting
-                documents below and the platform will ingest them alongside your description.
+                {t("client.new.descriptionHelp")}
               </p>
             </div>
 
             {/* Document uploads */}
             <div className="space-y-2">
               <label htmlFor="documents" className="text-sm font-medium">
-                Attachments <span className="text-muted-foreground font-normal">(optional)</span>
+                {t("client.new.attachments")} <span className="text-muted-foreground font-normal">{t("client.new.optional")}</span>
               </label>
               <div
                 onDragOver={(e) => {
@@ -374,11 +372,10 @@ export default function CreateJobPage() {
               >
                 <UploadCloud className="h-6 w-6 text-muted-foreground" />
                 <p className="text-sm font-medium">
-                  Drop files here or <span className="text-primary">browse</span>
+                  {t("client.new.dropFiles")} <span className="text-primary">{t("client.new.browse")}</span>
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Specs, briefs, data, designs &mdash; PDF, Word, TXT, Markdown, CSV, JSON and more.
-                  The platform extracts the text and ingests it into your brief.
+                  {t("client.new.acceptedFiles")}
                 </p>
                 <input
                   ref={fileInputRef}
@@ -414,7 +411,7 @@ export default function CreateJobPage() {
                           removeFile(idx);
                         }}
                         disabled={submitting}
-                        aria-label={`Remove ${file.name}`}
+                        aria-label={t("client.new.removeFile", { name: file.name })}
                         className="rounded-full p-0.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
                       >
                         <X className="h-3.5 w-3.5" />
@@ -430,14 +427,14 @@ export default function CreateJobPage() {
         {/* Budget & Timeline */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Budget & Timeline</CardTitle>
-            <CardDescription>Set your budget range and project deadline.</CardDescription>
+            <CardTitle className="text-lg">{t("client.new.budget.title")}</CardTitle>
+            <CardDescription>{t("client.new.budget.subtitle")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
                 <label htmlFor="budget_min" className="text-sm font-medium">
-                  Min Budget <span className="text-destructive">*</span>
+                  {t("client.new.minBudget")} <span className="text-destructive">*</span>
                 </label>
                 <Input
                   id="budget_min"
@@ -452,7 +449,7 @@ export default function CreateJobPage() {
               </div>
               <div className="space-y-2">
                 <label htmlFor="budget_max" className="text-sm font-medium">
-                  Max Budget <span className="text-destructive">*</span>
+                  {t("client.new.maxBudget")} <span className="text-destructive">*</span>
                 </label>
                 <Input
                   id="budget_max"
@@ -467,7 +464,7 @@ export default function CreateJobPage() {
               </div>
               <div className="space-y-2">
                 <label htmlFor="currency" className="text-sm font-medium">
-                  Currency
+                  {t("client.new.currency")}
                 </label>
                 <Select
                   id="currency"
@@ -485,7 +482,7 @@ export default function CreateJobPage() {
 
             <div className="space-y-2">
               <label htmlFor="deadline" className="text-sm font-medium">
-                Deadline
+                {t("client.new.deadline")}
               </label>
               <Input
                 id="deadline"
@@ -494,7 +491,7 @@ export default function CreateJobPage() {
                 onChange={(e) => setDeadline(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
-                Optional. Leave blank if there is no hard deadline.
+                {t("client.new.deadlineHelp")}
               </p>
             </div>
 
@@ -508,10 +505,10 @@ export default function CreateJobPage() {
               />
               <div>
                 <label htmlFor="auto_select" className="text-sm font-medium cursor-pointer">
-                  Auto-select agents
+                  {t("client.new.autoSelect")}
                 </label>
                 <p className="text-xs text-muted-foreground">
-                  Let TaskMatch automatically assign the best-matched agents to your tasks.
+                  {t("client.new.autoSelectHelp")}
                 </p>
               </div>
             </div>
@@ -521,9 +518,9 @@ export default function CreateJobPage() {
         {/* Requirements */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Requirements</CardTitle>
+            <CardTitle className="text-lg">{t("client.new.requirements.title")}</CardTitle>
             <CardDescription>
-              Add specific requirements for this job. These help filter and match agents.
+              {t("client.new.requirements.subtitle")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -544,7 +541,7 @@ export default function CreateJobPage() {
                     </Badge>
                     <button
                       type="button"
-                      aria-label={`Remove requirement ${idx + 1}`}
+                      aria-label={t("client.new.removeRequirement", { number: idx + 1 })}
                       onClick={() => removeRequirement(idx)}
                       className="text-muted-foreground hover:text-destructive transition-colors"
                     >
@@ -557,20 +554,20 @@ export default function CreateJobPage() {
 
             {/* Add new requirement */}
             <div className="rounded-lg border border-dashed p-4 space-y-3">
-              <p className="text-sm font-medium text-muted-foreground">Add a requirement</p>
+              <p className="text-sm font-medium text-muted-foreground">{t("client.new.addRequirementLabel")}</p>
               <div className="grid gap-3 sm:grid-cols-3">
                 <Select
                   value={newReqType}
                   onChange={(e) => setNewReqType(e.target.value)}
                 >
-                  {REQUIREMENT_TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {t.charAt(0).toUpperCase() + t.slice(1)}
+                  {REQUIREMENT_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {t(`client.new.reqType.${type}`)}
                     </option>
                   ))}
                 </Select>
                 <Input
-                  placeholder="e.g., Python 3.10+"
+                  placeholder={t("client.new.requirementPlaceholder")}
                   value={newReqDesc}
                   onChange={(e) => setNewReqDesc(e.target.value)}
                   onKeyDown={(e) => {
@@ -586,14 +583,14 @@ export default function CreateJobPage() {
                 >
                   {PRIORITIES.map((p) => (
                     <option key={p} value={p}>
-                      {p.charAt(0).toUpperCase() + p.slice(1)}
+                      {t(`client.new.priority.${p}`)}
                     </option>
                   ))}
                 </Select>
               </div>
               <Button type="button" variant="outline" size="sm" onClick={addRequirement}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Requirement
+                {t("client.new.addRequirement")}
               </Button>
             </div>
           </CardContent>
@@ -603,18 +600,12 @@ export default function CreateJobPage() {
         <div className="flex items-center justify-end gap-4">
           <Link href="/client/jobs">
             <Button type="button" variant="outline">
-              Cancel
+              {t("client.new.cancel")}
             </Button>
           </Link>
           <Button type="submit" disabled={submitting}>
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {phase === "creating"
-              ? "Creating…"
-              : phase === "uploading"
-              ? "Uploading documents…"
-              : phase === "planning"
-              ? "Planning…"
-              : "Create Job"}
+            {phase ? t(`client.new.phase.${phase}`) : t("client.new.submit")}
           </Button>
         </div>
       </form>

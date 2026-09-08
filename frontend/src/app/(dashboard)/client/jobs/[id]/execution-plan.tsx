@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiGet, apiPost } from "@/lib/api";
+import { useTranslation } from "@/lib/i18n";
+import { DEFAULT_PLAN_STAGE_KEYS } from "@/lib/job-requirements";
 import { formatCurrency, formatStatus, cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -101,15 +103,6 @@ interface PlanResponse {
 const POLL_MS = 3000;
 const MAX_POLLS = 20;
 
-const DEFAULT_STAGES: PlanStage[] = [
-  { key: "format", label: "Format brief", desc: "Structuring your request" },
-  { key: "decompose", label: "Decompose", desc: "Breaking it into tasks" },
-  { key: "match", label: "Match agents", desc: "Finding the best AI agents" },
-  { key: "assign", label: "Assign", desc: "Pairing agents to tasks" },
-  { key: "validate", label: "Validate", desc: "Quality-checking the work" },
-  { key: "pay", label: "Pay", desc: "Releasing payment on approval" },
-];
-
 const STAGE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   format: FileText,
   decompose: Layers,
@@ -126,7 +119,7 @@ const FALLBACK_PLAN: PlanResponse = {
   job: { id: "", title: "", status: "pending", currency: "USD", budget_min: 0, budget_max: 0 },
   spec: { objective: null, deliverables: [], constraints: [], success_criteria: [] },
   tasks: [],
-  stages: DEFAULT_STAGES,
+  stages: [],
 };
 
 function scoreBadgeVariant(score: number): "success" | "info" | "warning" {
@@ -159,6 +152,7 @@ export default function ExecutionPlan({
   fallbackCurrency,
   onSubmitted,
 }: ExecutionPlanProps) {
+  const { t } = useTranslation();
   const isDraft = jobStatus === "draft";
 
   const [plan, setPlan] = useState<PlanResponse | null>(null);
@@ -179,9 +173,6 @@ export default function ExecutionPlan({
     try {
       const data = await apiGet<PlanResponse>(`/v1/jobs/${jobId}/plan`);
       if (!activeRef.current) return;
-      if (!data.stages || data.stages.length === 0) {
-        data.stages = DEFAULT_STAGES;
-      }
       setPlan(data);
       setLoading(false);
       if ((data.planning || !data.ready) && pollsRef.current < MAX_POLLS) {
@@ -261,11 +252,10 @@ export default function ExecutionPlan({
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Rocket className="h-5 w-5 text-signal-400" />
-            Execution plan
+            {t("client.plan.title")}
           </CardTitle>
           <CardDescription>
-            Submit this job to generate its execution plan. We will structure your brief, break it
-            into tasks, and match the best AI agents to each one.
+            {t("client.plan.notSubmitted")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -284,14 +274,23 @@ export default function ExecutionPlan({
             ) : (
               <Send className="mr-2 h-4 w-4" />
             )}
-            Submit job to generate plan
+            {t("client.plan.submitCta")}
           </Button>
         </CardContent>
       </Card>
     );
   }
 
-  const stages = plan?.stages && plan.stages.length > 0 ? plan.stages : DEFAULT_STAGES;
+  // Le backend peut renvoyer ses propres étapes ; sinon on construit la liste
+  // par défaut dans la langue courante.
+  const stages: PlanStage[] =
+    plan?.stages && plan.stages.length > 0
+      ? plan.stages
+      : DEFAULT_PLAN_STAGE_KEYS.map((key) => ({
+          key,
+          label: t(`client.plan.stage.${key}.label`),
+          desc: t(`client.plan.stage.${key}.desc`),
+        }));
   const currency = plan?.job?.currency || fallbackCurrency;
   const ready = !!plan?.ready;
   const planning = !plan || plan.planning || !plan.ready;
@@ -302,7 +301,7 @@ export default function ExecutionPlan({
       <Card>
         <CardContent className="flex items-center justify-center gap-3 py-12 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
-          <span className="text-sm">Loading your execution plan…</span>
+          <span className="text-sm">{t("client.plan.loading")}</span>
         </CardContent>
       </Card>
     );
@@ -317,11 +316,10 @@ export default function ExecutionPlan({
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-signal-400 animate-pulse" />
-            We are planning your request…
+            {t("client.plan.planningTitle")}
           </CardTitle>
           <CardDescription>
-            Our orchestration layer is structuring your brief, breaking it into tasks, and matching
-            the best AI agents.
+            {t("client.plan.planningBody")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -373,7 +371,7 @@ export default function ExecutionPlan({
             })}
           </ol>
           <p className="text-xs text-muted-foreground">
-            This usually takes under a minute. This panel updates automatically.
+            {t("client.plan.planningHint")}
           </p>
         </CardContent>
       </Card>
@@ -395,15 +393,15 @@ export default function ExecutionPlan({
       <CardHeader>
         <CardTitle className="text-xl flex items-center gap-2">
           <Rocket className="h-5 w-5 text-signal-400" />
-          Execution plan
+          {t("client.plan.title")}
           {ready && (
             <Badge variant="success" className="ml-1">
-              Ready
+              {t("client.plan.ready")}
             </Badge>
           )}
         </CardTitle>
         <CardDescription className="text-sm">
-          {"Here's exactly how your request will be delivered — the tasks it became, who executed each, and the result."}
+          {t("client.plan.subtitle")}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
@@ -420,15 +418,18 @@ export default function ExecutionPlan({
                 <CheckCircle2 className={cn("mt-0.5 h-5 w-5", jobDone ? "text-success" : "text-info")} />
                 <div>
                   <p className="text-sm font-semibold text-ink-50">
-                    {jobDone ? "Work accepted — escrow released" : "Work delivered — held in escrow for your review"}
+                    {jobDone ? t("client.plan.escrowReleasedTitle") : t("client.plan.escrowHeldTitle")}
                   </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     {jobDone
-                      ? `${fmtMoney(payment.net_amount, payment.currency)} released to the executor. Job completed.`
-                      : `${fmtMoney(payment.gross_amount, payment.currency)} held in escrow (${fmtMoney(
-                          payment.net_amount,
-                          payment.currency
-                        )} to the executor after the ${fmtMoney(payment.platform_fee, payment.currency)} platform fee). Review the results below, then release.`}
+                      ? t("client.plan.escrowReleasedBody", {
+                          net: fmtMoney(payment.net_amount, payment.currency),
+                        })
+                      : t("client.plan.escrowHeldBody", {
+                          gross: fmtMoney(payment.gross_amount, payment.currency),
+                          net: fmtMoney(payment.net_amount, payment.currency),
+                          fee: fmtMoney(payment.platform_fee, payment.currency),
+                        })}
                   </p>
                 </div>
               </div>
@@ -440,16 +441,16 @@ export default function ExecutionPlan({
                     disabled={accepting || disputing}
                     className="shrink-0"
                   >
-                    Request changes
+                    {t("client.plan.requestChanges")}
                   </Button>
                   <Button onClick={handleAccept} disabled={accepting || disputing} className="shrink-0">
-                    {accepting ? "Releasing…" : "Accept & release payment"}
+                    {accepting ? t("client.plan.releasing") : t("client.plan.acceptAndRelease")}
                   </Button>
                 </div>
               )}
               {jobDone && (
                 <Badge variant="success" className="shrink-0">
-                  Completed
+                  {t("client.plan.completed")}
                 </Badge>
               )}
             </div>
@@ -457,14 +458,13 @@ export default function ExecutionPlan({
             {canRelease && !jobDone && showDispute && (
               <div className="mt-4 rounded-lg border border-warning/40 bg-warning/10 p-3">
                 <p className="text-xs font-medium text-ink-200">
-                  What did the deliverable miss? Your payment stays held in escrow while the
-                  executor revises the work against your success criteria.
+                  {t("client.plan.disputePrompt")}
                 </p>
                 <textarea
                   value={disputeReason}
                   onChange={(e) => setDisputeReason(e.target.value)}
                   rows={3}
-                  placeholder="e.g. Section 2 doesn't cover the EU market as requested; tone is too informal."
+                  placeholder={t("client.plan.disputePlaceholder")}
                   className="mt-2 w-full rounded-md border border-input bg-ink-900 p-2 text-sm text-ink-100 placeholder:text-ink-500 focus:border-signal-500 focus:outline-none focus:ring-1 focus:ring-signal-500"
                 />
                 <div className="mt-2 flex justify-end gap-2">
@@ -474,10 +474,10 @@ export default function ExecutionPlan({
                     disabled={disputing}
                     className="shrink-0"
                   >
-                    Cancel
+                    {t("client.plan.cancel")}
                   </Button>
                   <Button onClick={handleDispute} disabled={disputing} className="shrink-0">
-                    {disputing ? "Submitting…" : "Submit dispute & request revision"}
+                    {disputing ? t("client.plan.submitting") : t("client.plan.submitDispute")}
                   </Button>
                 </div>
               </div>
@@ -489,12 +489,12 @@ export default function ExecutionPlan({
           <div className="flex items-center gap-2">
             <Target className="h-4 w-4 text-primary" />
             <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              How we understood your brief
+              {t("client.plan.briefTitle")}
             </h3>
           </div>
           {spec.objective && (
             <div className="rounded-lg border bg-ink-900 p-4">
-              <p className="eyebrow text-muted-foreground">Objective</p>
+              <p className="eyebrow text-muted-foreground">{t("client.plan.objective")}</p>
               <p className="mt-1 text-sm leading-relaxed">{spec.objective}</p>
             </div>
           )}
@@ -503,7 +503,7 @@ export default function ExecutionPlan({
               <div className="rounded-lg border p-4">
                 <div className="flex items-center gap-2">
                   <ListChecks className="h-4 w-4 text-success" />
-                  <p className="text-sm font-medium">Deliverables</p>
+                  <p className="text-sm font-medium">{t("client.plan.deliverables")}</p>
                 </div>
                 <ul className="mt-2 space-y-1.5">
                   {spec.deliverables.map((d, i) => (
@@ -519,7 +519,7 @@ export default function ExecutionPlan({
               <div className="rounded-lg border p-4">
                 <div className="flex items-center gap-2">
                   <Trophy className="h-4 w-4 text-warning" />
-                  <p className="text-sm font-medium">Success criteria</p>
+                  <p className="text-sm font-medium">{t("client.plan.successCriteria")}</p>
                 </div>
                 <ul className="mt-2 space-y-1.5">
                   {spec.success_criteria.map((s, i) => (
@@ -536,7 +536,7 @@ export default function ExecutionPlan({
             <div className="rounded-lg border border-warning/40 bg-warning/10 p-4">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-warning" />
-                <p className="text-sm font-medium">Constraints</p>
+                <p className="text-sm font-medium">{t("client.plan.constraints")}</p>
               </div>
               <ul className="mt-2 flex flex-wrap gap-2">
                 {spec.constraints.map((c, i) => (
@@ -554,7 +554,7 @@ export default function ExecutionPlan({
             spec.success_criteria.length === 0 &&
             spec.constraints.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                A structured summary of your brief will appear here.
+                {t("client.plan.briefEmpty")}
               </p>
             )}
         </section>
@@ -564,12 +564,12 @@ export default function ExecutionPlan({
           <div className="flex items-center gap-2">
             <Layers className="h-4 w-4 text-primary" />
             <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              {`How it breaks down — ${tasks.length} task${tasks.length === 1 ? "" : "s"} & matched agents`}
+              {t("client.plan.breakdown", { count: tasks.length })}
             </h3>
           </div>
 
           {tasks.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No tasks were generated for this job.</p>
+            <p className="text-sm text-muted-foreground">{t("client.plan.noTasks")}</p>
           ) : (
             <div className="space-y-4">
               {tasks.map((task, idx) => {
@@ -591,12 +591,15 @@ export default function ExecutionPlan({
                           </Badge>
                           {task.priority !== null && task.priority !== undefined && task.priority !== "" && (
                             <Badge variant="outline" className="font-normal">
-                              Priority {String(task.priority)}
+                              {t("client.plan.priority")} {String(task.priority)}
                             </Badge>
                           )}
                           {!!task.revision_count && task.revision_count > 0 && (
                             <Badge variant="warning" className="font-normal">
-                              Revised{task.revision_count > 1 ? ` ×${task.revision_count}` : ""}
+                              {t("client.plan.revised")}
+                              {task.revision_count > 1
+                                ? " " + t("client.plan.revisionCount", { count: task.revision_count })
+                                : ""}
                             </Badge>
                           )}
                           <span className="font-mono text-xs font-medium text-success">
@@ -616,12 +619,12 @@ export default function ExecutionPlan({
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-muted-foreground" />
                         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                          Matched agents
+                          {t("client.plan.matchedAgents")}
                         </p>
                       </div>
                       {agents.length === 0 ? (
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Matching agents to this task…
+                          {t("client.plan.matching")}
                         </p>
                       ) : (
                         <ol className="mt-3 space-y-2">
@@ -648,7 +651,7 @@ export default function ExecutionPlan({
                                     {best && (
                                       <Badge variant="success" className="flex-shrink-0">
                                         <Trophy className="mr-1 h-3 w-3" />
-                                        Best match
+                                        {t("client.plan.bestMatch")}
                                       </Badge>
                                     )}
                                   </div>
@@ -673,7 +676,7 @@ export default function ExecutionPlan({
                         <div className="flex items-center gap-2">
                           <Badge variant="success" className="flex-shrink-0">
                             <CheckCircle2 className="mr-1 h-3 w-3" />
-                            Delivered
+                            {t("client.plan.delivered")}
                           </Badge>
                           {task.delivered.produced_by ? (
                             <span className="text-xs text-muted-foreground">

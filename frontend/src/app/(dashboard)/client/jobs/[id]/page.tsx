@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { apiGet, apiPost, ApiError } from "@/lib/api";
+import { useTranslation } from "@/lib/i18n";
+import { JOB_LIFECYCLE } from "@/lib/job-requirements";
 import { formatCurrency, formatDate, formatStatus } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -84,14 +86,6 @@ interface JobDetail {
   total_budget_used: number;
 }
 
-const JOB_LIFECYCLE = [
-  "draft",
-  "pending",
-  "active",
-  "in_progress",
-  "client_review",
-  "completed",
-];
 
 const statusBadgeVariant = (status: string) => {
   const map: Record<string, "default" | "secondary" | "destructive" | "outline" | "success" | "warning"> = {
@@ -114,6 +108,7 @@ const statusBadgeVariant = (status: string) => {
 };
 
 export default function JobDetailPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const jobId = params.id as string;
 
@@ -131,7 +126,7 @@ export default function JobDetailPage() {
       setJob(data);
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
-        setError("Job not found.");
+        setError(t("client.detail.notFound"));
       } else {
         setError(err instanceof Error ? err.message : "Failed to load job details");
       }
@@ -200,17 +195,19 @@ export default function JobDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <AlertCircle className="h-12 w-12 text-destructive" />
-        <p className="text-lg text-muted-foreground">{error ?? "Job not found"}</p>
+        <p className="text-lg text-muted-foreground">{error ?? t("client.detail.notFound")}</p>
         <Link href="/client/jobs">
           <Button variant="outline">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Jobs
+            {t("client.detail.backToJobs")}
           </Button>
         </Link>
       </div>
     );
   }
 
+  // Valeur d'API, pas un libellé : le repli reste dans le code.
+  const paymentStatus = job.payment_status ?? "pending";
   const lifecycleIndex = JOB_LIFECYCLE.indexOf(job.status);
   const progressPercent =
     job.status === "cancelled"
@@ -224,11 +221,11 @@ export default function JobDetailPage() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/client" className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("client.detail.breadcrumbDashboard")}
         </Link>
         <ChevronRight className="h-4 w-4" />
         <Link href="/client/jobs" className="hover:text-foreground transition-colors">
-          Jobs
+          {t("client.detail.breadcrumbJobs")}
         </Link>
         <ChevronRight className="h-4 w-4" />
         <span className="text-foreground truncate max-w-[200px]">{job.title}</span>
@@ -250,7 +247,7 @@ export default function JobDetailPage() {
               </Badge>
             </div>
             <p className="text-muted-foreground mt-1">
-              Created {formatDate(job.created_at)}
+              {t("client.detail.created")} {formatDate(job.created_at)}
             </p>
           </div>
         </div>
@@ -259,7 +256,7 @@ export default function JobDetailPage() {
       {/* Status Timeline */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Job Progress</CardTitle>
+          <CardTitle className="text-lg">{t("client.detail.progress")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Progress value={progressPercent} className="mb-4" />
@@ -303,7 +300,7 @@ export default function JobDetailPage() {
           {/* Job Info */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Description</CardTitle>
+              <CardTitle className="text-lg">{t("client.detail.description")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm whitespace-pre-wrap leading-relaxed">{job.description}</p>
@@ -316,10 +313,10 @@ export default function JobDetailPage() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <FileText className="h-5 w-5 text-primary" />
-                  AI-Structured Summary
+                  {t("client.detail.summaryTitle")}
                 </CardTitle>
                 <CardDescription>
-                  Auto-generated structured breakdown of your job requirements
+                  {t("client.detail.summarySubtitle")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -336,9 +333,9 @@ export default function JobDetailPage() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-success" />
-                  Final Deliverables
+                  {t("client.detail.deliverablesTitle")}
                 </CardTitle>
-                <CardDescription>Approved submissions from agents</CardDescription>
+                <CardDescription>{t("client.detail.deliverablesSubtitle")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {job.deliverables.map((sub) => (
@@ -350,7 +347,7 @@ export default function JobDetailPage() {
                     <p className="text-sm text-muted-foreground">{sub.output_summary}</p>
                     {sub.score !== null && (
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="text-muted-foreground">Quality Score:</span>
+                        <span className="text-muted-foreground">{t("client.detail.qualityScore")}</span>
                         <span className="font-mono font-semibold text-ink-50">{sub.score}/100</span>
                       </div>
                     )}
@@ -365,14 +362,14 @@ export default function JobDetailPage() {
                             className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                           >
                             <Download className="h-3 w-3" />
-                            Artifact {idx + 1}
+                            {t("client.detail.artifact")} {idx + 1}
                             <ExternalLink className="h-3 w-3" />
                           </a>
                         ))}
                       </div>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      Submitted {formatDate(sub.submitted_at)}
+                      {t("client.detail.submitted")} {formatDate(sub.submitted_at)}
                     </p>
                   </div>
                 ))}
@@ -384,16 +381,16 @@ export default function JobDetailPage() {
           {job.status === "client_review" && (
             <Card className="border-primary/50">
               <CardHeader>
-                <CardTitle className="text-lg">Review Required</CardTitle>
+                <CardTitle className="text-lg">{t("client.detail.reviewTitle")}</CardTitle>
                 <CardDescription>
-                  This job is awaiting your review. Approve the results or request revisions.
+                  {t("client.detail.reviewBody")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Revision Notes (optional for approve, required for revision)</label>
+                  <label className="text-sm font-medium">{t("client.detail.reviewNotesLabel")}</label>
                   <Textarea
-                    placeholder="Provide feedback or revision instructions..."
+                    placeholder={t("client.detail.reviewNotesPlaceholder")}
                     value={reviewNote}
                     onChange={(e) => setReviewNote(e.target.value)}
                     className="min-h-[100px]"
@@ -410,7 +407,7 @@ export default function JobDetailPage() {
                   ) : (
                     <ThumbsUp className="mr-2 h-4 w-4" />
                   )}
-                  Approve Result
+                  {t("client.detail.approve")}
                 </Button>
                 <Button
                   variant="outline"
@@ -422,7 +419,7 @@ export default function JobDetailPage() {
                   ) : (
                     <RotateCcw className="mr-2 h-4 w-4" />
                   )}
-                  Request Revision
+                  {t("client.detail.requestRevision")}
                 </Button>
               </CardFooter>
             </Card>
@@ -436,24 +433,24 @@ export default function JobDetailPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <DollarSign className="h-5 w-5 text-success" />
-                Budget
+                {t("client.detail.budget")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Range</span>
+                <span className="text-muted-foreground">{t("client.detail.range")}</span>
                 <span className="font-mono font-medium">
                   {formatCurrency(job.budget_min, job.currency)} - {formatCurrency(job.budget_max, job.currency)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Used</span>
+                <span className="text-muted-foreground">{t("client.detail.used")}</span>
                 <span className="font-mono font-medium">
                   {formatCurrency(job.total_budget_used ?? 0, job.currency)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Currency</span>
+                <span className="text-muted-foreground">{t("client.detail.currency")}</span>
                 <span className="font-mono font-medium">{job.currency}</span>
               </div>
             </CardContent>
@@ -462,17 +459,17 @@ export default function JobDetailPage() {
           {/* Payment Status */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Payment</CardTitle>
+              <CardTitle className="text-lg">{t("client.detail.payment")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Status</span>
-                <Badge variant={statusBadgeVariant(job.payment_status ?? "pending")}>
-                  {formatStatus(job.payment_status ?? "pending")}
+                <span className="text-muted-foreground">{t("client.detail.status")}</span>
+                <Badge variant={statusBadgeVariant(paymentStatus)}>
+                  {formatStatus(paymentStatus)}
                 </Badge>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total Paid</span>
+                <span className="text-muted-foreground">{t("client.detail.totalPaid")}</span>
                 <span className="font-mono font-medium">
                   {formatCurrency(job.total_paid ?? 0, job.currency)}
                 </span>
@@ -483,11 +480,11 @@ export default function JobDetailPage() {
           {/* Details Card */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Details</CardTitle>
+              <CardTitle className="text-lg">{t("client.detail.details")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Deadline</span>
+                <span className="text-muted-foreground">{t("client.detail.deadline")}</span>
                 <span className="font-medium">
                   {job.deadline ? (
                     <span className="flex items-center gap-1">
@@ -495,16 +492,16 @@ export default function JobDetailPage() {
                       {formatDate(job.deadline)}
                     </span>
                   ) : (
-                    "No deadline"
+                    t("client.detail.noDeadline")
                   )}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Auto-select</span>
-                <span className="font-medium">{job.auto_select_agents ? "Yes" : "No"}</span>
+                <span className="text-muted-foreground">{t("client.detail.autoSelect")}</span>
+                <span className="font-medium">{job.auto_select_agents ? t("client.detail.yes") : t("client.detail.no")}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Last Updated</span>
+                <span className="text-muted-foreground">{t("client.detail.lastUpdated")}</span>
                 <span className="font-medium">{formatDate(job.updated_at)}</span>
               </div>
             </CardContent>
