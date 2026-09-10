@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { apiGet, apiPost, apiPut, ApiError } from "@/lib/api";
+import { useTranslation } from "@/lib/i18n";
 import { formatCurrency, formatDate, formatStatus } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -100,6 +101,7 @@ const statusBadgeVariant = (status: string) => {
 };
 
 export default function AgentDetailPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const agentId = params.id as string;
 
@@ -121,7 +123,7 @@ export default function AgentDetailPage() {
       setAgent(data);
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
-        setError("Agent not found.");
+        setError(t("developer.agentDetail.notFound"));
       } else {
         setError(err instanceof Error ? err.message : "Failed to load agent details");
       }
@@ -191,11 +193,11 @@ export default function AgentDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <AlertCircle className="h-12 w-12 text-destructive" />
-        <p className="text-lg text-muted-foreground">{error ?? "Agent not found"}</p>
+        <p className="text-lg text-muted-foreground">{error ?? t("developer.agentDetail.notFound")}</p>
         <Link href="/developer/agents">
           <Button variant="outline">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Agents
+            {t("developer.agentDetail.back")}
           </Button>
         </Link>
       </div>
@@ -207,11 +209,11 @@ export default function AgentDetailPage() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/developer" className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("developer.agentDetail.breadcrumbDashboard")}
         </Link>
         <ChevronRight className="h-4 w-4" />
         <Link href="/developer/agents" className="hover:text-foreground transition-colors">
-          Agents
+          {t("developer.agentDetail.breadcrumbAgents")}
         </Link>
         <ChevronRight className="h-4 w-4" />
         <span className="text-foreground truncate max-w-[200px]">{agent.name}</span>
@@ -240,10 +242,10 @@ export default function AgentDetailPage() {
                   {agent.status}
                 </Badge>
                 <Badge variant={agent.kind === "human" ? "outline" : "secondary"}>
-                  {agent.kind === "human" ? "Human expert" : "AI agent"}
+                  {agent.kind === "human" ? t("developer.agentDetail.humanExpert") : t("developer.agentDetail.aiAgent")}
                 </Badge>
               </div>
-              <p className="text-muted-foreground mt-1">{agent.description || "No description"}</p>
+              <p className="text-muted-foreground mt-1">{agent.description || t("developer.agentDetail.noDescription")}</p>
             </div>
           </div>
         </div>
@@ -255,12 +257,12 @@ export default function AgentDetailPage() {
           {agent.status === "active" ? (
             <>
               <Pause className="mr-2 h-4 w-4" />
-              Pause Agent
+              {t("developer.agentDetail.pause")}
             </>
           ) : (
             <>
               <Play className="mr-2 h-4 w-4" />
-              Activate Agent
+              {t("developer.agentDetail.activate")}
             </>
           )}
         </Button>
@@ -274,13 +276,13 @@ export default function AgentDetailPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-primary" />
-                Performance Metrics
+                {t("developer.agentDetail.metricsTitle")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Success Rate</span>
+                  <span className="text-muted-foreground">{t("developer.agentDetail.successRate")}</span>
                   <span className="font-mono font-semibold">{Math.round(agent.success_rate)}%</span>
                 </div>
                 <Progress
@@ -297,7 +299,7 @@ export default function AgentDetailPage() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Average Score</span>
+                  <span className="text-muted-foreground">{t("developer.agentDetail.averageScore")}</span>
                   <span className="font-mono font-semibold">{agent.avg_score.toFixed(1)} / 100</span>
                 </div>
                 <Progress
@@ -308,7 +310,7 @@ export default function AgentDetailPage() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Completed Tasks</span>
+                  <span className="text-muted-foreground">{t("developer.agentDetail.completedTasks")}</span>
                   <span className="font-mono font-semibold">
                     {agent.completed_tasks} / {agent.total_assignments}
                   </span>
@@ -325,8 +327,8 @@ export default function AgentDetailPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-lg">Capabilities</CardTitle>
-                <CardDescription>Skills and tools this agent supports</CardDescription>
+                <CardTitle className="text-lg">{t("developer.agentDetail.capabilities")}</CardTitle>
+                <CardDescription>{t("developer.agentDetail.capabilitiesSubtitle")}</CardDescription>
               </div>
               <Button
                 variant="outline"
@@ -334,16 +336,16 @@ export default function AgentDetailPage() {
                 onClick={() => setShowAddCap(!showAddCap)}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Add
+                {t("developer.agentDetail.add")}
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               {showAddCap && (
                 <div className="flex items-end gap-3 rounded-lg border border-dashed p-4">
                   <div className="flex-1 space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">Name</label>
+                    <label className="text-xs font-medium text-muted-foreground">{t("developer.agentDetail.name")}</label>
                     <Input
-                      placeholder="e.g., python"
+                      placeholder={t("developer.agentDetail.namePlaceholder")}
                       value={newCapName}
                       onChange={(e) => setNewCapName(e.target.value)}
                       onKeyDown={(e) => {
@@ -355,22 +357,22 @@ export default function AgentDetailPage() {
                     />
                   </div>
                   <div className="flex-1 space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">Version</label>
+                    <label className="text-xs font-medium text-muted-foreground">{t("developer.agentDetail.version")}</label>
                     <Input
-                      placeholder="e.g., 3.11"
+                      placeholder={t("developer.agentDetail.versionPlaceholder")}
                       value={newCapVersion}
                       onChange={(e) => setNewCapVersion(e.target.value)}
                     />
                   </div>
                   <Button size="sm" onClick={handleAddCapability} disabled={actionLoading}>
-                    Add
+                    {t("developer.agentDetail.add")}
                   </Button>
                 </div>
               )}
 
               {agent.capabilities.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  No capabilities registered yet.
+                  {t("developer.agentDetail.noCapabilities")}
                 </p>
               ) : (
                 <div className="flex flex-wrap gap-2">
@@ -381,11 +383,14 @@ export default function AgentDetailPage() {
                     >
                       <span className="font-mono text-xs font-medium">{cap.name}</span>
                       {cap.version && (
-                        <span className="font-mono text-[11px] text-muted-foreground">v{cap.version}</span>
+                        <span className="font-mono text-[11px] text-muted-foreground">
+                          {t("developer.agentDetail.versionPrefix")}
+                          {cap.version}
+                        </span>
                       )}
                       <button
                         type="button"
-                        aria-label={`Remove ${cap.name}`}
+                        aria-label={t("developer.agentDetail.removeCapability", { name: cap.name })}
                         onClick={() => handleRemoveCapability(cap.id)}
                         className="ml-1 text-muted-foreground hover:text-destructive transition-colors"
                         disabled={actionLoading}
@@ -400,7 +405,7 @@ export default function AgentDetailPage() {
               {/* Supported Task Types */}
               {agent.supported_task_types && agent.supported_task_types.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium mb-2">Supported Task Types</p>
+                  <p className="text-sm font-medium mb-2">{t("developer.agentDetail.taskTypes")}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {agent.supported_task_types.map((type) => (
                       <Badge key={type} variant="secondary" className="text-xs capitalize">
@@ -418,14 +423,14 @@ export default function AgentDetailPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Clock className="h-5 w-5 text-muted-foreground" />
-                Assignment History
+                {t("developer.agentDetail.historyTitle")}
               </CardTitle>
-              <CardDescription>Recent task assignments for this agent</CardDescription>
+              <CardDescription>{t("developer.agentDetail.historySubtitle")}</CardDescription>
             </CardHeader>
             <CardContent>
               {(!agent.assignment_history || agent.assignment_history.length === 0) ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
-                  No assignments yet.
+                  {t("developer.agentDetail.noAssignments")}
                 </p>
               ) : (
                 <div className="space-y-3">
@@ -466,9 +471,9 @@ export default function AgentDetailPage() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <MessageSquare className="h-5 w-5 text-muted-foreground" />
-                  Feedback
+                  {t("developer.agentDetail.feedbackTitle")}
                 </CardTitle>
-                <CardDescription>Client notes about this agent</CardDescription>
+                <CardDescription>{t("developer.agentDetail.feedbackSubtitle")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {agent.feedback.map((fb) => (
@@ -494,27 +499,27 @@ export default function AgentDetailPage() {
           {/* Agent Info Card */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Agent Info</CardTitle>
+              <CardTitle className="text-lg">{t("developer.agentDetail.infoTitle")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Status</span>
+                <span className="text-muted-foreground">{t("developer.agentDetail.status")}</span>
                 <Badge variant={statusBadgeVariant(agent.status)}>{agent.status}</Badge>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Auth Type</span>
+                <span className="text-muted-foreground">{t("developer.agentDetail.authType")}</span>
                 <span className="font-medium capitalize">{agent.auth_type.replace(/_/g, " ")}</span>
               </div>
               <div className="text-sm">
-                <span className="text-muted-foreground">Endpoint</span>
+                <span className="text-muted-foreground">{t("developer.agentDetail.endpoint")}</span>
                 <p className="font-mono text-xs mt-1 break-all">{agent.endpoint_url}</p>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Registered</span>
+                <span className="text-muted-foreground">{t("developer.agentDetail.registered")}</span>
                 <span className="font-medium">{formatDate(agent.created_at)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Last Updated</span>
+                <span className="text-muted-foreground">{t("developer.agentDetail.lastUpdated")}</span>
                 <span className="font-medium">{formatDate(agent.updated_at)}</span>
               </div>
             </CardContent>
@@ -525,24 +530,24 @@ export default function AgentDetailPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <DollarSign className="h-5 w-5 text-success" />
-                Earnings
+                {t("developer.agentDetail.earningsTitle")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total Earned</span>
+                <span className="text-muted-foreground">{t("developer.agentDetail.totalEarned")}</span>
                 <span className="font-mono font-semibold text-success">
                   {formatCurrency(agent.earnings?.total ?? 0, agent.earnings?.currency ?? "USD")}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Pending</span>
+                <span className="text-muted-foreground">{t("developer.agentDetail.pending")}</span>
                 <span className="font-medium">
                   {formatCurrency(agent.earnings?.pending ?? 0, agent.earnings?.currency ?? "USD")}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Paid</span>
+                <span className="text-muted-foreground">{t("developer.agentDetail.paid")}</span>
                 <span className="font-medium">
                   {formatCurrency(agent.earnings?.paid ?? 0, agent.earnings?.currency ?? "USD")}
                 </span>
@@ -553,24 +558,24 @@ export default function AgentDetailPage() {
           {/* Quick Stats */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Quick Stats</CardTitle>
+              <CardTitle className="text-lg">{t("developer.agentDetail.statsTitle")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1">
                   <CheckCircle2 className="h-3.5 w-3.5" />
-                  Completed
+                  {t("developer.agentDetail.completed")}
                 </span>
                 <span className="font-medium">{agent.completed_tasks}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total Assignments</span>
+                <span className="text-muted-foreground">{t("developer.agentDetail.totalAssignments")}</span>
                 <span className="font-medium">{agent.total_assignments}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1">
                   <Star className="h-3.5 w-3.5" />
-                  Avg Score
+                  {t("developer.agentDetail.avgScore")}
                 </span>
                 <span className="font-medium">{agent.avg_score.toFixed(1)}</span>
               </div>

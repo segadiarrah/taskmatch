@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { apiGet, apiPost, ApiError } from "@/lib/api";
+import { useTranslation } from "@/lib/i18n";
 import { formatCurrency, formatDate, formatStatus, formatDateTime } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -116,6 +117,7 @@ const priorityBadgeVariant = (priority: string) => {
 };
 
 export default function TaskDetailPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const taskId = params.id as string;
 
@@ -165,7 +167,7 @@ export default function TaskDetailPage() {
       setAssignments(assignmentsData.items ?? []);
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
-        setError("Task not found.");
+        setError(t("developer.taskDetail.notFound"));
       } else {
         setError(err instanceof Error ? err.message : "Failed to load task details");
       }
@@ -293,11 +295,11 @@ export default function TaskDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <AlertCircle className="h-12 w-12 text-destructive" />
-        <p className="text-lg text-muted-foreground">{error ?? "Task not found"}</p>
+        <p className="text-lg text-muted-foreground">{error ?? t("developer.taskDetail.notFound")}</p>
         <Link href="/developer/tasks">
           <Button variant="outline">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Tasks
+            {t("developer.taskDetail.back")}
           </Button>
         </Link>
       </div>
@@ -309,11 +311,11 @@ export default function TaskDetailPage() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/developer" className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("developer.taskDetail.breadcrumbDashboard")}
         </Link>
         <ChevronRight className="h-4 w-4" />
         <Link href="/developer/tasks" className="hover:text-foreground transition-colors">
-          Tasks
+          {t("developer.taskDetail.breadcrumbTasks")}
         </Link>
         <ChevronRight className="h-4 w-4" />
         <span className="text-foreground truncate max-w-[200px]">{task.title}</span>
@@ -341,7 +343,7 @@ export default function TaskDetailPage() {
               <Badge variant="secondary" className="text-xs capitalize mr-2">
                 {task.task_type.replace(/_/g, " ")}
               </Badge>
-              Created {formatDate(task.created_at)}
+              {t("developer.taskDetail.created")} {formatDate(task.created_at)}
             </p>
           </div>
         </div>
@@ -355,20 +357,20 @@ export default function TaskDetailPage() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <FileText className="h-5 w-5 text-primary" />
-                Task Specification
+                {t("developer.taskDetail.specTitle")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h4 className="text-sm font-medium mb-2">Description</h4>
+                <h4 className="text-sm font-medium mb-2">{t("developer.taskDetail.description")}</h4>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {task.description || "No description provided."}
+                  {task.description || t("developer.taskDetail.noDescription")}
                 </p>
               </div>
 
               {task.input_spec && Object.keys(task.input_spec).length > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium mb-2">Input Specification</h4>
+                  <h4 className="text-sm font-medium mb-2">{t("developer.taskDetail.inputSpec")}</h4>
                   <pre className="max-h-[300px] overflow-auto rounded-lg border border-border bg-ink-950 p-4 font-mono text-xs text-ink-200">
                     {JSON.stringify(task.input_spec, null, 2)}
                   </pre>
@@ -377,7 +379,7 @@ export default function TaskDetailPage() {
 
               {task.output_spec && Object.keys(task.output_spec).length > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium mb-2">Output Specification</h4>
+                  <h4 className="text-sm font-medium mb-2">{t("developer.taskDetail.outputSpec")}</h4>
                   <pre className="max-h-[300px] overflow-auto rounded-lg border border-border bg-ink-950 p-4 font-mono text-xs text-ink-200">
                     {JSON.stringify(task.output_spec, null, 2)}
                   </pre>
@@ -392,17 +394,17 @@ export default function TaskDetailPage() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Gavel className="h-5 w-5 text-primary" />
-                  Place a Bid
+                  {t("developer.taskDetail.bidTitle")}
                 </CardTitle>
                 <CardDescription>
-                  Submit a bid to work on this task with one of your agents.
+                  {t("developer.taskDetail.bidSubtitle")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {bidSuccess && (
                   <div className="flex items-center gap-3 rounded-lg border border-success/40 bg-success/10 p-4 mb-4">
                     <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-                    <p className="text-sm text-success">Bid submitted successfully.</p>
+                    <p className="text-sm text-success">{t("developer.taskDetail.bidSuccess")}</p>
                   </div>
                 )}
                 {bidError && (
@@ -416,14 +418,14 @@ export default function TaskDetailPage() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <label htmlFor="bid-agent" className="text-sm font-medium">
-                        Agent <span className="text-destructive">*</span>
+                        {t("developer.taskDetail.agent")} <span className="text-destructive">*</span>
                       </label>
                       <Select
                         id="bid-agent"
                         value={bidAgentId}
                         onChange={(e) => setBidAgentId(e.target.value)}
                       >
-                        <option value="">Select an agent</option>
+                        <option value="">{t("developer.taskDetail.selectAgent")}</option>
                         {myAgents
                           .filter((a) => a.status === "active")
                           .map((agent) => (
@@ -436,14 +438,14 @@ export default function TaskDetailPage() {
 
                     <div className="space-y-2">
                       <label htmlFor="bid-price" className="text-sm font-medium">
-                        Price ({task.currency}) <span className="text-destructive">*</span>
+                        {t("developer.taskDetail.price", { currency: task.currency })} <span className="text-destructive">*</span>
                       </label>
                       <Input
                         id="bid-price"
                         type="number"
                         min="0"
                         step="0.01"
-                        placeholder={`Budget: ${formatCurrency(task.budget, task.currency)}`}
+                        placeholder={t("developer.taskDetail.budgetPlaceholder", { amount: formatCurrency(task.budget, task.currency) })}
                         value={bidPrice}
                         onChange={(e) => setBidPrice(e.target.value)}
                       />
@@ -451,13 +453,13 @@ export default function TaskDetailPage() {
 
                     <div className="space-y-2">
                       <label htmlFor="bid-eta" className="text-sm font-medium">
-                        ETA (hours) <span className="text-destructive">*</span>
+                        {t("developer.taskDetail.eta")} <span className="text-destructive">*</span>
                       </label>
                       <Input
                         id="bid-eta"
                         type="number"
                         min="1"
-                        placeholder="e.g., 24"
+                        placeholder={t("developer.taskDetail.etaPlaceholder")}
                         value={bidEtaHours}
                         onChange={(e) => setBidEtaHours(e.target.value)}
                       />
@@ -465,7 +467,7 @@ export default function TaskDetailPage() {
 
                     <div className="space-y-2">
                       <label htmlFor="bid-confidence" className="text-sm font-medium">
-                        Confidence Score (0-1)
+                        {t("developer.taskDetail.confidence")}
                       </label>
                       <Input
                         id="bid-confidence"
@@ -478,18 +480,18 @@ export default function TaskDetailPage() {
                         onChange={(e) => setBidConfidence(e.target.value)}
                       />
                       <p className="text-xs text-muted-foreground">
-                        How confident is your agent in completing this task (0 = low, 1 = high)
+                        {t("developer.taskDetail.confidenceHint")}
                       </p>
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <label htmlFor="bid-proposal" className="text-sm font-medium">
-                      Proposal
+                      {t("developer.taskDetail.proposal")}
                     </label>
                     <Textarea
                       id="bid-proposal"
-                      placeholder="Describe your approach, relevant experience, and why your agent is the best fit..."
+                      placeholder={t("developer.taskDetail.proposalPlaceholder")}
                       value={bidProposal}
                       onChange={(e) => setBidProposal(e.target.value)}
                       className="min-h-[100px]"
@@ -500,7 +502,7 @@ export default function TaskDetailPage() {
                     <Button type="submit" disabled={bidSubmitting}>
                       {bidSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       <Gavel className="mr-2 h-4 w-4" />
-                      Submit Bid
+                      {t("developer.taskDetail.submitBid")}
                     </Button>
                   </div>
                 </form>
@@ -514,17 +516,17 @@ export default function TaskDetailPage() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Send className="h-5 w-5 text-primary" />
-                  Submit Work
+                  {t("developer.taskDetail.submitWorkTitle")}
                 </CardTitle>
                 <CardDescription>
-                  Your agent is assigned to this task. Submit your completed work below.
+                  {t("developer.taskDetail.submitWorkSubtitle")}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {subSuccess && (
                   <div className="flex items-center gap-3 rounded-lg border border-success/40 bg-success/10 p-4 mb-4">
                     <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-                    <p className="text-sm text-success">Work submitted successfully.</p>
+                    <p className="text-sm text-success">{t("developer.taskDetail.workSuccess")}</p>
                   </div>
                 )}
                 {subError && (
@@ -537,27 +539,27 @@ export default function TaskDetailPage() {
                 <form onSubmit={handleSubmissionSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <label htmlFor="sub-output" className="text-sm font-medium">
-                      Output JSON <span className="text-destructive">*</span>
+                      {t("developer.taskDetail.outputJson")} <span className="text-destructive">*</span>
                     </label>
                     <Textarea
                       id="sub-output"
-                      placeholder='{"result": "...", "data": {...}}'
+                      placeholder={t("developer.taskDetail.outputPlaceholder")}
                       value={subOutputJson}
                       onChange={(e) => setSubOutputJson(e.target.value)}
                       className="min-h-[200px] font-mono text-xs"
                     />
                     <p className="text-xs text-muted-foreground">
-                      The output must be valid JSON matching the task output specification.
+                      {t("developer.taskDetail.outputHint")}
                     </p>
                   </div>
 
                   <div className="space-y-2">
                     <label htmlFor="sub-summary" className="text-sm font-medium">
-                      Summary
+                      {t("developer.taskDetail.summary")}
                     </label>
                     <Textarea
                       id="sub-summary"
-                      placeholder="Brief summary of the work completed, approach taken, and any notes..."
+                      placeholder={t("developer.taskDetail.summaryPlaceholder")}
                       value={subSummary}
                       onChange={(e) => setSubSummary(e.target.value)}
                       className="min-h-[100px]"
@@ -566,7 +568,7 @@ export default function TaskDetailPage() {
 
                   <div className="space-y-2">
                     <label htmlFor="sub-artifacts" className="text-sm font-medium">
-                      Artifact URLs
+                      {t("developer.taskDetail.artifactUrls")}
                     </label>
                     <Input
                       id="sub-artifacts"
@@ -575,7 +577,7 @@ export default function TaskDetailPage() {
                       onChange={(e) => setSubArtifactUrls(e.target.value)}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Comma-separated URLs to any deliverable artifacts (files, repos, etc.)
+                      {t("developer.taskDetail.artifactHint")}
                     </p>
                   </div>
 
@@ -583,7 +585,7 @@ export default function TaskDetailPage() {
                     <Button type="submit" disabled={subSubmitting}>
                       {subSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       <Send className="mr-2 h-4 w-4" />
-                      Submit Work
+                      {t("developer.taskDetail.submitWork")}
                     </Button>
                   </div>
                 </form>
@@ -597,20 +599,20 @@ export default function TaskDetailPage() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Gavel className="h-5 w-5 text-muted-foreground" />
-                  My Bids
+                  {t("developer.taskDetail.myBids")}
                 </CardTitle>
-                <CardDescription>Bids you have placed on this task</CardDescription>
+                <CardDescription>{t("developer.taskDetail.myBidsSubtitle")}</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Agent</TableHead>
-                      <TableHead>Price</TableHead>
+                      <TableHead>{t("developer.taskDetail.agent")}</TableHead>
+                      <TableHead>{t("developer.taskDetail.bidPrice")}</TableHead>
                       <TableHead>ETA</TableHead>
-                      <TableHead>Confidence</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Submitted</TableHead>
+                      <TableHead>{t("developer.taskDetail.bidConfidence")}</TableHead>
+                      <TableHead>{t("developer.taskDetail.status")}</TableHead>
+                      <TableHead>{t("developer.taskDetail.submitted")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -625,7 +627,9 @@ export default function TaskDetailPage() {
                         <TableCell className="font-mono text-xs font-medium text-ink-100">
                           {formatCurrency(bid.price, bid.currency)}
                         </TableCell>
-                        <TableCell className="font-mono text-xs">{bid.eta_hours}h</TableCell>
+                        <TableCell className="font-mono text-xs">{bid.eta_hours}
+                          {t("developer.taskDetail.hoursSuffix")}
+                        </TableCell>
                         <TableCell className="font-mono text-xs">{(bid.confidence_score * 100).toFixed(0)}%</TableCell>
                         <TableCell>
                           <Badge variant={statusBadgeVariant(bid.status)} className="text-xs">
@@ -649,9 +653,9 @@ export default function TaskDetailPage() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Send className="h-5 w-5 text-muted-foreground" />
-                  My Submissions
+                  {t("developer.taskDetail.mySubmissions")}
                 </CardTitle>
-                <CardDescription>Work you have submitted for this task</CardDescription>
+                <CardDescription>{t("developer.taskDetail.mySubmissionsSubtitle")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {mySubmissions.map((sub) => (
@@ -686,14 +690,14 @@ export default function TaskDetailPage() {
                             className="inline-flex items-center gap-1 text-xs text-signal-400 hover:underline"
                           >
                             <LinkIcon className="h-3 w-3" />
-                            Artifact {idx + 1}
+                            {t("developer.taskDetail.artifact")} {idx + 1}
                           </a>
                         ))}
                       </div>
                     )}
 
                     <p className="text-xs text-muted-foreground">
-                      Submitted {formatDateTime(sub.submitted_at)}
+                      {t("developer.taskDetail.submitted")} {formatDateTime(sub.submitted_at)}
                     </p>
                   </div>
                 ))}
@@ -707,27 +711,27 @@ export default function TaskDetailPage() {
           {/* Task Info */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Task Info</CardTitle>
+              <CardTitle className="text-lg">{t("developer.taskDetail.infoTitle")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Status</span>
+                <span className="text-muted-foreground">{t("developer.taskDetail.status")}</span>
                 <Badge variant={statusBadgeVariant(task.status)}>
                   {formatStatus(task.status)}
                 </Badge>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Type</span>
+                <span className="text-muted-foreground">{t("developer.taskDetail.type")}</span>
                 <span className="font-medium capitalize">{task.task_type.replace(/_/g, " ")}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Priority</span>
+                <span className="text-muted-foreground">{t("developer.taskDetail.priority")}</span>
                 <Badge variant={priorityBadgeVariant(task.priority)} className="capitalize">
                   {task.priority}
                 </Badge>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Created</span>
+                <span className="text-muted-foreground">{t("developer.taskDetail.created")}</span>
                 <span className="font-medium">{formatDate(task.created_at)}</span>
               </div>
             </CardContent>
@@ -738,18 +742,18 @@ export default function TaskDetailPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
                 <DollarSign className="h-5 w-5 text-success" />
-                Budget & Deadline
+                {t("developer.taskDetail.budgetTitle")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Budget</span>
+                <span className="text-muted-foreground">{t("developer.taskDetail.budget")}</span>
                 <span className="font-mono font-semibold text-success">
                   {formatCurrency(task.budget, task.currency)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Deadline</span>
+                <span className="text-muted-foreground">{t("developer.taskDetail.deadline")}</span>
                 <span className="font-medium">
                   {task.deadline ? (
                     <span className="flex items-center gap-1">
@@ -757,12 +761,12 @@ export default function TaskDetailPage() {
                       {formatDate(task.deadline)}
                     </span>
                   ) : (
-                    "No deadline"
+                    t("developer.taskDetail.noDeadline")
                   )}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total Bids</span>
+                <span className="text-muted-foreground">{t("developer.taskDetail.totalBids")}</span>
                 <span className="font-medium flex items-center gap-1">
                   <Gavel className="h-3.5 w-3.5" />
                   {task.bids_count}
@@ -777,7 +781,7 @@ export default function TaskDetailPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Bot className="h-5 w-5 text-primary" />
-                  My Assigned Agents
+                  {t("developer.taskDetail.myAgents")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -811,13 +815,15 @@ export default function TaskDetailPage() {
                 <div className="flex items-start gap-3">
                   <Info className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">Task is {formatStatus(task.status).toLowerCase()}</p>
+                    <p className="text-sm font-medium">
+                      {t("developer.taskDetail.taskIs")} {formatStatus(task.status).toLowerCase()}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {task.status === "completed"
-                        ? "This task has been completed. Check your submissions for results."
+                        ? t("developer.taskDetail.completedNote")
                         : task.status === "cancelled"
-                          ? "This task has been cancelled."
-                          : "No actions available for this task at this time."}
+                          ? t("developer.taskDetail.cancelledNote")
+                          : t("developer.taskDetail.noActions")}
                     </p>
                   </div>
                 </div>
