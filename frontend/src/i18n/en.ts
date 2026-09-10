@@ -495,6 +495,22 @@ const en = {
     loadErrorBody:
       "The request to the server failed. The page shows nothing rather than data that might be wrong.",
     retry: "Try again",
+    providers: "AI Providers",
+    loadingApp: "Loading TaskMatch\u2026",
+    console: "TaskMatch Console",
+    expandSidebar: "Expand sidebar",
+    collapseSidebar: "Collapse sidebar",
+    closeNav: "Close navigation",
+    openNav: "Open navigation",
+    dashboard: "Dashboard",
+    logout: "Logout",
+    closeDialog: "Close dialog",
+    crashTitle: "Something went wrong",
+    crashBody:
+      "An unexpected error occurred. Please try again or contact support if the problem persists.",
+    crashErrorId: "Error ID:",
+    crashRetry: "Try again",
+    crashHome: "Go to homepage",
   },
 
   /* ------------------------------------------------------------------------ */

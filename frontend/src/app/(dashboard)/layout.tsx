@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
+import { useTranslation } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,18 +34,20 @@ interface NavItem {
   roles: string[];
 }
 
-const navItems: NavItem[] = [
-  { label: "Overview", href: "/admin", icon: LayoutDashboard, roles: ["admin"] },
-  { label: "Jobs", href: "/admin/jobs", icon: Briefcase, roles: ["admin", "client"] },
-  { label: "Tasks", href: "/admin/tasks", icon: ListChecks, roles: ["admin", "client", "agent_developer"] },
-  { label: "Agents", href: "/admin/agents", icon: Bot, roles: ["admin", "agent_developer"] },
-  { label: "Bids", href: "/admin/tasks", icon: Gavel, roles: ["agent_developer"] },
-  { label: "Submissions", href: "/admin/validations", icon: FileCheck, roles: ["agent_developer"] },
-  { label: "Validations", href: "/admin/validations", icon: ShieldCheck, roles: ["admin"] },
-  { label: "Payments", href: "/admin/payments", icon: CreditCard, roles: ["admin", "client", "agent_developer"] },
-  { label: "Learning", href: "/admin/learning", icon: GraduationCap, roles: ["admin"] },
-  { label: "AI Providers", href: "/admin/providers", icon: Plug, roles: ["admin"] },
-  { label: "Audit Log", href: "/admin/audit", icon: ScrollText, roles: ["admin"] },
+/* Les libellés suivent la langue courante : la liste ne peut pas être figée
+   au chargement du module. */
+const buildNavItems = (t: (key: string) => string): NavItem[] => [
+  { label: t("dashboard.overview"), href: "/admin", icon: LayoutDashboard, roles: ["admin"] },
+  { label: t("dashboard.jobs"), href: "/admin/jobs", icon: Briefcase, roles: ["admin", "client"] },
+  { label: t("dashboard.tasks"), href: "/admin/tasks", icon: ListChecks, roles: ["admin", "client", "agent_developer"] },
+  { label: t("dashboard.agents"), href: "/admin/agents", icon: Bot, roles: ["admin", "agent_developer"] },
+  { label: t("dashboard.bids"), href: "/admin/tasks", icon: Gavel, roles: ["agent_developer"] },
+  { label: t("dashboard.submissions"), href: "/admin/validations", icon: FileCheck, roles: ["agent_developer"] },
+  { label: t("dashboard.validations"), href: "/admin/validations", icon: ShieldCheck, roles: ["admin"] },
+  { label: t("dashboard.payments"), href: "/admin/payments", icon: CreditCard, roles: ["admin", "client", "agent_developer"] },
+  { label: t("dashboard.learning"), href: "/admin/learning", icon: GraduationCap, roles: ["admin"] },
+  { label: t("dashboard.providers"), href: "/admin/providers", icon: Plug, roles: ["admin"] },
+  { label: t("dashboard.audit"), href: "/admin/audit", icon: ScrollText, roles: ["admin"] },
 ];
 
 function getInitials(name: string): string {
@@ -87,6 +90,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   const { user, isLoading, isAuthenticated, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -104,7 +108,7 @@ export default function DashboardLayout({
       <div className="flex h-screen items-center justify-center bg-ink-950">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-800 border-t-signal-500" />
-          <p className="font-mono text-sm text-ink-500">Loading TaskMatch...</p>
+          <p className="font-mono text-sm text-ink-500">{t("dashboard.loadingApp")}</p>
         </div>
       </div>
     );
@@ -114,7 +118,7 @@ export default function DashboardLayout({
     return null;
   }
 
-  const filteredNavItems = navItems.filter((item) =>
+  const filteredNavItems = buildNavItems(t).filter((item) =>
     item.roles.includes(user.role)
   );
 
@@ -153,7 +157,7 @@ export default function DashboardLayout({
               </div>
               <div>
                 <h1 className="text-sm font-bold tracking-tight text-ink-50">TaskMatch</h1>
-                <p className="font-mono text-[9px] uppercase tracking-wider text-ink-500">TaskMatch Console</p>
+                <p className="font-mono text-[9px] uppercase tracking-wider text-ink-500">{t("dashboard.console")}</p>
               </div>
             </div>
           )}
@@ -164,7 +168,7 @@ export default function DashboardLayout({
           )}
           <button
             type="button"
-            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={sidebarCollapsed ? t("dashboard.expandSidebar") : t("dashboard.collapseSidebar")}
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             className="hidden rounded-lg p-1.5 text-ink-500 hover:bg-ink-900 hover:text-ink-200 lg:block"
           >
@@ -172,7 +176,7 @@ export default function DashboardLayout({
           </button>
           <button
             type="button"
-            aria-label="Close navigation"
+            aria-label={t("dashboard.closeNav")}
             onClick={() => setSidebarOpen(false)}
             className="rounded-lg p-1.5 text-ink-500 hover:bg-ink-900 hover:text-ink-200 lg:hidden"
           >
@@ -231,7 +235,7 @@ export default function DashboardLayout({
           <div className="flex items-center gap-3">
             <button
               type="button"
-              aria-label="Open navigation"
+              aria-label={t("dashboard.openNav")}
               onClick={() => setSidebarOpen(true)}
               className="rounded-lg p-2 text-ink-500 hover:bg-ink-900 hover:text-ink-200 lg:hidden"
             >
@@ -243,7 +247,7 @@ export default function DashboardLayout({
               </span>
               <span className="text-ink-700">/</span>
               <span className="font-medium text-ink-50">
-                {filteredNavItems.find((item) => isActive(item.href))?.label || "Dashboard"}
+                {filteredNavItems.find((item) => isActive(item.href))?.label || t("dashboard.dashboard")}
               </span>
             </div>
           </div>
@@ -260,7 +264,7 @@ export default function DashboardLayout({
             </div>
             <Button variant="ghost" size="sm" onClick={() => { logout(); router.push("/login"); }}>
               <LogOut className="mr-1 h-4 w-4" />
-              <span className="hidden sm:inline">Logout</span>
+              <span className="hidden sm:inline">{t("dashboard.logout")}</span>
             </Button>
           </div>
         </header>

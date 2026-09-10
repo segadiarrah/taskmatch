@@ -187,6 +187,7 @@ function isAllowedLiteral(value, ancestors) {
   if (reviewedLiteralAllowlist.productAndProtocols.has(trimmed)) return true;
   if (reviewedLiteralAllowlist.httpMethods.has(trimmed)) return true;
   if (reviewedLiteralAllowlist.languageEndonyms.has(trimmed)) return true;
+  if (reviewedLiteralAllowlist.cssSelectors.test(trimmed)) return true;
   if (reviewedLiteralAllowlist.patterns.some((pattern) => pattern.test(trimmed))) return true;
   if (isTechnicalRoleLiteral(trimmed, ancestors)) return true;
   return inCodeContext(ancestors);
@@ -403,7 +404,12 @@ export function inspectLocalizationSources(files, options = {}) {
     }
   }
 
-  for (const file of parsed.filter((candidate) => candidate.localization !== "dictionary")) {
+  // `english-only` files are still parsed — forbidden design commentary and
+  // manifest membership are checked for everyone — but their visible strings are
+  // not required to be locale-backed. See adminEnglishOnly in the manifest.
+  for (const file of parsed.filter(
+    (candidate) => candidate.localization !== "dictionary" && candidate.localization !== "english-only",
+  )) {
     const localizedNodes = [];
     const findLocaleObjects = (node) => {
       const map = localeObject(node);

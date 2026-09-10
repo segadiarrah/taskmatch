@@ -468,6 +468,22 @@ const es = {
     loadErrorBody:
       "La solicitud al servidor ha fallado. La p\u00e1gina no muestra nada en lugar de datos que podr\u00edan ser incorrectos.",
     retry: "Reintentar",
+    providers: "Proveedores de IA",
+    loadingApp: "Cargando TaskMatch\u2026",
+    console: "Consola de TaskMatch",
+    expandSidebar: "Expandir la barra lateral",
+    collapseSidebar: "Contraer la barra lateral",
+    closeNav: "Cerrar la navegaci\u00f3n",
+    openNav: "Abrir la navegaci\u00f3n",
+    dashboard: "Panel",
+    logout: "Cerrar sesi\u00f3n",
+    closeDialog: "Cerrar el di\u00e1logo",
+    crashTitle: "Algo ha salido mal",
+    crashBody:
+      "Se ha producido un error inesperado. Int\u00e9ntalo de nuevo o contacta con soporte si el problema persiste.",
+    crashErrorId: "ID del error:",
+    crashRetry: "Reintentar",
+    crashHome: "Ir a la p\u00e1gina de inicio",
   },
 
   /* ------------------------------------------------------------------------ */

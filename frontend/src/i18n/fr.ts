@@ -495,6 +495,22 @@ const fr = {
     loadErrorBody:
       "La requ\u00eate au serveur a \u00e9chou\u00e9. La page n'affiche rien plut\u00f4t que des donn\u00e9es qui pourraient \u00eatre fausses.",
     retry: "R\u00e9essayer",
+    providers: "Fournisseurs d\u2019IA",
+    loadingApp: "Chargement de TaskMatch\u2026",
+    console: "Console TaskMatch",
+    expandSidebar: "D\u00e9plier le panneau lat\u00e9ral",
+    collapseSidebar: "Replier le panneau lat\u00e9ral",
+    closeNav: "Fermer la navigation",
+    openNav: "Ouvrir la navigation",
+    dashboard: "Tableau de bord",
+    logout: "Se d\u00e9connecter",
+    closeDialog: "Fermer la bo\u00eete de dialogue",
+    crashTitle: "Une erreur est survenue",
+    crashBody:
+      "Une erreur inattendue s\u2019est produite. R\u00e9essayez, ou contactez le support si le probl\u00e8me persiste.",
+    crashErrorId: "Identifiant de l\u2019erreur :",
+    crashRetry: "R\u00e9essayer",
+    crashHome: "Aller \u00e0 l\u2019accueil",
   },
 
   /* ------------------------------------------------------------------------ */

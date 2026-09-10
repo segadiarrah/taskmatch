@@ -90,18 +90,6 @@ const dashboardShared = [
   "src/app/(dashboard)/developer/agents/page.tsx",
   "src/app/(dashboard)/developer/agents/new/page.tsx",
   "src/app/(dashboard)/developer/agents/[id]/page.tsx",
-  "src/app/(dashboard)/admin/page.tsx",
-  "src/app/(dashboard)/admin/providers/page.tsx",
-  "src/app/(dashboard)/admin/audit/page.tsx",
-  "src/app/(dashboard)/admin/learning/page.tsx",
-  "src/app/(dashboard)/admin/payments/page.tsx",
-  "src/app/(dashboard)/admin/validations/page.tsx",
-  "src/app/(dashboard)/admin/tasks/page.tsx",
-  "src/app/(dashboard)/admin/tasks/[id]/page.tsx",
-  "src/app/(dashboard)/admin/jobs/page.tsx",
-  "src/app/(dashboard)/admin/jobs/[id]/page.tsx",
-  "src/app/(dashboard)/admin/agents/page.tsx",
-  "src/app/(dashboard)/admin/agents/[id]/page.tsx",
   "src/components/ui/avatar.tsx",
   "src/components/ui/badge.tsx",
   "src/components/ui/button.tsx",
@@ -118,10 +106,46 @@ const dashboardShared = [
   "src/lib/utils.ts",
 ];
 
+/**
+ * Admin console — deliberately English only.
+ *
+ * Only administrators can use these pages: every endpoint behind them is guarded
+ * by require_role("admin") in the backend, and robots.txt keeps crawlers out of
+ * /admin/. A non-admin can still reach the URL — the dashboard sidebar even
+ * links some of them there — but the data never loads, so what they actually
+ * see is the error panel, which is translated.
+ *
+ * Translating an internal console into four languages costs about 430 strings
+ * for an audience of one team that already works in English, and every one of
+ * those strings then has to be kept in step with the others forever.
+ *
+ * So they stay in the manifest — they are still checked for design commentary
+ * leaking into the UI, and adding a new admin page without listing it here is
+ * still an error — but the untranslated-copy rules do not apply to them.
+ *
+ * If the console is ever opened to customers, move these paths back into
+ * dashboardShared and the contract will tell you exactly what needs translating.
+ */
+const adminEnglishOnly = [
+  "src/app/(dashboard)/admin/page.tsx",
+  "src/app/(dashboard)/admin/providers/page.tsx",
+  "src/app/(dashboard)/admin/audit/page.tsx",
+  "src/app/(dashboard)/admin/learning/page.tsx",
+  "src/app/(dashboard)/admin/payments/page.tsx",
+  "src/app/(dashboard)/admin/validations/page.tsx",
+  "src/app/(dashboard)/admin/tasks/page.tsx",
+  "src/app/(dashboard)/admin/tasks/[id]/page.tsx",
+  "src/app/(dashboard)/admin/jobs/page.tsx",
+  "src/app/(dashboard)/admin/jobs/[id]/page.tsx",
+  "src/app/(dashboard)/admin/agents/page.tsx",
+  "src/app/(dashboard)/admin/agents/[id]/page.tsx",
+];
+
 export const localizationManifest = [
   ...resourcesLegal.map((path) => ({ path, scope: "resources-legal", localization: "inline" })),
   ...publicAuth.map((path) => ({ path, scope: "public-auth", localization: "inline" })),
   ...dashboardShared.map((path) => ({ path, scope: "dashboard-shared", localization: "central" })),
+  ...adminEnglishOnly.map((path) => ({ path, scope: "dashboard-shared", localization: "english-only" })),
   ...LOCALES.map((locale) => ({
     path: `src/i18n/${locale}.ts`,
     scope: "dashboard-shared",
@@ -161,6 +185,11 @@ export const reviewedLiteralAllowlist = {
   // English — the one string on the page that must not follow the current
   // locale is the name of the locale you are trying to switch to.
   languageEndonyms: new Set(["English", "Fran\u00e7ais", "Espa\u00f1ol", "\u4e2d\u6587"]),
+  // CSS selectors, e.g. the focus-trap query in the dialog. They look like prose
+  // to a scanner and are read by querySelectorAll — translating "button" there
+  // would stop the dialog trapping focus, which is an accessibility regression
+  // rather than a wording one.
+  cssSelectors: /^[a-zA-Z*]*(?:\[[^\]]+\]|:not\([^)]*\)|[.#][A-Za-z-]+)[\w\[\]():.#*="'-]*$/,
   httpMethods: new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]),
   // Code, URLs, identifiers, status codes, and dynamic-data selectors are structural, not prose.
   patterns: [

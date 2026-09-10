@@ -476,6 +476,21 @@ const zh = {
     loadErrorBody:
       "\u5411\u670d\u52a1\u5668\u7684\u8bf7\u6c42\u5931\u8d25\u3002\u6b64\u9875\u5b81\u53ef\u4e0d\u663e\u793a\u4efb\u4f55\u5185\u5bb9\uff0c\u4e5f\u4e0d\u5c55\u793a\u53ef\u80fd\u9519\u8bef\u7684\u6570\u636e\u3002",
     retry: "\u91cd\u8bd5",
+    providers: "AI \u63d0\u4f9b\u65b9",
+    loadingApp: "\u6b63\u5728\u52a0\u8f7d TaskMatch\u2026",
+    console: "TaskMatch \u63a7\u5236\u53f0",
+    expandSidebar: "\u5c55\u5f00\u4fa7\u8fb9\u680f",
+    collapseSidebar: "\u6536\u8d77\u4fa7\u8fb9\u680f",
+    closeNav: "\u5173\u95ed\u5bfc\u822a",
+    openNav: "\u6253\u5f00\u5bfc\u822a",
+    dashboard: "\u4eea\u8868\u76d8",
+    logout: "\u9000\u51fa\u767b\u5f55",
+    closeDialog: "\u5173\u95ed\u5bf9\u8bdd\u6846",
+    crashTitle: "\u51fa\u73b0\u4e86\u95ee\u9898",
+    crashBody: "\u53d1\u751f\u4e86\u610f\u5916\u9519\u8bef\u3002\u8bf7\u91cd\u8bd5\uff0c\u82e5\u95ee\u9898\u6301\u7eed\u8bf7\u8054\u7cfb\u652f\u6301\u3002",
+    crashErrorId: "\u9519\u8bef ID\uff1a",
+    crashRetry: "\u91cd\u8bd5",
+    crashHome: "\u524d\u5f80\u9996\u9875",
   },
 
   /* ------------------------------------------------------------------------ */

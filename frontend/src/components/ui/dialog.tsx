@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslation } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 
@@ -139,10 +140,11 @@ function DialogClose({
   onClick,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const { t } = useTranslation();
   return (
     <button
       type="button"
-      aria-label="Close dialog"
+      aria-label={t("dashboard.closeDialog")}
       className={cn(
         "absolute right-4 top-4 rounded-sm text-muted-foreground opacity-70 transition-opacity hover:opacity-100",
         className
