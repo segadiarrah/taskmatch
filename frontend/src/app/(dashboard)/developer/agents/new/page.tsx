@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiPost } from "@/lib/api";
+import { useTranslation } from "@/lib/i18n";
+import { AUTH_TYPES, EXECUTOR_KINDS } from "@/lib/agent-vocabulary";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,13 +27,9 @@ interface Capability {
   metadata: string;
 }
 
-const AUTH_TYPES = [
-  { value: "none", label: "None" },
-  { value: "api_key", label: "API Key" },
-  { value: "bearer", label: "Bearer Token" },
-];
 
 export default function RegisterAgentPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -121,10 +119,10 @@ export default function RegisterAgentPage() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/developer/agents" className="hover:text-foreground transition-colors">
-          My Agents
+          {t("developer.register.breadcrumb")}
         </Link>
         <ChevronRight className="h-4 w-4" />
-        <span className="text-foreground">Register New Agent</span>
+        <span className="text-foreground">{t("developer.register.title")}</span>
       </div>
 
       {/* Header */}
@@ -136,12 +134,12 @@ export default function RegisterAgentPage() {
         </Link>
         <div>
           <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">
-            {isHuman ? "Register as a human expert" : "Register a new AI agent"}
+            {isHuman ? t("developer.register.titleHuman") : t("developer.register.titleAgent")}
           </h1>
           <p className="text-muted-foreground mt-1">
             {isHuman
-              ? "Offer your skills as an expert. You will receive matched tasks in your dashboard and deliver them yourself."
-              : "Set up a new AI agent to accept and complete tasks automatically."}
+              ? t("developer.register.subtitleHuman")
+              : t("developer.register.subtitleAgent")}
           </p>
         </div>
       </div>
@@ -158,17 +156,24 @@ export default function RegisterAgentPage() {
         {/* Executor kind */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Who is executing?</CardTitle>
+            <CardTitle className="text-lg">{t("developer.register.whoTitle")}</CardTitle>
             <CardDescription>
-              Both AI agents and human experts compete for tasks and are ranked by the same explainable score.
+              {t("developer.register.whoSubtitle")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 sm:grid-cols-2">
-              {[
-                { k: "agent" as const, title: "AI agent", desc: "Runs an endpoint; executes tasks automatically." },
-                { k: "human" as const, title: "Human expert", desc: "You receive matched tasks and deliver them yourself." },
-              ].map((opt) => (
+              {EXECUTOR_KINDS.map((k) => ({
+                k,
+                title:
+                  k === "human"
+                    ? t("developer.register.kindHuman")
+                    : t("developer.register.kindAgent"),
+                desc:
+                  k === "human"
+                    ? t("developer.register.kindHumanHint")
+                    : t("developer.register.kindAgentHint"),
+              })).map((opt) => (
                 <button
                   type="button"
                   key={opt.k}
@@ -191,17 +196,17 @@ export default function RegisterAgentPage() {
         {/* Basic Info */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Agent Information</CardTitle>
-            <CardDescription>Basic details about your agent.</CardDescription>
+            <CardTitle className="text-lg">{t("developer.register.infoTitle")}</CardTitle>
+            <CardDescription>{t("developer.register.infoSubtitle")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="name" className="text-sm font-medium">
-                Name <span className="text-destructive">*</span>
+                {t("developer.register.name")} <span className="text-destructive">*</span>
               </label>
               <Input
                 id="name"
-                placeholder="e.g., CodeBot Pro"
+                placeholder={t("developer.register.namePlaceholder")}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -210,11 +215,11 @@ export default function RegisterAgentPage() {
 
             <div className="space-y-2">
               <label htmlFor="description" className="text-sm font-medium">
-                Description
+                {t("developer.register.description")}
               </label>
               <Textarea
                 id="description"
-                placeholder="Describe what your agent does, its strengths, and specializations..."
+                placeholder={t("developer.register.descriptionPlaceholder")}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="min-h-[120px]"
@@ -226,11 +231,11 @@ export default function RegisterAgentPage() {
         {/* Connection / Skills */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">{isHuman ? "Your skills" : "Connection & skills"}</CardTitle>
+            <CardTitle className="text-lg">{isHuman ? t("developer.register.skillsTitle") : t("developer.register.connectionTitle")}</CardTitle>
             <CardDescription>
               {isHuman
-                ? "The task types you can take on. Matching uses these plus your track record."
-                : "How TaskMatch communicates with your agent, and what it can handle."}
+                ? t("developer.register.skillsSubtitle")
+                : t("developer.register.connectionSubtitle")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -238,7 +243,7 @@ export default function RegisterAgentPage() {
               <>
                 <div className="space-y-2">
                   <label htmlFor="endpoint" className="text-sm font-medium">
-                    Endpoint URL <span className="text-destructive">*</span>
+                    {t("developer.register.endpoint")} <span className="text-destructive">*</span>
                   </label>
                   <Input
                     id="endpoint"
@@ -248,22 +253,22 @@ export default function RegisterAgentPage() {
                     onChange={(e) => setEndpointUrl(e.target.value)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    The URL where TaskMatch will send task requests to your agent.
+                    {t("developer.register.endpointHint")}
                   </p>
                 </div>
 
                 <div className="space-y-2">
                   <label htmlFor="auth_type" className="text-sm font-medium">
-                    Authentication Type
+                    {t("developer.register.authType")}
                   </label>
                   <Select
                     id="auth_type"
                     value={authType}
                     onChange={(e) => setAuthType(e.target.value)}
                   >
-                    {AUTH_TYPES.map((t) => (
-                      <option key={t.value} value={t.value}>
-                        {t.label}
+                    {AUTH_TYPES.map((value) => (
+                      <option key={value} value={value}>
+                        {t(`developer.register.auth.${value}`)}
                       </option>
                     ))}
                   </Select>
@@ -273,18 +278,18 @@ export default function RegisterAgentPage() {
 
             <div className="space-y-2">
               <label htmlFor="task_types" className="text-sm font-medium">
-                {isHuman ? "Skills / task types" : "Supported Task Types"}
+                {isHuman ? t("developer.register.skillsLabel") : t("developer.register.taskTypesLabel")}
               </label>
               <Input
                 id="task_types"
-                placeholder="e.g., coding, design, data_analysis, writing, review"
+                placeholder={t("developer.register.taskTypesPlaceholder")}
                 value={taskTypesInput}
                 onChange={(e) => setTaskTypesInput(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
                 {isHuman
-                  ? "Comma-separated list of task types you can deliver."
-                  : "Comma-separated list of task types your agent can handle."}
+                  ? t("developer.register.taskTypesHintHuman")
+                  : t("developer.register.taskTypesHintAgent")}
               </p>
             </div>
           </CardContent>
@@ -293,9 +298,9 @@ export default function RegisterAgentPage() {
         {/* Capabilities */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Capabilities</CardTitle>
+            <CardTitle className="text-lg">{t("developer.register.capabilities")}</CardTitle>
             <CardDescription>
-              Specific capabilities your agent offers. These are used for matching tasks.
+              {t("developer.register.capabilitiesHint")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -311,7 +316,10 @@ export default function RegisterAgentPage() {
                       {cap.name}
                     </Badge>
                     {cap.version && (
-                      <span className="text-sm text-muted-foreground">v{cap.version}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {t("developer.register.versionPrefix")}
+                        {cap.version}
+                      </span>
                     )}
                     {cap.metadata && (
                       <span className="text-xs text-muted-foreground truncate max-w-[200px]">
@@ -320,7 +328,7 @@ export default function RegisterAgentPage() {
                     )}
                     <button
                       type="button"
-                      aria-label={`Remove ${cap.name}`}
+                      aria-label={t("developer.register.removeCapability", { name: cap.name })}
                       onClick={() => removeCapability(idx)}
                       className="ml-auto text-muted-foreground hover:text-destructive transition-colors"
                     >
@@ -333,10 +341,10 @@ export default function RegisterAgentPage() {
 
             {/* Add capability */}
             <div className="rounded-lg border border-dashed p-4 space-y-3">
-              <p className="text-sm font-medium text-muted-foreground">Add a capability</p>
+              <p className="text-sm font-medium text-muted-foreground">{t("developer.register.addCapabilityLabel")}</p>
               <div className="grid gap-3 sm:grid-cols-3">
                 <Input
-                  placeholder="Capability name"
+                  placeholder={t("developer.register.capabilityNamePlaceholder")}
                   value={capName}
                   onChange={(e) => setCapName(e.target.value)}
                   onKeyDown={(e) => {
@@ -347,19 +355,19 @@ export default function RegisterAgentPage() {
                   }}
                 />
                 <Input
-                  placeholder="Version (optional)"
+                  placeholder={t("developer.register.capabilityVersionPlaceholder")}
                   value={capVersion}
                   onChange={(e) => setCapVersion(e.target.value)}
                 />
                 <Input
-                  placeholder='Metadata JSON (optional, e.g., {"key":"value"})'
+                  placeholder={t("developer.register.capabilityMetaPlaceholder")}
                   value={capMetadata}
                   onChange={(e) => setCapMetadata(e.target.value)}
                 />
               </div>
               <Button type="button" variant="outline" size="sm" onClick={addCapability}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Capability
+                {t("developer.register.addCapability")}
               </Button>
             </div>
           </CardContent>
@@ -369,12 +377,12 @@ export default function RegisterAgentPage() {
         <div className="flex items-center justify-end gap-4">
           <Link href="/developer/agents">
             <Button type="button" variant="outline">
-              Cancel
+              {t("developer.register.cancel")}
             </Button>
           </Link>
           <Button type="submit" disabled={submitting}>
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Register Agent
+            {t("developer.register.submit")}
           </Button>
         </div>
       </form>
