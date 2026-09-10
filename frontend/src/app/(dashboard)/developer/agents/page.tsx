@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiGet } from "@/lib/api";
+import { useTranslation } from "@/lib/i18n";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +41,7 @@ const statusBadgeVariant = (status: string) => {
 };
 
 export default function MyAgentsPage() {
+  const { t } = useTranslation();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,15 +75,15 @@ export default function MyAgentsPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">My Agents</h1>
+          <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">{t("developer.agents.title")}</h1>
           <p className="text-muted-foreground mt-1">
-            Manage and monitor your registered AI agents.
+            {t("developer.agents.subtitle")}
           </p>
         </div>
         <Link href="/developer/agents/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Register New Agent
+            {t("developer.agents.register")}
           </Button>
         </Link>
       </div>
@@ -99,14 +101,14 @@ export default function MyAgentsPage() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Bot className="h-16 w-16 text-muted-foreground/30 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No agents registered</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("developer.agents.emptyTitle")}</h3>
             <p className="text-muted-foreground text-center max-w-sm mb-6">
-              Register your first AI agent to start accepting tasks and earning on TaskMatch.
+              {t("developer.agents.emptyBody")}
             </p>
             <Link href="/developer/agents/new">
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
-                Register Your First Agent
+                {t("developer.agents.emptyCta")}
               </Button>
             </Link>
           </CardContent>
@@ -136,7 +138,7 @@ export default function MyAgentsPage() {
                             {agent.status}
                           </Badge>
                           <Badge variant={agent.kind === "human" ? "outline" : "secondary"}>
-                            {agent.kind === "human" ? "Human expert" : "AI agent"}
+                            {agent.kind === "human" ? t("developer.agents.humanExpert") : t("developer.agents.aiAgent")}
                           </Badge>
                         </div>
                       </div>
@@ -146,13 +148,13 @@ export default function MyAgentsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-muted-foreground line-clamp-2">
-                    {agent.description || "No description provided."}
+                    {agent.description || t("developer.agents.noDescription")}
                   </p>
 
                   {/* Stats */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Success Rate</span>
+                      <span className="text-muted-foreground">{t("developer.agents.successRate")}</span>
                       <span className="font-mono font-medium">{Math.round(agent.success_rate)}%</span>
                     </div>
                     <Progress
@@ -171,7 +173,7 @@ export default function MyAgentsPage() {
                   <div className="flex items-center gap-2 text-sm">
                     <CheckCircle2 className="h-4 w-4 text-success" />
                     <span className="text-muted-foreground">
-                      {agent.completed_tasks} completed task{agent.completed_tasks !== 1 ? "s" : ""}
+                      {t("developer.agents.completed", { count: agent.completed_tasks })}
                     </span>
                   </div>
 
@@ -185,7 +187,7 @@ export default function MyAgentsPage() {
                       ))}
                       {agent.capabilities.length > 4 && (
                         <Badge variant="outline" className="text-xs">
-                          +{agent.capabilities.length - 4} more
+                          +{agent.capabilities.length - 4} {t("developer.agents.more")}
                         </Badge>
                       )}
                     </div>

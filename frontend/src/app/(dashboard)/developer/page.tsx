@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
+import { useTranslation } from "@/lib/i18n";
 import { apiGet } from "@/lib/api";
 import { formatCurrency, formatDate, formatStatus } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,6 +55,7 @@ const statusBadgeVariant = (status: string) => {
 
 export default function DeveloperDashboardPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [assignments, setAssignments] = useState<ActiveAssignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,18 +95,18 @@ export default function DeveloperDashboardPage() {
         <AlertCircle className="h-12 w-12 text-destructive" />
         <p className="text-lg text-muted-foreground">{error}</p>
         <Button onClick={() => window.location.reload()} variant="outline">
-          Try Again
+          {t("developer.tryAgain")}
         </Button>
       </div>
     );
   }
 
   const kpiCards = [
-    { label: "My Agents", value: stats?.my_agents ?? 0, icon: Bot, color: "text-info" },
-    { label: "Active Assignments", value: stats?.active_assignments ?? 0, icon: ListChecks, color: "text-signal-400" },
-    { label: "Completed Tasks", value: stats?.completed_tasks ?? 0, icon: CheckCircle2, color: "text-success" },
+    { label: t("developer.kpi.myAgents"), value: stats?.my_agents ?? 0, icon: Bot, color: "text-info" },
+    { label: t("developer.kpi.activeAssignments"), value: stats?.active_assignments ?? 0, icon: ListChecks, color: "text-signal-400" },
+    { label: t("developer.kpi.completedTasks"), value: stats?.completed_tasks ?? 0, icon: CheckCircle2, color: "text-success" },
     {
-      label: "Total Earnings",
+      label: t("developer.kpi.totalEarnings"),
       value: formatCurrency(stats?.total_earnings ?? 0),
       icon: DollarSign,
       color: "text-warning",
@@ -117,23 +119,25 @@ export default function DeveloperDashboardPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">
-            Welcome back, {user?.full_name?.split(" ")[0] ?? "there"}
+            {t("developer.welcome", {
+              name: user?.full_name?.split(" ")[0] ?? t("developer.welcomeFallbackName"),
+            })}
           </h1>
           <p className="text-muted-foreground mt-1">
-            Manage your agents and track your earnings.
+            {t("developer.overview")}
           </p>
         </div>
         <div className="flex gap-3">
           <Link href="/developer/agents/new">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Register Agent
+              {t("developer.registerAgent")}
             </Button>
           </Link>
           <Link href="/developer/tasks">
             <Button variant="outline">
               <Search className="mr-2 h-4 w-4" />
-              Browse Tasks
+              {t("developer.browseTasks")}
             </Button>
           </Link>
         </div>
@@ -158,12 +162,12 @@ export default function DeveloperDashboardPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-lg">Active Assignments</CardTitle>
-            <CardDescription>Tasks currently assigned to your agents</CardDescription>
+            <CardTitle className="text-lg">{t("developer.assignments.title")}</CardTitle>
+            <CardDescription>{t("developer.assignments.subtitle")}</CardDescription>
           </div>
           <Link href="/developer/tasks">
             <Button variant="ghost" size="sm">
-              Browse All
+              {t("developer.assignments.browseAll")}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
@@ -172,14 +176,14 @@ export default function DeveloperDashboardPage() {
           {assignments.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <ListChecks className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <p className="text-muted-foreground mb-2">No active assignments</p>
+              <p className="text-muted-foreground mb-2">{t("developer.assignments.emptyTitle")}</p>
               <p className="text-sm text-muted-foreground mb-4">
-                Browse available tasks and place bids to get started.
+                {t("developer.assignments.emptyBody")}
               </p>
               <Link href="/developer/tasks">
                 <Button variant="outline" size="sm">
                   <Search className="mr-2 h-4 w-4" />
-                  Browse Tasks
+                  {t("developer.browseTasks")}
                 </Button>
               </Link>
             </div>
@@ -199,15 +203,15 @@ export default function DeveloperDashboardPage() {
                       </Badge>
                       {!!assignment.revision_count && assignment.revision_count > 0 && (
                         <Badge variant="warning">
-                          Revision requested
+                          {t("developer.assignments.revisionRequested")}
                         </Badge>
                       )}
                     </div>
                     <div className="mt-1 flex items-center gap-4 font-mono text-xs text-muted-foreground">
-                      <span>Job: {assignment.job_title}</span>
-                      <span>Agent: {assignment.agent_name}</span>
+                      <span>{t("developer.assignments.job")} {assignment.job_title}</span>
+                      <span>{t("developer.assignments.agent")} {assignment.agent_name}</span>
                       <span>{formatCurrency(assignment.budget, assignment.currency)}</span>
-                      {assignment.deadline && <span>Due: {formatDate(assignment.deadline)}</span>}
+                      {assignment.deadline && <span>{t("developer.assignments.due")} {formatDate(assignment.deadline)}</span>}
                     </div>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0 ml-4" />
@@ -225,8 +229,8 @@ export default function DeveloperDashboardPage() {
             <CardContent className="flex items-center gap-4 p-6">
               <Bot className="h-8 w-8 text-info" />
               <div>
-                <p className="font-medium">My Agents</p>
-                <p className="text-sm text-muted-foreground">Manage your registered agents</p>
+                <p className="font-medium">{t("developer.shortcuts.agentsTitle")}</p>
+                <p className="text-sm text-muted-foreground">{t("developer.shortcuts.agentsBody")}</p>
               </div>
             </CardContent>
           </Card>
@@ -236,8 +240,8 @@ export default function DeveloperDashboardPage() {
             <CardContent className="flex items-center gap-4 p-6">
               <Search className="h-8 w-8 text-signal-400" />
               <div>
-                <p className="font-medium">Available Tasks</p>
-                <p className="text-sm text-muted-foreground">Find and bid on open tasks</p>
+                <p className="font-medium">{t("developer.shortcuts.tasksTitle")}</p>
+                <p className="text-sm text-muted-foreground">{t("developer.shortcuts.tasksBody")}</p>
               </div>
             </CardContent>
           </Card>
@@ -247,8 +251,8 @@ export default function DeveloperDashboardPage() {
             <CardContent className="flex items-center gap-4 p-6">
               <DollarSign className="h-8 w-8 text-success" />
               <div>
-                <p className="font-medium">Earnings</p>
-                <p className="text-sm text-muted-foreground">View your payment history</p>
+                <p className="font-medium">{t("developer.shortcuts.earningsTitle")}</p>
+                <p className="text-sm text-muted-foreground">{t("developer.shortcuts.earningsBody")}</p>
               </div>
             </CardContent>
           </Card>

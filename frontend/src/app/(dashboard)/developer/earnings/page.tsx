@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiGet } from "@/lib/api";
+import { useTranslation } from "@/lib/i18n";
 import { formatCurrency, formatDate, formatStatus } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,7 @@ const paymentStatusBadgeVariant = (status: string) => {
 };
 
 export default function EarningsPage() {
+  const { t } = useTranslation();
   const [summary, setSummary] = useState<EarningsSummary | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,17 +102,17 @@ export default function EarningsPage() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/developer" className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("developer.earnings.breadcrumbDashboard")}
         </Link>
         <ChevronRight className="h-4 w-4" />
-        <span className="text-foreground">Earnings</span>
+        <span className="text-foreground">{t("developer.earnings.breadcrumb")}</span>
       </div>
 
       {/* Header */}
       <div>
-        <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">Earnings</h1>
+        <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">{t("developer.earnings.title")}</h1>
         <p className="text-muted-foreground mt-1">
-          Track your revenue and payment history.
+          {t("developer.earnings.subtitle")}
         </p>
       </div>
 
@@ -125,7 +127,7 @@ export default function EarningsPage() {
             className="ml-auto"
             onClick={() => window.location.reload()}
           >
-            Retry
+            {t("developer.earnings.retry")}
           </Button>
         </div>
       )}
@@ -134,7 +136,7 @@ export default function EarningsPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardDescription className="eyebrow">Total Earned</CardDescription>
+            <CardDescription className="eyebrow">{t("developer.earnings.totalEarned")}</CardDescription>
             <DollarSign className="h-5 w-5 text-success" />
           </CardHeader>
           <CardContent>
@@ -142,14 +144,14 @@ export default function EarningsPage() {
               {formatCurrency(summary?.total_earned ?? 0, currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Lifetime earnings after fees
+              {t("developer.earnings.totalEarnedHint")}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardDescription className="eyebrow">Pending Payments</CardDescription>
+            <CardDescription className="eyebrow">{t("developer.earnings.pending")}</CardDescription>
             <Clock className="h-5 w-5 text-warning" />
           </CardHeader>
           <CardContent>
@@ -157,14 +159,14 @@ export default function EarningsPage() {
               {formatCurrency(summary?.pending_payments ?? 0, currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Awaiting release or processing
+              {t("developer.earnings.pendingHint")}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardDescription className="eyebrow">This Month</CardDescription>
+            <CardDescription className="eyebrow">{t("developer.earnings.thisMonth")}</CardDescription>
             <TrendingUp className="h-5 w-5 text-info" />
           </CardHeader>
           <CardContent>
@@ -172,7 +174,7 @@ export default function EarningsPage() {
               {formatCurrency(summary?.this_month ?? 0, currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Earnings in current billing period
+              {t("developer.earnings.thisMonthHint")}
             </p>
           </CardContent>
         </Card>
@@ -183,21 +185,21 @@ export default function EarningsPage() {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Receipt className="h-5 w-5 text-muted-foreground" />
-            Payment History
+            {t("developer.earnings.historyTitle")}
           </CardTitle>
-          <CardDescription>All payments from completed tasks</CardDescription>
+          <CardDescription>{t("developer.earnings.historySubtitle")}</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           {payments.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
               <Wallet className="h-16 w-16 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No payments yet</h3>
+              <h3 className="text-lg font-semibold mb-2">{t("developer.earnings.emptyTitle")}</h3>
               <p className="text-muted-foreground text-center max-w-sm mb-6">
-                Complete tasks to start earning. Your payment history will appear here.
+                {t("developer.earnings.emptyBody")}
               </p>
               <Link href="/developer/tasks">
                 <Button variant="outline" size="sm">
-                  Browse Available Tasks
+                  {t("developer.earnings.emptyCta")}
                 </Button>
               </Link>
             </div>
@@ -205,13 +207,13 @@ export default function EarningsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Task</TableHead>
-                  <TableHead>Agent</TableHead>
-                  <TableHead className="text-right">Gross</TableHead>
-                  <TableHead className="text-right">Platform Fee</TableHead>
-                  <TableHead className="text-right">Net Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead>{t("developer.earnings.column.task")}</TableHead>
+                  <TableHead>{t("developer.earnings.column.agent")}</TableHead>
+                  <TableHead className="text-right">{t("developer.earnings.column.gross")}</TableHead>
+                  <TableHead className="text-right">{t("developer.earnings.column.fee")}</TableHead>
+                  <TableHead className="text-right">{t("developer.earnings.column.net")}</TableHead>
+                  <TableHead>{t("developer.earnings.column.status")}</TableHead>
+                  <TableHead>{t("developer.earnings.column.date")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

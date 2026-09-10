@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiGet } from "@/lib/api";
+import { useTranslation } from "@/lib/i18n";
 import { formatCurrency, formatDate, formatStatus } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,7 @@ const priorityBadgeVariant = (priority: string) => {
 };
 
 export default function BrowseTasksPage() {
+  const { t } = useTranslation();
   const [tasks, setTasks] = useState<OpenTask[]>([]);
   const [taskTypes, setTaskTypes] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,18 +104,18 @@ export default function BrowseTasksPage() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/developer" className="hover:text-foreground transition-colors">
-          Dashboard
+          {t("developer.tasks.breadcrumbDashboard")}
         </Link>
         <ChevronRight className="h-4 w-4" />
-        <span className="text-foreground">Browse Tasks</span>
+        <span className="text-foreground">{t("developer.tasks.breadcrumbBrowse")}</span>
       </div>
 
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">Available Tasks</h1>
+          <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">{t("developer.tasks.title")}</h1>
           <p className="text-muted-foreground mt-1">
-            Browse open tasks and place bids with your agents.
+            {t("developer.tasks.subtitle")}
           </p>
         </div>
       </div>
@@ -129,7 +131,7 @@ export default function BrowseTasksPage() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search tasks..."
+                placeholder={t("developer.tasks.searchPlaceholder")}
                 value={filters.search}
                 onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
                 className="pl-9"
@@ -140,7 +142,7 @@ export default function BrowseTasksPage() {
               onChange={(e) => setFilters((prev) => ({ ...prev, task_type: e.target.value }))}
               className="sm:w-[200px]"
             >
-              <option value="">All Task Types</option>
+              <option value="">{t("developer.tasks.allTypes")}</option>
               {taskTypes.map((type) => (
                 <option key={type} value={type}>
                   {formatStatus(type)}
@@ -164,11 +166,11 @@ export default function BrowseTasksPage() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <ListChecks className="h-16 w-16 text-muted-foreground/30 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No open tasks found</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("developer.tasks.emptyTitle")}</h3>
             <p className="text-muted-foreground text-center max-w-sm mb-4">
               {filters.task_type || filters.search
-                ? "Try adjusting your filters to find more tasks."
-                : "There are no tasks currently open for bids. Check back later."}
+                ? t("developer.tasks.emptyFiltered")
+                : t("developer.tasks.emptyAll")}
             </p>
             {(filters.task_type || filters.search) && (
               <Button
@@ -176,7 +178,7 @@ export default function BrowseTasksPage() {
                 size="sm"
                 onClick={() => setFilters({ task_type: "", search: "" })}
               >
-                Clear Filters
+                {t("developer.tasks.clearFilters")}
               </Button>
             )}
           </CardContent>
@@ -187,13 +189,13 @@ export default function BrowseTasksPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Budget</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Deadline</TableHead>
-                  <TableHead className="text-center">Bids</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
+                  <TableHead>{t("developer.tasks.column.title")}</TableHead>
+                  <TableHead>{t("developer.tasks.column.type")}</TableHead>
+                  <TableHead>{t("developer.tasks.column.budget")}</TableHead>
+                  <TableHead>{t("developer.tasks.column.priority")}</TableHead>
+                  <TableHead>{t("developer.tasks.column.deadline")}</TableHead>
+                  <TableHead className="text-center">{t("developer.tasks.column.bids")}</TableHead>
+                  <TableHead className="text-right">{t("developer.tasks.column.action")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -221,7 +223,7 @@ export default function BrowseTasksPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">
-                      {task.deadline ? formatDate(task.deadline) : "No deadline"}
+                      {task.deadline ? formatDate(task.deadline) : t("developer.tasks.noDeadline")}
                     </TableCell>
                     <TableCell className="text-center">
                       <span className="inline-flex items-center gap-1 font-mono text-xs">
@@ -232,7 +234,7 @@ export default function BrowseTasksPage() {
                     <TableCell className="text-right">
                       <Link href={`/developer/tasks/${task.id}`}>
                         <Button size="sm" variant="outline">
-                          Place Bid
+                          {t("developer.tasks.placeBid")}
                           <ArrowRight className="ml-2 h-3.5 w-3.5" />
                         </Button>
                       </Link>
