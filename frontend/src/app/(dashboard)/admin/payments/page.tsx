@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 
 interface Payment {
+  billing_mode?: "stripe" | "legacy_manual";
   funding_id: string | null;
   transfer_id: string | null;
   payout_error: string | null;
@@ -47,6 +48,30 @@ interface Payment {
   created_at: string;
   released_at: string | null;
   completed_at: string | null;
+}
+
+type PaymentResponse = Omit<Payment, "gross_amount" | "platform_fee" | "net_amount"> & {
+  gross_amount: number | string;
+  platform_fee: number | string;
+  net_amount: number | string;
+};
+
+function paymentAmount(value: unknown): number {
+  if (typeof value !== "number" && (typeof value !== "string" || !/^\d+(?:\.\d+)?$/.test(value.trim()))) {
+    throw new Error("Invalid payment amount");
+  }
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount < 0) throw new Error("Invalid payment amount");
+  return amount;
+}
+
+function isManualSettlement(payment: Payment): boolean {
+  return !payment.funding_id && (payment.billing_mode === "legacy_manual" || (!payment.billing_mode && payment.provider === "manual"));
+}
+
+function providerLabel(payment: Payment): string {
+  if (isManualSettlement(payment)) return payment.provider === "manual" ? "Manual" : "Manual (historical)";
+  return payment.provider;
 }
 
 const paymentStatuses = ["pending", "authorized", "releasable", "paid", "cancelled", "refunded", "processing", "blocked", "failed", "reversed"];
@@ -83,8 +108,8 @@ export default function PaymentsPage() {
     setLoading(true);
     setLoadError(false);
     try {
-      const data = await apiGet<Payment[]>(nextPage === 0 ? "/v1/admin/payments" : `/v1/admin/payments?skip=${nextPage * 200}&limit=200`);
-      setPayments(data);
+      const data = await apiGet<PaymentResponse[]>(nextPage === 0 ? "/v1/admin/payments" : `/v1/admin/payments?skip=${nextPage * 200}&limit=200`);
+      setPayments(data.map(payment => ({ ...payment, gross_amount: paymentAmount(payment.gross_amount), platform_fee: paymentAmount(payment.platform_fee), net_amount: paymentAmount(payment.net_amount) })));
       setPage(nextPage);
       setHasNextPage(data.length === 200);
     } catch {
@@ -151,6 +176,7 @@ export default function PaymentsPage() {
 
       <BillingAdminPanel />
 
+      {!loading && !loadError && <>
       <p className="text-xs text-muted-foreground">Totals below cover the payments on page {page + 1} in the selected currency.</p>
 
       {/* Summary Cards */}
@@ -217,7 +243,8 @@ export default function PaymentsPage() {
         </Card>
       </div>
 
-      <p className="text-xs text-muted-foreground">Platform revenue on this page: {formatCurrency(currencyPayments.filter(payment => payment.provider === "platform").reduce((sum, payment) => sum + payment.gross_amount, 0), currency)}. This is retained platform revenue, not a bank payout.</p>
+      <p className="text-xs text-muted-foreground">Platform revenue on this page: {formatCurrency(currencyPayments.filter(payment => payment.provider === "platform" && payment.status === "paid").reduce((sum, payment) => sum + payment.gross_amount, 0), currency)}. This is retained platform revenue, not a bank payout.</p>
+      </>}
 
       {/* Filter */}
       <Card>
@@ -289,7 +316,7 @@ export default function PaymentsPage() {
                     <TableCell>
                       <div>
                         <p className="text-ink-300">{payment.developer_name || "Unassigned"}</p>
-                        <p className="text-xs text-ink-500">{payment.provider}</p>
+                        <p className="text-xs text-ink-500">{providerLabel(payment)}</p>
                         {payment.transfer_id && <p className="font-mono text-xs text-muted-foreground">{payment.transfer_id}</p>}
                         {payment.payout_error && <p className="max-w-xs text-xs text-danger">{payment.payout_error}</p>}
                       </div>
@@ -310,8 +337,8 @@ export default function PaymentsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        {payment.provider === "stripe_connect" && ["releasable", "failed", "blocked"].includes(payment.status) && <Button size="sm" variant="outline" disabled={actionLoading === payment.id} onClick={() => void handleTransfer(payment)}>Retry Stripe transfer</Button>}
-                        {payment.provider === "manual" && ["pending", "authorized"].includes(payment.status) && (
+                        {!isManualSettlement(payment) && payment.provider === "stripe_connect" && ["releasable", "failed", "blocked"].includes(payment.status) && <Button size="sm" variant="outline" disabled={actionLoading === payment.id} onClick={() => void handleTransfer(payment)}>Retry Stripe transfer</Button>}
+                        {isManualSettlement(payment) && ["pending", "authorized"].includes(payment.status) && (
                           <Button
                             size="sm"
                             onClick={() => handleRelease(payment.id)}
@@ -321,7 +348,7 @@ export default function PaymentsPage() {
                             {actionLoading === payment.id ? "..." : "Mark releasable"}
                           </Button>
                         )}
-                        {payment.provider === "manual" && payment.status === "releasable" && (
+                        {isManualSettlement(payment) && payment.status === "releasable" && (
                           <Button
                             size="sm"
                             className="bg-success text-ink-950 hover:brightness-110"
@@ -332,7 +359,7 @@ export default function PaymentsPage() {
                             {actionLoading === payment.id ? "..." : "Record payment"}
                           </Button>
                         )}
-                        {payment.provider === "manual" && payment.status === "paid" && (
+                        {isManualSettlement(payment) && payment.status === "paid" && (
                           <span className="flex items-center gap-1 font-mono text-xs font-medium text-success">
                             <CheckCircle2 className="h-3 w-3" />
                             Paid

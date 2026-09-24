@@ -385,3 +385,41 @@ async def test_simultaneous_checkout_creation_uses_one_remote_session(market, st
     assert all(r.status_code == 200 for r in responses)
     assert len({r.json()["session_id"] for r in responses}) == 1
     assert len(stripe.sessions) == 1
+
+
+async def test_admin_payment_dto_serializes_numeric_amounts_and_explicit_legacy_policy(market):
+    from decimal import Decimal
+
+    from app.models.payment import PaymentRecord
+
+    async with market.db() as db:
+        job = Job(
+            client_user_id=market.users["owner"].id,
+            title="Historical delivery",
+            raw_description="Report",
+            budget_min=1,
+            budget_max=10,
+            currency="EUR",
+            status="completed",
+            billing_mode="legacy_manual",
+        )
+        db.add(job)
+        await db.flush()
+        payment = PaymentRecord(
+            job_id=job.id,
+            client_user_id=job.client_user_id,
+            gross_amount=Decimal("10.00"),
+            platform_fee=Decimal("1.25"),
+            net_amount=Decimal("8.75"),
+            currency="EUR",
+            payment_status="releasable",
+            provider="stripe",
+        )
+        db.add(payment)
+        await db.commit()
+    rows = await request(market, "GET", "/admin/payments", role="admin")
+    row = next(item for item in rows if item["id"] == str(payment.id))
+    assert isinstance(row["gross_amount"], (int, float))
+    assert row["gross_amount"] == 10.0 and row["platform_fee"] == 1.25 and row["net_amount"] == 8.75
+    assert row["billing_mode"] == "legacy_manual"
+    assert row["provider"] == "stripe" and row["funding_id"] is None

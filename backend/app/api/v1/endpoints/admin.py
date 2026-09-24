@@ -306,7 +306,7 @@ async def admin_list_payments(
     rows = (await db.execute(
         select(
             PaymentRecord.id, PaymentRecord.job_id, PaymentRecord.task_id,
-            Job.title.label("job_title"), Task.title.label("task_title"),
+            Job.title.label("job_title"), Job.billing_mode, Task.title.label("task_title"),
             client.full_name.label("client_name"), developer.full_name.label("developer_name"),
             PaymentRecord.gross_amount, PaymentRecord.platform_fee, PaymentRecord.net_amount,
             PaymentRecord.currency, PaymentRecord.payment_status.label("status"),
@@ -319,4 +319,7 @@ async def admin_list_payments(
         .outerjoin(developer, developer.id == PaymentRecord.developer_user_id)
         .order_by(PaymentRecord.created_at.desc()).offset(skip).limit(limit)
     )).mappings().all()
-    return [dict(row) for row in rows]
+    return [
+        {**dict(row), **{field: float(row[field]) for field in ("gross_amount", "platform_fee", "net_amount")}}
+        for row in rows
+    ]
