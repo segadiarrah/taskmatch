@@ -25,7 +25,6 @@ import {
   Network,
   ExternalLink,
   Filter,
-  Plus,
 } from "lucide-react";
 
 interface Job {
@@ -55,9 +54,13 @@ const allStatuses = [
   "draft",
   "submitted",
   "formatted",
+  "decomposed",
+  "quoted",
+  "awaiting_human_quote",
   "bidding",
   "in_progress",
-  "under_review",
+  "client_review",
+  "disputed",
   "completed",
   "cancelled",
 ];
@@ -66,6 +69,7 @@ export default function JobsPage() {
   const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -90,31 +94,28 @@ export default function JobsPage() {
   }
 
   async function handleFormat(jobId: string) {
+    setActionError(null);
     setActionLoading(jobId);
     try {
-      await apiPost(`/v1/jobs/${jobId}/format`);
+      await apiPost(`/v1/mcp/format-job/${jobId}`);
       await fetchJobs();
     } catch {
-      // Simulate status change for demo
-      setJobs((prev) =>
-        prev.map((j) => (j.id === jobId ? { ...j, status: "formatted" } : j))
-      );
+      setActionError("The request failed. No change was saved. Please try again.");
+      return;
     } finally {
       setActionLoading(null);
     }
   }
 
   async function handleDecompose(jobId: string) {
+    setActionError(null);
     setActionLoading(jobId);
     try {
-      await apiPost(`/v1/jobs/${jobId}/decompose`);
+      await apiPost(`/v1/mcp/decompose-job/${jobId}`);
       await fetchJobs();
     } catch {
-      setJobs((prev) =>
-        prev.map((j) =>
-          j.id === jobId ? { ...j, status: "bidding", task_count: Math.floor(Math.random() * 5) + 3 } : j
-        )
-      );
+      setActionError("The request failed. No change was saved. Please try again.");
+      return;
     } finally {
       setActionLoading(null);
     }
@@ -131,6 +132,7 @@ export default function JobsPage() {
 
   return (
     <div className="space-y-6">
+      {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{actionError}</p>}
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -139,10 +141,6 @@ export default function JobsPage() {
             Manage incoming jobs through the intake pipeline.
           </p>
         </div>
-        <Button onClick={() => router.push("/admin/jobs/new")} className="shrink-0">
-          <Plus className="mr-2 h-4 w-4" />
-          New Job
-        </Button>
       </div>
 
       {/* Filters */}

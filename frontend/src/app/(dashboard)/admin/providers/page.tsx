@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { apiGet, apiPut } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -137,6 +138,7 @@ export default function ProvidersPage() {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     fetchProviders();
@@ -144,13 +146,15 @@ export default function ProvidersPage() {
 
   async function fetchProviders() {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await apiGet<ProvidersResponse>("/v1/admin/providers");
       setProviders(data.providers);
       setDrafts(makeDrafts(data.providers));
     } catch {
-      setProviders(FALLBACK_PROVIDERS);
-      setDrafts(makeDrafts(FALLBACK_PROVIDERS));
+      setLoadError(true);
+      setProviders([]);
+      setDrafts({});
     } finally {
       setLoading(false);
     }
@@ -208,6 +212,8 @@ export default function ProvidersPage() {
       });
     }
   }
+
+  if (loadError) return <DataLoadError onRetry={fetchProviders} />;
 
   const competingCount = providers.filter((p) => p.enabled && p.key_set).length;
 

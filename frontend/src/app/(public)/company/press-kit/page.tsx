@@ -224,6 +224,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
 };
 
 function CopyChip({ value }: { value: string }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -239,7 +240,7 @@ function CopyChip({ value }: { value: string }) {
       className="inline-flex items-center gap-1.5 rounded-full border border-ink-700 bg-ink-900 px-3 py-1 font-mono text-xs font-medium text-ink-300 transition-colors hover:border-signal-500/50 hover:text-signal-400"
     >
       {copied ? <Check className="h-3.5 w-3.5 text-signal-400" /> : <Copy className="h-3.5 w-3.5" />}
-      {copied ? "Copied" : value}
+      {copied ? t("publicUi.copied") : value}
     </button>
   );
 }

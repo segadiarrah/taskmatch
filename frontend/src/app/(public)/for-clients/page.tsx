@@ -457,7 +457,7 @@ export default function ForClientsPage() {
                 delay={i * 70}
                 className="hover-lift rounded-md border border-paper-ink/15 bg-paper p-6 hover:border-paper-ink/40"
               >
-                <span className="font-mono text-sm text-signal-600">{`0${i + 1}`}</span>
+                <span className="font-mono text-sm text-signal-600">{String(i + 1).padStart(2, "0")}</span>
                 <h3 className="mt-4 text-lg font-semibold text-paper-ink">{p.title}</h3>
                 <p className="mt-3 text-sm leading-7 text-paper-ink/70">{p.body}</p>
               </Reveal>

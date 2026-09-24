@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { apiGet } from "@/lib/api";
 import { cn, formatCurrency, timeAgo } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -173,47 +174,7 @@ export default function AdminOverviewPage() {
   useEffect(() => {
     apiGet<DashboardOverview>("/v1/dashboard/overview")
       .then(setData)
-      .catch(() => {
-        // Use placeholder data when API is not available
-        setData({
-          total_jobs: 47,
-          total_tasks: 128,
-          active_agents: 34,
-          pending_validations: 12,
-          failed_tasks: 3,
-          total_payments_pending: 284500,
-          total_payments_completed: 156000,
-          jobs_by_status: {
-            draft: 5,
-            submitted: 8,
-            formatted: 4,
-            bidding: 6,
-            in_progress: 12,
-            under_review: 7,
-            completed: 3,
-            cancelled: 2,
-          },
-          tasks_by_status: {
-            open: 24,
-            bidding: 18,
-            assigned: 32,
-            in_progress: 28,
-            pending_validation: 12,
-            completed: 10,
-            rejected: 4,
-          },
-          recent_activity: [
-            { id: "1", actor_type: "MCP", actor_id: "system", action: "formatted", entity_type: "Job", entity_id: "j-42", details: "Job #42 auto-formatted from raw description", created_at: new Date(Date.now() - 120000).toISOString() },
-            { id: "2", actor_type: "Agent", actor_id: "a-7", action: "submitted", entity_type: "Task", entity_id: "t-88", details: "Agent CodeBot submitted deliverable for review", created_at: new Date(Date.now() - 300000).toISOString() },
-            { id: "3", actor_type: "Admin", actor_id: "u-1", action: "approved", entity_type: "Submission", entity_id: "s-15", details: "Submission approved, payment released", created_at: new Date(Date.now() - 600000).toISOString() },
-            { id: "4", actor_type: "MCP", actor_id: "system", action: "decomposed", entity_type: "Job", entity_id: "j-41", details: "Job #41 decomposed into 5 tasks", created_at: new Date(Date.now() - 900000).toISOString() },
-            { id: "5", actor_type: "Agent", actor_id: "a-3", action: "placed_bid", entity_type: "Task", entity_id: "t-92", details: "DataWiz bid $450 on data pipeline task", created_at: new Date(Date.now() - 1200000).toISOString() },
-            { id: "6", actor_type: "MCP", actor_id: "system", action: "matched", entity_type: "Task", entity_id: "t-90", details: "3 agents matched for frontend task", created_at: new Date(Date.now() - 1800000).toISOString() },
-            { id: "7", actor_type: "Client", actor_id: "u-5", action: "created", entity_type: "Job", entity_id: "j-48", details: "New job posted: E-commerce Platform Rebuild", created_at: new Date(Date.now() - 3600000).toISOString() },
-            { id: "8", actor_type: "Admin", actor_id: "u-1", action: "released_payment", entity_type: "Payment", entity_id: "p-22", details: "$1,200 released to developer account", created_at: new Date(Date.now() - 7200000).toISOString() },
-          ],
-        });
-      })
+      .catch(() => setData(null))
       .finally(() => setLoading(false));
   }, []);
 
@@ -228,18 +189,7 @@ export default function AdminOverviewPage() {
     );
   }
 
-  if (!data) {
-    return (
-      <div className="flex h-[60vh] items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground">Failed to load dashboard data.</p>
-          <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
-            Retry
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  if (!data) return <DataLoadError onRetry={() => window.location.reload()} />;
 
   const jobsTotal = Object.values(data.jobs_by_status).reduce((a, b) => a + b, 0);
   const tasksTotal = Object.values(data.tasks_by_status).reduce((a, b) => a + b, 0);
@@ -300,14 +250,12 @@ export default function AdminOverviewPage() {
           value={data.total_jobs}
           description="across all statuses"
           icon={Briefcase}
-          trend="+12%"
         />
         <KPICard
           title="Active Tasks"
           value={data.total_tasks}
           description="currently in pipeline"
           icon={ListChecks}
-          trend="+8%"
         />
         <KPICard
           title="Active Agents"
@@ -326,7 +274,6 @@ export default function AdminOverviewPage() {
           value={formatCurrency(data.total_payments_pending)}
           description="total in-flight value"
           icon={DollarSign}
-          trend="+23%"
         />
       </div>
 

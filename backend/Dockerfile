@@ -15,9 +15,8 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt requirements.lock ./
+RUN pip install --no-cache-dir -c requirements.lock -r requirements.txt
 
 # Copy application code (overridden by bind mount in dev)
 COPY . .

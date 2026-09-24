@@ -11,8 +11,8 @@ const localeCopy = {
     client: "My Jobs",
     developer: "My Agents",
     admin: "Real-time overview of your TaskMatch platform operations.",
-    cookies: "We use cookies to enhance your experience",
-    loading: "Loading TaskMatch...",
+    privacy: "Privacy Policy", language: "Select language", guide: "Client quickstart", archive: "This article is published in English.",
+    loading: "Loading TaskMatch…",
     retry: "Try Again",
   },
   fr: {
@@ -22,7 +22,7 @@ const localeCopy = {
     client: "Mes missions",
     developer: "Mes agents",
     admin: "Vue en temps réel des opérations de votre plateforme TaskMatch.",
-    cookies: "Nous utilisons des cookies pour améliorer votre expérience",
+    privacy: "Politique de confidentialité", language: "Choisir la langue", guide: "Démarrage rapide client", archive: "Cet article est publié en anglais.",
     loading: "Chargement de TaskMatch…",
     retry: "Réessayer",
   },
@@ -30,21 +30,21 @@ const localeCopy = {
     home: "El trabajo complejo,",
     docs: "La documentación,",
     login: "Bienvenido de nuevo",
-    client: "Mis trabajos",
+    client: "Mis encargos",
     developer: "Mis agentes",
     admin: "Resumen en tiempo real de las operaciones de tu plataforma TaskMatch.",
-    cookies: "Usamos cookies para mejorar tu experiencia",
+    privacy: "Política de privacidad", language: "Elegir idioma", guide: "Inicio rápido para clientes", archive: "Este artículo está publicado en inglés.",
     loading: "Cargando TaskMatch…",
-    retry: "Intentar de nuevo",
+    retry: "Reintentar",
   },
   zh: {
     home: "复杂的工作，",
     docs: "文档，",
     login: "欢迎回来",
-    client: "我的工作",
+    client: "我的任务",
     developer: "我的智能体",
     admin: "实时查看 TaskMatch 平台的运行情况。",
-    cookies: "我们使用 Cookie 来改善你的体验",
+    privacy: "隐私政策", language: "选择语言", guide: "客户快速入门", archive: "本文以英文发布。",
     loading: "正在加载 TaskMatch…",
     retry: "重试",
   },
@@ -85,7 +85,6 @@ async function seedLocale(page: Page, locale: Locale, authenticated = false) {
   await page.addInitScript(
     ({ selectedLocale, withAuth }) => {
       localStorage.setItem("taskmatch_locale", selectedLocale);
-      localStorage.setItem("tm_cookie_consent", JSON.stringify({ necessary: true, analytics: false, marketing: false, timestamp: "2026-01-01T00:00:00Z" }));
       if (withAuth) localStorage.setItem("auth_token", "playwright-token");
     },
     { selectedLocale: locale, withAuth: authenticated },
@@ -112,6 +111,8 @@ for (const locale of Object.keys(localeCopy) as Locale[]) {
       ["/", "home"],
       ["/resources/documentation", "docs"],
       ["/login", "login"],
+      ["/resources/guides/client-quickstart", "guide"],
+      ["/legal/privacy", "privacy"],
     ] as const) {
       test(`${path} uses selected locale`, async ({ page }) => {
         await seedLocale(page, locale);
@@ -126,22 +127,23 @@ for (const locale of Object.keys(localeCopy) as Locale[]) {
       ["/developer", "developer"],
       ["/admin", "admin"],
     ] as const) {
-      test(`${path} localizes authenticated content`, async ({ page }) => {
+      test(`${path} respects its supported content language`, async ({ page }) => {
         const role = rolesByPath[path];
         await seedLocale(page, locale, true);
         await page.route("**/api/**", (route) => fulfillDashboard(route, role));
         await page.goto(path);
-        await expect(page.getByText(localeCopy[locale][copyKey], { exact: false }).first()).toBeVisible();
+        await expect(page.getByText((path === "/admin" ? localeCopy.en.admin : localeCopy[locale][copyKey]), { exact: false }).first()).toBeVisible();
         await expect(page.locator("html")).toHaveAttribute("lang", locale);
+        await expect(page.locator("main")).toHaveAttribute("lang", path === "/admin" ? "en" : locale);
       });
     }
 
-    test("localizes GDPR consent after consent is cleared", async ({ page }) => {
+    test("identifies English articles while preserving translated navigation", async ({ page }) => {
       await seedLocale(page, locale);
-      await page.addInitScript(() => localStorage.removeItem("tm_cookie_consent"));
-      await page.goto("/");
-      await expect(page.getByText(localeCopy[locale].cookies, { exact: false })).toBeVisible({ timeout: 4_000 });
-      await expect(page.locator("html")).toHaveAttribute("lang", locale);
+      await page.goto("/resources/blog/why-we-decompose-jobs-into-tasks");
+      await expect(page.getByText(localeCopy[locale].archive, { exact: true })).toBeVisible();
+      await expect(page.locator('[lang="en"] h1')).toBeVisible();
+      await expect(page.getByRole("combobox", { name: localeCopy[locale].language })).toHaveValue(locale);
     });
 
     test("localizes the authenticated loading state", async ({ page }) => {
@@ -161,3 +163,14 @@ for (const locale of Object.keys(localeCopy) as Locale[]) {
     });
   });
 }
+
+
+test("changing language persists after reload and updates document language", async ({ page }) => {
+  await page.goto("/");
+  const selector = page.getByRole("combobox", { name: /Select language|Choisir la langue|Elegir idioma|选择语言/ });
+  await selector.selectOption("fr");
+  await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+  await page.reload();
+  await expect(page.getByRole("combobox", { name: "Choisir la langue" })).toHaveValue("fr");
+  await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+});

@@ -64,7 +64,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
 const dateLocales: Record<Locale, string> = { en: "en-US", fr: "fr-FR", es: "es-ES", zh: "zh-CN" };
 
 export default function BlogPage() {
-  const { locale } = useTranslation();
+  const { locale, t } = useTranslation();
   const c = COPY[locale] ?? COPY.en;
 
   const formatDate = (iso: string) =>
@@ -87,11 +87,12 @@ export default function BlogPage() {
         icon={Newspaper}
       />
 
+      <p className="mx-auto max-w-6xl px-4 pb-6 text-sm text-ink-400">{t("publicUi.archive")}</p>
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <Reveal>
             <Link href={`/resources/blog/${featured.slug}`} className="group block">
-              <article className="hover-lift grid gap-8 rounded-lg border border-ink-700 bg-ink-900 p-8 hover:border-signal-500/40 lg:grid-cols-[1.1fr_0.9fr] lg:p-10">
+              <article lang="en" className="hover-lift grid gap-8 rounded-lg border border-ink-700 bg-ink-900 p-8 hover:border-signal-500/40 lg:grid-cols-[1.1fr_0.9fr] lg:p-10">
                 <div>
                   <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
                     <span className="rounded-full border border-signal-500/30 bg-signal-500/10 px-3 py-1 eyebrow text-signal-400">
@@ -117,12 +118,12 @@ export default function BlogPage() {
                       <div className="text-ink-500">{featured.author.role}</div>
                     </div>
                   </div>
-                  <span className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-ink-50">
+                  <span lang={locale} className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-ink-50">
                     {c.readArticle}
                     <ArrowRight className="h-4 w-4 text-signal-400 transition-transform group-hover:translate-x-1" />
                   </span>
                 </div>
-                <div className="hidden rounded-md border border-ink-700 bg-ink-850 p-8 lg:flex lg:flex-col lg:justify-center">
+                <div lang={locale} className="hidden rounded-md border border-ink-700 bg-ink-850 p-8 lg:flex lg:flex-col lg:justify-center">
                   <div className="eyebrow text-signal-400">{c.featured}</div>
                   <p className="mt-4 font-display text-2xl font-medium leading-snug text-ink-50">{c.featuredTagline}</p>
                 </div>
@@ -132,7 +133,8 @@ export default function BlogPage() {
         </div>
       </section>
 
-      <section className="px-4 pb-24 sm:px-6 lg:px-8">
+      <p className="mx-auto max-w-6xl px-4 pb-6 text-sm text-ink-400">{t("publicUi.archive")}</p>
+      <section lang="en" className="px-4 pb-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {rest.map((post, i) => (

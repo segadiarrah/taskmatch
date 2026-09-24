@@ -8,6 +8,7 @@
  */
 
 const zh = {
+  publicUi: { "productFacts": ["界面语言", "账户角色", "开源 SDK", "版本化 API"],"selectLanguage": "选择语言", "toggleMenu": "显示菜单", "copy": "复制", "copied": "已复制", "operatedBy": "TaskMatch.ai — 由 Tauraco 运营。", "back": "返回 TaskMatch", "print": "打印", "contents": "目录", "archive": "本文以英文发布。", "archiveHistory": "版本说明以英文发布。", "rightsTitle": "你的数据权利", "rightsBody": "如需访问、更正、删除、迁移数据或更改同意设置，请联系隐私团队。请提供账户邮箱并说明请求内容。", "rightsAction": "联系隐私团队", "linkedIn": "Tauraco 的 LinkedIn 主页", "demo": "流程示例", "brief": "你的需求", "scoring": "可解释的评分", "escrow": "付款账簿", "audit": "审计日志"},
   client: {
     welcome: "\u6b22\u8fce\u56de\u6765\uff0c{name}",
     welcomeFallbackName: "\u4f60",
@@ -22,6 +23,7 @@ const zh = {
       totalSpent: "\u603b\u652f\u51fa",
     },
     new: {
+      recovery: {"retry": "重试提交", "savedDraft": "草稿已保存。请重试剩余步骤，无需创建新工作。", "viewDraft": "查看已保存的草稿", "uploadFailed": "文档上传失败。草稿已保存，请重试以上传全部附件。", "planningFailed": "规划未能启动。草稿和已上传文档均已保存，请重试提交。", "createFailed": "无法创建工作，请重试。", "titleRequired": "请输入标题。", "descriptionRequired": "请输入描述。", "minInvalid": "请输入有效的最低预算。", "maxInvalid": "最高预算不得低于最低预算。"},
       breadcrumb: "\u6211\u7684\u4efb\u52a1",
       title: "\u521b\u5efa\u65b0\u4efb\u52a1",
       subtitle:
@@ -104,6 +106,14 @@ const zh = {
       lastUpdated: "\u6700\u540e\u66f4\u65b0",
     },
     plan: {
+      reviewWithoutPayment: "接受工作前请审核交付结果。外部付款结算单独处理。",
+      actionFailed: "请求未能保存，请重试。已确认的状态未发生变化。",
+      refresh: "刷新状态",
+      waiting: "规划仍在等待中。请刷新状态继续查询。",
+      producedBy: "由 {name} 生成",
+      reason: "能力匹配：{capability}%。成功率：{rate}%。已完成任务：{count}。",
+      reasonFallback: "根据已注册的能力进行匹配。",
+
       stage: {
         format: { label: "\u6574\u7406\u9700\u6c42", desc: "\u6b63\u5728\u7ed3\u6784\u5316\u4f60\u7684\u8bf7\u6c42" },
         decompose: { label: "\u62c6\u89e3", desc: "\u6b63\u5728\u62c6\u5206\u4e3a\u5b50\u4efb\u52a1" },
@@ -124,17 +134,17 @@ const zh = {
       planningHint: "\u901a\u5e38\u4e0d\u5230\u4e00\u5206\u949f\u3002\u672c\u9762\u677f\u4f1a\u81ea\u52a8\u66f4\u65b0\u3002",
       subtitle:
         "\u4ee5\u4e0b\u5c31\u662f\u4f60\u7684\u8bf7\u6c42\u5c06\u5982\u4f55\u4ea4\u4ed8\u2014\u2014\u62c6\u51fa\u7684\u5b50\u4efb\u52a1\u3001\u6bcf\u9879\u7684\u6267\u884c\u65b9\uff0c\u4ee5\u53ca\u4f60\u9700\u652f\u4ed8\u7684\u91d1\u989d\u3002",
-      escrowReleasedTitle: "\u5de5\u4f5c\u5df2\u63a5\u53d7\u2014\u2014\u6258\u7ba1\u5df2\u91ca\u653e",
-      escrowHeldTitle: "\u5de5\u4f5c\u5df2\u4ea4\u4ed8\u2014\u2014\u6258\u7ba1\u4e2d\uff0c\u7b49\u5f85\u4f60\u5ba1\u9605",
-      escrowReleasedBody: "{net} \u5df2\u91ca\u653e\u7ed9\u6267\u884c\u65b9\u3002\u4efb\u52a1\u5df2\u5b8c\u6210\u3002",
+      escrowReleasedTitle: "工作已接受",
+      escrowHeldTitle: "交付的工作已可供审核",
+      escrowReleasedBody: "付款结算是独立操作，需要确认外部转账。仅接受工作不会转移资金。",
       escrowHeldBody:
-        "{gross} \u5904\u4e8e\u6258\u7ba1\uff08\u6263\u9664 {fee} \u5e73\u53f0\u8d39\u540e\uff0c{net} \u5f52\u6267\u884c\u65b9\uff09\u3002\u8bf7\u5148\u5ba1\u9605\u4e0b\u65b9\u7ed3\u679c\uff0c\u518d\u91ca\u653e\u6b3e\u9879\u3002",
+        "账簿记录 {gross}，包括平台费 {fee} 和执行者金额 {net}。接受工作前请先审核结果。",
       requestChanges: "\u8981\u6c42\u4fee\u6539",
-      releasing: "\u91ca\u653e\u4e2d\u2026",
-      acceptAndRelease: "\u63a5\u53d7\u5e76\u91ca\u653e\u6b3e\u9879",
+      releasing: "正在接受…",
+      acceptAndRelease: "接受工作",
       completed: "\u5df2\u5b8c\u6210",
       disputePrompt:
-        "\u4ea4\u4ed8\u7269\u7f3a\u4e86\u4ec0\u4e48\uff1f\u5728\u6267\u884c\u65b9\u4fee\u6539\u671f\u95f4\uff0c\u4f60\u7684\u6b3e\u9879\u4ecd\u5904\u4e8e\u6258\u7ba1\u3002",
+        "请描述需要修改的内容。修改请求不会发起付款。",
       disputePlaceholder:
         "\u4f8b\u5982\uff1a\u7b2c 2 \u8282\u672a\u6309\u8981\u6c42\u8986\u76d6\u6b27\u76df\u5e02\u573a\uff1b\u8bed\u6c14\u8fc7\u4e8e\u968f\u610f\u3002",
       cancel: "\u53d6\u6d88",
@@ -520,7 +530,7 @@ const zh = {
     humanWouldCost: "\u4eba\u5de5\u4e13\u5bb6\u7684\u8d39\u7528\u4e3a\uff1a",
     hoursShort: " \u5c0f\u65f6",
     gateNotice:
-      "\u786e\u8ba4\u540e\u5c06\u542f\u52a8\u6267\u884c\uff0c\u5e76\u5c06\u91d1\u989d\u7f6e\u4e8e\u6258\u7ba1\u3002\u4ec5\u5728\u4ea4\u4ed8\u901a\u8fc7\u9a8c\u8bc1\u540e\u624d\u4f1a\u652f\u4ed8\u3002",
+      "确认后将启动执行并记录报价金额。平台不会扣款或冻结资金；验收交付后需另行安排外部付款。",
     accept: "\u786e\u8ba4\u5e76\u5f00\u59cb",
     accepting: "\u786e\u8ba4\u4e2d\u2026",
     decline: "\u62d2\u7edd",

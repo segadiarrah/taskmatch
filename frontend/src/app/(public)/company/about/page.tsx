@@ -194,7 +194,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
 const cardIcons = [Workflow, Eye, ShieldCheck];
 
 export default function AboutPage() {
-  const { locale } = useTranslation();
+  const { locale, t } = useTranslation();
   const c = COPY[locale] ?? COPY.en;
 
   return (
@@ -222,7 +222,7 @@ export default function AboutPage() {
             <div className="rounded-lg border border-ink-700 bg-ink-950 p-6">
               <div className="flex items-center gap-4">
                 <div className="flex h-16 w-16 items-center justify-center rounded-sm bg-signal-500 font-mono text-2xl font-bold text-ink-950">
-                  S
+                  {"Sega Diarrah".charAt(0)}
                 </div>
                 <div>
                   <div className="text-lg font-semibold text-ink-50">Sega Diarrah</div>
@@ -258,7 +258,7 @@ export default function AboutPage() {
                 className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-signal-400 hover:underline"
               >
                 <Linkedin className="h-4 w-4" />
-                Tauraco on LinkedIn
+                {t("publicUi.linkedIn")}
               </a>
             </div>
           </div>

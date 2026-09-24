@@ -114,7 +114,7 @@ const COPY: Record<Locale, Copy> = {
         ],
         bullets: [
           "Other platform users, to the extent the work requires it — a client sees the profile and submissions of the executor assigned to their task.",
-          "Stripe, our payment processor, for payments and payouts.",
+          "External payment providers, when enabled, for payments and payouts.",
           "OVH SAS, which hosts the servers in France, and Cloudflare, Inc., which terminates public traffic. Both are named in the legal notice.",
           "Public authorities, where the law requires it and to the extent it requires.",
         ],
@@ -131,14 +131,14 @@ const COPY: Record<Locale, Copy> = {
         title: "7. Where the data is",
         paragraphs: [
           "The application, its database and its object storage run on servers located in France, in the European Union.",
-          "Cloudflare, which fronts public traffic, is established outside the European Union. That transfer is covered by the European Commission's standard contractual clauses. Stripe processes payment data under its own European entity.",
+          "Cloudflare, which fronts public traffic, is established outside the European Union. That transfer is covered by the European Commission's standard contractual clauses. Information about an enabled payment provider is available from the privacy team.",
         ],
       },
       rights: {
         title: "8. Your rights",
         paragraphs: [
           "Under the GDPR you may request access to your data, correction of inaccurate data, erasure, restriction of processing, portability, and you may object to processing based on our legitimate interest. Where processing rests on consent, you may withdraw it at any time without affecting what was done before.",
-          "Write to privacy@tauraco.ai, or use the data rights panel in your account settings. We answer within one month. We may ask you to confirm your identity first, and we may have to limit a request where it would expose another user's data or where the law requires us to keep the record.",
+          "Write to privacy@tauraco.ai. We answer within one month. We may ask you to confirm your identity first, and we may have to limit a request where it would expose another user's data or where the law requires us to keep the record.",
           "If our answer does not satisfy you, you may lodge a complaint with the French supervisory authority: " +
             CNIL_EN +
             ". If you live in another EU country, you may complain to your own supervisory authority instead.",
@@ -217,7 +217,7 @@ const COPY: Record<Locale, Copy> = {
         ],
         bullets: [
           "Les autres utilisateurs, dans la mesure où le travail l’exige — un client voit le profil et les remises de l’exécutant affecté à sa tâche.",
-          "Stripe, notre prestataire de paiement, pour les encaissements et les versements.",
+          "Les prestataires de paiement externes, lorsqu’ils sont activés, pour les encaissements et les versements.",
           "OVH SAS, qui héberge les serveurs en France, et Cloudflare, Inc., qui assure la terminaison du trafic public. Tous deux sont nommés dans les mentions légales.",
           "Les autorités publiques, lorsque la loi l’impose et dans la mesure où elle l’impose.",
         ],
@@ -234,14 +234,14 @@ const COPY: Record<Locale, Copy> = {
         title: "7. Où sont les données",
         paragraphs: [
           "L’application, sa base de données et son stockage objet fonctionnent sur des serveurs situés en France, dans l’Union européenne.",
-          "Cloudflare, qui assure la façade du trafic public, est établi hors de l’Union européenne. Ce transfert est encadré par les clauses contractuelles types de la Commission européenne. Stripe traite les données de paiement via son entité européenne.",
+          "Cloudflare, qui assure la façade du trafic public, est établi hors de l’Union européenne. Ce transfert est encadré par les clauses contractuelles types de la Commission européenne. L’équipe de confidentialité peut préciser les prestataires de paiement activés.",
         ],
       },
       rights: {
         title: "8. Vos droits",
         paragraphs: [
           "Le RGPD vous permet de demander l’accès à vos données, la rectification des données inexactes, leur effacement, la limitation du traitement, leur portabilité, et de vous opposer aux traitements fondés sur notre intérêt légitime. Lorsqu’un traitement repose sur le consentement, vous pouvez le retirer à tout moment sans remettre en cause ce qui a été fait avant.",
-          "Écrivez à privacy@tauraco.ai ou utilisez le panneau de gestion des droits dans les réglages de votre compte. Nous répondons dans le mois. Nous pouvons vous demander de confirmer votre identité, et devoir limiter une demande lorsqu’elle exposerait les données d’un autre utilisateur ou lorsque la loi nous impose de conserver la trace.",
+          "Écrivez à privacy@tauraco.ai. Nous répondons dans le mois. Nous pouvons vous demander de confirmer votre identité, et devoir limiter une demande lorsqu’elle exposerait les données d’un autre utilisateur ou lorsque la loi nous impose de conserver la trace.",
           "Si notre réponse ne vous satisfait pas, vous pouvez introduire une réclamation auprès de l’autorité de contrôle française : " +
             CNIL_EN +
             ". Si vous résidez dans un autre pays de l’Union, vous pouvez saisir votre propre autorité de contrôle.",
@@ -320,7 +320,7 @@ const COPY: Record<Locale, Copy> = {
         ],
         bullets: [
           "Otros usuarios, en la medida en que el trabajo lo exija — un cliente ve el perfil y las entregas del ejecutor asignado a su tarea.",
-          "Stripe, nuestro procesador de pagos, para cobros y pagos.",
+          "Proveedores de pago externos, cuando estén habilitados, para cobros y pagos.",
           "OVH SAS, que aloja los servidores en Francia, y Cloudflare, Inc., que termina el tráfico público. Ambos figuran en el aviso legal.",
           "Autoridades públicas, cuando la ley lo exige y en la medida en que lo exige.",
         ],
@@ -337,14 +337,14 @@ const COPY: Record<Locale, Copy> = {
         title: "7. Dónde están los datos",
         paragraphs: [
           "La aplicación, su base de datos y su almacenamiento de objetos funcionan en servidores situados en Francia, en la Unión Europea.",
-          "Cloudflare, que actúa como fachada del tráfico público, está establecida fuera de la Unión Europea. Esa transferencia se ampara en las cláusulas contractuales tipo de la Comisión Europea. Stripe trata los datos de pago a través de su entidad europea.",
+          "Cloudflare, que actúa como fachada del tráfico público, está establecida fuera de la Unión Europea. Esa transferencia se ampara en las cláusulas contractuales tipo de la Comisión Europea. El equipo de privacidad puede informar sobre los proveedores de pago habilitados.",
         ],
       },
       rights: {
         title: "8. Tus derechos",
         paragraphs: [
           "El RGPD te permite solicitar el acceso a tus datos, la rectificación de los inexactos, su supresión, la limitación del tratamiento, su portabilidad, y oponerte a los tratamientos basados en nuestro interés legítimo. Cuando un tratamiento se basa en el consentimiento, puedes retirarlo en cualquier momento sin afectar a lo ya realizado.",
-          "Escribe a privacy@tauraco.ai o usa el panel de derechos en los ajustes de tu cuenta. Respondemos en el plazo de un mes. Podemos pedirte que confirmes tu identidad, y podemos tener que limitar una solicitud cuando expondría datos de otro usuario o cuando la ley nos obliga a conservar el registro.",
+          "Escribe a privacy@tauraco.ai. Respondemos en el plazo de un mes. Podemos pedirte que confirmes tu identidad, y podemos tener que limitar una solicitud cuando expondría datos de otro usuario o cuando la ley nos obliga a conservar el registro.",
           "Si nuestra respuesta no te satisface, puedes presentar una reclamación ante la autoridad de control francesa: " +
             CNIL_EN +
             ". Si resides en otro país de la Unión, puedes dirigirte a tu propia autoridad de control.",
@@ -421,7 +421,7 @@ const COPY: Record<Locale, Copy> = {
         paragraphs: ["我们不出售个人数据，也不为他人的广告目的共享数据。数据仅会到达："],
         bullets: [
           "其他平台用户，且以工作所需为限——客户可以看到被指派执行方的资料与提交内容。",
-          "我们的支付服务商 Stripe，用于收款与付款。",
+          "启用外部支付服务商时，由其处理收款与付款。",
           "在法国托管服务器的 OVH SAS，以及负责终止公共流量的 Cloudflare, Inc.。两者均已在法律声明中列明。",
           "公共机关，在法律要求时并以其要求为限。",
         ],
@@ -438,14 +438,14 @@ const COPY: Record<Locale, Copy> = {
         title: "7. 数据存放在哪里",
         paragraphs: [
           "应用程序、数据库与对象存储运行在位于法国（欧盟境内）的服务器上。",
-          "承担公共流量前端的 Cloudflare 设立于欧盟境外，该传输受欧盟委员会标准合同条款保护。Stripe 通过其欧洲实体处理支付数据。",
+          "承担公共流量前端的 Cloudflare 设立于欧盟境外，该传输受欧盟委员会标准合同条款保护。有关已启用支付服务商的信息，请联系隐私团队。",
         ],
       },
       rights: {
         title: "8. 你的权利",
         paragraphs: [
           "根据 GDPR，你可以请求访问你的数据、更正不准确的数据、删除数据、限制处理、获取数据可携副本，并可对基于我们合法利益的处理提出反对。若处理以同意为基础，你可随时撤回，且不影响撤回前已进行的处理。",
-          "请写信至 privacy@tauraco.ai，或使用账户设置中的数据权利面板。我们会在一个月内答复。我们可能要求你先确认身份；当请求会暴露其他用户的数据、或法律要求我们保留记录时，我们可能不得不作出限制。",
+          "请写信至 privacy@tauraco.ai。我们会在一个月内答复。我们可能要求你先确认身份；当请求会暴露其他用户的数据、或法律要求我们保留记录时，我们可能不得不作出限制。",
           "如果你对我们的答复不满意，可以向法国监管机构投诉：" +
             CNIL_EN +
             "。如果你居住在欧盟其他国家，也可以向所在国的监管机构投诉。",
@@ -469,18 +469,7 @@ const COPY: Record<Locale, Copy> = {
   },
 };
 
-const SECTION_ORDER = [
-  "controller",
-  "data",
-  "purposes",
-  "automated",
-  "recipients",
-  "retention",
-  "transfers",
-  "rights",
-  "cookies",
-  "contact",
-] as const;
+const SECTION_ORDER = Object.keys(COPY.en.sections) as Array<keyof Copy["sections"]>;
 
 export default function PrivacyPolicyPage() {
   const { locale } = useTranslation();
@@ -505,7 +494,7 @@ export default function PrivacyPolicyPage() {
             {id === "controller" ? (
               <p>
                 {c.controllerIntro} <strong>{publisherLine()}</strong>
-                {LEGAL_ENTITY.address ? `, ${LEGAL_ENTITY.address.join(", ")}` : ""}.
+                {LEGAL_ENTITY.address ? <>{", "}{LEGAL_ENTITY.address.join(", ")}</> : null}.
               </p>
             ) : null}
             {section.paragraphs.map((paragraph) => (

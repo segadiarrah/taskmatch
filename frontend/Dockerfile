@@ -14,6 +14,8 @@ COPY . .
 # already-compiled JS.
 ARG NEXT_PUBLIC_API_URL=/api
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ARG API_INTERNAL_URL=http://backend:8000
+ENV API_INTERNAL_URL=$API_INTERNAL_URL
 
 # Same reasoning, and it decides more than the client bundle: this origin is
 # baked into the canonical URLs, the sitemap and the Open Graph tags at build

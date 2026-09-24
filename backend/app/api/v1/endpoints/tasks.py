@@ -8,14 +8,17 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import lazyload, selectinload
 
 from app.core.database import get_db
 from app.core.deps import get_current_active_user, require_role
 from app.middleware.audit import log_audit
 from app.models.assignment import Assignment, AssignmentStatus
+from app.models.job import Job, JobStatus
 from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.task import TaskListResponse, TaskResponse, TaskUpdate
+from app.services.task_access import require_task_access, task_visibility
 
 router = APIRouter()
 
@@ -41,7 +44,7 @@ async def list_tasks(
     db: AsyncSession = Depends(get_db),
 ) -> TaskListResponse:
     """Return a paginated list of tasks with optional filters."""
-    query = select(Task)
+    query = select(Task).options(lazyload("*"), selectinload(Task.assignments)).where(task_visibility(current_user))
 
     if status_filter:
         query = query.where(Task.status == status_filter)
@@ -82,7 +85,7 @@ async def list_open_tasks(
 
     Useful for agent developers to discover work opportunities.
     """
-    query = select(Task).where(Task.status == TaskStatus.open_for_bids)
+    query = select(Task).options(lazyload("*"), selectinload(Task.assignments)).where(Task.status == TaskStatus.open_for_bids, task_visibility(current_user))
 
     if task_type:
         query = query.where(Task.task_type == task_type)
@@ -112,13 +115,14 @@ async def get_task(
     db: AsyncSession = Depends(get_db),
 ) -> TaskResponse:
     """Return full details for a single task."""
-    result = await db.execute(select(Task).where(Task.id == task_id))
+    result = await db.execute(select(Task).options(lazyload("*"), selectinload(Task.assignments)).where(Task.id == task_id))
     task = result.scalar_one_or_none()
     if task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found",
         )
+    await require_task_access(db, task, current_user, include_open=True)
     return TaskResponse.model_validate(task)
 
 
@@ -179,7 +183,7 @@ async def assign_task(
     Creates an assignment record and transitions the task to ``assigned`` status.
     Restricted to administrators.
     """
-    result = await db.execute(select(Task).where(Task.id == task_id))
+    result = await db.execute(select(Task).where(Task.id == task_id).with_for_update().execution_options(populate_existing=True))
     task = result.scalar_one_or_none()
     if task is None:
         raise HTTPException(
@@ -187,7 +191,10 @@ async def assign_task(
             detail="Task not found",
         )
 
-    if task.status not in (TaskStatus.open_for_bids, TaskStatus.pending, TaskStatus.reassigned):
+    job = await db.get(Job, task.job_id)
+    if job.status not in (JobStatus.bidding, JobStatus.in_progress):
+        raise HTTPException(status_code=409, detail="Accept the job quote before assigning work")
+    if task.status not in (TaskStatus.open_for_bids, TaskStatus.reassigned):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Task is in '{task.status}' status and cannot be assigned",
@@ -213,6 +220,7 @@ async def assign_task(
     db.add(assignment)
 
     task.status = TaskStatus.assigned
+    job.status = JobStatus.in_progress
     await db.flush()
     await db.refresh(assignment)
 
@@ -230,5 +238,5 @@ async def assign_task(
         "assignment_id": str(assignment.id),
         "task_id": str(task_id),
         "agent_id": str(agent_id),
-        "status": assignment.status.value,
+        "status": getattr(assignment.status, "value", assignment.status),
     }

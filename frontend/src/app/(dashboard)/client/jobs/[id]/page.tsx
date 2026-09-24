@@ -3,15 +3,14 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { apiGet, apiPost, ApiError } from "@/lib/api";
+import { apiGet, ApiError } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
 import { JOB_LIFECYCLE } from "@/lib/job-requirements";
 import { formatCurrency, formatDate, formatStatus } from "@/lib/utils";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Textarea } from "@/components/ui/textarea";
 import ExecutionPlan from "./execution-plan";
 import QuotePanel from "./quote-panel";
 import DeliveryPanel from "./delivery-panel";
@@ -32,58 +31,25 @@ import {
   ArrowLeft,
   Loader2,
   AlertCircle,
-  CheckCircle2,
   DollarSign,
   Calendar,
   FileText,
   ChevronRight,
-  Download,
-  ThumbsUp,
-  RotateCcw,
-  ExternalLink,
 } from "lucide-react";
-
-interface Task {
-  id: string;
-  title: string;
-  status: string;
-  task_type: string;
-  assigned_agent_id: string | null;
-  assigned_agent_name: string | null;
-  budget: number;
-  submission_status: string | null;
-  submission_id: string | null;
-}
-
-interface Submission {
-  id: string;
-  task_id: string;
-  task_title: string;
-  status: string;
-  output_summary: string;
-  artifact_urls: string[];
-  score: number | null;
-  submitted_at: string;
-}
 
 interface JobDetail {
   id: string;
   title: string;
-  description: string;
+  raw_description: string;
   status: string;
   budget_min: number;
   budget_max: number;
   currency: string;
   deadline: string | null;
-  auto_select_agents: boolean;
+  auto_select_enabled: boolean;
   formatted_summary: string | null;
   created_at: string;
   updated_at: string;
-  tasks: Task[];
-  deliverables: Submission[];
-  payment_status: string;
-  total_paid: number;
-  total_budget_used: number;
 }
 
 
@@ -115,8 +81,6 @@ export default function JobDetailPage() {
   const [job, setJob] = useState<JobDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [reviewNote, setReviewNote] = useState("");
 
   const fetchJob = useCallback(async () => {
     try {
@@ -133,55 +97,11 @@ export default function JobDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [jobId]);
+  }, [jobId, t]);
 
   useEffect(() => {
     fetchJob();
   }, [fetchJob]);
-
-  const handleApprove = async () => {
-    if (!job) return;
-    const submission = job.tasks
-      ?.flatMap((t: any) => t.submissions || [])
-      ?.find((s: any) => s.status === "submitted" || s.status === "under_review");
-    if (!submission) return;
-    try {
-      setActionLoading("approve");
-      await apiPost(`/v1/submissions/${submission.id}/reviews`, {
-        submission_id: submission.id,
-        decision: "approved",
-        notes: reviewNote.trim() || null,
-      });
-      setReviewNote("");
-      await fetchJob();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to approve");
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleRequestRevision = async () => {
-    if (!job || !reviewNote.trim()) return;
-    const submission = job.tasks
-      ?.flatMap((t: any) => t.submissions || [])
-      ?.find((s: any) => s.status === "submitted" || s.status === "under_review");
-    if (!submission) return;
-    try {
-      setActionLoading("revision");
-      await apiPost(`/v1/submissions/${submission.id}/reviews`, {
-        submission_id: submission.id,
-        decision: "rework_requested",
-        notes: reviewNote.trim(),
-      });
-      setReviewNote("");
-      await fetchJob();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to request revision");
-    } finally {
-      setActionLoading(null);
-    }
-  };
 
   if (loading) {
     return (
@@ -193,9 +113,10 @@ export default function JobDetailPage() {
 
   if (error || !job) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+      <div role="alert" className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <AlertCircle className="h-12 w-12 text-destructive" />
         <p className="text-lg text-muted-foreground">{error ?? t("client.detail.notFound")}</p>
+        <Button variant="outline" onClick={fetchJob}>{t("client.tryAgain")}</Button>
         <Link href="/client/jobs">
           <Button variant="outline">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -206,8 +127,6 @@ export default function JobDetailPage() {
     );
   }
 
-  // Valeur d'API, pas un libellé : le repli reste dans le code.
-  const paymentStatus = job.payment_status ?? "pending";
   const lifecycleIndex = JOB_LIFECYCLE.indexOf(job.status);
   const progressPercent =
     job.status === "cancelled"
@@ -303,7 +222,7 @@ export default function JobDetailPage() {
               <CardTitle className="text-lg">{t("client.detail.description")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm whitespace-pre-wrap leading-relaxed">{job.description}</p>
+              <p className="text-sm whitespace-pre-wrap leading-relaxed">{job.raw_description}</p>
             </CardContent>
           </Card>
 
@@ -327,103 +246,6 @@ export default function JobDetailPage() {
             </Card>
           )}
 
-          {/* Deliverables */}
-          {job.deliverables && job.deliverables.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-success" />
-                  {t("client.detail.deliverablesTitle")}
-                </CardTitle>
-                <CardDescription>{t("client.detail.deliverablesSubtitle")}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {job.deliverables.map((sub) => (
-                  <div key={sub.id} className="rounded-lg border p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium text-sm">{sub.task_title}</p>
-                      <Badge variant="success">{formatStatus(sub.status)}</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{sub.output_summary}</p>
-                    {sub.score !== null && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-muted-foreground">{t("client.detail.qualityScore")}</span>
-                        <span className="font-mono font-semibold text-ink-50">{sub.score}/100</span>
-                      </div>
-                    )}
-                    {sub.artifact_urls && sub.artifact_urls.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {sub.artifact_urls.map((url, idx) => (
-                          <a
-                            key={idx}
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                          >
-                            <Download className="h-3 w-3" />
-                            {t("client.detail.artifact")} {idx + 1}
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      {t("client.detail.submitted")} {formatDate(sub.submitted_at)}
-                    </p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Client Review Actions */}
-          {job.status === "client_review" && (
-            <Card className="border-primary/50">
-              <CardHeader>
-                <CardTitle className="text-lg">{t("client.detail.reviewTitle")}</CardTitle>
-                <CardDescription>
-                  {t("client.detail.reviewBody")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">{t("client.detail.reviewNotesLabel")}</label>
-                  <Textarea
-                    placeholder={t("client.detail.reviewNotesPlaceholder")}
-                    value={reviewNote}
-                    onChange={(e) => setReviewNote(e.target.value)}
-                    className="min-h-[100px]"
-                  />
-                </div>
-              </CardContent>
-              <CardFooter className="gap-3">
-                <Button
-                  onClick={handleApprove}
-                  disabled={actionLoading !== null}
-                >
-                  {actionLoading === "approve" ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <ThumbsUp className="mr-2 h-4 w-4" />
-                  )}
-                  {t("client.detail.approve")}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleRequestRevision}
-                  disabled={actionLoading !== null || !reviewNote.trim()}
-                >
-                  {actionLoading === "revision" ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <RotateCcw className="mr-2 h-4 w-4" />
-                  )}
-                  {t("client.detail.requestRevision")}
-                </Button>
-              </CardFooter>
-            </Card>
-          )}
         </div>
 
         {/* Sidebar */}
@@ -444,35 +266,8 @@ export default function JobDetailPage() {
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("client.detail.used")}</span>
-                <span className="font-mono font-medium">
-                  {formatCurrency(job.total_budget_used ?? 0, job.currency)}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("client.detail.currency")}</span>
                 <span className="font-mono font-medium">{job.currency}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Payment Status */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">{t("client.detail.payment")}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("client.detail.status")}</span>
-                <Badge variant={statusBadgeVariant(paymentStatus)}>
-                  {formatStatus(paymentStatus)}
-                </Badge>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("client.detail.totalPaid")}</span>
-                <span className="font-mono font-medium">
-                  {formatCurrency(job.total_paid ?? 0, job.currency)}
-                </span>
               </div>
             </CardContent>
           </Card>
@@ -498,7 +293,7 @@ export default function JobDetailPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("client.detail.autoSelect")}</span>
-                <span className="font-medium">{job.auto_select_agents ? t("client.detail.yes") : t("client.detail.no")}</span>
+                <span className="font-medium">{job.auto_select_enabled ? t("client.detail.yes") : t("client.detail.no")}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("client.detail.lastUpdated")}</span>

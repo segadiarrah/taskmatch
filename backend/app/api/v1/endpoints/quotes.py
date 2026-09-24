@@ -7,7 +7,6 @@ or any expert is engaged. Nothing executes until the client accepts.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Optional
 
@@ -15,16 +14,21 @@ import structlog
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import lazyload
 
 from app.core.database import get_db
 from app.core.deps import get_current_active_user, require_role
 from app.middleware.audit import log_audit
+from app.models.agent import Agent
+from app.models.assignment import Assignment, AssignmentStatus
+from app.models.bid import Bid, BidStatus
 from app.models.job import Job, JobStatus
 from app.models.quote import ExecutionRoute, Quote, QuoteStatus, TaskQuote
-from app.models.task import Task
+from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.quote import OfferAcceptRequest, QuoteRejectRequest
-from app.services import pricing_service, quote_service
+from app.services import quote_service
+from app.services.task_access import require_task_access
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 
@@ -37,10 +41,13 @@ router = APIRouter()
 
 
 async def _load_owned_job(
-    db: AsyncSession, job_id: uuid.UUID, user: User
+    db: AsyncSession, job_id: uuid.UUID, user: User, *, lock: bool = False
 ) -> Job:
     """Fetch a job the caller is allowed to see, or raise."""
-    job = (await db.execute(select(Job).where(Job.id == job_id))).scalar_one_or_none()
+    query = select(Job).options(lazyload("*")).where(Job.id == job_id)
+    if lock:
+        query = query.with_for_update().execution_options(populate_existing=True)
+    job = (await db.execute(query)).scalar_one_or_none()
     if job is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
@@ -102,7 +109,7 @@ async def _serialise_quote(db: AsyncSession, quote: Quote) -> dict[str, Any]:
     task_quotes = list(
         (
             await db.execute(
-                select(TaskQuote).where(TaskQuote.quote_id == quote.id)
+                select(TaskQuote).options(lazyload("*")).where(TaskQuote.quote_id == quote.id)
             )
         )
         .scalars()
@@ -114,7 +121,7 @@ async def _serialise_quote(db: AsyncSession, quote: Quote) -> dict[str, Any]:
         tasks_by_id = {
             t.id: t
             for t in (
-                await db.execute(select(Task).where(Task.id.in_(task_ids)))
+                await db.execute(select(Task).options(lazyload("*")).where(Task.id.in_(task_ids)))
             )
             .scalars()
             .all()
@@ -205,10 +212,12 @@ async def accept_quote(
 ) -> dict:
     """Accept the price. This is what releases the job into execution.
 
-    Everything downstream — agent matching, bidding, LLM execution, escrow — is
-    gated on this call, so a client is never billed for work they did not price.
+    Agent matching, bidding and LLM execution are gated on this call so the
+    client approves the estimate before work begins. Settlement is manual.
     """
-    job = await _load_owned_job(db, job_id, current_user)
+    job = await _load_owned_job(db, job_id, current_user, lock=True)
+    if job.status != JobStatus.quoted:
+        raise HTTPException(status_code=409, detail="Job is no longer awaiting quote acceptance")
     quote = await quote_service.current_quote(db, job_id)
     if quote is None:
         raise HTTPException(
@@ -266,7 +275,7 @@ async def reject_quote(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Decline the price. Nothing executes and nothing is billed."""
-    await _load_owned_job(db, job_id, current_user)
+    await _load_owned_job(db, job_id, current_user, lock=True)
     quote = await quote_service.current_quote(db, job_id)
     if quote is None:
         raise HTTPException(
@@ -304,8 +313,10 @@ async def refresh_quote(
     Used after a rejected or expired quote, or when the client changed the
     delivery mode — an installation costs more than a document.
     """
-    job = await _load_owned_job(db, job_id, current_user)
+    job = await _load_owned_job(db, job_id, current_user, lock=True)
     if job.status in (
+        JobStatus.bidding,
+        JobStatus.cancelled,
         JobStatus.in_progress,
         JobStatus.under_review,
         JobStatus.client_review,
@@ -363,6 +374,7 @@ async def get_offer(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Task not found"
         )
+    await require_task_access(db, task, current_user, include_open=True)
 
     tq = (
         await db.execute(
@@ -385,6 +397,7 @@ async def get_offer(
             detail="This task is routed to an AI agent, not a human expert",
         )
 
+    quote = await db.get(Quote, tq.quote_id)
     return {
         "task_id": str(task_id),
         "title": task.title,
@@ -397,8 +410,8 @@ async def get_offer(
         "seniority": tq.seniority,
         "range": {
             "low": float(tq.human_price_low) if tq.human_price_low else None,
-            "high": float(tq.human_price_high) if tq.human_price_high else None,
-            "currency": pricing_service.BASE_CURRENCY,
+            "high": min(float(tq.human_price_high or 0), float(task.budget or 0)),
+            "currency": quote.currency,
         },
         "rationale": tq.rationale,
         "taken": tq.accepted_offer is not None,
@@ -417,6 +430,19 @@ async def accept_offer(
     Restricted to experts and admins — claiming work is not something a client
     (their own or anyone else's) may do.
     """
+    task = await db.scalar(select(Task).where(Task.id == task_id).with_for_update().execution_options(populate_existing=True))
+    if task is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+    job = await db.get(Job, task.job_id)
+    if task.status != TaskStatus.open_for_bids or job.status not in (JobStatus.bidding, JobStatus.in_progress):
+        raise HTTPException(status_code=409, detail="This task is not open for assignment")
+    agents_query = select(Agent).where(Agent.developer_user_id == current_user.id, Agent.status == "active")
+    if body.agent_id is not None:
+        agents_query = agents_query.where(Agent.id == body.agent_id)
+    agents = list((await db.execute(agents_query)).scalars())
+    if len(agents) != 1:
+        raise HTTPException(status_code=422, detail="Choose one of your active agents or expert profiles")
+    agent = agents[0]
     tq = (
         await db.execute(
             select(TaskQuote)
@@ -430,6 +456,9 @@ async def accept_offer(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="This task has not been priced yet",
         )
+    quote = await db.get(Quote, tq.quote_id)
+    if quote.status != QuoteStatus.accepted:
+        raise HTTPException(status_code=409, detail="The client must accept this quote first")
 
     route = tq.route.value if hasattr(tq.route, "value") else str(tq.route)
     if route == ExecutionRoute.llm.value:
@@ -439,11 +468,11 @@ async def accept_offer(
         )
 
     low = float(tq.human_price_low or 0)
-    high = float(tq.human_price_high or 0)
+    high = min(float(tq.human_price_high or 0), float(task.budget or 0))
     if low <= 0 or not (low - 0.01 <= body.price <= high + 0.01):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Price must be between {low} and {high} {pricing_service.BASE_CURRENCY}",
+            detail=f"Price must be between {low} and {high} {quote.currency} within the accepted task budget",
         )
 
     # Claim the offer atomically. Reading `accepted_offer`, deciding it is free
@@ -461,6 +490,16 @@ async def accept_offer(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Offer already taken"
         )
+    bid = Bid(id=uuid.uuid4(), task_id=task.id, agent_id=agent.id, price=body.price,
+              eta_hours=max(tq.human_hours or 1, 0.1), confidence_score=1,
+              status=BidStatus.selected, proposal_text="Expert accepted the quoted offer")
+    db.add(bid)
+    await db.flush()
+    assignment = Assignment(id=uuid.uuid4(), task_id=task.id, agent_id=agent.id,
+                            bid_id=bid.id, status=AssignmentStatus.active)
+    db.add(assignment)
+    task.status = TaskStatus.assigned
+    job.status = JobStatus.in_progress
     await db.flush()
 
     await log_audit(
@@ -482,6 +521,8 @@ async def accept_offer(
     )
     return {
         "task_id": str(task_id),
+        "assignment_id": str(assignment.id),
+        "agent_id": str(agent.id),
         "accepted_price": body.price,
-        "currency": pricing_service.BASE_CURRENCY,
+        "currency": quote.currency,
     }

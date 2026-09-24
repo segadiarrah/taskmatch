@@ -3,7 +3,7 @@
 Manages the lifecycle of ``PaymentRecord`` objects through their valid
 state transitions::
 
-    pending -> authorized -> releasable -> paid -> (completed)
+    pending -> authorized -> releasable -> paid
                    |
                    +-> cancelled
                    +-> refunded
@@ -47,9 +47,7 @@ _VALID_TRANSITIONS: dict[PaymentStatus, set[PaymentStatus]] = {
         PaymentStatus.cancelled,
         PaymentStatus.refunded,
     },
-    PaymentStatus.paid: {PaymentStatus.completed, PaymentStatus.refunded},
-    PaymentStatus.completed: set(),  # terminal
-    PaymentStatus.failed: set(),  # terminal
+    PaymentStatus.paid: {PaymentStatus.refunded},
     PaymentStatus.refunded: set(),  # terminal
     PaymentStatus.cancelled: set(),  # terminal (using string comparison below)
 }
@@ -88,6 +86,7 @@ def _assert_transition(
     payment_id: UUID,
 ) -> None:
     """Raise ``ValueError`` if the transition is not allowed."""
+    current = PaymentStatus(current)
     allowed = _VALID_TRANSITIONS.get(current, set())
     if target not in allowed:
         raise ValueError(
@@ -104,7 +103,7 @@ async def _transition(
     target: PaymentStatus,
 ) -> PaymentRecord:
     """Perform a validated state transition and log it."""
-    previous = payment.payment_status
+    previous = PaymentStatus(payment.payment_status)
     _assert_transition(previous, target, payment.id)
 
     payment.payment_status = target
@@ -191,6 +190,7 @@ async def create_payment_for_task(
         net_amount=net,
         currency=job.currency or "USD",
         payment_status=PaymentStatus.pending,
+        provider="manual",
     )
     db.add(payment)
     await db.flush()
@@ -304,26 +304,9 @@ async def complete_payment(
     db: AsyncSession,
     payment_id: UUID,
 ) -> PaymentRecord:
-    """Move a payment through to ``paid`` and then ``completed``.
+    """Record an administrator-confirmed settlement as paid.
 
-    For MVP this transitions ``releasable -> paid -> completed`` in one call.
-    In production the ``releasable -> paid`` step would trigger an actual
-    transfer via the payment provider, and ``paid -> completed`` would be
-    confirmed asynchronously via webhook.
-
-    Parameters
-    ----------
-    db : AsyncSession
-    payment_id : UUID
-
-    Returns
-    -------
-    PaymentRecord
-
-    Raises
-    ------
-    ValueError
-        If the payment is not found or a transition is invalid.
+    This updates the manual ledger only. It never invokes a payment provider.
     """
     result = await db.execute(
         select(PaymentRecord).where(PaymentRecord.id == payment_id)
@@ -331,6 +314,9 @@ async def complete_payment(
     payment = result.scalar_one_or_none()
     if payment is None:
         raise ValueError(f"Payment {payment_id} not found")
+    job = await db.get(Job, payment.job_id)
+    if job is None or job.status != "completed":
+        raise ValueError("The client must accept delivery before settlement")
 
     logger.info(
         "payment.completing",
@@ -340,9 +326,4 @@ async def complete_payment(
         else str(payment.payment_status),
     )
 
-    # If still releasable, first move to paid
-    if payment.payment_status == PaymentStatus.releasable:
-        payment = await _transition(db, payment, PaymentStatus.paid)
-
-    # Now move from paid to completed
-    return await _transition(db, payment, PaymentStatus.completed)
+    return await _transition(db, payment, PaymentStatus.paid)

@@ -5,12 +5,14 @@ from __future__ import annotations
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import lazyload
 
 from app.core.database import get_db
 from app.core.deps import get_current_active_user, require_role
 from app.middleware.audit import log_audit
+from app.models.job import Job, JobStatus
 from app.models.payment import PaymentRecord, PaymentStatus
 from app.models.user import User
 from app.schemas.payment import PaymentCreate, PaymentResponse
@@ -35,7 +37,7 @@ async def list_payments(
     - Clients see payments where they are the payer.
     - Agent developers see payments where they are the recipient.
     """
-    query = select(PaymentRecord)
+    query = select(PaymentRecord).options(lazyload("*"))
 
     role = str(current_user.role)
     if role == "client":
@@ -67,6 +69,10 @@ async def create_payment(
     The platform fee and net amount are calculated from the ``gross_amount``
     and ``platform_fee_percent``.  Restricted to administrators.
     """
+    job = await db.get(Job, body.job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+
     platform_fee_amount = round(body.gross_amount * (body.platform_fee_percent / 100.0), 2)
     net_amount = round(body.gross_amount - platform_fee_amount, 2)
 
@@ -79,6 +85,8 @@ async def create_payment(
         gross_amount=body.gross_amount,
         platform_fee=platform_fee_amount,
         net_amount=net_amount,
+        currency=job.currency,
+        provider="manual",
         payment_status=PaymentStatus.pending,
     )
     db.add(payment)
@@ -124,6 +132,10 @@ async def release_payment(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Payment not found",
         )
+
+    job = await db.get(Job, payment.job_id)
+    if job.status != JobStatus.completed:
+        raise HTTPException(status_code=409, detail="The client must accept delivery before settlement")
 
     if payment.payment_status != PaymentStatus.pending and payment.payment_status != PaymentStatus.authorized:
         raise HTTPException(
@@ -174,6 +186,10 @@ async def complete_payment(
             detail=f"Payment must be in 'releasable' status to be completed; current status is '{payment.payment_status}'",
         )
 
+    job = await db.get(Job, payment.job_id)
+    if job.status != JobStatus.completed:
+        raise HTTPException(status_code=409, detail="The client must accept delivery before settlement")
+
     payment.payment_status = PaymentStatus.paid
     await db.flush()
     await db.refresh(payment)
@@ -202,11 +218,14 @@ def _to_payment_response(payment: PaymentRecord) -> PaymentResponse:
         client_user_id=payment.client_user_id,
         developer_user_id=payment.developer_user_id,
         gross_amount=float(payment.gross_amount),
-        platform_fee_percent=0.0,  # Percentage not stored on model; derive if needed.
+        platform_fee_percent=round(float(payment.platform_fee) / float(payment.gross_amount) * 100, 2) if payment.gross_amount else 0.0,
         platform_fee_amount=float(payment.platform_fee),
         net_amount=float(payment.net_amount),
         payment_status=str(payment.payment_status),
-        stripe_payment_intent_id=payment.provider_ref,
+        currency=payment.currency,
+        provider=payment.provider,
+        provider_ref=payment.provider_ref,
+        stripe_payment_intent_id=payment.provider_ref if payment.provider == "stripe" else None,
         created_at=payment.created_at,
         updated_at=payment.updated_at,
     )

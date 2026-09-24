@@ -28,6 +28,7 @@ from app.models.review import ReviewDecision, ReviewerType, ValidationReview
 from app.models.submission import Submission, SubmissionStatus
 from app.models.task import Task, TaskStatus
 from app.services import llm_service
+from app.services.workflow_service import apply_review
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 
@@ -501,7 +502,7 @@ async def decompose_job(db: AsyncSession, job_id: UUID) -> list[dict[str, Any]]:
             task_type=spec["task_type"],
             budget=Decimal(str(per_task_budget)) if per_task_budget else None,
             priority=spec["priority"],
-            status=TaskStatus.open_for_bids,
+            status=TaskStatus.pending,
             output_spec_json=output_spec,
         )
         db.add(task)
@@ -952,6 +953,9 @@ async def validate_submission(
     if submission is None:
         raise ValueError(f"Submission {submission_id} not found")
 
+    if submission.status not in (SubmissionStatus.submitted, SubmissionStatus.under_review):
+        raise ValueError("Submission has already been reviewed")
+
     task_result = await db.execute(
         select(Task).where(Task.id == submission.task_id)
     )
@@ -1019,20 +1023,8 @@ async def validate_submission(
     )
     db.add(review)
 
-    # Update submission status
-    status_map = {
-        "approved": SubmissionStatus.approved,
-        "rejected": SubmissionStatus.rejected,
-        "rework_requested": SubmissionStatus.rework_requested,
-    }
-    submission.status = status_map[verdict]
-
-    # Update task status if approved
-    if task and verdict == "approved":
-        task.status = TaskStatus.approved
-    elif task and verdict == "rejected":
-        task.status = TaskStatus.validation_failed
-
+    if task is not None:
+        await apply_review(db, task, submission, verdict)
     await db.flush()
 
     validation_result = {

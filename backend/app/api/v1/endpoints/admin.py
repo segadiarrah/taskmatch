@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased, lazyload, selectinload
 
 from app.core.database import get_db
 from app.core.deps import require_role
@@ -14,6 +15,7 @@ from app.models.agent import Agent, AgentStatus
 from app.models.assignment import Assignment, AssignmentStatus
 from app.models.bid import Bid
 from app.models.job import Job
+from app.models.payment import PaymentRecord
 from app.models.review import ValidationReview
 from app.models.submission import Submission, SubmissionStatus
 from app.models.task import Task
@@ -33,14 +35,14 @@ async def admin_list_agents(
     experts competing on the same explainable score.
     """
     agents = list(
-        (await db.execute(select(Agent).order_by(Agent.created_at.desc()))).scalars().all()
+        (await db.execute(select(Agent).options(lazyload("*"), selectinload(Agent.capabilities)).order_by(Agent.created_at.desc()))).scalars().all()
     )
 
     # Batch the owner names and active-assignment counts to avoid N+1 queries.
     owner_ids = {a.developer_user_id for a in agents}
     owners: dict = {}
     if owner_ids:
-        rows = (await db.execute(select(User).where(User.id.in_(owner_ids)))).scalars().all()
+        rows = (await db.execute(select(User).options(lazyload("*")).where(User.id.in_(owner_ids)))).scalars().all()
         owners = {u.id: u for u in rows}
 
     active_counts: dict = {}
@@ -89,7 +91,10 @@ class ProviderUpdate(BaseModel):
 async def _sync_platform_agent(db: AsyncSession, provider: str, enabled: bool) -> None:
     """Activate/pause the platform agent backing a provider (slug llm-<provider>)."""
     slug = f"llm-{provider}"
-    agent = (await db.execute(select(Agent).where(Agent.slug == slug))).scalar_one_or_none()
+    agent = (await db.execute(
+        select(Agent).join(User, User.id == Agent.developer_user_id)
+        .where(Agent.slug == slug, User.role == "admin")
+    )).scalar_one_or_none()
     if agent is not None:
         agent.status = AgentStatus.active if enabled else AgentStatus.paused
         await db.flush()
@@ -148,7 +153,7 @@ async def update_provider(
 async def _user_names(db: AsyncSession, user_ids: set) -> dict:
     if not user_ids:
         return {}
-    rows = (await db.execute(select(User).where(User.id.in_(user_ids)))).scalars().all()
+    rows = (await db.execute(select(User).options(lazyload("*")).where(User.id.in_(user_ids)))).scalars().all()
     return {u.id: (u.full_name or u.email) for u in rows}
 
 
@@ -157,7 +162,7 @@ async def admin_list_jobs(
     current_user: User = Depends(require_role("admin")),
     db: AsyncSession = Depends(get_db),
 ) -> list[dict]:
-    jobs = list((await db.execute(select(Job).order_by(Job.created_at.desc()))).scalars().all())
+    jobs = list((await db.execute(select(Job).options(lazyload("*")).order_by(Job.created_at.desc()))).scalars().all())
     names = await _user_names(db, {j.client_user_id for j in jobs})
     task_counts = {}
     if jobs:
@@ -239,17 +244,17 @@ async def admin_list_submissions(
     db: AsyncSession = Depends(get_db),
 ) -> list[dict]:
     subs = list(
-        (await db.execute(select(Submission).order_by(Submission.created_at.desc()))).scalars().all()
+        (await db.execute(select(Submission).options(lazyload("*")).order_by(Submission.created_at.desc()))).scalars().all()
     )
     # Resolve task titles, job titles, agent + developer names, latest review.
     task_ids = {s.task_id for s in subs}
     agent_ids = {s.agent_id for s in subs}
-    tasks = {t.id: t for t in (await db.execute(select(Task).where(Task.id.in_(task_ids)))).scalars().all()} if task_ids else {}
+    tasks = {t.id: t for t in (await db.execute(select(Task).options(lazyload("*")).where(Task.id.in_(task_ids)))).scalars().all()} if task_ids else {}
     job_ids = {t.job_id for t in tasks.values()}
     job_titles = dict(
         (await db.execute(select(Job.id, Job.title).where(Job.id.in_(job_ids)))).all()
     ) if job_ids else {}
-    agents = {a.id: a for a in (await db.execute(select(Agent).where(Agent.id.in_(agent_ids)))).scalars().all()} if agent_ids else {}
+    agents = {a.id: a for a in (await db.execute(select(Agent).options(lazyload("*")).where(Agent.id.in_(agent_ids)))).scalars().all()} if agent_ids else {}
     dev_names = await _user_names(db, {a.developer_user_id for a in agents.values()})
 
     items = []
@@ -257,6 +262,7 @@ async def admin_list_submissions(
         review = (
             await db.execute(
                 select(ValidationReview)
+                .options(lazyload("*"))
                 .where(ValidationReview.submission_id == s.id)
                 .order_by(ValidationReview.created_at.desc())
                 .limit(1)
@@ -278,11 +284,38 @@ async def admin_list_submissions(
                 "deliverable_url": (arts[0] if isinstance(arts, list) and arts else None),
                 "submitted_at": s.submitted_at.isoformat() if s.submitted_at else (s.created_at.isoformat() if s.created_at else ""),
                 "status": s.status.value if hasattr(s.status, "value") else str(s.status),
-                "review_result": (review.decision.value if review and hasattr(review.decision, "value") else None),
+                "review_result": (getattr(review.decision, "value", review.decision) if review else None),
                 "review_notes": (review.notes if review else None),
                 "reviewed_at": (review.created_at.isoformat() if review and review.created_at else None),
-                "reviewer": (review.reviewer_type.value if review and hasattr(review.reviewer_type, "value") else None),
+                "reviewer": (getattr(review.reviewer_type, "value", review.reviewer_type) if review else None),
                 "mcp_auto_validation": None,
             }
         )
     return items
+
+
+@router.get("/payments", summary="Payment ledger with job, task and account labels")
+async def admin_list_payments(
+    current_user: User = Depends(require_role("admin")),
+    db: AsyncSession = Depends(get_db),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(200, ge=1, le=1000),
+) -> list[dict]:
+    client = aliased(User)
+    developer = aliased(User)
+    rows = (await db.execute(
+        select(
+            PaymentRecord.id, PaymentRecord.job_id, PaymentRecord.task_id,
+            Job.title.label("job_title"), Task.title.label("task_title"),
+            client.full_name.label("client_name"), developer.full_name.label("developer_name"),
+            PaymentRecord.gross_amount, PaymentRecord.platform_fee, PaymentRecord.net_amount,
+            PaymentRecord.currency, PaymentRecord.payment_status.label("status"),
+            PaymentRecord.provider, PaymentRecord.provider_ref, PaymentRecord.created_at,
+        )
+        .join(Job, Job.id == PaymentRecord.job_id)
+        .outerjoin(Task, Task.id == PaymentRecord.task_id)
+        .join(client, client.id == PaymentRecord.client_user_id)
+        .outerjoin(developer, developer.id == PaymentRecord.developer_user_id)
+        .order_by(PaymentRecord.created_at.desc()).offset(skip).limit(limit)
+    )).mappings().all()
+    return [dict(row) for row in rows]

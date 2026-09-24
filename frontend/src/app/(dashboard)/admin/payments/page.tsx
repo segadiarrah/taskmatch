@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { apiGet, apiPut } from "@/lib/api";
-import { cn, formatCurrency, formatDate, formatStatus } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { formatCurrency, formatStatus } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
@@ -17,17 +17,12 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import {
-  DollarSign,
-  CreditCard,
   ArrowUpRight,
   CheckCircle2,
   Clock,
   Filter,
-  TrendingUp,
-  Wallet,
   Send,
   CircleDollarSign,
-  Banknote,
 } from "lucide-react";
 
 interface Payment {
@@ -38,7 +33,9 @@ interface Payment {
   task_title: string;
   client_name: string;
   developer_name: string;
-  agent_name: string;
+  currency: string;
+  provider: string;
+  provider_ref: string | null;
   gross_amount: number;
   platform_fee: number;
   net_amount: number;
@@ -48,54 +45,41 @@ interface Payment {
   completed_at: string | null;
 }
 
-interface PaymentSummary {
-  total_pending: number;
-  total_releasable: number;
-  total_released: number;
-  total_completed: number;
-}
-
-const paymentStatuses = ["pending", "releasable", "released", "completed", "failed", "refunded"];
+const paymentStatuses = ["pending", "authorized", "releasable", "paid", "cancelled", "refunded"];
 
 const statusBadgeVariant: Record<string, "secondary" | "info" | "default" | "warning" | "purple" | "success" | "destructive"> = {
   pending: "secondary",
   releasable: "info",
-  released: "warning",
-  completed: "success",
-  failed: "destructive",
+  authorized: "warning",
+  paid: "success",
+  cancelled: "destructive",
   refunded: "purple",
 };
 
 export default function PaymentsPage() {
+  const [page, setPage] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [summary, setSummary] = useState<PaymentSummary>({
-    total_pending: 0,
-    total_releasable: 0,
-    total_released: 0,
-    total_completed: 0,
-  });
+  const [currencyFilter, setCurrencyFilter] = useState("");
   const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchPayments();
+    fetchPayments(0);
   }, []);
 
-  async function fetchPayments() {
+  async function fetchPayments(nextPage: number) {
     setLoading(true);
     setLoadError(false);
     try {
-      const data = await apiGet<Payment[]>("/v1/payments");
+      const data = await apiGet<Payment[]>(nextPage === 0 ? "/v1/admin/payments" : `/v1/admin/payments?skip=${nextPage * 200}&limit=200`);
       setPayments(data);
-      setSummary({
-        total_pending: data.filter((p) => p.status === "pending").reduce((s, p) => s + p.gross_amount, 0),
-        total_releasable: data.filter((p) => p.status === "releasable").reduce((s, p) => s + p.gross_amount, 0),
-        total_released: data.filter((p) => p.status === "released").reduce((s, p) => s + p.gross_amount, 0),
-        total_completed: data.filter((p) => p.status === "completed").reduce((s, p) => s + p.gross_amount, 0),
-      });
-        } catch {
+      setPage(nextPage);
+      setHasNextPage(data.length === 200);
+    } catch {
       setLoadError(true);
       setPayments([]);
     } finally {
@@ -104,65 +88,52 @@ export default function PaymentsPage() {
   }
 
   async function handleRelease(paymentId: string) {
+    setActionError(null);
     setActionLoading(paymentId);
     try {
       await apiPut(`/v1/payments/${paymentId}/release`);
-      await fetchPayments();
+      await fetchPayments(page);
     } catch {
-      setPayments((prev) =>
-        prev.map((p) =>
-          p.id === paymentId
-            ? { ...p, status: "released", released_at: new Date().toISOString() }
-            : p
-        )
-      );
-      recalcSummary();
+      setActionError("The request failed. No change was saved. Please try again.");
+      return;
     } finally {
       setActionLoading(null);
     }
   }
 
   async function handleComplete(paymentId: string) {
+    if (!window.confirm("Confirm that this payment has already been settled externally. This action records the payment; it does not transfer money.")) return;
+    setActionError(null);
     setActionLoading(paymentId);
     try {
       await apiPut(`/v1/payments/${paymentId}/complete`);
-      await fetchPayments();
+      await fetchPayments(page);
     } catch {
-      setPayments((prev) =>
-        prev.map((p) =>
-          p.id === paymentId
-            ? { ...p, status: "completed", completed_at: new Date().toISOString() }
-            : p
-        )
-      );
-      recalcSummary();
+      setActionError("The request failed. No change was saved. Please try again.");
+      return;
     } finally {
       setActionLoading(null);
     }
   }
 
-  function recalcSummary() {
-    setSummary({
-      total_pending: payments.filter((p) => p.status === "pending").reduce((s, p) => s + p.gross_amount, 0),
-      total_releasable: payments.filter((p) => p.status === "releasable").reduce((s, p) => s + p.gross_amount, 0),
-      total_released: payments.filter((p) => p.status === "released").reduce((s, p) => s + p.gross_amount, 0),
-      total_completed: payments.filter((p) => p.status === "completed").reduce((s, p) => s + p.gross_amount, 0),
-    });
-  }
-
-  const filteredPayments = payments.filter((p) =>
-    statusFilter === "all" || p.status === statusFilter
-  );
+  const currency = currencyFilter || payments[0]?.currency || "EUR";
+  const currencyPayments = payments.filter((payment) => payment.currency === currency);
+  const totalFor = (status: string) => currencyPayments.filter((payment) => payment.status === status).reduce((total, payment) => total + payment.gross_amount, 0);
+  const summary = { total_pending: totalFor("pending"), total_releasable: totalFor("releasable"), total_released: totalFor("authorized"), total_completed: totalFor("paid") };
+  const filteredPayments = currencyPayments.filter((payment) => statusFilter === "all" || payment.status === statusFilter);
 
   return (
     <div className="space-y-6">
+      {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{actionError}</p>}
       {/* Header */}
       <div>
         <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Payments</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Track escrow, release funds, and manage payment lifecycle.
+          Manage payment records. Settle funds externally, then record the payment here.
         </p>
       </div>
+
+      <p className="text-xs text-muted-foreground">Totals below cover the payments on page {page + 1} in the selected currency.</p>
 
       {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -171,7 +142,7 @@ export default function PaymentsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Pending</p>
-                <p className="mt-1 font-display text-2xl font-medium text-ink-50">{formatCurrency(summary.total_pending)}</p>
+                <p className="mt-1 font-display text-2xl font-medium text-ink-50">{formatCurrency(summary.total_pending, currency)}</p>
                 <p className="mt-0.5 text-xs text-ink-500">Awaiting validation</p>
               </div>
               <div className="rounded-md border border-ink-700 bg-ink-800 p-3">
@@ -186,8 +157,8 @@ export default function PaymentsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-info">Releasable</p>
-                <p className="mt-1 font-display text-2xl font-medium text-ink-50">{formatCurrency(summary.total_releasable)}</p>
-                <p className="mt-0.5 text-xs text-ink-500">Ready to release</p>
+                <p className="mt-1 font-display text-2xl font-medium text-ink-50">{formatCurrency(summary.total_releasable, currency)}</p>
+                <p className="mt-0.5 text-xs text-ink-500">Ready for external settlement</p>
               </div>
               <div className="rounded-md border border-info/30 bg-info/10 p-3">
                 <Send className="h-5 w-5 text-info" />
@@ -200,9 +171,9 @@ export default function PaymentsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-warning">Released</p>
-                <p className="mt-1 font-display text-2xl font-medium text-ink-50">{formatCurrency(summary.total_released)}</p>
-                <p className="mt-0.5 text-xs text-ink-500">In transit</p>
+                <p className="text-sm font-medium text-warning">Authorized</p>
+                <p className="mt-1 font-display text-2xl font-medium text-ink-50">{formatCurrency(summary.total_released, currency)}</p>
+                <p className="mt-0.5 text-xs text-ink-500">Authorization recorded</p>
               </div>
               <div className="rounded-md border border-warning/30 bg-warning/10 p-3">
                 <ArrowUpRight className="h-5 w-5 text-warning" />
@@ -216,8 +187,8 @@ export default function PaymentsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-success">Completed</p>
-                <p className="mt-1 font-display text-2xl font-medium text-ink-50">{formatCurrency(summary.total_completed)}</p>
-                <p className="mt-0.5 text-xs text-ink-500">Successfully paid</p>
+                <p className="mt-1 font-display text-2xl font-medium text-ink-50">{formatCurrency(summary.total_completed, currency)}</p>
+                <p className="mt-0.5 text-xs text-ink-500">Recorded as paid</p>
               </div>
               <div className="rounded-md border border-success/30 bg-success/10 p-3">
                 <CheckCircle2 className="h-5 w-5 text-success" />
@@ -233,6 +204,9 @@ export default function PaymentsPage() {
         <CardContent className="pt-6">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-ink-500" />
+            <Select aria-label="Currency" value={currency} onChange={(event) => setCurrencyFilter(event.target.value)} className="w-28">
+              {Array.from(new Set(payments.map((payment) => payment.currency))).map((value) => <option key={value} value={value}>{value}</option>)}
+            </Select>
             <Select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -261,7 +235,7 @@ export default function PaymentsPage() {
               </div>
             </div>
           ) : loadError ? (
-            <DataLoadError onRetry={fetchPayments} />
+            <DataLoadError onRetry={() => fetchPayments(page)} />
           ) : filteredPayments.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
               <CircleDollarSign className="h-10 w-10 text-ink-600" />
@@ -287,25 +261,25 @@ export default function PaymentsPage() {
                   <TableRow key={payment.id}>
                     <TableCell>
                       <div>
-                        <p className="max-w-[200px] truncate font-medium text-foreground">{payment.task_title}</p>
+                        <p className="max-w-[200px] truncate font-medium text-foreground">{payment.task_title || "Job payment"}</p>
                         <p className="max-w-[200px] truncate text-xs text-ink-500">{payment.job_title}</p>
                       </div>
                     </TableCell>
                     <TableCell className="text-ink-300">{payment.client_name}</TableCell>
                     <TableCell>
                       <div>
-                        <p className="text-ink-300">{payment.developer_name}</p>
-                        <p className="text-xs text-ink-500">{payment.agent_name}</p>
+                        <p className="text-ink-300">{payment.developer_name || "Unassigned"}</p>
+                        <p className="text-xs text-ink-500">{payment.provider}</p>
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-mono font-semibold text-foreground">
-                      {formatCurrency(payment.gross_amount)}
+                      {formatCurrency(payment.gross_amount, payment.currency)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-ink-400">
-                      {formatCurrency(payment.platform_fee)}
+                      {formatCurrency(payment.platform_fee, payment.currency)}
                     </TableCell>
                     <TableCell className="text-right font-mono font-medium text-success">
-                      {formatCurrency(payment.net_amount)}
+                      {formatCurrency(payment.net_amount, payment.currency)}
                     </TableCell>
                     <TableCell>
                       <Badge variant={statusBadgeVariant[payment.status] || "secondary"}>
@@ -314,17 +288,17 @@ export default function PaymentsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        {payment.status === "releasable" && (
+                        {["pending", "authorized"].includes(payment.status) && (
                           <Button
                             size="sm"
                             onClick={() => handleRelease(payment.id)}
                             disabled={actionLoading === payment.id}
                           >
                             <Send className="mr-1 h-3 w-3" />
-                            {actionLoading === payment.id ? "..." : "Release"}
+                            {actionLoading === payment.id ? "..." : "Mark releasable"}
                           </Button>
                         )}
-                        {payment.status === "released" && (
+                        {payment.status === "releasable" && (
                           <Button
                             size="sm"
                             className="bg-success text-ink-950 hover:brightness-110"
@@ -332,13 +306,10 @@ export default function PaymentsPage() {
                             disabled={actionLoading === payment.id}
                           >
                             <CheckCircle2 className="mr-1 h-3 w-3" />
-                            {actionLoading === payment.id ? "..." : "Complete"}
+                            {actionLoading === payment.id ? "..." : "Record payment"}
                           </Button>
                         )}
-                        {payment.status === "pending" && (
-                          <span className="text-xs text-ink-500">Awaiting review</span>
-                        )}
-                        {payment.status === "completed" && (
+                        {payment.status === "paid" && (
                           <span className="flex items-center gap-1 font-mono text-xs font-medium text-success">
                             <CheckCircle2 className="h-3 w-3" />
                             Paid
@@ -354,31 +325,37 @@ export default function PaymentsPage() {
         </CardContent>
       </Card>
 
+      <div className="flex items-center justify-between">
+        <Button variant="outline" disabled={loading || page === 0} onClick={() => fetchPayments(page - 1)}>Previous page</Button>
+        <span className="text-sm text-muted-foreground">Page {page + 1}</span>
+        <Button variant="outline" disabled={loading || !hasNextPage} onClick={() => fetchPayments(page + 1)}>Next page</Button>
+      </div>
+
       {/* Totals Footer */}
       {!loading && filteredPayments.length > 0 && (
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">
-                Showing {filteredPayments.length} of {payments.length} payments
+                Showing {filteredPayments.length} of {payments.length} loaded payments ({currency})
               </span>
               <div className="flex items-center gap-6">
                 <div className="text-right">
                   <p className="text-xs text-ink-500">Gross Total</p>
                   <p className="font-mono font-semibold text-foreground">
-                    {formatCurrency(filteredPayments.reduce((s, p) => s + p.gross_amount, 0))}
+                    {formatCurrency(filteredPayments.reduce((s, p) => s + p.gross_amount, 0), currency)}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-ink-500">Platform Fees</p>
                   <p className="font-mono font-semibold text-ink-200">
-                    {formatCurrency(filteredPayments.reduce((s, p) => s + p.platform_fee, 0))}
+                    {formatCurrency(filteredPayments.reduce((s, p) => s + p.platform_fee, 0), currency)}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-ink-500">Net Total</p>
                   <p className="font-mono font-semibold text-success">
-                    {formatCurrency(filteredPayments.reduce((s, p) => s + p.net_amount, 0))}
+                    {formatCurrency(filteredPayments.reduce((s, p) => s + p.net_amount, 0), currency)}
                   </p>
                 </div>
               </div>

@@ -72,7 +72,7 @@ export default function GuideArticlePage() {
   const { locale } = useTranslation();
   const c = COPY[locale] ?? COPY.en;
   const slug = typeof params.slug === "string" ? params.slug : params.slug?.[0];
-  const guide = slug ? getGuideBySlug(slug) : undefined;
+  const guide = slug ? getGuideBySlug(slug, locale) : undefined;
 
   if (!guide) {
     return (

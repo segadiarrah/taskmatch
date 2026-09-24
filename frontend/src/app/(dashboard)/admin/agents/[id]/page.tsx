@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { useParams, useRouter } from "next/navigation";
-import { apiGet, apiPost } from "@/lib/api";
+import { apiGet, apiPost, apiPut } from "@/lib/api";
+import { loadAdminAgentDetail, type AdminAgentDetail } from "@/lib/admin-details";
 import { cn, formatCurrency, formatDate, formatStatus, formatDateTime } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,45 +35,6 @@ import {
   Plus,
 } from "lucide-react";
 
-interface AgentDetail {
-  id: string;
-  name: string;
-  developer_id: string;
-  developer_name: string;
-  developer_email: string;
-  status: string;
-  capabilities: string[];
-  description: string;
-  success_rate: number;
-  avg_score: number;
-  completed_tasks: number;
-  active_tasks: number;
-  total_earnings: number;
-  created_at: string;
-  assignment_history: Assignment[];
-  feedback_notes: FeedbackNote[];
-}
-
-interface Assignment {
-  id: string;
-  task_id: string;
-  task_title: string;
-  job_title: string;
-  status: string;
-  amount: number;
-  score: number | null;
-  completed_at: string | null;
-  assigned_at: string;
-}
-
-interface FeedbackNote {
-  id: string;
-  author: string;
-  category: string;
-  content: string;
-  created_at: string;
-}
-
 const statusConfig: Record<string, { variant: "success" | "warning" | "destructive"; dot: string; label: string }> = {
   active: { variant: "success", dot: "bg-success", label: "Active" },
   paused: { variant: "warning", dot: "bg-warning", label: "Paused" },
@@ -83,20 +45,21 @@ export default function AgentDetailPage() {
   const params = useParams();
   const router = useRouter();
   const agentId = params.id as string;
-  const [agent, setAgent] = useState<AgentDetail | null>(null);
+  const [agent, setAgent] = useState<AdminAgentDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [newNote, setNewNote] = useState("");
-  const [noteCategory, setNoteCategory] = useState("general");
+  const [noteCategory, setNoteCategory] = useState("quality");
 
   const fetchAgent = useCallback(async () => {
     setLoading(true);
     setLoadError(false);
     try {
-      const data = await apiGet<AgentDetail>(`/v1/agents/${agentId}`);
+      const data = await loadAdminAgentDetail(apiGet, agentId);
       setAgent(data);
-        } catch {
+    } catch {
       setLoadError(true);
       setAgent(null);
     } finally {
@@ -110,17 +73,14 @@ export default function AgentDetailPage() {
 
   async function handleStatusAction(action: string) {
     if (!agent) return;
+    setActionError(null);
     setActionLoading(true);
     try {
-      await apiPost(`/v1/agents/${agentId}/${action}`);
+      await apiPut(`/v1/agents/${agentId}`, { status: action === "reactivate" ? "active" : action === "disable" ? "disabled" : "paused" });
       await fetchAgent();
-    } catch {
-      const statusMap: Record<string, string> = {
-        pause: "paused",
-        disable: "disabled",
-        reactivate: "active",
-      };
-      setAgent({ ...agent, status: statusMap[action] || agent.status });
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "The request failed. Please refresh and try again.");
+      return;
     } finally {
       setActionLoading(false);
     }
@@ -128,26 +88,20 @@ export default function AgentDetailPage() {
 
   async function handleAddNote() {
     if (!agent || !newNote.trim()) return;
+    setActionError(null);
+    setActionLoading(true);
     try {
-      await apiPost(`/v1/agents/${agentId}/feedback`, {
+      await apiPost("/v1/dashboard/feedback-notes", {
+        agent_id: agentId,
         category: noteCategory,
-        content: newNote,
+        note: newNote,
       });
       await fetchAgent();
-    } catch {
-      setAgent({
-        ...agent,
-        feedback_notes: [
-          {
-            id: `fn-${Date.now()}`,
-            author: "Admin",
-            category: noteCategory,
-            content: newNote,
-            created_at: new Date().toISOString(),
-          },
-          ...agent.feedback_notes,
-        ],
-      });
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "The request failed. Please refresh and try again.");
+      return;
+    } finally {
+      setActionLoading(false);
     }
     setNewNote("");
   }
@@ -180,6 +134,7 @@ export default function AgentDetailPage() {
 
   return (
     <div className="space-y-6">
+      {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{actionError}</p>}
       {/* Header */}
       <div>
         <Button
@@ -293,7 +248,7 @@ export default function AgentDetailPage() {
                   {agent.avg_score.toFixed(1)}
                 </p>
                 <p className="text-xs text-muted-foreground">Avg. Score</p>
-                <Progress value={(agent.avg_score / 5) * 100} className="mt-2" />
+                <Progress value={agent.avg_score} className="mt-2" />
               </div>
               <div className="rounded-md border border-ink-800 bg-ink-900/60 p-4 text-center">
                 <CheckCircle2 className="mx-auto h-5 w-5 text-info" />
@@ -301,91 +256,19 @@ export default function AgentDetailPage() {
                   {agent.completed_tasks}
                 </p>
                 <p className="text-xs text-muted-foreground">Completed Tasks</p>
-                <p className="mt-2 font-mono text-xs text-ink-500">{agent.active_tasks} currently active</p>
+                <p className="mt-2 font-mono text-xs text-ink-500">{agent.approved_submissions} approved submissions</p>
               </div>
               <div className="rounded-md border border-ink-800 bg-ink-900/60 p-4 text-center">
                 <Shield className="mx-auto h-5 w-5 text-[#b49aff]" />
                 <p className="mt-2 font-display text-2xl font-medium text-ink-50">
-                  {formatCurrency(agent.total_earnings)}
+                  {agent.total_submissions}
                 </p>
-                <p className="text-xs text-muted-foreground">Total Earnings</p>
+                <p className="text-xs text-muted-foreground">Total Submissions</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Assignment History */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-display text-base">
-            <History className="h-4 w-4 text-ink-500" />
-            Assignment History
-          </CardTitle>
-          <CardDescription>Past and current task assignments</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {agent.assignment_history.length === 0 ? (
-            <div className="flex h-24 items-center justify-center text-sm text-ink-500">
-              No assignment history.
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Task</TableHead>
-                  <TableHead>Job</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="text-right">Score</TableHead>
-                  <TableHead>Assigned</TableHead>
-                  <TableHead>Completed</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {agent.assignment_history.map((a) => (
-                  <TableRow
-                    key={a.id}
-                    className="cursor-pointer"
-                    onClick={() => router.push(`/admin/tasks/${a.task_id}`)}
-                  >
-                    <TableCell className="font-medium text-foreground">{a.task_title}</TableCell>
-                    <TableCell className="text-ink-400">{a.job_title}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          a.status === "completed" ? "success" :
-                          a.status === "in_progress" ? "warning" :
-                          "secondary"
-                        }
-                      >
-                        {formatStatus(a.status)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-mono font-medium text-foreground">
-                      {formatCurrency(a.amount)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {a.score !== null ? (
-                        <span className="flex items-center justify-end gap-1 font-mono text-ink-200">
-                          <Star className="h-3 w-3 text-warning" />
-                          {a.score.toFixed(1)}
-                        </span>
-                      ) : (
-                        <span className="text-ink-600">--</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="font-mono text-ink-400">{formatDate(a.assigned_at)}</TableCell>
-                    <TableCell className="font-mono text-ink-400">
-                      {a.completed_at ? formatDate(a.completed_at) : "--"}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Feedback Notes */}
       <Card>
@@ -400,24 +283,26 @@ export default function AgentDetailPage() {
           <div className="rounded-md border border-ink-800 bg-ink-900/40 p-4">
             <div className="flex items-center gap-2 mb-3">
               <select
+                aria-label="Feedback category"
                 className="rounded-md border border-ink-600 bg-ink-900 px-2 py-1 text-sm text-ink-200"
                 value={noteCategory}
                 onChange={(e) => setNoteCategory(e.target.value)}
               >
-                <option value="general">General</option>
                 <option value="quality">Quality</option>
-                <option value="performance">Performance</option>
+                <option value="speed">Speed</option>
+                <option value="reliability">Reliability</option>
                 <option value="communication">Communication</option>
-                <option value="concern">Concern</option>
+                <option value="formatting">Formatting</option>
               </select>
             </div>
             <Textarea
+              aria-label="Feedback note"
               placeholder="Add a feedback note..."
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
               className="mb-2"
             />
-            <Button size="sm" onClick={handleAddNote} disabled={!newNote.trim()}>
+            <Button size="sm" onClick={handleAddNote} disabled={actionLoading || !newNote.trim()}>
               <Plus className="mr-1 h-3 w-3" />
               Add Note
             </Button>

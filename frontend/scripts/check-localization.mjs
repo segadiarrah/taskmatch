@@ -168,7 +168,7 @@ function inCodeContext(ancestors) {
     }
     // Likewise `case "approve":` and `switch (x)` discriminants.
     if (ts.isCaseClause(ancestor)) return true;
-    if (ts.isPropertyAssignment(ancestor)) return /^(?:code|sample|command|url|href|endpoint|method|status|id|key|value|type|variant|icon|color|className|tone|path|slug|subsets|axes)$/i.test(propertyName(ancestor.name) ?? "");
+    if (ts.isPropertyAssignment(ancestor)) return /^(?:code|sample|command|url|href|endpoint|method|status|id|key|value|type|variant|icon|color|className|tone|path|slug|subsets|axes|keywords)$/i.test(propertyName(ancestor.name) ?? "");
     return false;
   });
 }

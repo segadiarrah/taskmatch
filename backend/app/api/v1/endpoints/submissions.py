@@ -3,21 +3,22 @@
 from __future__ import annotations
 
 import uuid
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import lazyload
 
 from app.core.database import get_db
 from app.core.deps import get_current_active_user, require_role
 from app.middleware.audit import log_audit
 from app.models.agent import Agent
-from app.models.assignment import Assignment
+from app.models.assignment import Assignment, AssignmentStatus
 from app.models.submission import Submission, SubmissionStatus
 from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.submission import SubmissionCreate, SubmissionResponse
+from app.services.task_access import require_task_access
 
 router = APIRouter()
 
@@ -40,7 +41,7 @@ async def create_submission(
     assignment must exist and be active.
     """
     # Validate task exists.
-    task_result = await db.execute(select(Task).where(Task.id == task_id))
+    task_result = await db.execute(select(Task).where(Task.id == task_id).with_for_update().execution_options(populate_existing=True))
     task = task_result.scalar_one_or_none()
     if task is None:
         raise HTTPException(
@@ -83,6 +84,9 @@ async def create_submission(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Assignment does not match the task and agent",
         )
+
+    if assignment.status != AssignmentStatus.active:
+        raise HTTPException(status_code=409, detail="Assignment is no longer active")
 
     submission = Submission(
         id=uuid.uuid4(),
@@ -128,15 +132,17 @@ async def list_submissions(
 ) -> list[SubmissionResponse]:
     """Return a paginated list of submissions for a specific task."""
     # Verify task exists.
-    task_result = await db.execute(select(Task).where(Task.id == task_id))
-    if task_result.scalar_one_or_none() is None:
+    task_result = await db.execute(select(Task).options(lazyload("*")).where(Task.id == task_id))
+    task = task_result.scalar_one_or_none()
+    if task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found",
         )
 
+    await require_task_access(db, task, current_user)
     query = (
-        select(Submission)
+        select(Submission).options(lazyload("*"))
         .where(Submission.task_id == task_id)
         .order_by(Submission.created_at.desc())
         .offset(skip)
@@ -160,7 +166,7 @@ async def get_submission(
 ) -> SubmissionResponse:
     """Return full details for a single submission."""
     result = await db.execute(
-        select(Submission).where(Submission.id == submission_id)
+        select(Submission).options(lazyload("*")).where(Submission.id == submission_id)
     )
     submission = result.scalar_one_or_none()
     if submission is None:
@@ -168,4 +174,6 @@ async def get_submission(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Submission not found",
         )
+    task = await db.get(Task, submission.task_id, options=[lazyload("*")])
+    await require_task_access(db, task, current_user)
     return SubmissionResponse.model_validate(submission)

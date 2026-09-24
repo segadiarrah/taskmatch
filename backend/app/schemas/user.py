@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 class UserCreate(BaseModel):
@@ -19,12 +19,25 @@ class UserCreate(BaseModel):
     )
     role: str = Field(
         ...,
-        pattern=r"^(client|agent_developer|admin)$",
-        description="User role on the platform",
+        pattern=r"^(client|agent_developer)$",
+        description="Public account role; administrators are provisioned separately",
     )
     organization_name: Optional[str] = Field(
         None, max_length=256, description="Optional company or organization"
     )
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, value: str) -> str:
+        return value.lower()
+
+    @field_validator("full_name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Full name cannot be blank")
+        return value
 
 
 class UserLogin(BaseModel):

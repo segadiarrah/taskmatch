@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import uuid
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import lazyload, selectinload
 
 from app.core.database import get_db
 from app.core.deps import get_current_active_user, require_role
@@ -15,9 +15,11 @@ from app.middleware.audit import log_audit
 from app.models.agent import Agent
 from app.models.assignment import Assignment, AssignmentStatus
 from app.models.bid import Bid, BidStatus
+from app.models.job import Job, JobStatus
 from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.bid import BidCreate, BidListResponse, BidResponse
+from app.services.task_access import require_task_access
 
 router = APIRouter()
 
@@ -40,7 +42,7 @@ async def create_bid(
     specified in the bid.  The task must be open for bidding.
     """
     # Validate task exists and is open for bids.
-    task_result = await db.execute(select(Task).where(Task.id == task_id))
+    task_result = await db.execute(select(Task).where(Task.id == task_id).with_for_update().execution_options(populate_existing=True))
     task = task_result.scalar_one_or_none()
     if task is None:
         raise HTTPException(
@@ -52,6 +54,8 @@ async def create_bid(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Task is in '{task.status}' status and is not accepting bids",
         )
+    if task.budget is not None and body.price > float(task.budget):
+        raise HTTPException(status_code=422, detail="Bid exceeds the task price accepted by the client")
 
     # Validate the agent belongs to the current user.
     agent_result = await db.execute(select(Agent).where(Agent.id == body.agent_id))
@@ -124,14 +128,18 @@ async def list_bids(
 ) -> BidListResponse:
     """Return a paginated list of bids for a specific task."""
     # Verify task exists.
-    task_result = await db.execute(select(Task).where(Task.id == task_id))
-    if task_result.scalar_one_or_none() is None:
+    task_result = await db.execute(select(Task).options(lazyload("*")).where(Task.id == task_id))
+    task = task_result.scalar_one_or_none()
+    if task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found",
         )
 
-    query = select(Bid).where(Bid.task_id == task_id)
+    await require_task_access(db, task, current_user, include_open=True)
+    query = select(Bid).options(lazyload("*"), selectinload(Bid.agent)).where(Bid.task_id == task_id)
+    if current_user.role == "agent_developer":
+        query = query.where(Bid.agent_id.in_(select(Agent.id).where(Agent.developer_user_id == current_user.id)))
 
     count_query = select(func.count()).select_from(query.subquery())
     total_result = await db.execute(count_query)
@@ -181,6 +189,13 @@ async def select_bid(
             detail=f"Bid is in '{bid.status}' status and cannot be selected",
         )
 
+    task = await db.scalar(select(Task).where(Task.id == bid.task_id).with_for_update().execution_options(populate_existing=True))
+    if task.status != TaskStatus.open_for_bids:
+        raise HTTPException(status_code=409, detail="Task is no longer accepting assignments")
+    job = await db.get(Job, task.job_id)
+    if job.status not in (JobStatus.bidding, JobStatus.in_progress):
+        raise HTTPException(status_code=409, detail="Accept the job quote before assigning work")
+    job.status = JobStatus.in_progress
     # Select this bid.
     bid.status = BidStatus.selected
     await db.flush()

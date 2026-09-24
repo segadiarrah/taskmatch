@@ -8,6 +8,7 @@
  */
 
 const es = {
+  publicUi: { "productFacts": ["Idiomas de la interfaz", "Roles de cuenta", "SDK en el repositorio", "API versionada"],"selectLanguage": "Elegir idioma", "toggleMenu": "Mostrar menú", "copy": "Copiar", "copied": "Copiado", "operatedBy": "TaskMatch.ai — operado por Tauraco.", "back": "Volver a TaskMatch", "print": "Imprimir", "contents": "Contenido", "archive": "Este artículo está publicado en inglés.", "archiveHistory": "Las notas de versión están publicadas en inglés.", "rightsTitle": "Tus derechos sobre los datos", "rightsBody": "Para solicitar acceso, corrección, eliminación, portabilidad o cambios de consentimiento, contacta con nuestro equipo de privacidad. Incluye el correo de tu cuenta y describe tu solicitud.", "rightsAction": "Contactar al equipo de privacidad", "linkedIn": "Tauraco en LinkedIn", "demo": "Ejemplo de flujo", "brief": "Tu solicitud", "scoring": "Clasificación explicable", "escrow": "Registro de pagos", "audit": "Registro de auditoría"},
   client: {
     welcome: "Hola de nuevo, {name}",
     welcomeFallbackName: "\u00a1hola!",
@@ -22,6 +23,7 @@ const es = {
       totalSpent: "Total gastado",
     },
     new: {
+      recovery: {"retry": "Reintentar envío", "savedDraft": "El borrador está guardado. Reintenta los pasos pendientes sin crear otro trabajo.", "viewDraft": "Ver el borrador", "uploadFailed": "No se pudieron subir los documentos. El borrador está guardado; reintenta para incluir todos los adjuntos.", "planningFailed": "No se pudo iniciar la planificación. El borrador y los documentos están guardados; reintenta el envío.", "createFailed": "No se pudo crear el trabajo. Reinténtalo.", "titleRequired": "El título es obligatorio.", "descriptionRequired": "La descripción es obligatoria.", "minInvalid": "Introduce un presupuesto mínimo válido.", "maxInvalid": "El presupuesto máximo debe ser al menos igual al mínimo."},
       breadcrumb: "Mis encargos",
       title: "Crear encargo",
       subtitle:
@@ -104,6 +106,14 @@ const es = {
       lastUpdated: "\u00daltima actualizaci\u00f3n",
     },
     plan: {
+      reviewWithoutPayment: "Revisa los resultados antes de aceptar el trabajo. La liquidación externa se gestiona por separado.",
+      actionFailed: "No se pudo guardar la solicitud. Reintenta; el estado confirmado no ha cambiado.",
+      refresh: "Actualizar estado",
+      waiting: "La planificación sigue pendiente. Actualiza el estado para continuar consultando.",
+      producedBy: "Producido por {name}",
+      reason: "Compatibilidad: {capability} %. Tasa de éxito: {rate} %. Tareas completadas: {count}.",
+      reasonFallback: "Seleccionado por sus capacidades registradas.",
+
       stage: {
         format: { label: "Formatear brief", desc: "Estructurando tu solicitud" },
         decompose: { label: "Descomponer", desc: "Dividi\u00e9ndolo en tareas" },
@@ -124,17 +134,17 @@ const es = {
       planningHint: "Suele tardar menos de un minuto. Este panel se actualiza solo.",
       subtitle:
         "As\u00ed se entregar\u00e1 exactamente tu solicitud: las tareas en que se convirti\u00f3, qui\u00e9n ejecuta cada una y lo que pagas.",
-      escrowReleasedTitle: "Trabajo aceptado \u2014 dep\u00f3sito liberado",
-      escrowHeldTitle: "Trabajo entregado \u2014 retenido en dep\u00f3sito para tu revisi\u00f3n",
-      escrowReleasedBody: "{net} liberados al ejecutor. Encargo completado.",
+      escrowReleasedTitle: "Trabajo aceptado",
+      escrowHeldTitle: "El trabajo entregado está listo para revisión",
+      escrowReleasedBody: "La liquidación es independiente y requiere confirmar una transferencia externa. La aceptación por sí sola no mueve fondos.",
       escrowHeldBody:
-        "{gross} retenidos en dep\u00f3sito ({net} para el ejecutor tras {fee} de comisi\u00f3n). Revisa los resultados abajo y libera el pago.",
+        "El registro indica {gross}, con {fee} de comisión y {net} para el ejecutor. Revisa los resultados antes de aceptar el trabajo.",
       requestChanges: "Solicitar cambios",
-      releasing: "Liberando\u2026",
-      acceptAndRelease: "Aceptar y liberar el pago",
+      releasing: "Aceptando…",
+      acceptAndRelease: "Aceptar trabajo",
       completed: "Completado",
       disputePrompt:
-        "\u00bfQu\u00e9 le falt\u00f3 al entregable? Tu pago sigue retenido mientras el ejecutor lo revisa.",
+        "Describe los cambios necesarios. Una solicitud de revisión no inicia ningún pago.",
       disputePlaceholder:
         "p. ej.: la secci\u00f3n 2 no cubre el mercado de la UE como se pidi\u00f3; el tono es demasiado informal.",
       cancel: "Cancelar",
@@ -514,7 +524,7 @@ const es = {
     humanWouldCost: "Un experto humano costar\u00eda:",
     hoursShort: " h",
     gateNotice:
-      "Aprobar libera el trabajo para su ejecuci\u00f3n y deposita el importe en dep\u00f3sito de garant\u00eda. Solo se abona contra una entrega validada.",
+      "La aprobación inicia la ejecución y registra el importe del presupuesto. Aquí no se cobran ni retienen fondos; el pago se organiza externamente después de aceptar la entrega.",
     accept: "Aprobar e iniciar",
     accepting: "Aprobando\u2026",
     decline: "Rechazar",

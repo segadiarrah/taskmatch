@@ -1,4 +1,5 @@
 const en = {
+  publicUi: { "productFacts": ["Interface languages", "Account roles", "Source SDKs", "Versioned API"],"selectLanguage": "Select language", "toggleMenu": "Toggle menu", "copy": "Copy", "copied": "Copied", "operatedBy": "TaskMatch.ai — operated by Tauraco.", "back": "Back to TaskMatch", "print": "Print", "contents": "Contents", "archive": "This article is published in English.", "archiveHistory": "Release notes are published in English.", "rightsTitle": "Your data rights", "rightsBody": "For access, correction, deletion, portability or consent requests, contact our privacy team. Include the email associated with your account and describe your request.", "rightsAction": "Contact the privacy team", "linkedIn": "Tauraco on LinkedIn", "demo": "Illustrative workflow", "brief": "Your brief", "scoring": "Explainable scoring", "escrow": "Payment ledger", "audit": "Audit log"},
   /* ------------------------------------------------------------------------ */
   /*  Navigation                                                              */
   /* ------------------------------------------------------------------------ */
@@ -49,6 +50,7 @@ const en = {
       totalSpent: "Total Spent",
     },
     new: {
+      recovery: {"retry": "Retry submission", "savedDraft": "The draft is saved. Retry the remaining steps without creating another job.", "viewDraft": "View saved draft", "uploadFailed": "The documents could not be uploaded. Your draft is saved; retry to include all attachments.", "planningFailed": "Planning could not be started. Your draft and uploaded documents are saved; retry submission.", "createFailed": "The job could not be created. Please try again.", "titleRequired": "Title is required.", "descriptionRequired": "Description is required.", "minInvalid": "Enter a valid minimum budget.", "maxInvalid": "The maximum budget must be at least the minimum budget."},
       breadcrumb: "My Jobs",
       title: "Create New Job",
       subtitle:
@@ -131,6 +133,14 @@ const en = {
       lastUpdated: "Last Updated",
     },
     plan: {
+      reviewWithoutPayment: "Review the delivered results before accepting the work. External payment settlement is handled separately.",
+      actionFailed: "The request could not be saved. Please retry; the confirmed state has not changed.",
+      refresh: "Refresh status",
+      waiting: "Planning is still pending. Refresh the status to continue checking.",
+      producedBy: "Produced by {name}",
+      reason: "Capability match: {capability}%. Success rate: {rate}%. Completed tasks: {count}.",
+      reasonFallback: "Matched on the registered capabilities.",
+
       stage: {
         format: { label: "Format brief", desc: "Structuring your request" },
         decompose: { label: "Decompose", desc: "Breaking it into tasks" },
@@ -151,17 +161,17 @@ const en = {
       planningHint: "This usually takes under a minute. This panel updates automatically.",
       subtitle:
         "Here\u2019s exactly how your request will be delivered \u2014 the tasks it became, who executes each one, and what you pay.",
-      escrowReleasedTitle: "Work accepted \u2014 escrow released",
-      escrowHeldTitle: "Work delivered \u2014 held in escrow for your review",
-      escrowReleasedBody: "{net} released to the executor. Job completed.",
+      escrowReleasedTitle: "Work accepted",
+      escrowHeldTitle: "Delivered work is ready for your review",
+      escrowReleasedBody: "Payment settlement is separate and requires confirmation of an external transfer. Acceptance alone does not move funds.",
       escrowHeldBody:
-        "{gross} held in escrow ({net} to the executor after the {fee} platform fee). Review the results below, then release.",
+        "The ledger records {gross}, including {fee} in platform fees and {net} for the executor. Review the results before accepting the work.",
       requestChanges: "Request changes",
-      releasing: "Releasing\u2026",
-      acceptAndRelease: "Accept & release payment",
+      releasing: "Accepting…",
+      acceptAndRelease: "Accept work",
       completed: "Completed",
       disputePrompt:
-        "What did the deliverable miss? Your payment stays held in escrow while the executor revises.",
+        "Describe the changes needed. A revision request does not initiate a payment.",
       disputePlaceholder:
         "e.g. Section 2 doesn\u2019t cover the EU market as requested; tone is too informal.",
       cancel: "Cancel",
@@ -551,7 +561,7 @@ const en = {
     humanWouldCost: "A human expert would cost:",
     hoursShort: "h",
     gateNotice:
-      "Approving releases the job for execution and places the amount in escrow. It is paid out only against validated delivery.",
+      "Approving starts execution and records the quoted amount. No funds are charged or held here; payment is arranged externally after you accept delivery.",
     accept: "Approve & start",
     accepting: "Approving\u2026",
     decline: "Decline",

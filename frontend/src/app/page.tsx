@@ -29,17 +29,9 @@ const TECH_KEYWORDS = [
   "Redis",
   "OpenRouter",
   "MCP",
-  "Explainable scoring",
-  "Escrow",
-  "Audit log",
 ];
 
-const STAT_VALUES = [
-  { value: 98, suffix: "%", decimals: 0 },
-  { value: 9, suffix: "", decimals: 0 },
-  { value: 4, suffix: "s", decimals: 0 },
-  { value: 100, suffix: "%", decimals: 0 },
-];
+const STAT_VALUES = [4, 3, 2, 1];
 
 const HOW_ICONS = [FileText, Layers, Network, Trophy, Gavel, ShieldCheck, Lock];
 const FEATURE_ICONS = [ListChecks, ScrollText, Lock, Network];
@@ -58,11 +50,13 @@ const BTN_SECONDARY_PAPER =
 /* ------------------------------------------------------------------ */
 
 function Hero({ c }: { c: Copy }) {
+  const { t } = useTranslation();
+  const keywords = [...TECH_KEYWORDS, t("publicUi.scoring"), t("publicUi.escrow"), t("publicUi.audit")];
   const stages = [
-    { label: c.hero.cardStageDone, key: "Format", done: true, active: false },
-    { label: c.hero.cardStageDone, key: "Decompose", done: true, active: false },
-    { label: c.hero.cardStageActive, key: "Match & rank", done: false, active: true },
-    { label: "", key: "Validate", done: false, active: false },
+    { label: c.hero.cardStageDone, key: c.how.steps[0].title, done: true, active: false },
+    { label: c.hero.cardStageDone, key: c.how.steps[1].title, done: true, active: false },
+    { label: c.hero.cardStageActive, key: c.how.steps[2].title, done: false, active: true },
+    { label: "", key: c.how.steps[5].title, done: false, active: false },
   ];
 
   return (
@@ -121,7 +115,7 @@ function Hero({ c }: { c: Copy }) {
                 />
 
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-ink-500">TM-1847 · demo</span>
+                  <span className="font-mono text-xs text-ink-500">{t("publicUi.demo")}</span>
                   <span className="inline-flex items-center gap-1.5 rounded-sm border border-signal-500/40 bg-signal-500/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-signal-400">
                     <span className="h-1.5 w-1.5 rounded-full bg-signal-500 animate-pulse-dot" />
                     {c.hero.cardStageActive}
@@ -193,7 +187,7 @@ function Hero({ c }: { c: Copy }) {
           </span>
           <div className="relative flex-1 overflow-hidden mask-fade-x">
             <div className="flex w-max animate-marquee items-center gap-10 pr-10">
-              {[...TECH_KEYWORDS, ...TECH_KEYWORDS].map((k, i) => (
+              {[...keywords, ...keywords].map((k, i) => (
                 <span
                   key={`${k}-${i}`}
                   className="flex items-center gap-10 whitespace-nowrap font-mono text-sm text-ink-400"
@@ -215,6 +209,7 @@ function Hero({ c }: { c: Copy }) {
 /* ------------------------------------------------------------------ */
 
 function Stats({ c }: { c: Copy }) {
+  const { t } = useTranslation();
   return (
     <section className="border-b border-ink-800 bg-ink-950 py-16 sm:py-20">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-10 px-4 sm:px-6 lg:grid-cols-4 lg:px-8">
@@ -222,11 +217,10 @@ function Stats({ c }: { c: Copy }) {
           <Reveal key={i} delay={i * 70}>
             <div className="border-l border-ink-700 pl-6">
               <div className="font-display text-5xl font-medium text-ink-50 sm:text-6xl">
-                <Counter value={s.value} suffix="" decimals={s.decimals} />
-                <span className="text-signal-500">{s.suffix}</span>
+                <Counter value={s} suffix="" decimals={0} />
               </div>
               <div className="eyebrow mt-3 text-ink-500">
-                {c.stats[i].label}
+                {t("publicUi.productFacts")[i]}
               </div>
             </div>
           </Reveal>
@@ -520,6 +514,7 @@ interface DemoResult {
 }
 
 function TryItLive({ c }: { c: Copy }) {
+  const { t: translate } = useTranslation();
   const t = c.tryit;
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -565,7 +560,7 @@ function TryItLive({ c }: { c: Copy }) {
           <div className="corner-brackets mt-10 rounded-lg border border-ink-700 bg-ink-900 p-4 shadow-panel sm:p-5">
             <div className="mb-3 flex items-center justify-between border-b border-ink-800 pb-3">
               <span className="font-mono text-[11px] uppercase tracking-wider text-ink-500">
-                input / brief
+                {translate("publicUi.brief")}
               </span>
               <span className="flex gap-1.5" aria-hidden="true">
                 <span className="h-2 w-2 rounded-full bg-ink-700" />
@@ -574,6 +569,7 @@ function TryItLive({ c }: { c: Copy }) {
               </span>
             </div>
             <textarea
+              aria-label={translate("publicUi.brief")}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               rows={3}

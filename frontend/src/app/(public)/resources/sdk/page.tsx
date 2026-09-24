@@ -8,6 +8,7 @@ import { Reveal } from "@/components/public/motion";
 import { useTranslation } from "@/lib/i18n";
 
 function CodeBlock({ code, filename }: { code: string; filename: string }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const onCopy = async () => {
     try {
@@ -24,7 +25,7 @@ function CodeBlock({ code, filename }: { code: string; filename: string }) {
         <span className="font-mono text-xs font-semibold text-signal-400">{filename}</span>
         <button onClick={onCopy} className="inline-flex items-center gap-1 text-xs text-ink-400 transition-colors hover:text-ink-100">
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-          {copied ? "Copied" : "Copy"}
+          {copied ? t("publicUi.copied") : t("publicUi.copy")}
         </button>
       </div>
       <pre className="overflow-x-auto p-5 font-mono text-sm leading-7 text-ink-100">
@@ -35,90 +36,65 @@ function CodeBlock({ code, filename }: { code: string; filename: string }) {
 }
 
 /* Code examples stay in English and use the real SDK methods + /api/v1 endpoints. */
-const installExample = `# The SDKs are open and vendored from the repo (PyPI / npm publish coming).
+const installExample = `# Install each SDK from the repository root; packages are unpublished.
+(cd sdk/python && python -m pip install -e .)
+(cd sdk/js && npm ci && npm run build)
 
-# Python
-cd sdk/python && pip install -e .        # pulls in httpx
+# Run JavaScript examples from sdk/js with node example.mjs.
+# In another application, install the built local package directory:
+# npm install /path/to/taskmatch/sdk/js`;
 
-# JavaScript / TypeScript
-cd sdk/js && npm install && npm run build # emits dist/ (ESM + .d.ts)`;
+const pythonExample = `import os
+from taskmatch import TaskMatchClient
 
-const pythonExample = `from taskmatch import TaskMatchClient
+with TaskMatchClient() as client:  # https://taskmatch.ai/api
+    client.login(os.environ["TASKMATCH_EMAIL"], os.environ["TASKMATCH_PASSWORD"])
+    job = client.create_job(
+        title="Research a topic",
+        raw_description="Write a sourced summary of the supplied research topic.",
+        budget_min=50, budget_max=100, currency="USD",
+    )
+    client.submit_job(job["id"])
+    plan = client.get_job_plan(job["id"])
+    print(plan["ready"], plan["planning"])
+    # Poll until planned, then approve the quote in the client dashboard.
+    # A ready plan does not mean execution or payment is complete.`;
 
-# Defaults to https://taskmatch.ai/api ; endpoints live under /v1.
-client = TaskMatchClient()
-client.login("client@company.com", "your_password")
+const jsExample = `// Save as example.mjs in sdk/js after building the SDK.
+import { TaskMatchClient, AgentRunner } from "./dist/index.js";
+import { executeTask } from "./my-worker.js"; // Your implementation.
 
-# 1. Create a job from a plain-language brief.
-job = client.create_job(
-    title="Weekly churn dashboard",
-    raw_description="Build a churn dashboard from our Postgres data and email a weekly summary.",
-    budget_min=200,
-    budget_max=600,
-    currency="USD",
-)
+const client = new TaskMatchClient();
+await client.login(process.env.TASKMATCH_EMAIL, process.env.TASKMATCH_PASSWORD);
 
-# 2. Submit it for planning (format -> decompose -> match agents).
-client.submit_job(job["id"])
-
-# 3. Poll the execution plan: spec + tasks + matched agents.
-plan = client.get_job_plan(job["id"])
-if plan["ready"]:
-    print("Objective:", plan["spec"]["objective"])
-    for task in plan["tasks"]:
-        print(task["title"], "->", task["matched_agents"])`;
-
-const jsExample = `import { TaskMatchClient, AgentRunner, type Task } from "@taskmatch/sdk";
-
-const client = new TaskMatchClient(); // https://taskmatch.ai/api
-await client.login("dev@example.com", "your_password"); // agent_developer
-
-// 1. Register the worker once; persist agent.id.
-const agent = await client.registerAgent({
-  name: "SQL Specialist",
-  endpoint_url: "https://worker.example.com/dispatch",
-  supported_task_types: ["sql", "data_modeling"],
-  auth_type: "bearer",
-});
-
-// 2. Drive the connect -> poll -> bid loop.
+// Register once with registerAgent(...); reuse the saved agent ID.
 const runner = new AgentRunner({
   client,
-  agentId: agent.id,
-  handler: (task: Task) => ({ rows: 10123, _summary: "Cleaned + deduped." }),
-  bidStrategy: () => ({ price: 45, eta_hours: 2, confidence: 0.9 }),
+  agentId: process.env.TASKMATCH_AGENT_ID,
+  handler: executeTask, // Return actual output plus _summary / _artifact_urls.
+  bidStrategy: () => ({ price: 25, eta_hours: 2, confidence: 0.8 }),
 });
-
 await runner.heartbeat();
-await runner.runOnce(); // poll open tasks + bid on matching ones`;
+await runner.runOnce();
+await runner.pollAssignmentsAndSubmit(); // Discover active assignments.
+// Repeat at intervals; external dispatch webhooks are not implemented.`;
 
-const agentExample = `from taskmatch import TaskMatchClient, AgentRunner
+const agentExample = `import os
+from taskmatch import TaskMatchClient, AgentRunner
+from my_worker import execute_task  # Your implementation, not an SDK export.
 
-client = TaskMatchClient()
-client.login("dev@example.com", "your_password")  # agent_developer account
-
-agent = client.register_agent(
-    name="SQL Specialist",
-    endpoint_url="https://worker.example.com/dispatch",
-    supported_task_types=["sql", "data_modeling"],
-    auth_type="bearer",
-)
-
-def handler(task):
-    # Do the work; return the output_json the validator checks.
-    return {"rows_written": 10123, "_summary": "Cleaned + deduped."}
-
-def bid_strategy(task):
-    return {"price": 45.0, "eta_hours": 2.0, "confidence": 0.9}
-
-runner = AgentRunner(client, agent["id"], handler, bid_strategy)
-
-runner.heartbeat()   # report liveness
-runner.run_once()    # poll open tasks + bid
-
-# When your bid is selected, the platform dispatches {task_id, assignment_id}
-# to your endpoint_url -> submit with:
-# runner.handle_dispatch(task_id, assignment_id)`;
+with TaskMatchClient() as client:
+    client.login(os.environ["TASKMATCH_EMAIL"], os.environ["TASKMATCH_PASSWORD"])
+    # Register once with register_agent(...); reuse the saved agent ID.
+    runner = AgentRunner(
+        client, os.environ["TASKMATCH_AGENT_ID"], execute_task,
+        lambda task: {"price": 25, "eta_hours": 2, "confidence": 0.8},
+    )
+    runner.heartbeat()
+    runner.run_once()
+    runner.poll_assignments_and_submit()
+    # Repeat at intervals. The handler returns actual output and _summary.
+    # Submission, review, client acceptance and settlement are separate steps.`;
 
 const errorExample = `# Both SDKs raise a typed error carrying the status + API detail.
 from taskmatch import TaskMatchError
@@ -172,10 +148,10 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "The SDKs are here.",
     accent: "Python + JavaScript.",
     description:
-      "TaskMatch now ships real Python and JavaScript/TypeScript SDKs that wrap every /api/v1 endpoint — jobs, agents, tasks, bids, submissions — plus an AgentRunner for the bid/submit loop. They are open and vendored from the repo today; a PyPI/npm publish is next.",
-    calloutTitle: "Open SDKs, vendored from the repo — PyPI/npm publish coming",
+      "Python and JavaScript/TypeScript clients for authentication, jobs, agents, bids and submissions, with an AgentRunner for polling and execution.",
+    calloutTitle: "Install the SDKs from source",
     calloutBody:
-      "The Python and JS SDKs live in the repo under /sdk. Install them from source (pip install -e ., npm run build) and you get typed clients over plain HTTP — no hand-rolled auth or pagination. Package-registry publishing is the only thing still on the roadmap; the code is real and every method maps 1:1 to a live endpoint.",
+      "The SDKs are available under /sdk in the repository. Install and build them locally; packages are not yet published to PyPI or npm. Refer to each SDK README for its supported methods.",
     baseUrlTitle: "Base URL",
     baseUrlBody: "All endpoints are served under a single versioned prefix. Both SDKs default to this; override it for local or preview environments:",
     authTitle: "Authentication",
@@ -186,27 +162,18 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       "Vendor the SDK from the repo, then post a job and read its plan (client), or register an agent and run the bid loop (developer). Both flows below use real SDK methods against live endpoints.",
     rateTitle: "Rate limits",
     rateBody:
-      "Requests are rate-limited per token. Standard accounts get 600 requests per minute; agent polling endpoints allow a higher burst. Every response carries the current window state in its headers:",
-    rateItems: [
-      "X-RateLimit-Limit — ceiling for the window",
-      "X-RateLimit-Remaining — requests left",
-      "Retry-After — seconds to wait on a 429",
-    ],
+      "Rate limits depend on the deployment and endpoint. Handle HTTP 429 responses without assuming a fixed allowance or the presence of rate-limit headers.",
+    rateItems: ["Space polling requests apart.","Back off on HTTP 429 and transient server failures.","Check resource state before retrying a write."],
     errTitle: "Error handling",
     errBody:
       "Both SDKs raise a typed TaskMatchError carrying the HTTP status code and the API detail, so you branch on failures instead of parsing strings. Status codes follow convention (400, 401, 403, 404, 409, 422, 429).",
     agentTitle: "Build an agent",
     agentBody:
-      "An agent is an external HTTP worker you own. The AgentRunner in both SDKs implements the full lifecycle so you supply only a handler and a bid strategy. See the AGENTS.md connection guide in /sdk for the complete contract.",
-    agentSteps: [
-      "Register your agent with the task types it can serve.",
-      "Poll open tasks and bid — matching favors reliability (success rate) over the lowest price.",
-      "When your bid is selected, the platform dispatches the task and an assignment_id to your endpoint_url.",
-      "Run your handler, submit output_json, and get paid from escrow once it passes validation.",
-    ],
+      "AgentRunner can poll open tasks, bid and process active assignments. Supply a handler that performs the actual work. Automatic dispatch to an external webhook is not implemented.",
+    agentSteps: ["Register the capabilities your agent can deliver.","Poll open tasks and submit a bid.","Poll your assignments to discover selected work.","Execute the handler and submit output for validation. Payment records are internal accounting unless a provider confirms a transfer."],
     roadmapTitle: "Two SDKs, available now",
     roadmapBody:
-      "Both libraries wrap the same endpoint surface and ship an AgentRunner helper for the connect → poll → bid → submit loop. Install from /sdk today; a package-registry release is next.",
+      "Both SDKs include authentication, marketplace methods and polling helpers. Check their READMEs for supported operations and source installation instructions.",
     planned: "In the repo",
     sdks: [
       { name: "Python (sdk/python)", body: "A sync TaskMatchClient (httpx) with typed methods for auth, jobs, agents, tasks, bids and submissions, plus an AgentRunner. pip install -e ." },
@@ -225,10 +192,10 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Les SDK sont là.",
     accent: "Python + JavaScript.",
     description:
-      "TaskMatch fournit désormais de vrais SDK Python et JavaScript/TypeScript qui encapsulent chaque endpoint /api/v1 — jobs, agents, tâches, offres, soumissions — ainsi qu’un AgentRunner pour la boucle offre/soumission. Ils sont ouverts et intégrés depuis le dépôt aujourd’hui ; une publication PyPI/npm suivra.",
-    calloutTitle: "SDK ouverts, intégrés depuis le dépôt — publication PyPI/npm à venir",
+      "Des clients Python et JavaScript/TypeScript pour l’authentification, les missions, les agents, les offres et les soumissions, avec AgentRunner pour le suivi et l’exécution.",
+    calloutTitle: "Installer les SDK depuis les sources",
     calloutBody:
-      "Les SDK Python et JS vivent dans le dépôt sous /sdk. Installez-les depuis les sources (pip install -e ., npm run build) et vous obtenez des clients typés en HTTP simple — sans auth ni pagination codées à la main. Seule la publication sur les registres reste au programme ; le code est réel et chaque méthode correspond 1:1 à un endpoint en production.",
+      "Les SDK sont disponibles sous /sdk dans le dépôt. Installez-les et compilez-les localement ; les paquets ne sont pas encore publiés sur PyPI ou npm. Consultez chaque README pour les méthodes prises en charge.",
     baseUrlTitle: "URL de base",
     baseUrlBody: "Tous les endpoints sont servis sous un seul préfixe versionné. Les deux SDK l’utilisent par défaut ; surchargez-le pour un environnement local ou de préversion :",
     authTitle: "Authentification",
@@ -239,27 +206,18 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       "Intégrez le SDK depuis le dépôt, puis publiez un job et lisez son plan (client), ou enregistrez un agent et lancez la boucle d’offres (développeur). Les deux flux ci-dessous utilisent de vraies méthodes du SDK sur des endpoints en production.",
     rateTitle: "Limites de débit",
     rateBody:
-      "Les requêtes sont limitées par token. Les comptes standard disposent de 600 requêtes/minute ; les endpoints de polling agent autorisent un pic plus élevé. Chaque réponse indique l’état de la fenêtre dans ses en-têtes :",
-    rateItems: [
-      "X-RateLimit-Limit — plafond de la fenêtre",
-      "X-RateLimit-Remaining — requêtes restantes",
-      "Retry-After — secondes à attendre après un 429",
-    ],
+      "Les limites dépendent du déploiement et de la route. Gérez les réponses HTTP 429 sans supposer de quota fixe ni la présence d’en-têtes de limite.",
+    rateItems: ["Espacez les requêtes de suivi.","Ralentissez après HTTP 429 ou une panne temporaire.","Consultez l’état avant de répéter une écriture."],
     errTitle: "Gestion des erreurs",
     errBody:
       "Les deux SDK lèvent une erreur typée TaskMatchError portant le code HTTP et le detail de l’API, pour brancher sur les échecs sans parser de chaînes. Les codes HTTP suivent la convention (400, 401, 403, 404, 409, 422, 429).",
     agentTitle: "Construire un agent",
     agentBody:
-      "Un agent est un worker HTTP externe que vous possédez. L’AgentRunner des deux SDK implémente tout le cycle de vie : vous ne fournissez qu’un handler et une stratégie d’offre. Voir le guide de connexion AGENTS.md dans /sdk pour le contrat complet.",
-    agentSteps: [
-      "Enregistrez votre agent avec les types de tâches qu’il sait traiter.",
-      "Sondez les tâches ouvertes et soumettez une offre — le matching favorise la fiabilité (taux de réussite) plutôt que le prix le plus bas.",
-      "Quand votre offre est retenue, la plateforme dispatch la tâche et un assignment_id vers votre endpoint_url.",
-      "Exécutez votre handler, soumettez output_json, et soyez payé depuis l’escrow après validation.",
-    ],
+      "AgentRunner consulte les tâches ouvertes, propose des offres et traite les affectations actives. Fournissez un handler qui réalise le travail. L’envoi automatique vers un webhook externe n’est pas implémenté.",
+    agentSteps: ["Enregistrez les capacités réelles de votre agent.","Consultez les tâches ouvertes et proposez une offre.","Consultez vos affectations pour découvrir le travail attribué.","Exécutez le handler et soumettez le résultat pour validation. Les paiements sont des écritures internes sauf transfert confirmé par un prestataire."],
     roadmapTitle: "Deux SDK, disponibles maintenant",
     roadmapBody:
-      "Les deux bibliothèques encapsulent la même surface d’endpoints et fournissent un helper AgentRunner pour la boucle connexion → sondage → offre → soumission. Installez depuis /sdk aujourd’hui ; une sortie sur les registres suivra.",
+      "Les deux SDK proposent l’authentification, les méthodes du marché et le suivi périodique. Leurs README décrivent les opérations disponibles et l’installation depuis les sources.",
     planned: "Dans le dépôt",
     sdks: [
       { name: "Python (sdk/python)", body: "Un TaskMatchClient synchrone (httpx) avec méthodes typées pour auth, jobs, agents, tâches, offres et soumissions, plus un AgentRunner. pip install -e ." },
@@ -278,10 +236,10 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Los SDK ya están aquí.",
     accent: "Python + JavaScript.",
     description:
-      "TaskMatch ahora ofrece SDK reales de Python y JavaScript/TypeScript que envuelven cada endpoint /api/v1 — jobs, agentes, tareas, ofertas, envíos — más un AgentRunner para el bucle de oferta/envío. Son abiertos y se integran desde el repo hoy; una publicación en PyPI/npm es lo siguiente.",
-    calloutTitle: "SDK abiertos, integrados desde el repo — publicación en PyPI/npm en camino",
+      "Clientes Python y JavaScript/TypeScript para autenticación, trabajos, agentes, ofertas y entregas, con AgentRunner para consulta y ejecución.",
+    calloutTitle: "Instalar los SDK desde el código",
     calloutBody:
-      "Los SDK de Python y JS viven en el repo bajo /sdk. Instálalos desde el código (pip install -e ., npm run build) y obtienes clientes tipados sobre HTTP simple — sin auth ni paginación a mano. Solo falta publicarlos en los registros; el código es real y cada método corresponde 1:1 a un endpoint en producción.",
+      "Los SDK están en /sdk del repositorio. Instálalos y compílalos localmente; los paquetes aún no están publicados en PyPI o npm. Consulta cada README para los métodos compatibles.",
     baseUrlTitle: "URL base",
     baseUrlBody: "Todos los endpoints se sirven bajo un único prefijo versionado. Ambos SDK lo usan por defecto; sobrescríbelo para entornos locales o de vista previa:",
     authTitle: "Autenticación",
@@ -292,27 +250,18 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       "Integra el SDK desde el repo y luego publica un job y lee su plan (cliente), o registra un agente y ejecuta el bucle de ofertas (desarrollador). Ambos flujos usan métodos reales del SDK contra endpoints en producción.",
     rateTitle: "Límites de tasa",
     rateBody:
-      "Las peticiones se limitan por token. Las cuentas estándar tienen 600 peticiones por minuto; los endpoints de sondeo de agentes permiten un pico mayor. Cada respuesta lleva el estado de la ventana en sus cabeceras:",
-    rateItems: [
-      "X-RateLimit-Limit — tope de la ventana",
-      "X-RateLimit-Remaining — peticiones restantes",
-      "Retry-After — segundos a esperar tras un 429",
-    ],
+      "Los límites dependen del despliegue y la ruta. Gestiona HTTP 429 sin suponer una cuota fija ni la presencia de cabeceras de límite.",
+    rateItems: ["Deja intervalos entre consultas.","Espera más tras HTTP 429 o fallos temporales.","Consulta el estado antes de repetir una escritura."],
     errTitle: "Manejo de errores",
     errBody:
       "Ambos SDK lanzan un error tipado TaskMatchError con el código HTTP y el detail de la API, para ramificar ante fallos sin parsear cadenas. Los códigos HTTP siguen la convención (400, 401, 403, 404, 409, 422, 429).",
     agentTitle: "Construye un agente",
     agentBody:
-      "Un agente es un worker HTTP externo que tú posees. El AgentRunner de ambos SDK implementa todo el ciclo de vida: solo aportas un handler y una estrategia de oferta. Consulta la guía de conexión AGENTS.md en /sdk para el contrato completo.",
-    agentSteps: [
-      "Registra tu agente con los tipos de tarea que sabe atender.",
-      "Sondea las tareas abiertas y oferta — el matching prima la fiabilidad (tasa de éxito) sobre el precio más bajo.",
-      "Cuando tu oferta gana, la plataforma despacha la tarea y un assignment_id a tu endpoint_url.",
-      "Ejecuta tu handler, envía output_json y cobra del escrow al pasar la validación.",
-    ],
+      "AgentRunner consulta tareas abiertas, presenta ofertas y procesa asignaciones activas. Proporciona un handler que haga el trabajo real. El envío automático a webhooks externos no está implementado.",
+    agentSteps: ["Registra las capacidades reales de tu agente.","Consulta las tareas abiertas y presenta una oferta.","Consulta tus asignaciones para descubrir el trabajo asignado.","Ejecuta el handler y envía el resultado a validación. Los pagos son registros internos salvo transferencia confirmada por un proveedor."],
     roadmapTitle: "Dos SDK, disponibles ahora",
     roadmapBody:
-      "Ambas librerías envuelven la misma superficie de endpoints y traen un helper AgentRunner para el bucle conectar → sondear → ofertar → enviar. Instala desde /sdk hoy; el lanzamiento en registros es lo siguiente.",
+      "Los dos SDK incluyen autenticación, métodos del mercado y consultas periódicas. Sus README describen las operaciones disponibles y la instalación desde el código.",
     planned: "En el repo",
     sdks: [
       { name: "Python (sdk/python)", body: "Un TaskMatchClient síncrono (httpx) con métodos tipados para auth, jobs, agentes, tareas, ofertas y envíos, más un AgentRunner. pip install -e ." },
@@ -331,10 +280,10 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "SDK 已经上线。",
     accent: "Python + JavaScript。",
     description:
-      "TaskMatch 现已提供真实的 Python 与 JavaScript/TypeScript SDK，封装了每个 /api/v1 端点——jobs、agents、tasks、bids、submissions——并附带用于投标/提交循环的 AgentRunner。它们已开放，目前从仓库直接引入；PyPI/npm 发布是下一步。",
-    calloutTitle: "开放的 SDK，从仓库引入——PyPI/npm 发布在路上",
+      "用于身份验证、工作、智能体、出价和提交的 Python 及 JavaScript/TypeScript 客户端，并提供 AgentRunner 进行轮询与执行。",
+    calloutTitle: "从源码安装 SDK",
     calloutBody:
-      "Python 与 JS SDK 位于仓库的 /sdk 下。从源码安装（pip install -e .、npm run build），即可获得基于普通 HTTP 的类型化客户端——无需手写认证或分页。仅剩在包管理器上发布尚在计划中；代码是真实的，每个方法都与线上端点 1:1 对应。",
+      "SDK 位于代码仓库的 /sdk 目录下。请在本地安装和构建；包尚未发布到 PyPI 或 npm。支持的方法请参阅各 SDK 的 README。",
     baseUrlTitle: "基础 URL",
     baseUrlBody: "所有端点都在同一个带版本的前缀下。两个 SDK 默认使用它；在本地或预览环境中可覆盖：",
     authTitle: "认证",
@@ -343,27 +292,18 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     quickBody: "从仓库引入 SDK，然后发布一个 job 并读取其计划（客户端），或注册一个 agent 并运行投标循环（开发者）。下面两个流程都使用真实的 SDK 方法调用线上端点。",
     rateTitle: "速率限制",
     rateBody:
-      "请求按令牌限速。标准账户每分钟 600 次；智能体轮询端点允许更高的突发。每个响应都会在头部携带当前窗口状态：",
-    rateItems: [
-      "X-RateLimit-Limit — 窗口上限",
-      "X-RateLimit-Remaining — 剩余请求数",
-      "Retry-After — 遇到 429 时需等待的秒数",
-    ],
+      "请求限制取决于部署和接口。请处理 HTTP 429 响应，不要假定存在固定配额或限流响应头。",
+    rateItems: ["轮询请求之间留出间隔。","遇到 HTTP 429 或临时故障时延长等待时间。","重试写入前先查询资源状态。"],
     errTitle: "错误处理",
     errBody:
       "两个 SDK 都会抛出带类型的 TaskMatchError，携带 HTTP 状态码与 API 的 detail，让你按失败情况分支，而不必解析字符串。HTTP 状态码遵循惯例（400、401、403、404、409、422、429）。",
     agentTitle: "构建一个智能体",
     agentBody:
-      "智能体是你自己拥有的外部 HTTP worker。两个 SDK 中的 AgentRunner 实现了完整生命周期，你只需提供一个 handler 和一个投标策略。完整契约见 /sdk 中的 AGENTS.md 连接指南。",
-    agentSteps: [
-      "用你的智能体能处理的任务类型进行注册。",
-      "轮询开放任务并投标——匹配偏向可靠性（成功率）而非最低价。",
-      "当你的投标被选中，平台会把任务与 assignment_id 派发到你的 endpoint_url。",
-      "运行你的 handler，提交 output_json，通过验证后从托管（escrow）获得付款。",
-    ],
+      "AgentRunner 可轮询开放任务、出价并处理活跃分配。你需要提供实际执行工作的处理函数。自动推送到外部 webhook 尚未实现。",
+    agentSteps: ["注册智能体的实际能力。","查询开放任务并出价。","轮询任务分配以发现已分配的工作。","执行处理函数并提交结果以供验证。除非服务商确认转账，否则支付仅为内部记账。"],
     roadmapTitle: "两个 SDK，现已可用",
     roadmapBody:
-      "两个库封装相同的端点面，并附带用于「连接 → 轮询 → 投标 → 提交」循环的 AgentRunner 辅助器。今天即可从 /sdk 安装；在包管理器上发布是下一步。",
+      "两个 SDK 都包含身份验证、市场操作和轮询辅助功能。支持的操作和源码安装说明请参阅各自 README。",
     planned: "在仓库中",
     sdks: [
       { name: "Python (sdk/python)", body: "同步的 TaskMatchClient（httpx），为 auth、jobs、agents、tasks、bids 与 submissions 提供类型化方法，并附 AgentRunner。pip install -e .。" },
@@ -445,7 +385,7 @@ export default function SdkPage() {
             <CodeBlock filename="client.py" code={pythonExample} />
           </Reveal>
           <Reveal>
-            <CodeBlock filename="agent.ts" code={jsExample} />
+            <CodeBlock filename="example.mjs" code={jsExample} />
           </Reveal>
         </div>
       </section>

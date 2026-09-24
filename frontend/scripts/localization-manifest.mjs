@@ -14,8 +14,10 @@ const resourcesLegal = [
   "src/app/(public)/legal/security/page.tsx",
   "src/app/(public)/legal/compliance/page.tsx",
   "src/components/public/legal-shell.tsx",
-  "src/content/blog.ts",
+
   "src/content/guides.ts",
+  "src/content/integration.ts",
+  "src/content/security.ts",
   // Route layouts. Each one exists only to attach a server-rendered title,
   // description and canonical URL to a client-rendered page; the copy itself
   // lives in src/lib/page-metadata.ts, which is crawler-facing and
@@ -45,6 +47,7 @@ const publicAuth = [
   "src/app/(public)/for-developers/page.tsx",
   "src/app/(public)/pricing/page.tsx",
   "src/app/(public)/changelog/page.tsx",
+
   "src/app/(public)/company/about/page.tsx",
   "src/app/(public)/company/careers/page.tsx",
   "src/app/(public)/company/contact/page.tsx",
@@ -141,7 +144,11 @@ const adminEnglishOnly = [
   "src/app/(dashboard)/admin/agents/[id]/page.tsx",
 ];
 
+// Historical authored content remains English; rendered archives explicitly declare lang="en"
+// and show a translated availability notice. New product UI remains locale-backed.
 export const localizationManifest = [
+  { path: "src/content/blog.ts", scope: "resources-legal", localization: "english-only" },
+  { path: "src/content/changelog.ts", scope: "public-auth", localization: "english-only" },
   ...resourcesLegal.map((path) => ({ path, scope: "resources-legal", localization: "inline" })),
   ...publicAuth.map((path) => ({ path, scope: "public-auth", localization: "inline" })),
   ...dashboardShared.map((path) => ({ path, scope: "dashboard-shared", localization: "central" })),
@@ -156,6 +163,15 @@ export const localizationManifest = [
 // Every exemption is deliberately narrow and records the kind of literal it protects.
 export const reviewedLiteralAllowlist = {
   productAndProtocols: new Set([
+    "LinkedIn",
+    "Sega Diarrah",
+    "Manrope",
+    "DM Sans",
+    "Next.js",
+    "FastAPI",
+    "PostgreSQL",
+    "Redis",
+    "OpenRouter",
     "TaskMatch",
     "TaskMatch.ai",
     "API",
@@ -197,6 +213,7 @@ export const reviewedLiteralAllowlist = {
     /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
     /^\/?(?:api\/)?v\d+(?:\/|$)/i,
     /^\/[A-Za-z0-9_?&=./:[\]-]+$/,
+    /^#[0-9a-f]{6}$/i, // CSS color tokens in the downloadable brand palette.
     /^\d{3}$/,
     /^&(?:[A-Z]+|#\d+);$/i,
     /^[A-Z]{2,4}$/,

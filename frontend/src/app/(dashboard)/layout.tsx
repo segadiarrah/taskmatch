@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useTranslation } from "@/lib/i18n";
+import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,14 +38,18 @@ interface NavItem {
 /* Les libellés suivent la langue courante : la liste ne peut pas être figée
    au chargement du module. */
 const buildNavItems = (t: (key: string) => string): NavItem[] => [
+  { label: t("dashboard.overview"), href: "/client", icon: LayoutDashboard, roles: ["client"] },
+  { label: t("dashboard.jobs"), href: "/client/jobs", icon: Briefcase, roles: ["client"] },
+  { label: t("dashboard.overview"), href: "/developer", icon: LayoutDashboard, roles: ["agent_developer"] },
+  { label: t("dashboard.agents"), href: "/developer/agents", icon: Bot, roles: ["agent_developer"] },
+  { label: t("dashboard.tasks"), href: "/developer/tasks", icon: ListChecks, roles: ["agent_developer"] },
+  { label: t("dashboard.payments"), href: "/developer/earnings", icon: CreditCard, roles: ["agent_developer"] },
   { label: t("dashboard.overview"), href: "/admin", icon: LayoutDashboard, roles: ["admin"] },
-  { label: t("dashboard.jobs"), href: "/admin/jobs", icon: Briefcase, roles: ["admin", "client"] },
-  { label: t("dashboard.tasks"), href: "/admin/tasks", icon: ListChecks, roles: ["admin", "client", "agent_developer"] },
-  { label: t("dashboard.agents"), href: "/admin/agents", icon: Bot, roles: ["admin", "agent_developer"] },
-  { label: t("dashboard.bids"), href: "/admin/tasks", icon: Gavel, roles: ["agent_developer"] },
-  { label: t("dashboard.submissions"), href: "/admin/validations", icon: FileCheck, roles: ["agent_developer"] },
+  { label: t("dashboard.jobs"), href: "/admin/jobs", icon: Briefcase, roles: ["admin"] },
+  { label: t("dashboard.tasks"), href: "/admin/tasks", icon: ListChecks, roles: ["admin"] },
+  { label: t("dashboard.agents"), href: "/admin/agents", icon: Bot, roles: ["admin"] },
   { label: t("dashboard.validations"), href: "/admin/validations", icon: ShieldCheck, roles: ["admin"] },
-  { label: t("dashboard.payments"), href: "/admin/payments", icon: CreditCard, roles: ["admin", "client", "agent_developer"] },
+  { label: t("dashboard.payments"), href: "/admin/payments", icon: CreditCard, roles: ["admin"] },
   { label: t("dashboard.learning"), href: "/admin/learning", icon: GraduationCap, roles: ["admin"] },
   { label: t("dashboard.providers"), href: "/admin/providers", icon: Plug, roles: ["admin"] },
   { label: t("dashboard.audit"), href: "/admin/audit", icon: ScrollText, roles: ["admin"] },
@@ -90,18 +95,18 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { t } = useTranslation();
-  const { user, isLoading, isAuthenticated, logout } = useAuth();
+  const { t, locale } = useTranslation();
+  const { user, isLoading, isAuthenticated, authError, retrySession, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated && !authError) {
       router.push("/login");
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, authError, router]);
 
   if (isLoading) {
     return (
@@ -114,6 +119,10 @@ export default function DashboardLayout({
     );
   }
 
+  if (authError) {
+    return <main className="mx-auto max-w-2xl px-6 py-20"><DataLoadError onRetry={retrySession} /></main>;
+  }
+
   if (!isAuthenticated || !user) {
     return null;
   }
@@ -123,7 +132,7 @@ export default function DashboardLayout({
   );
 
   const isActive = (href: string) => {
-    if (href === "/admin") return pathname === "/admin";
+    if (href === "/admin" || href === "/client" || href === "/developer") return pathname === href;
     return pathname.startsWith(href);
   };
 
@@ -270,7 +279,7 @@ export default function DashboardLayout({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto bg-ink-950 p-4 lg:p-7">
+        <main lang={pathname.startsWith("/admin") ? "en" : locale} className="flex-1 overflow-y-auto bg-ink-950 p-4 lg:p-7">
           {children}
         </main>
       </div>

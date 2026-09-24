@@ -21,7 +21,6 @@ import {
   ChevronRight,
   UploadCloud,
   FileText,
-  CheckCircle2,
 } from "lucide-react";
 
 interface Requirement {
@@ -66,8 +65,8 @@ export default function CreateJobPage() {
   const [submitting, setSubmitting] = useState(false);
   const [phase, setPhase] = useState<SubmitPhase | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [uploadWarning, setUploadWarning] = useState<string | null>(null);
-  const [ingestSummary, setIngestSummary] = useState<string | null>(null);
+  const [draftId, setDraftId] = useState<string | null>(null);
+  const uploadedRef = useRef(false);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -128,7 +127,7 @@ export default function CreateJobPage() {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    if (submitting) return;
+    if (submitting || draftId) return;
     addFiles(e.dataTransfer?.files ?? null);
   };
 
@@ -163,26 +162,25 @@ export default function CreateJobPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setUploadWarning(null);
-    setIngestSummary(null);
+    if (submitting) return;
 
     // Validation
     if (!title.trim()) {
-      setError("Title is required.");
+      setError(t("client.new.recovery.titleRequired"));
       return;
     }
     if (!description.trim()) {
-      setError("Description is required.");
+      setError(t("client.new.recovery.descriptionRequired"));
       return;
     }
     const min = parseFloat(budgetMin);
     const max = parseFloat(budgetMax);
     if (isNaN(min) || min < 0) {
-      setError("Please enter a valid minimum budget.");
+      setError(t("client.new.recovery.minInvalid"));
       return;
     }
     if (isNaN(max) || max < min) {
-      setError("Maximum budget must be greater than or equal to minimum budget.");
+      setError(t("client.new.recovery.maxInvalid"));
       return;
     }
 
@@ -197,47 +195,29 @@ export default function CreateJobPage() {
       requirements,
     };
 
+    let currentPhase: SubmitPhase = "creating";
     try {
       setSubmitting(true);
-
-      // 1. Create the draft job.
-      setPhase("creating");
-      const result = await apiPost<{ id: string }>("/v1/jobs", payload);
-
-      // 2. Best-effort: ingest attached documents into the brief before submit.
-      if (files.length > 0) {
-        setPhase("uploading");
-        try {
-          const uploaded = await uploadDocuments(result.id);
-          if (uploaded) {
-            const count = uploaded.total_documents ?? uploaded.documents?.length ?? files.length;
-            const chars = uploaded.ingested_chars ?? 0;
-            setIngestSummary(
-              `Ingested ${count} document${count === 1 ? "" : "s"}` +
-                (chars > 0 ? ` (${chars.toLocaleString()} characters)` : "") +
-                " into the brief."
-            );
-          }
-        } catch (uploadErr) {
-          // Non-blocking: continue to submit even if ingestion fails.
-          setUploadWarning(
-            (uploadErr instanceof Error ? uploadErr.message : "Document upload failed.") +
-              " Proceeding without the attachments."
-          );
-        }
+      let jobId = draftId;
+      if (!jobId) {
+        setPhase("creating");
+        const result = await apiPost<{ id: string }>("/v1/jobs", payload);
+        jobId = result.id;
+        setDraftId(jobId);
       }
-
-      // 3. Submit the job so the backend starts planning it in the background,
-      // then route to the detail page where the execution plan appears.
-      setPhase("planning");
-      try {
-        await apiPost(`/v1/jobs/${result.id}/submit`, {});
-      } catch {
-        // If auto-submit fails, the detail page still offers a submit prompt.
+      if (files.length > 0 && !uploadedRef.current) {
+        currentPhase = "uploading";
+        setPhase(currentPhase);
+        await uploadDocuments(jobId);
+        uploadedRef.current = true;
       }
-      router.push(`/client/jobs/${result.id}`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create job. Please try again.");
+      currentPhase = "planning";
+      setPhase(currentPhase);
+      await apiPost(`/v1/jobs/${jobId}/submit`, {});
+      router.push(`/client/jobs/${jobId}`);
+    } catch {
+      setError(currentPhase === "uploading" ? t("client.new.recovery.uploadFailed") : currentPhase === "planning" ? t("client.new.recovery.planningFailed") : t("client.new.recovery.createFailed"));
+    } finally {
       setPhase(null);
       setSubmitting(false);
     }
@@ -278,29 +258,19 @@ export default function CreateJobPage() {
 
       {/* Error */}
       {error && (
-        <div className="flex items-center gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+        <div role="alert" className="flex items-center gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-4">
           <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
           <p className="text-sm text-destructive">{error}</p>
         </div>
       )}
 
-      {/* Non-blocking upload warning */}
-      {uploadWarning && (
-        <div className="flex items-center gap-3 rounded-lg border border-warning/40 bg-warning/10 p-4">
-          <AlertCircle className="h-5 w-5 text-warning flex-shrink-0" />
-          <p className="text-sm text-warning">{uploadWarning}</p>
-        </div>
-      )}
-
-      {/* Ingestion confirmation */}
-      {ingestSummary && (
-        <div className="flex items-center gap-3 rounded-lg border border-success/40 bg-success/10 p-4">
-          <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
-          <p className="text-sm text-success">{ingestSummary}</p>
-        </div>
-      )}
+      {draftId && <div className="rounded-lg border border-ink-700 p-4 text-sm text-ink-300">
+        <p>{t("client.new.recovery.savedDraft")}</p>
+        <Link className="mt-2 inline-block text-signal-500 underline" href={`/client/jobs/${draftId}`}>{t("client.new.recovery.viewDraft")}</Link>
+      </div>}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        <fieldset disabled={submitting || draftId !== null} className="space-y-6">
         {/* Basic Info */}
         <Card>
           <CardHeader>
@@ -354,12 +324,12 @@ export default function CreateJobPage() {
                 }}
                 onDrop={handleDrop}
                 onClick={() => {
-                  if (!submitting) fileInputRef.current?.click();
+                  if (!submitting && !draftId) fileInputRef.current?.click();
                 }}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
-                  if ((e.key === "Enter" || e.key === " ") && !submitting) {
+                  if ((e.key === "Enter" || e.key === " ") && !submitting && !draftId) {
                     e.preventDefault();
                     fileInputRef.current?.click();
                   }
@@ -596,6 +566,7 @@ export default function CreateJobPage() {
           </CardContent>
         </Card>
 
+        </fieldset>
         {/* Submit */}
         <div className="flex items-center justify-end gap-4">
           <Link href="/client/jobs">
@@ -605,7 +576,7 @@ export default function CreateJobPage() {
           </Link>
           <Button type="submit" disabled={submitting}>
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {phase ? t(`client.new.phase.${phase}`) : t("client.new.submit")}
+            {phase ? t(`client.new.phase.${phase}`) : draftId ? t("client.new.recovery.retry") : t("client.new.submit")}
           </Button>
         </div>
       </form>

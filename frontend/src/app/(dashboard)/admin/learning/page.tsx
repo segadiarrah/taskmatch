@@ -84,6 +84,7 @@ export default function LearningPage() {
   const [feedbackNotes, setFeedbackNotes] = useState<FeedbackNote[]>([]);
   const [mcpDecisions, setMCPDecisions] = useState<MCPDecision[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState(false);
 
   // New note form
@@ -130,20 +131,8 @@ export default function LearningPage() {
       });
       await fetchData();
     } catch {
-      setFeedbackNotes((prev) => [
-        {
-          id: `fn-${Date.now()}`,
-          author: "Admin",
-          category: newCategory,
-          note: newNote,
-          task_id: linkTaskId || null,
-          task_title: linkTaskId ? `Task ${linkTaskId}` : null,
-          agent_id: linkAgentId || null,
-          agent_name: linkAgentId ? `Agent ${linkAgentId}` : null,
-          created_at: new Date().toISOString(),
-        },
-        ...prev,
-      ]);
+      setActionError("The request failed. No change was saved. Please try again.");
+      return;
     } finally {
       setNewNote("");
       setLinkTaskId("");
@@ -158,6 +147,7 @@ export default function LearningPage() {
 
   return (
     <div className="space-y-6">
+      {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{actionError}</p>}
       {/* Header */}
       <div>
         <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Learning & Feedback</h1>

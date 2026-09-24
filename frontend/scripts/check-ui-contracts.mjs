@@ -27,30 +27,31 @@ requireMatch("src/components/ui/dialog.tsx", /event\.key === "Escape"/, "dialogs
 requireMatch("src/components/ui/dialog.tsx", /event\.key === "Tab"/, "modal keyboard focus must remain inside the dialog");
 requireMatch("src/components/ui/dialog.tsx", /previouslyFocused\?\.focus\(\)/, "dialogs must restore focus on close");
 requireMatch("src/components/ui/dialog.tsx", /onOpenChangeRef\.current\(false\)/, "dialog focus lifecycle must not depend on an unstable callback");
-requireMatch("src/components/ui/dialog.tsx", /aria-label="Close dialog"/, "the icon-only close control needs an accessible name");
+requireMatch("src/components/ui/dialog.tsx", /aria-label=\{t\("dashboard\.closeDialog"\)\}/, "the icon-only close control needs an accessible name");
 requireMatch(
   "src/app/\(dashboard\)/layout.tsx",
-  /aria-label=\{sidebarCollapsed \? "Expand sidebar" : "Collapse sidebar"\}/,
+  /aria-label=\{sidebarCollapsed \? t\("dashboard\.expandSidebar"\) : t\("dashboard\.collapseSidebar"\)\}/,
   "the desktop sidebar toggle needs a state-aware accessible name"
 );
-requireMatch("src/app/\(dashboard\)/layout.tsx", /aria-label="Close navigation"/, "the mobile close control needs an accessible name");
-requireMatch("src/app/\(dashboard\)/layout.tsx", /aria-label="Open navigation"/, "the mobile menu control needs an accessible name");
+requireMatch("src/app/\(dashboard\)/layout.tsx", /aria-label=\{t\("dashboard\.closeNav"\)\}/, "the mobile close control needs an accessible name");
+requireMatch("src/app/\(dashboard\)/layout.tsx", /aria-label=\{t\("dashboard\.openNav"\)\}/, "the mobile menu control needs an accessible name");
 requireMatch(
   "src/app/(dashboard)/developer/agents/[id]/page.tsx",
-  /aria-label=\{`Remove \$\{cap\.name\}`\}/,
+  /aria-label=\{t\("developer\.(?:agentDetail|register)\.removeCapability", \{ name: cap\.name \}\)\}/,
   "capability remove controls need item-specific accessible names"
 );
 requireMatch(
   "src/app/(dashboard)/developer/agents/new/page.tsx",
-  /aria-label=\{`Remove \$\{cap\.name\}`\}/,
+  /aria-label=\{t\("developer\.(?:agentDetail|register)\.removeCapability", \{ name: cap\.name \}\)\}/,
   "new-agent capability remove controls need item-specific accessible names"
 );
 requireMatch(
   "src/app/(dashboard)/client/jobs/new/page.tsx",
-  /aria-label=\{`Remove requirement \$\{idx \+ 1\}`\}/,
+  /aria-label=\{t\("client\.new\.removeRequirement", \{ number: idx \+ 1 \}\)\}/,
   "requirement remove controls need accessible names"
 );
-requireMatch("src/app/(public)/company/careers/page.tsx", /aria-expanded=\{open\}/, "role disclosures must expose their state");
+// Careers lists no open roles and has no disclosure control.
+requireMatch("src/app/(public)/company/careers/page.tsx", /href="mailto:/, "careers must offer a working contact link");
 requireMatch("src/app/(public)/resources/api-reference/page.tsx", /aria-expanded=\{isOpen\}/, "API disclosures must expose their state");
 
 if (/focus:outline-none/.test(read("src/components/language-switcher.tsx"))) {

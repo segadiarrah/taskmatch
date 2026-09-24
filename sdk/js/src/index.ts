@@ -20,6 +20,7 @@ export const DEFAULT_BASE_URL = "https://taskmatch.ai/api";
 // ---------------------------------------------------------------------------
 
 export type Role = "client" | "agent_developer" | "admin";
+export type RegistrationRole = Exclude<Role, "admin">;
 export type AuthType = "none" | "api_key" | "bearer";
 export type AgentStatus = "active" | "paused" | "disabled";
 
@@ -141,15 +142,40 @@ export interface AgentList extends Paginated<Agent> { agents: Agent[]; }
 export interface TaskList extends Paginated<Task> { tasks: Task[]; }
 export interface BidList extends Paginated<Bid> { bids: Bid[]; }
 
+export interface Assignment {
+  id: string;
+  task_id: string;
+  agent_id?: string;
+  task_title: string;
+  job_title: string;
+  agent_name: string;
+  status: string;
+  revision_count: number;
+  budget: number;
+  currency: string;
+  deadline: string | null;
+}
+
+export interface TaskAssignment {
+  id: string;
+  agent_id: string;
+  agent_name: string;
+  status: string;
+}
+
+export interface ItemList<T> { items: T[]; }
+
 /** Thrown on any non-2xx API response. */
 export class TaskMatchError extends Error {
   readonly statusCode: number;
   readonly detail: unknown;
-  constructor(statusCode: number, detail: unknown) {
+  readonly response?: Response;
+  constructor(statusCode: number, detail: unknown, response?: Response) {
     super(`TaskMatch API error ${statusCode}: ${JSON.stringify(detail)}`);
     this.name = "TaskMatchError";
     this.statusCode = statusCode;
     this.detail = detail;
+    this.response = response;
   }
 }
 
@@ -206,18 +232,18 @@ export class TaskMatchClient {
     }
 
     const resp = await fetch(url, init);
+    const text = await resp.text();
     if (!resp.ok) {
-      let detail: unknown;
+      let detail: unknown = text;
       try {
-        const j = (await resp.json()) as { detail?: unknown };
-        detail = j.detail ?? j;
+        const body: unknown = JSON.parse(text);
+        detail = body && typeof body === "object" && "detail" in body ? body.detail : body;
       } catch {
-        detail = await resp.text();
+        // Preserve non-JSON proxy/API errors; the body can only be read once.
       }
-      throw new TaskMatchError(resp.status, detail);
+      throw new TaskMatchError(resp.status, detail, resp);
     }
     if (resp.status === 204) return undefined as T;
-    const text = await resp.text();
     return (text ? JSON.parse(text) : undefined) as T;
   }
 
@@ -231,12 +257,12 @@ export class TaskMatchClient {
     return this.token;
   }
 
-  /** Create a new account. `role` is client | agent_developer | admin. */
+  /** Create a client or agent_developer account; call login afterwards. */
   register(input: {
     email: string;
     password: string;
     full_name: string;
-    role: Role;
+    role: RegistrationRole;
     organization_name?: string;
   }): Promise<User> {
     return this.request<User>("POST", "/auth/register", { body: input });
@@ -335,6 +361,16 @@ export class TaskMatchClient {
     return this.request<BidList>("GET", `/tasks/${taskId}/bids`, { query });
   }
 
+  /** Developer-owned assignments ({items}); maximum limit is 100, no offset. */
+  listAssignments(query: { status?: string; limit?: number } = {}): Promise<ItemList<Assignment>> {
+    return this.request("GET", "/developer/assignments", { query });
+  }
+
+  /** This developer's assignments on a task, including agent ID and status. */
+  listTaskAssignments(taskId: string): Promise<ItemList<TaskAssignment>> {
+    return this.request("GET", `/tasks/${taskId}/assignments/mine`);
+  }
+
   // ---------------------------------------------------------------- Bids
   createBid(input: {
     task_id: string;
@@ -387,10 +423,9 @@ export interface AgentRunnerOptions {
 /**
  * Drives the agent lifecycle for a single registered agent.
  *
- * Assignment discovery: the platform creates an assignment when your bid is
- * selected and dispatches `{task_id, assignment_id}` to your `endpoint_url`.
- * Use `handleDispatch` from that webhook, or feed a `{taskId: assignmentId}`
- * map to `pollAssignmentsAndSubmit`.
+ * Assignment discovery: pollAssignmentsAndSubmit() discovers active assignments
+ * owned by this agent. An explicit {taskId: assignmentId} map is also supported.
+ * The platform does not currently dispatch external webhooks.
  */
 export class AgentRunner {
   private client: TaskMatchClient;
@@ -422,28 +457,32 @@ export class AgentRunner {
   async runOnce(): Promise<Bid[]> {
     const wanted = new Set(await this.supportedTaskTypes());
     const created: Bid[] = [];
-    const types = wanted.size ? [...wanted] : [undefined];
-    for (const taskType of types) {
-      const { tasks } = await this.client.listOpenTasks({ task_type: taskType });
-      for (const task of tasks) {
-        if (wanted.size && !wanted.has(task.task_type)) continue;
-        const decision = await this.bidStrategy(task);
-        if (!decision) continue;
-        try {
-          created.push(
-            await this.client.createBid({
-              task_id: task.id,
-              agent_id: this.agentId,
-              price: decision.price,
-              eta_hours: decision.eta_hours,
-              confidence_score: decision.confidence,
-              proposal_text: decision.proposal_text,
-            }),
-          );
-        } catch (err) {
-          // 409 = already have an active bid on this task; ignore.
-          if (!(err instanceof TaskMatchError) || err.statusCode !== 409) throw err;
+    for (const taskType of wanted) {
+      let skip = 0;
+      while (true) {
+        const { tasks, total } = await this.client.listOpenTasks({ task_type: taskType, skip });
+        for (const task of tasks) {
+          if (!wanted.has(task.task_type)) continue;
+          const decision = await this.bidStrategy(task);
+          if (!decision) continue;
+          try {
+            created.push(
+              await this.client.createBid({
+                task_id: task.id,
+                agent_id: this.agentId,
+                price: decision.price,
+                eta_hours: decision.eta_hours,
+                confidence_score: decision.confidence,
+                proposal_text: decision.proposal_text,
+              }),
+            );
+          } catch (err) {
+            // The API rejects duplicate active bids with 409.
+            if (!(err instanceof TaskMatchError) || err.statusCode !== 409) throw err;
+          }
         }
+        skip += tasks.length;
+        if (!tasks.length || skip >= total) break;
       }
     }
     return created;
@@ -452,13 +491,17 @@ export class AgentRunner {
   /** Run the handler for one assigned task and submit the result. */
   async handleDispatch(taskId: string, assignmentId: string): Promise<Submission> {
     const task = await this.client.getTask(taskId);
+    return this.submitTask(task, assignmentId);
+  }
+
+  private async submitTask(task: Task, assignmentId: string): Promise<Submission> {
     const output = { ...(await this.handler(task)) };
     const summary = output["_summary"] as string | undefined;
     const artifacts = output["_artifact_urls"] as string[] | undefined;
     delete output["_summary"];
     delete output["_artifact_urls"];
     return this.client.createSubmission({
-      task_id: taskId,
+      task_id: task.id,
       agent_id: this.agentId,
       assignment_id: assignmentId,
       output_json: output,
@@ -467,14 +510,24 @@ export class AgentRunner {
     });
   }
 
-  /** Submit for each known { taskId: assignmentId }, skipping non-assignable tasks. */
-  async pollAssignmentsAndSubmit(assignments: Record<string, string>): Promise<Submission[]> {
+  /** Discover up to 100 active assignments, or submit an explicit assignment map. */
+  async pollAssignmentsAndSubmit(assignments?: Record<string, string>): Promise<Submission[]> {
+    if (assignments === undefined) {
+      assignments = {};
+      const { items } = await this.client.listAssignments({ status: "active", limit: 100 });
+      const taskIds = new Set(items.map(item => item.task_id));
+      for (const taskId of taskIds) {
+        const own = await this.client.listTaskAssignments(taskId);
+        const active = own.items.find(item => item.agent_id === this.agentId && item.status === "active");
+        if (active) assignments[taskId] = active.id;
+      }
+    }
     const submittable = new Set(["assigned", "in_progress", "validation_failed"]);
     const results: Submission[] = [];
     for (const [taskId, assignmentId] of Object.entries(assignments)) {
       const task = await this.client.getTask(taskId);
       if (!submittable.has(task.status)) continue;
-      results.push(await this.handleDispatch(taskId, assignmentId));
+      results.push(await this.submitTask(task, assignmentId));
     }
     return results;
   }

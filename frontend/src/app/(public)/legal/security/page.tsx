@@ -1,5 +1,6 @@
 "use client";
 
+import { securityCopy } from "@/content/security";
 import React from "react";
 import Link from "next/link";
 import { Reveal } from "@/components/public/motion";
@@ -97,58 +98,13 @@ const COPY: Record<
   },
 };
 
-const items = [
-  {
-    icon: Server,
-    title: "Infrastructure security",
-    body: "Execution environments are isolated, services are segmented, and internal boundaries are treated as part of the security design rather than an implementation footnote.",
-  },
-  {
-    icon: Lock,
-    title: "Encryption posture",
-    body: "Encryption is applied as a layered model: TLS in transit, encryption at rest for stored data, and dedicated handling for sensitive secrets and credentials.",
-  },
-  {
-    icon: KeyRound,
-    title: "Identity and access",
-    body: "Authentication, token handling, and role scoping are enforced as durable platform controls, so access maps to role and least privilege.",
-  },
-  {
-    icon: Network,
-    title: "API and boundary defense",
-    body: "Rate limiting, input validation, webhook signature verification, and strict endpoint contracts defend the platform boundary against abuse.",
-  },
-  {
-    icon: Database,
-    title: "Data lifecycle",
-    body: "Storage, retention, and deletion follow documented lifecycles, and state transitions are recorded so data handling stays auditable.",
-  },
-  {
-    icon: BadgeCheck,
-    title: "SOC 2 & compliance",
-    body: "TaskMatch designs its controls around the SOC 2 Type II framework. No audit has been completed to date, and formal certification is an objective on our roadmap rather than a status we hold. The platform is GDPR / RGPD-aligned, and a Data Processing Agreement (DPA) and our control documentation are available to enterprise reviewers on request.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Sensitive data in briefs",
-    body: "Briefs and uploaded documents are encrypted at rest, scoped to the assigned executor for the duration of a task, and excluded from any model-training use. Clients can request redaction or deletion of submitted material.",
-  },
-];
-
-const archLayers = ["Client layer", "Gateway controls", "Core services", "Data layer", "Agent boundary"];
-
-const checklist = [
-  "How are secrets issued, stored, and rotated?",
-  "What isolation exists between services and execution environments?",
-  "How are webhook calls authenticated and verified?",
-  "What records exist for auditing, incident response, and operational review?",
-  "Where does SOC 2 certification stand, and is a DPA available for GDPR / RGPD compliance?",
-  "How is sensitive data in briefs and uploads handled, retained, and deleted?",
-];
+const icons = [Server, Lock, KeyRound, Network, Database, BadgeCheck, ShieldCheck];
 
 export default function SecurityPage() {
   const { locale } = useTranslation();
   const c = COPY[locale] ?? COPY.en;
+  const detail = securityCopy[locale];
+  const items = detail.items.map(([title, body], index) => ({ title, body, icon: icons[index] }));
 
   return (
     <div className="min-h-screen bg-paper text-paper-ink">
@@ -193,7 +149,7 @@ export default function SecurityPage() {
         <Reveal className="mx-auto max-w-6xl rounded-lg border border-paper-ink/15 bg-paper-deep/50 p-8">
           <h2 className="font-display text-3xl font-medium text-paper-ink">{c.archTitle}</h2>
           <div className="mt-8 grid gap-4 md:grid-cols-5">
-            {archLayers.map((item) => (
+            {detail.arch.map((item) => (
               <div
                 key={item}
                 className="rounded-md border border-paper-ink/15 bg-paper px-4 py-5 text-center font-mono text-xs uppercase tracking-wider text-paper-ink/70"
@@ -227,7 +183,7 @@ export default function SecurityPage() {
         <Reveal className="mx-auto max-w-6xl rounded-lg border border-paper-ink/15 bg-paper-deep/50 p-8">
           <h2 className="font-display text-3xl font-medium text-paper-ink">{c.checklistTitle}</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {checklist.map((item) => (
+            {detail.check.map((item) => (
               <div
                 key={item}
                 className="rounded-md border border-paper-ink/15 bg-paper px-4 py-4 text-sm leading-7 text-paper-ink/75"

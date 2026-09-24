@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     APP_NAME: str = "TaskMatch.ai"
     API_V1_PREFIX: str = "/api/v1"
     ENV: str = Field(default="development")  # development | staging | production
+    TRUSTED_HOSTS: list[str] = Field(default=[
+        "taskmatch.ai", "www.taskmatch.ai", "*.taskmatch.ai", "localhost", "127.0.0.1", "backend",
+    ])
 
     # -- Database -------------------------------------------------------------
     DATABASE_URL: str = "postgresql+asyncpg://taskmatch:taskmatch@postgres:5432/taskmatch"
@@ -40,8 +43,8 @@ class Settings(BaseSettings):
 
     # -- LLM (OpenAI-compatible: OpenAI, OpenRouter, DeepSeek, …) --------------
     # When OPENAI_API_KEY is set, the MCP orchestration layer uses the LLM for
-    # the generative steps (job formatting & decomposition). Every LLM call has
-    # a deterministic fallback, so the platform works fully even without a key.
+    # generative steps. Planning has a deterministic fallback; task execution
+    # requires a real provider response or an external worker submission.
     OPENAI_BASE_URL: str | None = None  # e.g. https://openrouter.ai/api/v1
     LLM_MODEL: str = "gpt-4o-mini"
     LLM_TIMEOUT_SECONDS: int = 30
@@ -82,6 +85,7 @@ class Settings(BaseSettings):
         "env_file": ".env",
         "env_file_encoding": "utf-8",
         "case_sensitive": True,
+        "extra": "ignore",
     }
 
     @model_validator(mode="after")

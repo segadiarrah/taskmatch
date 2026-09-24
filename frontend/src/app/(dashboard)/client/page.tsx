@@ -77,7 +77,7 @@ export default function ClientDashboardPage() {
       }
     }
     fetchDashboard();
-  }, []);
+  }, [t]);
 
   if (loading) {
     return (

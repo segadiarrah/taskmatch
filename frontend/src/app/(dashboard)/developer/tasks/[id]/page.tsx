@@ -174,7 +174,7 @@ export default function TaskDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [taskId]);
+  }, [taskId, t]);
 
   useEffect(() => {
     fetchData();

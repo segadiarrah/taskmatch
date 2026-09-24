@@ -79,7 +79,7 @@ const COPY: Record<
 
 export default function BlogArticlePage() {
   const params = useParams();
-  const { locale } = useTranslation();
+  const { locale, t } = useTranslation();
   const c = COPY[locale] ?? COPY.en;
   const slug = typeof params.slug === "string" ? params.slug : params.slug?.[0];
   const post = slug ? getPostBySlug(slug) : undefined;
@@ -126,6 +126,8 @@ export default function BlogArticlePage() {
             {c.allArticles}
           </Link>
 
+          <p className="mt-6 text-sm text-ink-400">{t("publicUi.archive")}</p>
+          <div lang="en">
           <div className="mt-8 flex flex-wrap items-center gap-3 eyebrow">
             <span className="rounded-full border border-signal-500/30 bg-signal-500/10 px-3 py-1 text-signal-400">
               {post.tag}
@@ -154,10 +156,11 @@ export default function BlogArticlePage() {
               <div className="text-ink-500">{post.author.role}</div>
             </div>
           </div>
+          </div>
         </Reveal>
       </article>
 
-      <section className="px-4 pb-20 sm:px-6 lg:px-8">
+      <section lang="en" className="px-4 pb-20 sm:px-6 lg:px-8">
         <Reveal className="mx-auto max-w-3xl">
           <div className="rounded-lg border border-ink-700 bg-ink-900 p-8 sm:p-10">
             <div className="space-y-10">

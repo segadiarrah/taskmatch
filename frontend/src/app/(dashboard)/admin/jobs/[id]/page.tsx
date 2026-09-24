@@ -3,12 +3,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { useParams, useRouter } from "next/navigation";
-import { apiGet, apiPost, apiPut } from "@/lib/api";
+import { apiGet, apiPost } from "@/lib/api";
+import { loadAdminJobDetail, type AdminJobDetail } from "@/lib/admin-details";
 import { cn, formatCurrency, formatDate, formatStatus, formatDateTime } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select } from "@/components/ui/select";
 import {
   Table,
   TableHeader,
@@ -21,7 +21,6 @@ import {
   ArrowLeft,
   Sparkles,
   Network,
-  Edit,
   Clock,
   DollarSign,
   CalendarDays,
@@ -33,50 +32,6 @@ import {
   Circle,
   AlertCircle,
 } from "lucide-react";
-
-interface JobDetail {
-  id: string;
-  title: string;
-  description_raw: string;
-  description_formatted: string;
-  client_id: string;
-  client_name: string;
-  status: string;
-  budget_min: number;
-  budget_max: number;
-  deadline: string;
-  created_at: string;
-  updated_at: string;
-  status_history: StatusChange[];
-  tasks: TaskSummary[];
-  mcp_decisions: MCPDecision[];
-}
-
-interface StatusChange {
-  from_status: string;
-  to_status: string;
-  changed_at: string;
-  changed_by: string;
-  reason?: string;
-}
-
-interface TaskSummary {
-  id: string;
-  title: string;
-  task_type: string;
-  status: string;
-  budget: number;
-  priority: number;
-  assigned_agent?: string;
-}
-
-interface MCPDecision {
-  id: string;
-  decision_type: string;
-  reasoning: string;
-  created_at: string;
-  confidence: number;
-}
 
 const statusBadgeVariant: Record<string, "secondary" | "info" | "default" | "warning" | "purple" | "success" | "destructive"> = {
   draft: "secondary",
@@ -94,14 +49,14 @@ const statusBadgeVariant: Record<string, "secondary" | "info" | "default" | "war
   rejected: "destructive",
 };
 
-const statusTimeline = ["draft", "submitted", "formatted", "bidding", "in_progress", "under_review", "completed"];
+const statusTimeline = ["draft", "submitted", "formatted", "decomposed", "quoted", "bidding", "in_progress", "under_review", "client_review", "completed"];
 
 function StatusTimeline({ currentStatus }: { currentStatus: string }) {
   const currentIndex = statusTimeline.indexOf(currentStatus);
   const isCancelled = currentStatus === "cancelled";
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1 overflow-x-auto">
       {statusTimeline.map((status, index) => {
         const isCompleted = !isCancelled && index <= currentIndex;
         const isCurrent = status === currentStatus;
@@ -157,20 +112,19 @@ export default function JobDetailPage() {
   const router = useRouter();
   const jobId = params.id as string;
 
-  const [job, setJob] = useState<JobDetail | null>(null);
+  const [job, setJob] = useState<AdminJobDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState(false);
-  const [editingStatus, setEditingStatus] = useState(false);
-  const [newStatus, setNewStatus] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
   const fetchJob = useCallback(async () => {
     setLoading(true);
     setLoadError(false);
     try {
-      const data = await apiGet<JobDetail>(`/v1/jobs/${jobId}`);
+      const data = await loadAdminJobDetail(apiGet, jobId);
       setJob(data);
-        } catch {
+    } catch {
       setLoadError(true);
       setJob(null);
     } finally {
@@ -184,12 +138,14 @@ export default function JobDetailPage() {
 
   async function handleFormat() {
     if (!job) return;
+    setActionError(null);
     setActionLoading(true);
     try {
       await apiPost(`/v1/mcp/format-job/${jobId}`);
       await fetchJob();
-    } catch {
-      setJob({ ...job, status: "formatted" });
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "The request failed. Please refresh and try again.");
+      return;
     } finally {
       setActionLoading(false);
     }
@@ -197,28 +153,16 @@ export default function JobDetailPage() {
 
   async function handleDecompose() {
     if (!job) return;
+    setActionError(null);
     setActionLoading(true);
     try {
       await apiPost(`/v1/mcp/decompose-job/${jobId}`);
       await fetchJob();
-    } catch {
-      setJob({ ...job, status: "bidding" });
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "The request failed. Please refresh and try again.");
+      return;
     } finally {
       setActionLoading(false);
-    }
-  }
-
-  async function handleStatusChange() {
-    if (!job || !newStatus) return;
-    setActionLoading(true);
-    try {
-      await apiPut(`/v1/jobs/${jobId}`, { status: newStatus });
-      await fetchJob();
-    } catch {
-      setJob({ ...job, status: newStatus });
-    } finally {
-      setActionLoading(false);
-      setEditingStatus(false);
     }
   }
 
@@ -248,6 +192,7 @@ export default function JobDetailPage() {
 
   return (
     <div className="space-y-6">
+      {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{actionError}</p>}
       {/* Back + Header */}
       <div>
         <Button
@@ -274,7 +219,7 @@ export default function JobDetailPage() {
               </span>
               <span className="flex items-center gap-1">
                 <DollarSign className="h-3.5 w-3.5" />
-                {formatCurrency(job.budget_min)} - {formatCurrency(job.budget_max)}
+                {formatCurrency(job.budget_min, job.currency)} - {formatCurrency(job.budget_max, job.currency)}
               </span>
               <span className="flex items-center gap-1">
                 <CalendarDays className="h-3.5 w-3.5" />
@@ -299,49 +244,10 @@ export default function JobDetailPage() {
                 Decompose Job
               </Button>
             )}
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditingStatus(true);
-                setNewStatus(job.status);
-              }}
-            >
-              <Edit className="mr-2 h-4 w-4" />
-              Edit Status
-            </Button>
+
           </div>
         </div>
       </div>
-
-      {/* Status edit inline */}
-      {editingStatus && (
-        <Card>
-          <CardContent className="flex items-center gap-3 pt-6">
-            <span className="text-sm font-medium text-ink-200">Change status to:</span>
-            <Select
-              value={newStatus}
-              onChange={(e) => setNewStatus(e.target.value)}
-              className="w-48"
-            >
-              {["draft", "submitted", "formatted", "bidding", "in_progress", "under_review", "completed", "cancelled"].map((s) => (
-                <option key={s} value={s}>
-                  {formatStatus(s)}
-                </option>
-              ))}
-            </Select>
-            <Button size="sm" onClick={handleStatusChange} disabled={actionLoading}>
-              Save
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setEditingStatus(false)}
-            >
-              Cancel
-            </Button>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Status Timeline */}
       <Card>
@@ -435,7 +341,7 @@ export default function JobDetailPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-mono font-medium text-foreground">
-                      {formatCurrency(task.budget)}
+                      {task.budget === null ? "—" : formatCurrency(task.budget, job.currency)}
                     </TableCell>
                     <TableCell>
                       <span className={cn(
@@ -486,7 +392,7 @@ export default function JobDetailPage() {
                       </span>
                     </div>
                     <span className="font-mono text-xs font-medium text-ink-400">
-                      Confidence: {(decision.confidence * 100).toFixed(0)}%
+                      Confidence: {decision.confidence === null ? "—" : `${(decision.confidence * 100).toFixed(0)}%`}
                     </span>
                   </div>
                   <p className="mt-2 text-sm leading-relaxed text-ink-300">
@@ -499,39 +405,6 @@ export default function JobDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Status History */}
-      {job.status_history.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-display text-base">
-              <Clock className="h-4 w-4 text-ink-500" />
-              Status History
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {job.status_history.map((change, i) => (
-                <div key={i} className="flex items-center gap-3 text-sm">
-                  <span className="w-32 shrink-0 font-mono text-xs text-ink-500">
-                    {formatDateTime(change.changed_at)}
-                  </span>
-                  <Badge variant="secondary" className="font-normal">
-                    {formatStatus(change.from_status)}
-                  </Badge>
-                  <span className="text-ink-600">&rarr;</span>
-                  <Badge variant={statusBadgeVariant[change.to_status] || "secondary"}>
-                    {formatStatus(change.to_status)}
-                  </Badge>
-                  <span className="text-ink-400">by {change.changed_by}</span>
-                  {change.reason && (
-                    <span className="text-ink-500">({change.reason})</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

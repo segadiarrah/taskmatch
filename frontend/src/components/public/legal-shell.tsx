@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/lib/i18n";
 import React from "react";
 import Link from "next/link";
 import { ArrowLeft, Printer } from "lucide-react";
@@ -20,6 +21,7 @@ export function LegalPageShell({
   toc: Array<{ id: string; label: string }>;
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-paper text-paper-ink">
       <section className="border-b border-paper-ink/15 px-4 py-4 sm:px-6 lg:px-8 print:hidden">
@@ -29,14 +31,14 @@ export function LegalPageShell({
             className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-paper-ink/60 transition-colors hover:text-paper-ink"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to TaskMatch
+            {t("publicUi.back")}
           </Link>
           <button
             onClick={() => window.print()}
             className="inline-flex items-center gap-2 rounded-md border border-paper-ink/30 px-4 py-1.5 text-sm text-paper-ink/70 transition-colors hover:bg-paper-ink hover:text-paper"
           >
             <Printer className="h-4 w-4" />
-            Print
+            {t("publicUi.print")}
           </button>
         </div>
       </section>
@@ -59,7 +61,7 @@ export function LegalPageShell({
         <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.75fr_1.25fr]">
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <div className="rounded-lg border border-paper-ink/15 bg-paper-deep/50 p-5">
-              <div className="eyebrow mb-3 text-signal-600">Contents</div>
+              <div className="eyebrow mb-3 text-signal-600">{t("publicUi.contents")}</div>
               <nav className="space-y-1">
                 {toc.map((item) => (
                   <a

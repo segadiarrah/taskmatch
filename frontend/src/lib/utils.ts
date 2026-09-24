@@ -14,8 +14,15 @@ export function formatCurrency(amount: number, currency: string = "EUR"): string
   }).format(amount);
 }
 
-export function formatDate(date: string | Date): string {
-  const d = typeof date === "string" ? new Date(date) : date;
+function validDate(date: string | Date | null | undefined): Date | null {
+  if (!date) return null;
+  const parsed = typeof date === "string" ? new Date(date) : date;
+  return Number.isFinite(parsed.getTime()) ? parsed : null;
+}
+
+export function formatDate(date: string | Date | null | undefined): string {
+  const d = validDate(date);
+  if (!d) return "—";
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -29,8 +36,9 @@ export function formatStatus(status: string): string {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-export function formatDateTime(date: string | Date): string {
-  const d = typeof date === "string" ? new Date(date) : date;
+export function formatDateTime(date: string | Date | null | undefined): string {
+  const d = validDate(date);
+  if (!d) return "—";
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -39,9 +47,10 @@ export function formatDateTime(date: string | Date): string {
   }).format(d);
 }
 
-export function timeAgo(date: string | Date): string {
+export function timeAgo(date: string | Date | null | undefined): string {
   const now = new Date();
-  const d = typeof date === "string" ? new Date(date) : date;
+  const d = validDate(date);
+  if (!d) return "—";
   const seconds = Math.floor((now.getTime() - d.getTime()) / 1000);
 
   if (seconds < 60) return "just now";

@@ -409,7 +409,7 @@ export function QuotePanel({
               <p className="text-xs text-muted-foreground">
                 {t(
                   "quote.gateNotice",
-                  "Approving releases the job for execution and places the amount in escrow. It is paid out only against validated delivery.",
+                  "Approving starts execution and records the quoted amount. No funds are charged or held here; payment is arranged externally after you accept delivery.",
                 )}
               </p>
             </div>

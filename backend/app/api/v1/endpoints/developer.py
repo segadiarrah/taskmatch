@@ -8,17 +8,17 @@ All routes are scoped to the current user's own agents.
 from __future__ import annotations
 
 import uuid
-
 from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import lazyload, selectinload
 
 from app.core.database import get_db
 from app.core.deps import get_current_active_user
-from app.models.agent import Agent, AgentStatus
+from app.models.agent import Agent
 from app.models.assignment import Assignment, AssignmentStatus
 from app.models.bid import Bid
 from app.models.job import Job, JobStatus
@@ -83,7 +83,7 @@ async def developer_assignments(
     agent_ids = await _my_agent_ids(db, current_user)
     if not agent_ids:
         return {"items": []}
-    q = select(Assignment).where(Assignment.agent_id.in_(agent_ids))
+    q = select(Assignment).options(lazyload("*"), selectinload(Assignment.agent)).where(Assignment.agent_id.in_(agent_ids))
     if status:
         q = q.where(Assignment.status == status)
     q = q.order_by(Assignment.created_at.desc()).limit(limit)
@@ -91,10 +91,10 @@ async def developer_assignments(
 
     items = []
     for a in rows:
-        task = (await db.execute(select(Task).where(Task.id == a.task_id))).scalar_one_or_none()
+        task = (await db.execute(select(Task).options(lazyload("*")).where(Task.id == a.task_id))).scalar_one_or_none()
         job = None
         if task is not None:
-            job = (await db.execute(select(Job).where(Job.id == task.job_id))).scalar_one_or_none()
+            job = (await db.execute(select(Job).options(lazyload("*")).where(Job.id == task.job_id))).scalar_one_or_none()
         # A revision after a client dispute adds a submission → count - 1.
         sub_count = (
             await db.execute(select(func.count(Submission.id)).where(Submission.task_id == a.task_id))
@@ -103,6 +103,7 @@ async def developer_assignments(
             {
                 "id": str(a.id),
                 "task_id": str(a.task_id),
+                "agent_id": str(a.agent_id),
                 "task_title": task.title if task else "",
                 "job_title": job.title if job else "",
                 "agent_name": a.agent.name if a.agent else "",
@@ -127,7 +128,7 @@ async def my_agents(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     agents = list(
-        (await db.execute(select(Agent).where(Agent.developer_user_id == current_user.id).order_by(Agent.name))).scalars().all()
+        (await db.execute(select(Agent).options(lazyload("*"), selectinload(Agent.capabilities)).where(Agent.developer_user_id == current_user.id).order_by(Agent.name))).scalars().all()
     )
     return {
         "items": [
@@ -160,16 +161,16 @@ async def my_bids(
     agent_ids = await _my_agent_ids(db, current_user)
     if not agent_ids:
         return {"items": []}
-    task = (await db.execute(select(Task).where(Task.id == task_id))).scalar_one_or_none()
+    task = (await db.execute(select(Task).options(lazyload("*")).where(Task.id == task_id))).scalar_one_or_none()
     currency = "EUR"
     if task is not None:
-        job = (await db.execute(select(Job).where(Job.id == task.job_id))).scalar_one_or_none()
+        job = (await db.execute(select(Job).options(lazyload("*")).where(Job.id == task.job_id))).scalar_one_or_none()
         if job is not None:
             currency = job.currency or "EUR"
     bids = list(
         (
             await db.execute(
-                select(Bid).where(Bid.task_id == task_id, Bid.agent_id.in_(agent_ids)).order_by(Bid.created_at.desc())
+                select(Bid).options(lazyload("*"), selectinload(Bid.agent)).where(Bid.task_id == task_id, Bid.agent_id.in_(agent_ids)).order_by(Bid.created_at.desc())
             )
         ).scalars().all()
     )
@@ -204,7 +205,7 @@ async def my_assignments(
     rows = list(
         (
             await db.execute(
-                select(Assignment).where(Assignment.task_id == task_id, Assignment.agent_id.in_(agent_ids))
+                select(Assignment).options(lazyload("*"), selectinload(Assignment.agent)).where(Assignment.task_id == task_id, Assignment.agent_id.in_(agent_ids))
             )
         ).scalars().all()
     )
@@ -233,7 +234,7 @@ async def my_submissions(
     subs = list(
         (
             await db.execute(
-                select(Submission)
+                select(Submission).options(lazyload("*"), selectinload(Submission.agent))
                 .where(Submission.task_id == task_id, Submission.agent_id.in_(agent_ids))
                 .order_by(Submission.created_at.desc())
             )
@@ -243,7 +244,7 @@ async def my_submissions(
     for s in subs:
         review = (
             await db.execute(
-                select(ValidationReview)
+                select(ValidationReview).options(lazyload("*"))
                 .where(ValidationReview.submission_id == s.id)
                 .order_by(ValidationReview.created_at.desc())
                 .limit(1)
@@ -392,7 +393,7 @@ async def developer_earnings_payments(
     rows = list(
         (
             await db.execute(
-                select(PaymentRecord)
+                select(PaymentRecord).options(lazyload("*"))
                 .where(PaymentRecord.developer_user_id == current_user.id)
                 .order_by(PaymentRecord.created_at.desc())
                 .limit(limit)
@@ -404,14 +405,14 @@ async def developer_earnings_payments(
     for p in rows:
         task = (
             await db.execute(
-                select(Task).where(Task.job_id == p.job_id).order_by(Task.priority).limit(1)
+                select(Task).options(lazyload("*")).where(Task.job_id == p.job_id).order_by(Task.priority).limit(1)
             )
         ).scalar_one_or_none()
         agent_name = ""
         if task is not None:
             assignment = (
                 await db.execute(
-                    select(Assignment).where(Assignment.task_id == task.id).limit(1)
+                    select(Assignment).options(lazyload("*"), selectinload(Assignment.agent)).where(Assignment.task_id == task.id).limit(1)
                 )
             ).scalar_one_or_none()
             if assignment is not None and assignment.agent is not None:

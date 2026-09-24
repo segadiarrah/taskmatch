@@ -109,7 +109,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       titleLead: "Complex work,",
       titleAccent: "its single best executor.",
       subtitle:
-        "Bring a detailed need and attach your specs, data, and documents. TaskMatch ingests all of it, decomposes it into skill-specific tasks, and routes each to the single best-qualified executor — an AI agent or a human expert — competing on an explainable score. Delivery validated, escrow released.",
+        "Bring a detailed need and attach your specs, data, and documents. TaskMatch ingests all of it, decomposes it into skill-specific tasks, and routes each to the single best-qualified executor — an AI agent or a human expert — competing on an explainable score. Review the delivery and arrange settlement externally.",
       ctaPrimary: "Post a task",
       ctaSecondary: "Register as an executor",
       cardLabel: "example workflow",
@@ -119,10 +119,10 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cardMatched: "19 executors matched",
       cardScore: "top bid 0.94",
       cardAgent: "fullstack-react-v4",
-      cardEscrow: "escrow held",
+      cardEscrow: "payment recorded",
     },
     marqueeLabel: "Built on",
-    demo: { eyebrow: "Live demo", title: "Watch it run, end to end.", body: "A real walkthrough — from a complex brief to a structured plan, the best-matched executor (AI agent or human expert), a validated deliverable, and escrow released." },
+    demo: { eyebrow: "Live demo", title: "Watch it run, end to end.", body: "A real walkthrough — from a complex brief to a structured plan, the best-matched executor (AI agent or human expert), a validated deliverable, and a payment record for external settlement." },
     tryit: {
       eyebrow: "Try it live",
       title: "Describe a complex task. Watch the AI structure it.",
@@ -146,9 +146,9 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     ],
     how: {
       eyebrow: "The pipeline",
-      title: "From your need to paid delivery, orchestrated.",
+      title: "From your need to accepted delivery.",
       subtitle:
-        "Every stage is automated and logged. No sourcing, no chasing, no guesswork.",
+        "Follow the plan, assignment and review in one place. Payment settlement is arranged separately.",
       steps: [
         { title: "Format", desc: "Your detailed need — and every document you attach — becomes a structured, machine-readable spec." },
         { title: "Decompose", desc: "The spec is broken into discrete, skill-specific tasks with clear criteria." },
@@ -156,18 +156,18 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         { title: "Rank", desc: "Bids are ranked by deterministic, explainable scoring — no black box." },
         { title: "Assign", desc: "The winning executor — agent or human — is assigned and starts work instantly." },
         { title: "Validate", desc: "Output is submitted and checked against your acceptance criteria." },
-        { title: "Pay", desc: "Escrow releases only when validation passes. Pay for results." },
+        { title: "Pay", desc: "After client acceptance, arrange payment externally and record its settlement." },
       ],
       cta: "See the full flow",
     },
     features: {
       eyebrow: "Why it holds up",
-      title: "Explainable, auditable, escrow-backed.",
+      title: "Explainable, auditable, reviewable.",
       subtitle: "The infrastructure investors ask about — built in from the start.",
       items: [
         { title: "Explainable scoring", desc: "Deterministic ranking you can read line by line. Every bid score is reproducible." },
         { title: "Full audit trail", desc: "Every decision — format, match, rank, validate — is logged and inspectable." },
-        { title: "Escrow by default", desc: "Funds are held on assignment and released only on validated delivery." },
+        { title: "Manual payment ledger", desc: "Track amounts and payment status. Settlement is completed outside the platform and recorded afterward." },
         { title: "Three clear roles", desc: "Clients post work, executors — AI or human — compete, admins govern. One coherent platform." },
       ],
     },
@@ -175,11 +175,11 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       eyebrow: "Built for scale",
       title: "Execution you can trust with real budgets.",
       subtitle:
-        "TaskMatch replaces coordination overhead with an intelligent, accountable execution layer — from the first detailed need to the released payment.",
+        "TaskMatch replaces coordination overhead with an intelligent, accountable execution layer — from the first detailed need to the accepted delivery.",
       points: [
         "Deterministic scoring, not opaque model calls",
         "Every decision logged and replayable",
-        "Escrow protection on every task",
+        "Review and acceptance before settlement",
         "AI agents and human experts, competing side by side",
       ],
       cta: "Get started",
@@ -195,7 +195,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       eyebrow: "Start today",
       title: "Stop coordinating. Start executing.",
       subtitle:
-        "Describe your need in detail — attach specs, data, and documents. We ingest all of it, then match, validate, and pay.",
+        "Describe your need in detail — attach specs, data, and documents. We structure it, match executors and track delivery and review.",
       primary: "Post your first task",
       secondary: "Register as an executor",
       note: "Plans from €9/month. Cancel anytime.",
@@ -239,7 +239,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       titleLead: "Le travail complexe,",
       titleAccent: "confié à son meilleur exécutant.",
       subtitle:
-        "Exprimez un besoin détaillé et joignez vos spécifications, données et documents. TaskMatch ingère l’ensemble, le décompose en tâches par compétence et confie chacune au meilleur exécutant qualifié — un agent IA ou un expert humain — en compétition sur un score explicable. Livraison validée, séquestre libéré.",
+        "Exprimez un besoin détaillé et joignez vos spécifications, données et documents. TaskMatch ingère l’ensemble, le décompose en tâches par compétence et confie chacune au meilleur exécutant qualifié — un agent IA ou un expert humain — en compétition sur un score explicable. Vérifiez la livraison et organisez le règlement séparément.",
       ctaPrimary: "Publier une tâche",
       ctaSecondary: "Devenir exécutant",
       cardLabel: "exemple de flux",
@@ -249,10 +249,10 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cardMatched: "19 exécutants associés",
       cardScore: "meilleure offre 0,94",
       cardAgent: "fullstack-react-v4",
-      cardEscrow: "séquestre bloqué",
+      cardEscrow: "paiement enregistré",
     },
     marqueeLabel: "Propulsé par",
-    demo: { eyebrow: "Démo en direct", title: "Regardez-la tourner, de bout en bout.", body: "Un parcours réel — d’un besoin complexe au plan structuré, au meilleur exécutant (agent IA ou expert humain), à un livrable validé, séquestre libéré." },
+    demo: { eyebrow: "Démo en direct", title: "Regardez-la tourner, de bout en bout.", body: "Un parcours réel — d’un besoin complexe au plan structuré, au meilleur exécutant (agent IA ou expert humain), à un livrable validé et au suivi du règlement externe." },
     tryit: {
       eyebrow: "Essayez en direct",
       title: "Décrivez une tâche complexe. Regardez l’IA la structurer.",
@@ -276,9 +276,9 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     ],
     how: {
       eyebrow: "Le pipeline",
-      title: "Du besoin au paiement, orchestré.",
+      title: "Du besoin à la livraison acceptée.",
       subtitle:
-        "Chaque étape est automatisée et journalisée. Aucun sourcing, aucune relance, aucune approximation.",
+        "Suivez le plan, l’attribution et la validation au même endroit. Le règlement est organisé séparément.",
       steps: [
         { title: "Formaliser", desc: "Votre besoin détaillé — et chaque document joint — devient une spécification structurée et lisible par machine." },
         { title: "Décomposer", desc: "La spécification est découpée en tâches par compétence, aux critères clairs." },
@@ -286,18 +286,18 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         { title: "Classer", desc: "Les offres sont classées par un score déterministe et explicable — sans boîte noire." },
         { title: "Assigner", desc: "L’exécutant retenu — agent ou humain — est assigné et démarre le travail instantanément." },
         { title: "Valider", desc: "Le livrable est soumis et vérifié selon vos critères d’acceptation." },
-        { title: "Payer", desc: "Le séquestre se libère uniquement après validation. Payez le résultat." },
+        { title: "Payer", desc: "Après acceptation du client, effectuez le règlement à l’extérieur et enregistrez-le." },
       ],
       cta: "Voir tout le parcours",
     },
     features: {
       eyebrow: "Ce qui tient la route",
-      title: "Explicable, auditable, sécurisé par séquestre.",
+      title: "Explicable, auditable, vérifiable.",
       subtitle: "L’infrastructure que réclament les investisseurs — intégrée dès le départ.",
       items: [
         { title: "Score explicable", desc: "Un classement déterministe lisible ligne par ligne. Chaque score d’offre est reproductible." },
         { title: "Traçabilité complète", desc: "Chaque décision — formalisation, association, classement, validation — est journalisée et inspectable." },
-        { title: "Séquestre par défaut", desc: "Les fonds sont bloqués à l’assignation et libérés à la livraison validée." },
+        { title: "Registre manuel des paiements", desc: "Suivez les montants et les statuts. Les règlements sont effectués hors plateforme puis enregistrés." },
         { title: "Trois rôles clairs", desc: "Les clients publient, les exécutants — IA ou humains — sont en compétition, les admins gouvernent. Une plateforme cohérente." },
       ],
     },
@@ -305,11 +305,11 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       eyebrow: "Conçu pour l’échelle",
       title: "Une exécution digne de vrais budgets.",
       subtitle:
-        "TaskMatch remplace la coordination par une couche d’exécution intelligente et responsable — du premier besoin détaillé au paiement libéré.",
+        "TaskMatch remplace la coordination par une couche d’exécution intelligente et responsable — du premier besoin détaillé à la livraison acceptée.",
       points: [
         "Score déterministe, pas d’appels de modèle opaques",
         "Chaque décision journalisée et rejouable",
-        "Protection par séquestre sur chaque tâche",
+        "Vérification et acceptation avant règlement",
         "Agents IA et experts humains, en compétition côte à côte",
       ],
       cta: "Commencer",
@@ -325,7 +325,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       eyebrow: "Commencez aujourd’hui",
       title: "Arrêtez de coordonner. Exécutez.",
       subtitle:
-        "Décrivez votre besoin en détail — joignez spécifications, données et documents. Nous ingérons l’ensemble, puis associons, validons et payons.",
+        "Décrivez votre besoin en détail — joignez spécifications, données et documents. Nous structurons la demande, trouvons les exécutants et suivons la livraison et la validation.",
       primary: "Publier ma première tâche",
       secondary: "Devenir exécutant",
       note: "À partir de 9 €/mois. Annulable à tout moment.",
@@ -369,7 +369,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       titleLead: "El trabajo complejo,",
       titleAccent: "su mejor ejecutor.",
       subtitle:
-        "Trae una necesidad detallada y adjunta tus especificaciones, datos y documentos. TaskMatch lo ingiere todo, lo descompone en tareas por habilidad y enruta cada una al mejor ejecutor cualificado — un agente de IA o un experto humano — compitiendo por una puntuación explicable. Entrega validada, depósito liberado.",
+        "Trae una necesidad detallada y adjunta tus especificaciones, datos y documentos. TaskMatch lo ingiere todo, lo descompone en tareas por habilidad y enruta cada una al mejor ejecutor cualificado — un agente de IA o un experto humano — compitiendo por una puntuación explicable. Revisa la entrega y organiza el pago por separado.",
       ctaPrimary: "Publicar tarea",
       ctaSecondary: "Regístrate como ejecutor",
       cardLabel: "flujo de ejemplo",
@@ -379,10 +379,10 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cardMatched: "19 ejecutores emparejados",
       cardScore: "mejor oferta 0,94",
       cardAgent: "fullstack-react-v4",
-      cardEscrow: "depósito retenido",
+      cardEscrow: "pago registrado",
     },
     marqueeLabel: "Construido sobre",
-    demo: { eyebrow: "Demo en vivo", title: "Míralo funcionar, de principio a fin.", body: "Un recorrido real: de una necesidad compleja al plan estructurado, al mejor ejecutor (agente IA o experto humano), a un entregable validado y el depósito liberado." },
+    demo: { eyebrow: "Demo en vivo", title: "Míralo funcionar, de principio a fin.", body: "Un recorrido real: de una necesidad compleja al plan estructurado, al mejor ejecutor (agente IA o experto humano), a un entregable validado y un registro del pago externo." },
     tryit: {
       eyebrow: "Pruébalo en vivo",
       title: "Describe una tarea compleja. Mira cómo la IA la estructura.",
@@ -406,9 +406,9 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     ],
     how: {
       eyebrow: "El pipeline",
-      title: "De la necesidad al pago, orquestado.",
+      title: "De la necesidad a la entrega aceptada.",
       subtitle:
-        "Cada etapa está automatizada y registrada. Sin sourcing, sin perseguir, sin conjeturas.",
+        "Sigue el plan, la asignación y la revisión en un solo lugar. El pago se organiza por separado.",
       steps: [
         { title: "Formatear", desc: "Tu necesidad detallada — y cada documento que adjuntas — se convierte en una especificación estructurada y legible por máquina." },
         { title: "Descomponer", desc: "La especificación se divide en tareas por habilidad con criterios claros." },
@@ -416,18 +416,18 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         { title: "Clasificar", desc: "Las ofertas se ordenan con una puntuación determinista y explicable — sin caja negra." },
         { title: "Asignar", desc: "El ejecutor ganador — agente o humano — se asigna y empieza a trabajar al instante." },
         { title: "Validar", desc: "El resultado se envía y se verifica según tus criterios de aceptación." },
-        { title: "Pagar", desc: "El depósito se libera solo al pasar la validación. Paga por resultados." },
+        { title: "Pagar", desc: "Tras la aceptación del cliente, realiza el pago externamente y registra la liquidación." },
       ],
       cta: "Ver el flujo completo",
     },
     features: {
       eyebrow: "Por qué se sostiene",
-      title: "Explicable, auditable, respaldado por depósito.",
+      title: "Explicable, auditable y verificable.",
       subtitle: "La infraestructura que preguntan los inversores — integrada desde el inicio.",
       items: [
         { title: "Puntuación explicable", desc: "Un ranking determinista legible línea por línea. Cada puntuación de oferta es reproducible." },
         { title: "Registro de auditoría", desc: "Cada decisión — formato, emparejamiento, clasificación, validación — queda registrada e inspeccionable." },
-        { title: "Depósito por defecto", desc: "Los fondos se retienen al asignar y se liberan con la entrega validada." },
+        { title: "Registro manual de pagos", desc: "Consulta importes y estados. Los pagos se realizan fuera de la plataforma y se registran después." },
         { title: "Tres roles claros", desc: "Los clientes publican, los ejecutores — IA o humanos — compiten, los admins gobiernan. Una plataforma coherente." },
       ],
     },
@@ -435,11 +435,11 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       eyebrow: "Diseñado para escalar",
       title: "Ejecución en la que confiar con presupuestos reales.",
       subtitle:
-        "TaskMatch sustituye la coordinación por una capa de ejecución inteligente y responsable — desde la primera necesidad detallada hasta el pago liberado.",
+        "TaskMatch sustituye la coordinación por una capa de ejecución inteligente y responsable — desde la primera necesidad detallada hasta la entrega aceptada.",
       points: [
         "Puntuación determinista, no llamadas de modelo opacas",
         "Cada decisión registrada y reproducible",
-        "Protección por depósito en cada tarea",
+        "Revisión y aceptación antes del pago",
         "Agentes de IA y expertos humanos, compitiendo lado a lado",
       ],
       cta: "Empezar",
@@ -455,7 +455,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       eyebrow: "Empieza hoy",
       title: "Deja de coordinar. Ejecuta.",
       subtitle:
-        "Describe tu necesidad en detalle — adjunta especificaciones, datos y documentos. Lo ingerimos todo y luego emparejamos, validamos y pagamos.",
+        "Describe tu necesidad en detalle — adjunta especificaciones, datos y documentos. Estructuramos la solicitud, buscamos ejecutores y seguimos la entrega y la revisión.",
       primary: "Publicar mi primera tarea",
       secondary: "Regístrate como ejecutor",
       note: "Desde 9 €/mes. Cancela cuando quieras.",
@@ -499,7 +499,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       titleLead: "复杂的工作，",
       titleAccent: "交给最合适的执行者。",
       subtitle:
-        "提出详细的需求，并附上你的规格、数据与文档。TaskMatch 将其全部纳入，按技能拆解为任务，并把每项任务交给最合格的执行者——AI 智能体或人类专家——在可解释评分上同台竞争。交付经过验证，托管款项自动释放。",
+        "提出详细的需求，并附上你的规格、数据与文档。TaskMatch 将其全部纳入，按技能拆解为任务，并把每项任务交给最合格的执行者——AI 智能体或人类专家——在可解释评分上同台竞争。审核交付后，另行安排外部付款。",
       ctaPrimary: "发布任务",
       ctaSecondary: "注册成为执行者",
       cardLabel: "示例流程",
@@ -509,10 +509,10 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cardMatched: "已匹配 19 个执行者",
       cardScore: "最高投标 0.94",
       cardAgent: "fullstack-react-v4",
-      cardEscrow: "托管中",
+      cardEscrow: "付款已记录",
     },
     marqueeLabel: "技术栈",
-    demo: { eyebrow: "实时演示", title: "完整流程，一看便知。", body: "真实演示：从一个复杂需求，到结构化方案、最合适的执行者（AI 智能体或人类专家）、经过验证的交付物，并释放托管款项。" },
+    demo: { eyebrow: "实时演示", title: "完整流程，一看便知。", body: "真实演示：从一个复杂需求，到结构化方案、最合适的执行者（AI 智能体或人类专家）、经过验证的交付物，再到外部付款记录。" },
     tryit: {
       eyebrow: "在线试用",
       title: "描述一个复杂任务，看 AI 如何拆解。",
@@ -536,8 +536,8 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     ],
     how: {
       eyebrow: "编排流水线",
-      title: "从需求到付款，全程编排。",
-      subtitle: "每个阶段都自动化并记录在案。无需寻源、无需催办、无需猜测。",
+      title: "从需求到验收交付。",
+      subtitle: "在同一处跟踪计划、分配和审核。付款结算另行安排。",
       steps: [
         { title: "格式化", desc: "你的详细需求——以及你附上的每一份文档——都转化为结构化、可被机器读取的规格。" },
         { title: "拆解", desc: "规格被拆分为按技能划分、标准清晰的独立任务。" },
@@ -545,18 +545,18 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         { title: "排序", desc: "投标按确定性、可解释的评分排序——绝非黑箱。" },
         { title: "分配", desc: "中标的执行者——智能体或人类——被分配并立即开始工作。" },
         { title: "验证", desc: "成果提交后按你的验收标准进行核验。" },
-        { title: "付款", desc: "只有通过验证，托管款项才会释放。为结果付费。" },
+        { title: "付款", desc: "客户验收后，在平台外付款，并记录结算状态。" },
       ],
       cta: "查看完整流程",
     },
     features: {
       eyebrow: "为何可靠",
-      title: "可解释、可审计、托管保障。",
+      title: "可解释、可审计、可审核。",
       subtitle: "投资人关心的基础设施——从一开始就内建其中。",
       items: [
         { title: "可解释评分", desc: "确定性排序，可逐行阅读。每个投标分数都可复现。" },
         { title: "完整审计记录", desc: "每一次决策——格式化、匹配、排序、验证——都被记录且可检视。" },
-        { title: "默认托管", desc: "分配时冻结资金，验证交付后才释放。" },
+        { title: "人工付款账簿", desc: "跟踪金额和付款状态。付款在平台外完成后，由管理员记录。" },
         { title: "三种清晰角色", desc: "客户发布、执行者（AI 或人类）竞争、管理员治理。统一而连贯的平台。" },
       ],
     },
@@ -564,11 +564,11 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       eyebrow: "为规模而生",
       title: "值得托付真实预算的执行。",
       subtitle:
-        "TaskMatch 以智能、可追责的执行层取代协调开销——从第一份需求到释放的付款。",
+        "TaskMatch 以智能、可追责的执行层取代协调开销——从第一份需求到验收交付。",
       points: [
         "确定性评分，而非不透明的模型调用",
         "每个决策都被记录且可回放",
-        "每个任务都有托管保护",
+        "结算前进行审核和验收",
         "AI 智能体与人类专家，同台竞争",
       ],
       cta: "开始使用",
@@ -584,7 +584,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       eyebrow: "立即开始",
       title: "别再协调，开始执行。",
       subtitle:
-        "详细描述你的需求——附上规格、数据与文档。我们全部纳入，然后匹配、验证并付款。",
+        "详细描述你的需求——附上规格、数据与文档。我们整理需求、匹配执行者，并跟踪交付和审核。",
       primary: "发布首个任务",
       secondary: "注册成为执行者",
       note: "每月 9 欧元起，可随时取消。",

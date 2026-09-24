@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import json
+import os
 import uuid
 from datetime import datetime, timezone
-from typing import Optional
+from decimal import Decimal
 
-import os
-
+import structlog
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -18,32 +19,29 @@ from fastapi import (
     UploadFile,
     status,
 )
+from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-import json
-
-import structlog
-
-from pydantic import BaseModel, Field
+from sqlalchemy.orm import lazyload, selectinload
 
 from app.core.database import async_session_factory, get_db
 from app.core.deps import get_current_active_user, require_role
 from app.middleware.audit import log_audit
-from decimal import Decimal
-
 from app.models.agent import Agent, AgentStatus
 from app.models.assignment import Assignment, AssignmentStatus
-from app.models.delivery import DeliveryPlan
 from app.models.audit import MCPDecision, MCPDecisionType
 from app.models.bid import Bid, BidStatus
+from app.models.delivery import DeliveryPlan, DeliveryStatus
 from app.models.job import Job, JobRequirement, JobStatus
-from app.models.payment import PaymentRecord, PaymentStatus
+from app.models.payment import PaymentRecord
+from app.models.quote import ExecutionRoute, Quote, QuoteStatus, TaskQuote
 from app.models.submission import Submission, SubmissionStatus
 from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.job import JobCreate, JobListResponse, JobResponse, JobUpdate
 from app.services import llm_service, mcp_service, quote_service
+from app.services.task_access import task_visibility
+from app.services.workflow_service import accept_delivery, finalize_job_if_done
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 
@@ -138,10 +136,14 @@ async def _auto_execute(db: AsyncSession, job: Job, created_tasks: list[dict]) -
     """Have active platform LLM agents auto-bid on each task, and (if the job
     has auto-select enabled) assign the strongest bid — so complex requests
     start executing immediately, before any developer agent bids."""
+    if not llm_service.llm_available():
+        return
     platform_agents = list(
         (
             await db.execute(
-                select(Agent).where(
+                select(Agent).join(User, User.id == Agent.developer_user_id).where(
+                    User.role == "admin",
+                    User.is_active.is_(True),
                     Agent.status == AgentStatus.active,
                     Agent.slug.like("llm-%"),
                 )
@@ -155,8 +157,13 @@ async def _auto_execute(db: AsyncSession, job: Job, created_tasks: list[dict]) -
 
     for t in created_tasks:
         task_id = uuid.UUID(t["id"])
-        task = (await db.execute(select(Task).where(Task.id == task_id))).scalar_one_or_none()
-        if task is None:
+        task = (await db.execute(select(Task).where(Task.id == task_id).with_for_update().execution_options(populate_existing=True))).scalar_one_or_none()
+        if task is None or task.status != TaskStatus.open_for_bids:
+            continue
+        priced_task = await db.scalar(select(TaskQuote).join(Quote, Quote.id == TaskQuote.quote_id).where(
+            TaskQuote.task_id == task_id, Quote.status == QuoteStatus.accepted
+        ).order_by(TaskQuote.created_at.desc()).limit(1))
+        if priced_task is None or priced_task.route != ExecutionRoute.llm:
             continue
         budget = float(task.budget) if task.budget else 0.0
         task_type = (task.task_type or "general").lower()
@@ -217,6 +224,7 @@ async def _auto_execute(db: AsyncSession, job: Job, created_tasks: list[dict]) -
             )
             db.add(assignment)
             task.status = TaskStatus.assigned
+            job.status = JobStatus.in_progress
             await db.flush()
 
             winner_agent = next((a for a in platform_agents if a.id == winner.agent_id), None)
@@ -226,7 +234,7 @@ async def _auto_execute(db: AsyncSession, job: Job, created_tasks: list[dict]) -
                 except Exception as exc:  # noqa: BLE001
                     logger.warning("plan.deliver_failed", task_id=str(task_id), error=str(exc))
 
-    # If the platform executed every task, wrap up the job + release escrow.
+    # If the platform executed every task, prepare delivery for client review.
     if job.auto_select_enabled:
         await _finalize_job_if_done(db, job)
 
@@ -235,7 +243,7 @@ async def _auto_execute(db: AsyncSession, job: Job, created_tasks: list[dict]) -
 
 async def _deliver_task(db: AsyncSession, task: Task, agent: Agent, assignment: Assignment) -> None:
     """A platform agent executes an assigned task: generate a deliverable via the
-    LLM (with a deterministic fallback), submit it, and run MCP validation."""
+    LLM, submit the genuine result, and run MCP validation."""
     system = (
         f"You are {agent.name}, an autonomous execution agent on TaskMatch. "
         f"Produce a concrete, professional deliverable for the assigned task. Be specific and useful."
@@ -243,7 +251,8 @@ async def _deliver_task(db: AsyncSession, task: Task, agent: Agent, assignment: 
     user = (
         f"Task: {task.title}\n"
         f"Type: {task.task_type}\n"
-        f"Details: {(task.description or '')[:2000]}\n\n"
+        f"Details: {(task.description or '')[:2000]}\n"
+        f"Revision feedback: {(task.input_spec_json or {}).get('revision_feedback', '')}\n\n"
         "Return a JSON object: {\"result\": \"<the deliverable as markdown; real content, not a plan to do it>\", "
         "\"summary\": \"<one-sentence summary of what you delivered>\"}."
     )
@@ -256,11 +265,8 @@ async def _deliver_task(db: AsyncSession, task: Task, agent: Agent, assignment: 
             "produced_by": agent.name,
         }
     else:
-        output = {
-            "result": f"Deliverable for '{task.title}' ({task.task_type}) prepared and self-checked against the acceptance criteria.",
-            "summary": f"Delivered: {task.title}",
-            "produced_by": agent.name,
-        }
+        logger.warning("execution.unavailable", task_id=str(task.id), agent_id=str(agent.id))
+        return
 
     submission = Submission(
         id=uuid.uuid4(),
@@ -280,61 +286,10 @@ async def _deliver_task(db: AsyncSession, task: Task, agent: Agent, assignment: 
     except Exception as exc:  # noqa: BLE001
         logger.warning("plan.validate_failed", submission_id=str(submission.id), error=str(exc))
 
-    assignment.status = AssignmentStatus.completed
-    assignment.completed_at = datetime.now(timezone.utc)
-    agent.completed_tasks_count = (agent.completed_tasks_count or 0) + 1
-    await db.flush()
 
 
-async def _finalize_job_if_done(db: AsyncSession, job: Job) -> None:
-    """If every task on the job is approved, mark it delivered and record a
-    releasable escrow payment so the client can review and release."""
-    tasks = list((await db.execute(select(Task).where(Task.job_id == job.id))).scalars().all())
-    if not tasks or not all(t.status == TaskStatus.approved for t in tasks):
-        return
-
-    # Idempotent: a revision cycle re-approves tasks but must not mint a second
-    # escrow payment. If one already exists, just return the job to client review.
-    existing_payment = (
-        await db.execute(select(PaymentRecord).where(PaymentRecord.job_id == job.id).limit(1))
-    ).scalar_one_or_none()
-    if existing_payment is not None:
-        job.status = JobStatus.client_review
-        await db.flush()
-        logger.info("plan.job_redelivered", job_id=str(job.id), tasks=len(tasks))
-        return
-
-    gross = sum((float(t.budget) if t.budget else 0.0) for t in tasks) or float(job.budget_max or 0)
-    fee = round(gross * 0.10, 2)
-    # Developer to be paid = owner of the agent on the first assignment.
-    developer_user_id = None
-    first_assignment = (
-        await db.execute(
-            select(Assignment).join(Task, Assignment.task_id == Task.id).where(Task.job_id == job.id).limit(1)
-        )
-    ).scalar_one_or_none()
-    if first_assignment is not None:
-        agent = (await db.execute(select(Agent).where(Agent.id == first_assignment.agent_id))).scalar_one_or_none()
-        developer_user_id = agent.developer_user_id if agent else None
-
-    db.add(
-        PaymentRecord(
-            id=uuid.uuid4(),
-            job_id=job.id,
-            client_user_id=job.client_user_id,
-            developer_user_id=developer_user_id,
-            gross_amount=round(gross, 2),
-            platform_fee=fee,
-            net_amount=round(gross - fee, 2),
-            currency=job.currency or "EUR",
-            payment_status=PaymentStatus.releasable,
-            provider="stripe",
-            provider_ref=f"auto_{uuid.uuid4().hex[:12]}",
-        )
-    )
-    job.status = JobStatus.client_review
-    await db.flush()
-    logger.info("plan.job_delivered", job_id=str(job.id), tasks=len(tasks), gross=gross)
+# Kept as an internal alias for existing execution callers.
+_finalize_job_if_done = finalize_job_if_done
 
 
 @router.post(
@@ -420,14 +375,14 @@ async def list_jobs(
     - Admins see all jobs.
     - Agent developers see jobs in bidding or later stages.
     """
-    query = select(Job)
+    query = select(Job).options(lazyload("*"), selectinload(Job.tasks).load_only(Task.id))
 
     role = str(current_user.role)
     if role == "client":
         query = query.where(Job.client_user_id == current_user.id)
     elif role == "agent_developer":
         query = query.where(
-            Job.status.notin_([JobStatus.draft.value])
+            Job.id.in_(select(Task.job_id).where(task_visibility(current_user)))
         )
 
     count_query = select(func.count()).select_from(query.subquery())
@@ -458,7 +413,7 @@ async def get_job(
     db: AsyncSession = Depends(get_db),
 ) -> JobResponse:
     """Return full details for a single job, including task count."""
-    result = await db.execute(select(Job).where(Job.id == job_id))
+    result = await db.execute(select(Job).options(lazyload("*"), selectinload(Job.tasks).load_only(Task.id)).where(Job.id == job_id))
     job = result.scalar_one_or_none()
     if job is None:
         raise HTTPException(
@@ -473,6 +428,10 @@ async def get_job(
             detail="Access denied",
         )
 
+    if role == "agent_developer":
+        visible = await db.scalar(select(Task.id).where(Task.job_id == job.id, task_visibility(current_user)).limit(1))
+        if visible is None:
+            raise HTTPException(status_code=403, detail="Access denied")
     resp = JobResponse.model_validate(job)
     resp.tasks_count = len(job.tasks) if job.tasks else 0
     return resp
@@ -521,6 +480,8 @@ async def update_job(
         )
 
     update_data = body.model_dump(exclude_unset=True)
+    if "status" in update_data and update_data["status"] != job.status:
+        raise HTTPException(status_code=409, detail="Use the job workflow actions to change its status")
     for field, value in update_data.items():
         setattr(job, field, value)
 
@@ -617,7 +578,7 @@ async def get_job_plan(
     Makes it clear, right after submission, *who will do what* and *how the
     request was decomposed*. Accessible to the job owner and to admins.
     """
-    result = await db.execute(select(Job).where(Job.id == job_id))
+    result = await db.execute(select(Job).options(lazyload("*")).where(Job.id == job_id))
     job = result.scalar_one_or_none()
     if job is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
@@ -636,7 +597,7 @@ async def get_job_plan(
 
     # Tasks for this job.
     tasks_result = await db.execute(
-        select(Task).where(Task.job_id == job_id).order_by(Task.priority)
+        select(Task).options(lazyload("*")).where(Task.job_id == job_id).order_by(Task.priority)
     )
     tasks = list(tasks_result.scalars().all())
 
@@ -664,7 +625,7 @@ async def get_job_plan(
     submission_counts: dict[str, int] = {}
     if tasks:
         sub_result = await db.execute(
-            select(Submission)
+            select(Submission).options(lazyload("*"))
             .where(Submission.task_id.in_([t.id for t in tasks]))
             .order_by(Submission.created_at.desc())
         )
@@ -686,7 +647,7 @@ async def get_job_plan(
     # Latest payment for the job (so the client can review + release escrow).
     payment = (
         await db.execute(
-            select(PaymentRecord).where(PaymentRecord.job_id == job_id).order_by(PaymentRecord.created_at.desc()).limit(1)
+            select(PaymentRecord).options(lazyload("*")).where(PaymentRecord.job_id == job_id).order_by(PaymentRecord.created_at.desc()).limit(1)
         )
     ).scalar_one_or_none()
     payment_summary = None
@@ -698,6 +659,8 @@ async def get_job_plan(
             "platform_fee": float(payment.platform_fee),
             "net_amount": float(payment.net_amount),
             "currency": payment.currency,
+            "provider": payment.provider,
+            "provider_ref": payment.provider_ref,
         }
 
     stages = [
@@ -707,7 +670,7 @@ async def get_job_plan(
         {"key": "match", "label": "Match & rank", "desc": "AI agents are matched and ranked per task."},
         {"key": "assign", "label": "Assign", "desc": "The best-scored agent is assigned each task."},
         {"key": "validate", "label": "Validate", "desc": "Each result is checked against acceptance criteria."},
-        {"key": "pay", "label": "Pay", "desc": "Escrow releases only on validated delivery."},
+        {"key": "pay", "label": "Settlement", "desc": "Your acceptance makes the manual ledger ready for settlement."},
     ]
 
     # Quote summary — the plan and the price are one story for the client, so the
@@ -736,7 +699,7 @@ async def get_job_plan(
         }
 
     delivery_plan = (
-        await db.execute(select(DeliveryPlan).where(DeliveryPlan.job_id == job_id))
+        await db.execute(select(DeliveryPlan).options(lazyload("*")).where(DeliveryPlan.job_id == job_id))
     ).scalar_one_or_none()
     delivery_summary = None
     if delivery_plan is not None:
@@ -796,14 +759,13 @@ async def get_job_plan(
     }
 
 
-@router.post("/{job_id}/accept", summary="Accept delivered work and release escrow")
+@router.post("/{job_id}/accept", summary="Accept delivered work for manual settlement")
 async def accept_job(
     job_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    """Client accepts the delivered work: releases the escrow payment and marks
-    the job completed. Accessible to the job owner (or an admin)."""
+    """Accept delivery and close the job; no financial transfer occurs here."""
     job = (await db.execute(select(Job).where(Job.id == job_id))).scalar_one_or_none()
     if job is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
@@ -811,21 +773,24 @@ async def accept_job(
     if job.client_user_id != current_user.id and role != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your job")
 
-    payments = list(
-        (await db.execute(select(PaymentRecord).where(PaymentRecord.job_id == job_id))).scalars().all()
-    )
+    try:
+        ready = await accept_delivery(db, job)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    # Actual settlement is a separate, administrator-confirmed operation.
     released = 0
-    for p in payments:
-        if p.payment_status in (PaymentStatus.releasable, PaymentStatus.authorized, PaymentStatus.pending):
-            p.payment_status = PaymentStatus.paid
-            released += 1
-    job.status = JobStatus.completed
 
     # Closing a job always clears the vault: a client should never have to
     # remember to rotate credentials they shared to get the work done.
     from app.api.v1.endpoints.delivery import revoke_job_access_grants
 
     grants_revoked = await revoke_job_access_grants(db, job.id)
+    plan = await db.scalar(select(DeliveryPlan).where(DeliveryPlan.job_id == job.id))
+    if plan:
+        now = datetime.now(timezone.utc)
+        plan.status = DeliveryStatus.signed_off
+        plan.signed_off_at = now
+        plan.accesses_revoked_at = now
     await db.flush()
 
     await log_audit(
@@ -841,6 +806,8 @@ async def accept_job(
         "job_id": str(job.id),
         "status": job.status.value if hasattr(job.status, "value") else str(job.status),
         "payments_released": released,
+        "payments_ready": ready,
+        "payment_settlement": "manual",
         "grants_revoked": grants_revoked,
     }
 
@@ -875,7 +842,9 @@ async def _run_revision(job_id: uuid.UUID, reason: str) -> None:
                 assignment.status = AssignmentStatus.active
                 assignment.completed_at = None
                 await db.flush()
-                await _deliver_task(db, task, agent, assignment)
+                owner = await db.get(User, agent.developer_user_id)
+                if agent.slug.startswith("llm-") and owner.role == "admin" and owner.is_active:
+                    await _deliver_task(db, task, agent, assignment)
             job = (await db.execute(select(Job).where(Job.id == job_id))).scalar_one_or_none()
             if job is not None:
                 await _finalize_job_if_done(db, job)
@@ -886,7 +855,7 @@ async def _run_revision(job_id: uuid.UUID, reason: str) -> None:
             logger.warning("dispute.revision_failed", job_id=str(job_id), error=str(exc))
 
 
-@router.post("/{job_id}/dispute", summary="Contest delivered work: freeze escrow and request a revision")
+@router.post("/{job_id}/dispute", summary="Request a revision before settlement")
 async def dispute_job(
     job_id: uuid.UUID,
     body: DisputeRequest,
@@ -897,7 +866,7 @@ async def dispute_job(
     """Client contests a delivered deliverable. Escrow stays held (unpaid), the
     tasks return to revision, and a fresh execution + validation pass runs before
     the job comes back for review. Accessible to the job owner (or an admin)."""
-    job = (await db.execute(select(Job).where(Job.id == job_id))).scalar_one_or_none()
+    job = (await db.execute(select(Job).where(Job.id == job_id).with_for_update().execution_options(populate_existing=True))).scalar_one_or_none()
     if job is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
     role = getattr(current_user.role, "value", str(current_user.role))
@@ -916,6 +885,13 @@ async def dispute_job(
     for t in tasks:
         if t.status == TaskStatus.approved:
             t.status = TaskStatus.validation_failed
+            t.input_spec_json = {**(t.input_spec_json or {}), "revision_feedback": body.reason}
+            assignments = (await db.execute(select(Assignment).where(
+                Assignment.task_id == t.id, Assignment.status == AssignmentStatus.completed
+            ))).scalars()
+            for assignment in assignments:
+                assignment.status = AssignmentStatus.active
+                assignment.completed_at = None
             reverted += 1
     job.status = JobStatus.in_progress
     await db.flush()
@@ -936,8 +912,9 @@ async def dispute_job(
     return {
         "job_id": str(job.id),
         "status": job.status.value if hasattr(job.status, "value") else str(job.status),
-        "escrow": "held",
-        "message": "Dispute recorded. Escrow is held and a revision is in progress.",
+        "payment_status": "pending",
+        "payment_settlement": "manual",
+        "message": "Revision requested. Payment remains pending until you accept delivery.",
     }
 
 

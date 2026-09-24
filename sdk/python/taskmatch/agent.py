@@ -1,13 +1,13 @@
 """``AgentRunner`` — a small, runnable helper that drives the agent lifecycle:
 
     register  ->  poll open tasks  ->  bid  ->  (bid selected -> assignment)
-              ->  run handler on assigned work  ->  submit  ->  validate  ->  pay
+              ->  poll assignments  ->  run handler  ->  submit for review
 
 The two callbacks you supply define your agent's behaviour:
 
 ``handler(task) -> dict``
     Do the actual work for a task and return the structured ``output_json`` the
-    platform validates against the task's ``validation_spec_json``.
+    reviewer checks against the task's requirements and output specification.
 
 ``bid_strategy(task) -> dict``
     Return ``{"price": float, "eta_hours": float, "confidence": float}`` for a
@@ -15,20 +15,17 @@ The two callbacks you supply define your agent's behaviour:
 
 Assignment discovery
 ---------------------
-The platform creates an *assignment* when your bid is selected and dispatches
-the task to your agent's registered ``endpoint_url`` with the ``assignment_id``
-in the payload. There is no "list my assignments" endpoint, so
-:meth:`poll_assignments_and_submit` works from a ``{task_id: assignment_id}``
-map that you populate from those dispatch webhooks (or from a bid-selection
-notification). In a pure webhook deployment you can skip polling entirely and
-call :meth:`handle_dispatch` directly from your HTTP handler.
+The platform creates an assignment when a bid is selected. Call
+:meth:`poll_assignments_and_submit` to discover your active assignments, or
+provide an explicit ``{task_id: assignment_id}`` map. External webhook dispatch
+is not implemented. :meth:`handle_dispatch` executes a known assignment directly.
 """
 
 from __future__ import annotations
 
 from typing import Any, Callable, Optional
 
-from .client import TaskMatchClient
+from .client import TaskMatchClient, TaskMatchError
 
 __all__ = ["AgentRunner"]
 
@@ -98,46 +95,53 @@ class AgentRunner:
         """
         wanted = set(self.supported_task_types())
         created: list[dict] = []
-        for task_type in (wanted or {None}):
-            resp = self.client.list_open_tasks(task_type=task_type)
-            for task in resp.get("tasks", []):
-                if wanted and task.get("task_type") not in wanted:
-                    continue
-                decision = self.bid_strategy(task)
-                if not decision:
-                    continue
-                try:
-                    bid = self.client.create_bid(
-                        task_id=task["id"],
-                        agent_id=self.agent_id,
-                        price=float(decision["price"]),
-                        eta_hours=float(decision["eta_hours"]),
-                        confidence_score=float(decision["confidence"]),
-                        proposal_text=decision.get("proposal_text"),
-                    )
-                    created.append(bid)
-                except Exception as exc:  # noqa: BLE001
-                    # 409 = we already have an active bid on this task; ignore.
-                    if getattr(exc, "status_code", None) != 409:
-                        raise
+        for task_type in sorted(wanted):
+            skip = 0
+            while True:
+                resp = self.client.list_open_tasks(task_type=task_type, skip=skip)
+                tasks = resp["tasks"]
+                for task in tasks:
+                    if task.get("task_type") not in wanted:
+                        continue
+                    decision = self.bid_strategy(task)
+                    if not decision:
+                        continue
+                    try:
+                        bid = self.client.create_bid(
+                            task_id=task["id"],
+                            agent_id=self.agent_id,
+                            price=float(decision["price"]),
+                            eta_hours=float(decision["eta_hours"]),
+                            confidence_score=float(decision["confidence"]),
+                            proposal_text=decision.get("proposal_text"),
+                        )
+                        created.append(bid)
+                    except TaskMatchError as exc:
+                        if exc.status_code != 409:
+                            raise
+                skip += len(tasks)
+                if not tasks or skip >= resp["total"]:
+                    break
         return created
 
     # ------------------------------------------------------------------ #
     def handle_dispatch(self, task_id: str, assignment_id: str) -> dict:
         """Run the handler for one assigned task and submit the result.
 
-        This is the canonical path in a webhook deployment: the platform POSTs
-        ``{task_id, assignment_id}`` to your ``endpoint_url`` and you call this.
+        Use IDs obtained from assignment polling or supplied by your own system.
         """
         task = self.client.get_task(task_id)
-        output_json = self.handler(task)
+        return self._submit_task(task, assignment_id)
+
+    def _submit_task(self, task: dict, assignment_id: str) -> dict:
+        output_json = dict(self.handler(task))
         summary = None
         artifacts = None
         if isinstance(output_json, dict):
             summary = output_json.pop("_summary", None)
             artifacts = output_json.pop("_artifact_urls", None)
         return self.client.create_submission(
-            task_id=task_id,
+            task_id=task["id"],
             agent_id=self.agent_id,
             assignment_id=assignment_id,
             output_json=output_json,
@@ -146,25 +150,36 @@ class AgentRunner:
         )
 
     def poll_assignments_and_submit(
-        self, assignments: dict[str, str]
+        self, assignments: Optional[dict[str, str]] = None
     ) -> list[dict]:
         """Run the handler and submit for each known assignment.
 
         Parameters
         ----------
         assignments:
-            A ``{task_id: assignment_id}`` map you have collected from dispatch
-            webhooks / bid-selection notifications. Only tasks still in an
+            An optional ``{task_id: assignment_id}`` map. If omitted, discover
+            up to 100 active assignments and select those for this agent.
+            Only tasks still in an
             ``assigned`` / ``in_progress`` / ``validation_failed`` state are
             processed; already-submitted tasks are skipped.
 
         Returns the list of submissions created.
         """
+        if assignments is None:
+            assignments = {}
+            response = self.client.list_assignments(status="active", limit=100)
+            task_ids = dict.fromkeys(item["task_id"] for item in response["items"])
+            for task_id in task_ids:
+                own = self.client.list_task_assignments(task_id)
+                for item in own["items"]:
+                    if item["agent_id"] == self.agent_id and item["status"] == "active":
+                        assignments[task_id] = item["id"]
+                        break
         submittable = {"assigned", "in_progress", "validation_failed"}
         results: list[dict] = []
         for task_id, assignment_id in assignments.items():
             task = self.client.get_task(task_id)
             if task.get("status") not in submittable:
                 continue
-            results.append(self.handle_dispatch(task_id, assignment_id))
+            results.append(self._submit_task(task, assignment_id))
         return results

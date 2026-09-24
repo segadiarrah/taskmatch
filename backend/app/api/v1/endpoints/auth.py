@@ -6,8 +6,10 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import lazyload
 
 from app.core.database import get_db
 from app.core.deps import get_current_active_user
@@ -34,7 +36,7 @@ async def register(
     Validates that the email is not already taken, hashes the password, and
     persists the new user record.
     """
-    result = await db.execute(select(User).where(User.email == body.email))
+    result = await db.execute(select(User).options(lazyload("*")).where(func.lower(User.email) == body.email))
     if result.scalar_one_or_none() is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -50,7 +52,16 @@ async def register(
         organization_name=body.organization_name,
     )
     db.add(user)
-    await db.flush()
+    try:
+        await db.flush()
+    except IntegrityError as exc:
+        await db.rollback()
+        if getattr(exc.orig, "sqlstate", None) != "23505":
+            raise
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A user with this email already exists",
+        ) from None
     await db.refresh(user)
 
     await log_audit(
@@ -77,9 +88,19 @@ async def login(
     """Validate credentials and return a signed JWT access token.
 
     Uses the standard OAuth2 password flow form (``username`` + ``password``).
-    The ``username`` field is treated as the user's email address.
+    Email matching is case-insensitive. Administrators on the platform domain
+    can also use the local part of their email as a short login identifier.
     """
-    result = await db.execute(select(User).where(User.email == form_data.username))
+    identifier = form_data.username.strip().lower()
+    query = select(User).options(lazyload("*"))
+    if "@" not in identifier:
+        query = query.where(
+            func.lower(User.email) == f"{identifier}@taskmatch.ai",
+            User.role == UserRole.admin.value,
+        )
+    else:
+        query = query.where(func.lower(User.email) == identifier)
+    result = await db.execute(query)
     user = result.scalar_one_or_none()
 
     if user is None or not verify_password(form_data.password, user.hashed_password):

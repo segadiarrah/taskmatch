@@ -26,7 +26,7 @@ from app.models.job import Job, JobStatus
 from app.models.submission import Submission
 from app.models.task import Task
 from app.models.user import User
-from app.services import mcp_service
+from app.services import mcp_service, quote_service
 
 router = APIRouter()
 
@@ -65,7 +65,7 @@ async def format_job(
 
     return {
         "job_id": str(job.id),
-        "status": str(job.status),
+        "status": getattr(job.status, "value", job.status),
         "formatted_summary": formatted,
     }
 
@@ -93,8 +93,8 @@ async def decompose_job(
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
 
-    # Open the job for bidding now that biddable tasks exist.
-    job.status = JobStatus.bidding
+    # The same client quote gate applies to admin-triggered planning.
+    await quote_service.create_quote_for_job(db, job_id)
     await db.flush()
 
     await log_audit(
@@ -109,7 +109,7 @@ async def decompose_job(
 
     return {
         "job_id": str(job.id),
-        "status": str(job.status),
+        "status": getattr(job.status, "value", job.status),
         "tasks_created": len(created_tasks),
         "task_ids": [t["id"] for t in created_tasks],
         "tasks": created_tasks,
@@ -190,10 +190,13 @@ async def validate_submission(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Validate a submission against its task's output spec and record a review."""
-    sub_result = await db.execute(select(Submission).where(Submission.id == submission_id))
+    sub_result = await db.execute(select(Submission).where(Submission.id == submission_id).with_for_update().execution_options(populate_existing=True))
     submission = sub_result.scalar_one_or_none()
     if submission is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Submission not found")
+
+    if submission.status not in ("submitted", "under_review"):
+        raise HTTPException(status_code=409, detail="Submission has already been reviewed")
 
     try:
         result = await mcp_service.validate_submission(db, submission_id)

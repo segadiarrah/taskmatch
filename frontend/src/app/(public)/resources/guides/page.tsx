@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpen, Clock3, Layers, Users } from "lucide-react";
 import { PageHero, PageCta } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/motion";
-import { guides } from "@/content/guides";
+import { getGuides } from "@/content/guides";
 import { useTranslation } from "@/lib/i18n";
 
 type Copy = {
@@ -76,6 +76,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
 export default function GuidesPage() {
   const { locale } = useTranslation();
   const c = COPY[locale] ?? COPY.en;
+  const guides = getGuides(locale);
 
   return (
     <div className="min-h-screen bg-ink-950 text-ink-50">

@@ -94,7 +94,7 @@ const COPY: Record<Locale, Copy> = {
         title: "4. Fees and payments",
         paragraphs: [
           "TaskMatch sets the price of a task and presents it before any work begins. Platform fees are those published on the pricing page at the time of the order. Prices are exclusive of VAT, which is added where applicable.",
-          "Payments and payouts are processed by Stripe. Clients fund escrow before execution starts; executors are paid out after release.",
+          "The current platform records payment obligations in an internal ledger. Accepting work does not itself transfer funds. External settlement must be arranged and confirmed separately; availability and terms must be agreed before placing an order.",
         ],
         bullets: [
           "Clients are responsible for lawful briefs, accurate requirements and a valid payment method.",
@@ -201,7 +201,7 @@ const COPY: Record<Locale, Copy> = {
         title: "4. Frais et paiements",
         paragraphs: [
           "TaskMatch fixe le prix d’une tâche et le présente avant tout démarrage. Les frais de plateforme sont ceux publiés sur la page Tarifs au moment de la commande. Les prix s’entendent hors taxes, la TVA étant ajoutée le cas échéant.",
-          "Les encaissements et versements sont traités par Stripe. Le client provisionne le séquestre avant le début de l’exécution ; l’exécutant est payé après libération.",
+          "La plateforme actuelle enregistre les obligations de paiement dans un registre interne. L’acceptation du travail ne transfère aucun fonds. Le règlement externe doit être organisé et confirmé séparément ; sa disponibilité et ses modalités doivent être convenues avant toute commande.",
         ],
         bullets: [
           "Le client répond de la licéité de ses briefs, de l’exactitude de ses exigences et de la validité de son moyen de paiement.",
@@ -308,7 +308,7 @@ const COPY: Record<Locale, Copy> = {
         title: "4. Tarifas y pagos",
         paragraphs: [
           "TaskMatch fija el precio de una tarea y lo presenta antes de que empiece el trabajo. Las comisiones son las publicadas en la página de precios en el momento del pedido. Los precios no incluyen IVA, que se añade cuando corresponde.",
-          "Los cobros y pagos los procesa Stripe. El cliente deposita los fondos en garantía antes de que empiece la ejecución; el ejecutor cobra tras la liberación.",
+          "La plataforma actual registra las obligaciones de pago en un registro interno. Aceptar el trabajo no transfiere fondos. La liquidación externa debe acordarse y confirmarse por separado; su disponibilidad y condiciones deben pactarse antes de contratar.",
         ],
         bullets: [
           "El cliente responde de la licitud de sus briefs, de la exactitud de sus requisitos y de la validez de su medio de pago.",
@@ -410,7 +410,7 @@ const COPY: Record<Locale, Copy> = {
         title: "4. 费用与付款",
         paragraphs: [
           "TaskMatch 设定子任务价格，并在任何工作开始前予以呈现。平台费用以下单时定价页面公布的标准为准。价格不含增值税，适用时另行加收。",
-          "收款与付款由 Stripe 处理。客户在执行开始前完成托管资金充值；执行方在资金释放后收款。",
+          "当前平台在内部账簿中记录付款义务。接受工作本身不会转移资金。外部结算必须单独安排和确认，并在下单前就可用性和条款达成一致。",
         ],
         bullets: [
           "客户对其需求说明的合法性、要求的准确性以及支付方式的有效性负责。",
@@ -475,18 +475,7 @@ const COPY: Record<Locale, Copy> = {
   },
 };
 
-const SECTION_ORDER = [
-  "acceptance",
-  "service",
-  "accounts",
-  "payments",
-  "disputes",
-  "ip",
-  "restrictions",
-  "termination",
-  "law",
-  "contact",
-] as const;
+const SECTION_ORDER = Object.keys(COPY.en.sections) as Array<keyof Copy["sections"]>;
 
 export default function TermsOfServicePage() {
   const { locale } = useTranslation();
@@ -524,7 +513,7 @@ export default function TermsOfServicePage() {
             {id === "contact" ? (
               <p>
                 {c.operatedBy} <strong>{publisherLine()}</strong>
-                {LEGAL_ENTITY.address ? `, ${LEGAL_ENTITY.address.join(", ")}` : ""}.
+                {LEGAL_ENTITY.address ? <>{", "}{LEGAL_ENTITY.address.join(", ")}</> : null}.
               </p>
             ) : null}
           </LegalSection>

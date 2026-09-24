@@ -168,7 +168,7 @@ function NavDropdown({ group }: { group: NavDropdownGroup }) {
 export function PublicNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
-  const { locale } = useTranslation();
+  const { locale, t } = useTranslation();
   const L = LABELS[locale] ?? LABELS.en;
 
   const resources: NavDropdownGroup = {
@@ -236,7 +236,7 @@ export function PublicNavbar() {
         <button
           className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-ink-800 bg-white text-ink-200 lg:hidden"
           onClick={() => setMobileOpen((open) => !open)}
-          aria-label="Toggle menu"
+          aria-label={t("publicUi.toggleMenu")} aria-expanded={mobileOpen}
         >
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
@@ -294,7 +294,7 @@ export function PublicNavbar() {
 }
 
 export function PublicFooter() {
-  const { locale } = useTranslation();
+  const { locale, t } = useTranslation();
   const L = LABELS[locale] ?? LABELS.en;
   const year = new Date().getFullYear();
 
@@ -358,10 +358,10 @@ export function PublicFooter() {
               rel="noopener noreferrer"
               className="font-mono text-xs text-ink-500 transition-colors hover:text-signal-400"
             >
-              LinkedIn ↗
+              LinkedIn
             </a>
             <p className="font-mono text-xs text-ink-500">
-              © {year} TaskMatch.ai — operated by Tauraco. {L.rights}
+              © {year} {t("publicUi.operatedBy")} {L.rights}
             </p>
           </div>
         </div>

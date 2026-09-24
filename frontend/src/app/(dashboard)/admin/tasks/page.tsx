@@ -23,8 +23,6 @@ import {
   Search,
   Filter,
   ExternalLink,
-  CheckSquare,
-  MoreHorizontal,
 } from "lucide-react";
 
 interface Task {
@@ -41,19 +39,19 @@ interface Task {
 }
 
 const statusBadgeVariant: Record<string, "secondary" | "info" | "default" | "warning" | "purple" | "success" | "destructive"> = {
-  open: "info",
-  bidding: "warning",
+  pending: "secondary",
+  open_for_bids: "info",
   assigned: "default",
   in_progress: "warning",
-  pending_validation: "purple",
-  completed: "success",
+  submitted: "purple",
   approved: "success",
-  rejected: "destructive",
+  validation_failed: "destructive",
+  reassigned: "warning",
   cancelled: "destructive",
 };
 
-const taskStatuses = ["open", "bidding", "assigned", "in_progress", "pending_validation", "completed", "approved", "rejected", "cancelled"];
-const taskTypes = ["development", "design", "testing", "integration", "documentation", "devops", "research"];
+const taskStatuses = ["pending", "open_for_bids", "assigned", "in_progress", "submitted", "validation_failed", "approved", "cancelled", "reassigned"];
+
 
 export default function TasksPage() {
   const router = useRouter();
@@ -63,7 +61,6 @@ export default function TasksPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchTasks();
@@ -83,6 +80,8 @@ export default function TasksPage() {
     }
   }
 
+  const taskTypes = Array.from(new Set(tasks.map((task) => task.task_type))).sort();
+
   const filteredTasks = tasks.filter((task) => {
     const matchesStatus = statusFilter === "all" || task.status === statusFilter;
     const matchesType = typeFilter === "all" || task.task_type === typeFilter;
@@ -92,23 +91,6 @@ export default function TasksPage() {
       task.job_title.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesType && matchesSearch;
   });
-
-  function toggleTask(id: string) {
-    setSelectedTasks((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  function toggleAll() {
-    if (selectedTasks.size === filteredTasks.length) {
-      setSelectedTasks(new Set());
-    } else {
-      setSelectedTasks(new Set(filteredTasks.map((t) => t.id)));
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -160,24 +142,6 @@ export default function TasksPage() {
         </CardContent>
       </Card>
 
-      {/* Bulk actions */}
-      {selectedTasks.size > 0 && (
-        <Card className="border-signal-500/30 bg-signal-500/5">
-          <CardContent className="flex items-center gap-3 py-3 pt-3">
-            <span className="text-sm font-medium text-ink-200">
-              {selectedTasks.size} task{selectedTasks.size > 1 ? "s" : ""} selected
-            </span>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline">Match Agents</Button>
-              <Button size="sm" variant="outline">Update Status</Button>
-              <Button size="sm" variant="ghost" onClick={() => setSelectedTasks(new Set())}>
-                Clear
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Table */}
       <Card>
         <CardContent className="pt-6">
@@ -197,14 +161,6 @@ export default function TasksPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-10">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-ink-600 bg-ink-800 accent-signal-500"
-                      checked={selectedTasks.size === filteredTasks.length && filteredTasks.length > 0}
-                      onChange={toggleAll}
-                    />
-                  </TableHead>
                   <TableHead>Title</TableHead>
                   <TableHead>Job</TableHead>
                   <TableHead>Type</TableHead>
@@ -223,14 +179,6 @@ export default function TasksPage() {
                     className="cursor-pointer"
                     onClick={() => router.push(`/admin/tasks/${task.id}`)}
                   >
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 rounded border-ink-600 bg-ink-800 accent-signal-500"
-                        checked={selectedTasks.has(task.id)}
-                        onChange={() => toggleTask(task.id)}
-                      />
-                    </TableCell>
                     <TableCell className="font-medium text-foreground">{task.title}</TableCell>
                     <TableCell className="max-w-[160px] truncate text-ink-400">{task.job_title}</TableCell>
                     <TableCell>

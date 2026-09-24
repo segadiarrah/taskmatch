@@ -17,12 +17,13 @@ from typing import Any, Optional
 import structlog
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import lazyload
 
 from app.core.config import settings
 from app.models.delivery import DeliveryMode, DeliveryPlan, DeliveryStatus
 from app.models.job import Job, JobStatus
 from app.models.quote import ExecutionRoute, Quote, QuoteStatus, TaskQuote
-from app.models.task import Task
+from app.models.task import Task, TaskStatus
 from app.services import pricing_service, providers
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
@@ -70,7 +71,7 @@ _INSTALLATION_SIGNALS = re.compile(
 )
 
 _REPOSITORY_SIGNALS = re.compile(
-    r"\b(code source|source code|repo\w*|d[ée]p[ôo]t git|pull request|github|gitlab)\b",
+    r"\b(code source|source code|repos?|repositor(?:y|ies)|d[ée]p[ôo]t git|pull request|github|gitlab)\b",
     re.IGNORECASE,
 )
 
@@ -130,6 +131,8 @@ async def create_quote_for_job(
         raise ValueError(f"Job {job_id} has no tasks to price")
 
     spec = _parse_spec(job)
+    plan = await ensure_delivery_plan(db, job, spec)
+    needs_human_delivery = plan.mode in (DeliveryMode.installation, DeliveryMode.hosted)
     model = pricing_model()
 
     quote_result = pricing_service.price_job(
@@ -140,7 +143,7 @@ async def create_quote_for_job(
                 "task_type": t.task_type,
                 "requires_human": bool(
                     (t.input_spec_json or {}).get("requires_human")
-                ),
+                ) or needs_human_delivery,
             }
             for t in tasks
         ],
@@ -295,6 +298,8 @@ async def current_quote(db: AsyncSession, job_id: uuid.UUID) -> Optional[Quote]:
     return (
         await db.execute(
             select(Quote)
+            .options(lazyload("*"))
+            .execution_options(populate_existing=True)
             .where(Quote.job_id == job_id)
             .order_by(Quote.created_at.desc())
             .limit(1)
@@ -332,6 +337,10 @@ async def accept_quote(
     ).scalar_one_or_none()
     if job is not None:
         job.status = JobStatus.bidding
+        tasks = (await db.execute(select(Task).where(Task.job_id == job.id))).scalars()
+        for task in tasks:
+            if task.status == TaskStatus.pending:
+                task.status = TaskStatus.open_for_bids
     await db.flush()
 
 

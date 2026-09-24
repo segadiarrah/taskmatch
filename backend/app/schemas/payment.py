@@ -46,6 +46,9 @@ class PaymentResponse(BaseModel):
     platform_fee_amount: float
     net_amount: float
     payment_status: str
+    currency: str = "USD"
+    provider: str = "manual"
+    provider_ref: Optional[str] = None
     stripe_payment_intent_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime

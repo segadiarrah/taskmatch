@@ -123,6 +123,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
   /* Persist locale changes. */
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);

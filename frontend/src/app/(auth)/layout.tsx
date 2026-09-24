@@ -25,9 +25,7 @@ export default function AuthLayout({
         <div className="rounded-2xl border border-ink-800 bg-white p-8 shadow-panel">
           {children}
         </div>
-        <p className="mt-6 text-center font-mono text-[10px] uppercase tracking-widest text-ink-500">
-          mission control access
-        </p>
+
       </div>
     </div>
   );

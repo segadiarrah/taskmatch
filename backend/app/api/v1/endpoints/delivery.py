@@ -15,6 +15,7 @@ import structlog
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import lazyload, selectinload
 
 from app.core.config import settings
 from app.core.database import get_db
@@ -45,8 +46,11 @@ router = APIRouter()
 # --------------------------------------------------------------------------- #
 
 
-async def _load_owned_job(db: AsyncSession, job_id: uuid.UUID, user: User) -> Job:
-    job = (await db.execute(select(Job).where(Job.id == job_id))).scalar_one_or_none()
+async def _load_owned_job(db: AsyncSession, job_id: uuid.UUID, user: User, *, lock: bool = False) -> Job:
+    query = select(Job).options(lazyload("*")).where(Job.id == job_id)
+    if lock:
+        query = query.with_for_update().execution_options(populate_existing=True)
+    job = (await db.execute(query)).scalar_one_or_none()
     if job is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Job not found"
@@ -61,7 +65,7 @@ async def _load_owned_job(db: AsyncSession, job_id: uuid.UUID, user: User) -> Jo
 
 async def _load_plan(db: AsyncSession, job_id: uuid.UUID) -> DeliveryPlan:
     plan = (
-        await db.execute(select(DeliveryPlan).where(DeliveryPlan.job_id == job_id))
+        await db.execute(select(DeliveryPlan).options(lazyload("*"), selectinload(DeliveryPlan.access_grants)).where(DeliveryPlan.job_id == job_id))
     ).scalar_one_or_none()
     if plan is None:
         raise HTTPException(
@@ -152,26 +156,35 @@ async def update_delivery_plan(
     involves human work a document delivery does not, so the price would no
     longer match the work. Re-quote first.
     """
-    job = await _load_owned_job(db, job_id, current_user)
+    job = await _load_owned_job(db, job_id, current_user, lock=True)
     plan = await _load_plan(db, job_id)
 
     mode_changing = body.mode is not None and body.mode != plan.mode
-    if mode_changing and plan.status not in (
+    if mode_changing and (job.status not in ("quoted", "quote_rejected", "decomposed") or plan.status not in (
         DeliveryStatus.planned,
         DeliveryStatus.awaiting_access,
-    ):
+    )):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Delivery is already under way; the mode can no longer change",
         )
 
-    if body.mode is not None:
+    if mode_changing:
         plan.mode = body.mode
         plan.status = (
             DeliveryStatus.awaiting_access
             if body.mode in (DeliveryMode.installation, DeliveryMode.hosted)
             else DeliveryStatus.planned
         )
+        from app.models.quote import Quote, QuoteStatus
+        from app.services.quote_service import _requirements_for
+
+        plan.requirements = _requirements_for(body.mode)
+        pending_quotes = (await db.execute(select(Quote).where(
+            Quote.job_id == job_id, Quote.status == QuoteStatus.pending_client
+        ))).scalars()
+        for quote in pending_quotes:
+            quote.status = QuoteStatus.superseded
     if body.target is not None:
         plan.target = body.target or None
     if body.notes is not None:
@@ -296,7 +309,7 @@ async def list_access_grants(
     grants = list(
         (
             await db.execute(
-                select(AccessGrant)
+                select(AccessGrant).options(lazyload("*"))
                 .where(AccessGrant.job_id == job_id)
                 .order_by(AccessGrant.created_at)
             )
@@ -463,9 +476,17 @@ async def sign_off_delivery(
     Automatic revocation is the point: a client should not have to remember to
     rotate the access they handed over to get the job done.
     """
-    await _load_owned_job(db, job_id, current_user)
+    job = await _load_owned_job(db, job_id, current_user)
     plan = await _load_plan(db, job_id)
 
+    if job.status not in ("client_review", "completed") or plan.status != DeliveryStatus.delivered:
+        raise HTTPException(status_code=409, detail="Only delivered work can be signed off")
+    from app.services.workflow_service import accept_delivery
+
+    try:
+        await accept_delivery(db, job)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     now = datetime.now(timezone.utc)
     plan.status = DeliveryStatus.signed_off
     plan.signed_off_at = now

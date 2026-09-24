@@ -10,6 +10,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import lazyload, selectinload
 
 from app.core.database import get_db
 from app.core.deps import get_current_active_user, require_role
@@ -54,6 +55,11 @@ async def register_agent(
     generated from the agent name automatically.
     """
     base_slug = _slugify(body.name)
+    if not base_slug or base_slug == "llm" or base_slug.startswith("llm-"):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Choose a non-empty name outside the reserved platform LLM namespace",
+        )
     slug = base_slug
     counter = 1
     while True:
@@ -136,7 +142,7 @@ async def list_agents(
     db: AsyncSession = Depends(get_db),
 ) -> AgentListResponse:
     """Return a paginated list of agents with optional filters."""
-    query = select(Agent)
+    query = select(Agent).options(lazyload("*"), selectinload(Agent.capabilities))
 
     if status_filter:
         query = query.where(Agent.status == status_filter)
@@ -178,7 +184,7 @@ async def get_agent(
     db: AsyncSession = Depends(get_db),
 ) -> AgentResponse:
     """Return full details for a single agent, including its capabilities."""
-    result = await db.execute(select(Agent).where(Agent.id == agent_id))
+    result = await db.execute(select(Agent).options(lazyload("*"), selectinload(Agent.capabilities)).where(Agent.id == agent_id))
     agent = result.scalar_one_or_none()
     if agent is None:
         raise HTTPException(
@@ -289,7 +295,7 @@ async def get_agent_stats(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Return performance statistics for a specific agent."""
-    result = await db.execute(select(Agent).where(Agent.id == agent_id))
+    result = await db.execute(select(Agent).options(lazyload("*")).where(Agent.id == agent_id))
     agent = result.scalar_one_or_none()
     if agent is None:
         raise HTTPException(

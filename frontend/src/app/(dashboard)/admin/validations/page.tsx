@@ -61,6 +61,7 @@ export default function ValidationsPage() {
   const router = useRouter();
   const [submissions, setSubmissions] = useState<SubmissionForReview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [activeTab, setActiveTab] = useState("pending");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -85,6 +86,7 @@ export default function ValidationsPage() {
   }
 
   async function handleReview(submissionId: string, result: "approved" | "rejected" | "rework_requested") {
+    setActionError(null);
     setActionLoading(submissionId);
     const notes = reviewNotes[submissionId] || "";
     try {
@@ -94,40 +96,29 @@ export default function ValidationsPage() {
         notes: notes || null,
       });
       await fetchSubmissions();
-    } catch {
-      setSubmissions((prev) =>
-        prev.map((s) =>
-          s.id === submissionId
-            ? {
-                ...s,
-                status: result === "rework_requested" ? "rework_requested" : result,
-                review_result: result,
-                review_notes: notes || `Submission ${result} by admin.`,
-                reviewed_at: new Date().toISOString(),
-                reviewer: "Admin",
-              }
-            : s
-        )
-      );
-    } finally {
-      setActionLoading(null);
       setReviewNotes((prev) => {
         const updated = { ...prev };
         delete updated[submissionId];
         return updated;
       });
+    } catch {
+      setActionError("The request failed. No change was saved. Please try again.");
+      return;
+    } finally {
+      setActionLoading(null);
+
     }
   }
 
   const pendingSubmissions = submissions.filter(
-    (s) => s.status === "pending_review"
+    (s) => s.status === "submitted"
   );
   const reviewedSubmissions = submissions.filter(
-    (s) => s.status !== "pending_review"
+    (s) => s.status !== "submitted"
   );
 
   function SubmissionCard({ submission }: { submission: SubmissionForReview }) {
-    const isPending = submission.status === "pending_review";
+    const isPending = submission.status === "submitted";
     const mcpVal = submission.mcp_auto_validation;
 
     return (
@@ -309,6 +300,7 @@ export default function ValidationsPage() {
 
   return (
     <div className="space-y-6">
+      {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{actionError}</p>}
       {/* Header */}
       <div>
         <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Validation Center</h1>

@@ -1,4 +1,5 @@
 const fr = {
+  publicUi: { "productFacts": ["Langues de l’interface", "Rôles de compte", "SDK dans le dépôt", "API versionnée"],"selectLanguage": "Choisir la langue", "toggleMenu": "Afficher le menu", "copy": "Copier", "copied": "Copié", "operatedBy": "TaskMatch.ai — exploité par Tauraco.", "back": "Retour à TaskMatch", "print": "Imprimer", "contents": "Sommaire", "archive": "Cet article est publié en anglais.", "archiveHistory": "Les notes de version sont publiées en anglais.", "rightsTitle": "Vos droits sur vos données", "rightsBody": "Pour toute demande d’accès, de rectification, de suppression, de portabilité ou de consentement, contactez notre équipe de confidentialité. Indiquez l’adresse e-mail de votre compte et décrivez votre demande.", "rightsAction": "Contacter l’équipe de confidentialité", "linkedIn": "Tauraco sur LinkedIn", "demo": "Exemple de parcours", "brief": "Votre besoin", "scoring": "Classement explicable", "escrow": "Registre des paiements", "audit": "Journal d’audit"},
   /* ------------------------------------------------------------------------ */
   /*  Navigation                                                              */
   /* ------------------------------------------------------------------------ */
@@ -49,6 +50,7 @@ const fr = {
       totalSpent: "Total d\u00e9pens\u00e9",
     },
     new: {
+      recovery: {"retry": "Réessayer la soumission", "savedDraft": "Le brouillon est enregistré. Réessayez les étapes restantes sans créer de nouvelle mission.", "viewDraft": "Voir le brouillon", "uploadFailed": "L’envoi des documents a échoué. Le brouillon est enregistré ; réessayez pour inclure toutes les pièces jointes.", "planningFailed": "La planification n’a pas démarré. Le brouillon et les documents sont enregistrés ; réessayez la soumission.", "createFailed": "La création de la mission a échoué. Réessayez.", "titleRequired": "Le titre est obligatoire.", "descriptionRequired": "La description est obligatoire.", "minInvalid": "Saisissez un budget minimum valide.", "maxInvalid": "Le budget maximum doit être au moins égal au minimum."},
       breadcrumb: "Mes missions",
       title: "Cr\u00e9er une mission",
       subtitle:
@@ -131,6 +133,14 @@ const fr = {
       lastUpdated: "Derni\u00e8re mise \u00e0 jour",
     },
     plan: {
+      reviewWithoutPayment: "Examinez les résultats avant d’accepter le travail. Le règlement externe est traité séparément.",
+      actionFailed: "La demande n’a pas pu être enregistrée. Réessayez ; l’état confirmé n’a pas changé.",
+      refresh: "Actualiser l’état",
+      waiting: "La planification est toujours en attente. Actualisez l’état pour poursuivre le suivi.",
+      producedBy: "Produit par {name}",
+      reason: "Adéquation des capacités : {capability} %. Taux de réussite : {rate} %. Tâches terminées : {count}.",
+      reasonFallback: "Sélection selon les capacités enregistrées.",
+
       stage: {
         format: { label: "Mise en forme", desc: "Structuration de votre demande" },
         decompose: { label: "D\u00e9composition", desc: "D\u00e9coupage en t\u00e2ches" },
@@ -151,17 +161,17 @@ const fr = {
       planningHint: "Cela prend g\u00e9n\u00e9ralement moins d\u2019une minute. Ce panneau se met \u00e0 jour tout seul.",
       subtitle:
         "Voici pr\u00e9cis\u00e9ment comment votre demande sera livr\u00e9e \u2014 les t\u00e2ches issues du brief, qui ex\u00e9cute chacune, et ce que vous payez.",
-      escrowReleasedTitle: "Travail accept\u00e9 \u2014 s\u00e9questre lib\u00e9r\u00e9",
-      escrowHeldTitle: "Travail livr\u00e9 \u2014 sous s\u00e9questre en attente de votre revue",
-      escrowReleasedBody: "{net} vers\u00e9s \u00e0 l\u2019ex\u00e9cutant. Mission termin\u00e9e.",
+      escrowReleasedTitle: "Travail accepté",
+      escrowHeldTitle: "Le travail livré est prêt pour votre examen",
+      escrowReleasedBody: "Le règlement est distinct et nécessite la confirmation d’un transfert externe. L’acceptation seule ne déplace aucun fonds.",
       escrowHeldBody:
-        "{gross} sous s\u00e9questre ({net} pour l\u2019ex\u00e9cutant apr\u00e8s {fee} de frais de plateforme). Examinez les r\u00e9sultats ci-dessous, puis lib\u00e9rez.",
+        "Le registre indique {gross}, dont {fee} de frais de plateforme et {net} pour l’exécutant. Examinez les résultats avant d’accepter le travail.",
       requestChanges: "Demander des modifications",
-      releasing: "Lib\u00e9ration\u2026",
-      acceptAndRelease: "Accepter et lib\u00e9rer le paiement",
+      releasing: "Acceptation…",
+      acceptAndRelease: "Accepter le travail",
       completed: "Termin\u00e9e",
       disputePrompt:
-        "Qu\u2019est-ce qui manque au livrable ? Votre paiement reste sous s\u00e9questre pendant la r\u00e9vision.",
+        "Décrivez les modifications nécessaires. Une demande de révision ne déclenche aucun paiement.",
       disputePlaceholder:
         "ex. : la section 2 ne couvre pas le march\u00e9 europ\u00e9en comme demand\u00e9 ; le ton est trop familier.",
       cancel: "Annuler",
@@ -552,7 +562,7 @@ const fr = {
     humanWouldCost: "Un expert humain co\u00fbterait :",
     hoursShort: " h",
     gateNotice:
-      "L\u2019approbation lance l\u2019ex\u00e9cution et place le montant sous s\u00e9questre. Il n\u2019est vers\u00e9 que contre une livraison valid\u00e9e.",
+      "L’approbation lance l’exécution et enregistre le montant du devis. Aucun fonds n’est prélevé ou bloqué ici ; le règlement est organisé séparément après votre acceptation de la livraison.",
     accept: "Approuver et lancer",
     accepting: "Approbation\u2026",
     decline: "Refuser",

@@ -14,11 +14,11 @@ from app.core.config import settings
 # Password hashing
 # ---------------------------------------------------------------------------
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt_sha256", "bcrypt"], deprecated="auto")
 
 
 def hash_password(plain: str) -> str:
-    """Return a bcrypt hash for the given plaintext password."""
+    """Hash the entire password; retain verification of legacy bcrypt hashes."""
     return pwd_context.hash(plain)
 
 

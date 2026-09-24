@@ -5,18 +5,20 @@ from __future__ import annotations
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import lazyload
 
 from app.core.database import get_db
 from app.core.deps import get_current_active_user, require_role
 from app.middleware.audit import log_audit
-from app.models.assignment import Assignment, AssignmentStatus
 from app.models.review import ReviewDecision, ReviewerType, ValidationReview
 from app.models.submission import Submission, SubmissionStatus
-from app.models.task import Task, TaskStatus
+from app.models.task import Task
 from app.models.user import User
 from app.schemas.review import ReviewCreate, ReviewResponse
+from app.services.task_access import require_task_access
+from app.services.workflow_service import apply_review
 
 router = APIRouter()
 
@@ -45,7 +47,7 @@ async def create_review(
     """
     # Validate submission exists.
     sub_result = await db.execute(
-        select(Submission).where(Submission.id == submission_id)
+        select(Submission).where(Submission.id == submission_id).with_for_update().execution_options(populate_existing=True)
     )
     submission = sub_result.scalar_one_or_none()
     if submission is None:
@@ -63,6 +65,9 @@ async def create_review(
             detail="Associated task not found",
         )
 
+    await require_task_access(db, task, current_user)
+    if submission.status not in (SubmissionStatus.submitted, SubmissionStatus.under_review):
+        raise HTTPException(status_code=409, detail="Submission has already been reviewed")
     # Determine reviewer type from role.
     role = str(current_user.role)
     if role == "admin":
@@ -82,72 +87,7 @@ async def create_review(
     )
     db.add(review)
 
-    # Apply business logic based on the review decision.
-    decision = ReviewDecision(body.decision)
-
-    if decision == ReviewDecision.approved:
-        # Approve the submission and task.
-        submission.status = SubmissionStatus.approved
-        task.status = TaskStatus.approved
-
-        await log_audit(
-            db,
-            actor_type="user",
-            actor_id=str(current_user.id),
-            action="approve_submission",
-            entity_type="submission",
-            entity_id=str(submission.id),
-            payload={"task_id": str(task.id)},
-        )
-
-    elif decision in (ReviewDecision.rejected, ReviewDecision.rework_requested):
-        task.retry_count += 1
-
-        if task.retry_count >= task.max_retries:
-            # Exhausted retries: cancel the assignment and task.
-            submission.status = SubmissionStatus.rejected
-            task.status = TaskStatus.cancelled
-
-            # Cancel active assignments for this task.
-            assignments_result = await db.execute(
-                select(Assignment).where(
-                    Assignment.task_id == task.id,
-                    Assignment.status == AssignmentStatus.active,
-                )
-            )
-            for assignment in assignments_result.scalars().all():
-                assignment.status = AssignmentStatus.cancelled
-
-            await log_audit(
-                db,
-                actor_type="user",
-                actor_id=str(current_user.id),
-                action="cancel_task_max_retries",
-                entity_type="task",
-                entity_id=str(task.id),
-                payload={
-                    "retry_count": task.retry_count,
-                    "max_retries": task.max_retries,
-                },
-            )
-        else:
-            # Retries remain: set submission to rework and task to validation_failed.
-            submission.status = SubmissionStatus.rework_requested
-            task.status = TaskStatus.validation_failed
-
-            await log_audit(
-                db,
-                actor_type="user",
-                actor_id=str(current_user.id),
-                action="reject_submission",
-                entity_type="submission",
-                entity_id=str(submission.id),
-                payload={
-                    "task_id": str(task.id),
-                    "retry_count": task.retry_count,
-                    "max_retries": task.max_retries,
-                },
-            )
+    await apply_review(db, task, submission, body.decision)
 
     await db.flush()
     await db.refresh(review)
@@ -183,15 +123,17 @@ async def list_reviews(
 ) -> list[ReviewResponse]:
     """Return a paginated list of reviews for a specific task."""
     # Verify task exists.
-    task_result = await db.execute(select(Task).where(Task.id == task_id))
-    if task_result.scalar_one_or_none() is None:
+    task_result = await db.execute(select(Task).options(lazyload("*")).where(Task.id == task_id))
+    task = task_result.scalar_one_or_none()
+    if task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found",
         )
 
+    await require_task_access(db, task, current_user)
     query = (
-        select(ValidationReview)
+        select(ValidationReview).options(lazyload("*"))
         .where(ValidationReview.task_id == task_id)
         .order_by(ValidationReview.created_at.desc())
         .offset(skip)

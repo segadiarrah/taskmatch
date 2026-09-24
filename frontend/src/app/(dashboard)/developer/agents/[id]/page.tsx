@@ -130,7 +130,7 @@ export default function AgentDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [agentId]);
+  }, [agentId, t]);
 
   useEffect(() => {
     fetchAgent();

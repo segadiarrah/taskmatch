@@ -28,11 +28,11 @@ const COPY: Record<
   en: {
     title: "Welcome back",
     subtitle: "Sign in to your TaskMatch account",
-    email: "Email address",
+    email: "Email or admin username",
     emailPlaceholder: "you@company.com",
     password: "Password",
     passwordPlaceholder: "Enter your password",
-    forgot: "Forgot password?",
+    forgot: "Need help signing in?",
     signIn: "Sign in",
     signingIn: "Signing in...",
     invalid: "Invalid email or password. Please try again.",
@@ -42,11 +42,11 @@ const COPY: Record<
   fr: {
     title: "Bon retour",
     subtitle: "Connectez-vous à votre compte TaskMatch",
-    email: "Adresse e-mail",
+    email: "E-mail ou identifiant administrateur",
     emailPlaceholder: "vous@entreprise.com",
     password: "Mot de passe",
     passwordPlaceholder: "Saisissez votre mot de passe",
-    forgot: "Mot de passe oublié ?",
+    forgot: "Besoin d’aide pour vous connecter ?",
     signIn: "Se connecter",
     signingIn: "Connexion...",
     invalid: "E-mail ou mot de passe invalide. Veuillez réessayer.",
@@ -56,11 +56,11 @@ const COPY: Record<
   es: {
     title: "Bienvenido de nuevo",
     subtitle: "Inicia sesión en tu cuenta TaskMatch",
-    email: "Correo electrónico",
+    email: "Correo o usuario administrador",
     emailPlaceholder: "tu@empresa.com",
     password: "Contraseña",
     passwordPlaceholder: "Introduce tu contraseña",
-    forgot: "¿Olvidaste tu contraseña?",
+    forgot: "¿Necesitas ayuda para entrar?",
     signIn: "Iniciar sesión",
     signingIn: "Iniciando sesión...",
     invalid: "Correo o contraseña no válidos. Inténtalo de nuevo.",
@@ -70,11 +70,11 @@ const COPY: Record<
   zh: {
     title: "欢迎回来",
     subtitle: "登录你的 TaskMatch 账户",
-    email: "电子邮箱",
+    email: "邮箱或管理员用户名",
     emailPlaceholder: "you@company.com",
     password: "密码",
     passwordPlaceholder: "请输入密码",
-    forgot: "忘记密码？",
+    forgot: "需要登录帮助？",
     signIn: "登录",
     signingIn: "登录中…",
     invalid: "邮箱或密码错误，请重试。",
@@ -130,12 +130,14 @@ export default function LoginPage() {
           </label>
           <input
             id="email"
-            type="email"
+            type="text"
             placeholder={c.emailPlaceholder}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            autoComplete="email"
+            autoComplete="username"
+            autoCapitalize="none"
+            spellCheck={false}
             autoFocus
             className="w-full rounded-md border border-input bg-ink-950/60 px-4 py-3 text-sm text-ink-50 placeholder:text-ink-600 focus:border-signal-500 focus:outline-none focus:ring-1 focus:ring-signal-500"
           />
@@ -146,9 +148,9 @@ export default function LoginPage() {
             <label htmlFor="password" className="text-sm font-medium text-ink-200">
               {c.password}
             </label>
-            <a href="#" className="font-mono text-xs text-signal-400 hover:underline">
+            <Link href="/company/contact" className="font-mono text-xs text-signal-400 hover:underline">
               {c.forgot}
-            </a>
+            </Link>
           </div>
           <input
             id="password"

@@ -3,18 +3,18 @@
 This module is the **single place** where LLM calls happen in the
 TaskMatch.ai backend.  It wraps an OpenAI-compatible client (OpenAI,
 OpenRouter, DeepSeek, …) and degrades gracefully to a deterministic path
-when no API key is configured or the provider is unavailable, making the
-rest of the codebase fully functional and testable without an external LLM.
+when no API key is configured or the provider is unavailable. Planning may
+use deterministic rules; execution must require a genuine generated result.
 
 Design contract
 ---------------
 * ``call_llm`` returns the raw assistant text, or ``None`` when the LLM is
   unavailable for any reason (no key, package missing, timeout, API error).
 * ``call_llm_json`` returns a parsed ``dict``/``list``, or ``None`` on any
-  failure — callers MUST provide a deterministic fallback.
+  failure. Callers must report unavailability or use an appropriate planning fallback.
 
 Neither function raises for provider/availability problems; the MCP layer
-treats ``None`` as "use the deterministic engine".
+handles ``None`` explicitly instead of treating it as a successful execution.
 """
 
 from __future__ import annotations

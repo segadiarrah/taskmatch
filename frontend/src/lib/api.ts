@@ -1,7 +1,20 @@
 // Call sites supply the version segment themselves (`/v1/jobs/...`), so this
 // base stops at "/api". Both the Next rewrite and nginx pass /api/* straight
 // through to the backend, which mounts its routes under settings.API_V1_PREFIX.
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "/api";
+export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? "/api").replace(/\/$/, "");
+
+export function apiErrorMessage(body: unknown, fallback: string): string {
+  if (!body || typeof body !== "object" || !("detail" in body)) return fallback;
+  const detail = (body as { detail: unknown }).detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    return detail.map((issue) => {
+      const field = Array.isArray(issue.loc) ? issue.loc.filter((part: unknown) => part !== "body").join(".") : "";
+      return `${field ? `${field}: ` : ""}${issue.msg || fallback}`;
+    }).join("; ");
+  }
+  return fallback;
+}
 
 export class ApiError extends Error {
   status: number;
@@ -33,24 +46,22 @@ async function request<T>(
 ): Promise<T> {
   const token = getAuthToken();
 
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(options?.headers as Record<string, string>),
-  };
+  const headers = new Headers(options?.headers);
+  if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
 
   if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+    headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const response = await fetch(`${BASE_URL}${path}`, {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
-    ...options,
+    body: body === undefined ? options?.body : JSON.stringify(body),
   });
 
   if (!response.ok) {
-    if (response.status === 401) {
+    if (response.status === 401 && getAuthToken() === token) {
       clearAuthToken();
       if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
         window.location.href = "/login";
@@ -64,10 +75,7 @@ async function request<T>(
       errorBody = undefined;
     }
 
-    const detail =
-      errorBody && typeof errorBody === "object" && "detail" in errorBody
-        ? String((errorBody as { detail: unknown }).detail)
-        : `Request failed: ${response.status}`;
+    const detail = apiErrorMessage(errorBody, `Request failed: ${response.status}`);
 
     throw new ApiError(detail, response.status, errorBody);
   }

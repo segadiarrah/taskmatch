@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { apiGet, apiPost } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
 import { DEFAULT_PLAN_STAGE_KEYS } from "@/lib/job-requirements";
@@ -8,7 +9,6 @@ import { formatCurrency, formatStatus, cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   Sparkles,
   Loader2,
@@ -52,6 +52,7 @@ interface PlanTask {
   revision_count?: number;
   matched_agents: MatchedAgent[];
   delivered?: {
+    submission_id?: string;
     summary: string | null;
     result_preview: string | null;
     produced_by: string | null;
@@ -112,31 +113,10 @@ const STAGE_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   pay: CreditCard,
 };
 
-// Graceful fallback used only if the plan fetch errors outright.
-const FALLBACK_PLAN: PlanResponse = {
-  ready: false,
-  planning: true,
-  job: { id: "", title: "", status: "pending", currency: "USD", budget_min: 0, budget_max: 0 },
-  spec: { objective: null, deliverables: [], constraints: [], success_criteria: [] },
-  tasks: [],
-  stages: [],
-};
-
 function scoreBadgeVariant(score: number): "success" | "info" | "warning" {
   if (score >= 80) return "success";
   if (score >= 60) return "info";
   return "warning";
-}
-
-function agentReason(agent: MatchedAgent): string {
-  if (agent.reasoning && agent.reasoning.trim()) return agent.reasoning.trim();
-  const b = agent.breakdown;
-  if (!b) return "Matched on overall capability fit.";
-  return `Strong capability match (${Math.round(b.capability_match)}%), ${Math.round(
-    b.success_rate
-  )}% success rate across ${b.completed_tasks_count} completed task${
-    b.completed_tasks_count === 1 ? "" : "s"
-  }.`;
 }
 
 interface ExecutionPlanProps {
@@ -157,7 +137,10 @@ export default function ExecutionPlan({
 
   const [plan, setPlan] = useState<PlanResponse | null>(null);
   const [loading, setLoading] = useState(!isDraft);
-  const [tick, setTick] = useState(0);
+  const [loadError, setLoadError] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [reviewing, setReviewing] = useState<string | null>(null);
+  const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [accepting, setAccepting] = useState(false);
@@ -173,18 +156,17 @@ export default function ExecutionPlan({
     try {
       const data = await apiGet<PlanResponse>(`/v1/jobs/${jobId}/plan`);
       if (!activeRef.current) return;
+      setLoadError(false);
       setPlan(data);
       setLoading(false);
       if ((data.planning || !data.ready) && pollsRef.current < MAX_POLLS) {
         pollsRef.current += 1;
-        setTick((t) => t + 1);
         timerRef.current = setTimeout(load, POLL_MS);
       }
     } catch {
       if (!activeRef.current) return;
       setLoading(false);
-      // Keep whatever we already have; otherwise fall back gracefully.
-      setPlan((prev) => prev ?? FALLBACK_PLAN);
+      setLoadError(true);
     }
   }, [jobId]);
 
@@ -216,13 +198,14 @@ export default function ExecutionPlan({
 
   const handleAccept = async () => {
     try {
+      setActionError(null);
       setAccepting(true);
       await apiPost(`/v1/jobs/${jobId}/accept`, {});
       pollsRef.current = 0;
       await load();
       onSubmitted?.();
     } catch {
-      /* keep current state; button stays available to retry */
+      setActionError(t("client.plan.actionFailed"));
     } finally {
       setAccepting(false);
     }
@@ -230,6 +213,7 @@ export default function ExecutionPlan({
 
   const handleDispute = async () => {
     try {
+      setActionError(null);
       setDisputing(true);
       await apiPost(`/v1/jobs/${jobId}/dispute`, { reason: disputeReason.trim() });
       setShowDispute(false);
@@ -239,9 +223,23 @@ export default function ExecutionPlan({
       await load();
       onSubmitted?.();
     } catch {
-      /* keep current state; button stays available to retry */
+      setActionError(t("client.plan.actionFailed"));
     } finally {
       setDisputing(false);
+    }
+  };
+
+  const handleReview = async (submissionId: string, decision: "approved" | "rework_requested") => {
+    setReviewing(submissionId);
+    setActionError(null);
+    try {
+      await apiPost(`/v1/submissions/${submissionId}/reviews`, { submission_id: submissionId, decision, notes: reviewNotes[submissionId]?.trim() || null });
+      await load();
+      onSubmitted?.();
+    } catch {
+      setActionError(t("client.plan.actionFailed"));
+    } finally {
+      setReviewing(null);
     }
   };
 
@@ -281,19 +279,10 @@ export default function ExecutionPlan({
     );
   }
 
-  // Le backend peut renvoyer ses propres étapes ; sinon on construit la liste
-  // par défaut dans la langue courante.
-  const stages: PlanStage[] =
-    plan?.stages && plan.stages.length > 0
-      ? plan.stages
-      : DEFAULT_PLAN_STAGE_KEYS.map((key) => ({
-          key,
-          label: t(`client.plan.stage.${key}.label`),
-          desc: t(`client.plan.stage.${key}.desc`),
-        }));
   const currency = plan?.job?.currency || fallbackCurrency;
   const ready = !!plan?.ready;
   const planning = !plan || plan.planning || !plan.ready;
+  if (loadError) return <DataLoadError onRetry={() => { pollsRef.current = 0; load(); }} />;
 
   // ---- Loading first paint ----
   if (loading && !plan) {
@@ -307,84 +296,26 @@ export default function ExecutionPlan({
     );
   }
 
-  // ---- Planning state ----
+  // Planning has no measured percentage; report the server's state only.
   if (planning) {
-    const activeStage = Math.min(tick, stages.length - 1);
-    const progressValue = Math.min(92, 12 + tick * 14);
-    return (
-      <Card className="overflow-hidden border-signal-500/30">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-signal-400 animate-pulse" />
-            {t("client.plan.planningTitle")}
-          </CardTitle>
-          <CardDescription>
-            {t("client.plan.planningBody")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <Progress value={progressValue} className="h-2" />
-          <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {stages.map((stage, idx) => {
-              const Icon = STAGE_ICONS[stage.key] ?? Sparkles;
-              const done = idx < activeStage;
-              const current = idx === activeStage;
-              return (
-                <li
-                  key={stage.key}
-                  className={cn(
-                    "flex items-start gap-3 rounded-lg border p-3 transition-colors",
-                    current && "border-signal-500/50 bg-signal-500/10",
-                    done && "border-success/40 bg-success/10",
-                    !done && !current && "border-border bg-ink-900"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-sm",
-                      done && "bg-success/15 text-success",
-                      current && "bg-signal-500 text-ink-950",
-                      !done && !current && "bg-ink-800 text-ink-500"
-                    )}
-                  >
-                    {done ? (
-                      <CheckCircle2 className="h-4 w-4" />
-                    ) : current ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Icon className="h-4 w-4" />
-                    )}
-                  </span>
-                  <div className="min-w-0">
-                    <p
-                      className={cn(
-                        "text-sm font-medium",
-                        current ? "text-signal-400" : done ? "text-foreground" : "text-ink-500"
-                      )}
-                    >
-                      {stage.label}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{stage.desc}</p>
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-          <p className="text-xs text-muted-foreground">
-            {t("client.plan.planningHint")}
-          </p>
-        </CardContent>
-      </Card>
-    );
+    return <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg"><Loader2 className="h-5 w-5 animate-spin" />{t("client.plan.planningTitle")}</CardTitle>
+        <CardDescription>{t("client.plan.planningBody")}</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-muted-foreground">{pollsRef.current >= MAX_POLLS ? t("client.plan.waiting") : t("client.plan.planningHint")}</p>
+        <Button variant="outline" onClick={() => { if (timerRef.current) clearTimeout(timerRef.current); pollsRef.current = 0; load(); }}>{t("client.plan.refresh")}</Button>
+      </CardContent>
+    </Card>;
   }
 
   // ---- Ready state ----
   const spec = plan?.spec ?? { objective: null, deliverables: [], constraints: [], success_criteria: [] };
   const tasks = plan?.tasks ?? [];
   const payment = plan?.payment ?? null;
-  const jobDone = plan?.job.status === "completed" || payment?.status === "paid";
-  const canRelease =
-    !!payment && (payment.status === "releasable" || payment.status === "authorized" || payment.status === "pending");
+  const jobDone = plan?.job.status === "completed";
+  const canRelease = plan?.job.status === "client_review" && tasks.length > 0 && tasks.every((task) => task.status === "approved");
   const fmtMoney = (n: number, ccy: string) =>
     new Intl.NumberFormat(undefined, { style: "currency", currency: ccy || "EUR", maximumFractionDigits: 0 }).format(n);
 
@@ -405,8 +336,9 @@ export default function ExecutionPlan({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
+        {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{actionError}</p>}
         {/* Escrow review & release */}
-        {payment && (canRelease || jobDone) && (
+        {(canRelease || jobDone) && (
           <section
             className={cn(
               "rounded-lg border p-4",
@@ -421,15 +353,12 @@ export default function ExecutionPlan({
                     {jobDone ? t("client.plan.escrowReleasedTitle") : t("client.plan.escrowHeldTitle")}
                   </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    {jobDone
-                      ? t("client.plan.escrowReleasedBody", {
-                          net: fmtMoney(payment.net_amount, payment.currency),
-                        })
-                      : t("client.plan.escrowHeldBody", {
-                          gross: fmtMoney(payment.gross_amount, payment.currency),
-                          net: fmtMoney(payment.net_amount, payment.currency),
-                          fee: fmtMoney(payment.platform_fee, payment.currency),
-                        })}
+                    {jobDone ? t("client.plan.escrowReleasedBody") : payment ? t("client.plan.escrowHeldBody", {
+                      gross: fmtMoney(payment.gross_amount, payment.currency),
+                      net: fmtMoney(payment.net_amount, payment.currency),
+                      fee: fmtMoney(payment.platform_fee, payment.currency),
+                    }) : t("client.plan.reviewWithoutPayment")}
+
                   </p>
                 </div>
               </div>
@@ -461,6 +390,7 @@ export default function ExecutionPlan({
                   {t("client.plan.disputePrompt")}
                 </p>
                 <textarea
+                  aria-label={t("client.plan.disputePrompt")}
                   value={disputeReason}
                   onChange={(e) => setDisputeReason(e.target.value)}
                   rows={3}
@@ -476,7 +406,7 @@ export default function ExecutionPlan({
                   >
                     {t("client.plan.cancel")}
                   </Button>
-                  <Button onClick={handleDispute} disabled={disputing} className="shrink-0">
+                  <Button onClick={handleDispute} disabled={disputing || !disputeReason.trim()} className="shrink-0">
                     {disputing ? t("client.plan.submitting") : t("client.plan.submitDispute")}
                   </Button>
                 </div>
@@ -663,7 +593,7 @@ export default function ExecutionPlan({
                                   </Badge>
                                 </div>
                                 <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
-                                  {agentReason(agent)}
+                                  {agent.reasoning?.trim() || (agent.breakdown ? t("client.plan.reason", { capability: Math.round(agent.breakdown.capability_match), rate: Math.round(agent.breakdown.success_rate), count: agent.breakdown.completed_tasks_count }) : t("client.plan.reasonFallback"))}
                                 </p>
                               </li>
                             );
@@ -671,7 +601,7 @@ export default function ExecutionPlan({
                         </ol>
                       )}
                     </div>
-                    {task.delivered && task.delivered.result_preview ? (
+                    {task.delivered ? (
                       <div className="mt-3 rounded-lg border border-success/40 bg-success/10 p-3">
                         <div className="flex items-center gap-2">
                           <Badge variant="success" className="flex-shrink-0">
@@ -680,7 +610,7 @@ export default function ExecutionPlan({
                           </Badge>
                           {task.delivered.produced_by ? (
                             <span className="text-xs text-muted-foreground">
-                              by {task.delivered.produced_by}
+                              {t("client.plan.producedBy", { name: task.delivered.produced_by })}
                             </span>
                           ) : null}
                         </div>
@@ -694,6 +624,16 @@ export default function ExecutionPlan({
                         </pre>
                       </div>
                     ) : null}
+                    {task.delivered?.submission_id && (task.delivered.status === "submitted" || task.delivered.status === "under_review") && (
+                      <div className="mt-3 space-y-3 rounded-lg border p-4">
+                        <label className="block text-sm font-medium" htmlFor={`review-${task.id}`}>{t("client.detail.reviewNotesLabel")}</label>
+                        <textarea id={`review-${task.id}`} value={reviewNotes[task.delivered.submission_id] ?? ""} onChange={(event) => setReviewNotes((current) => ({ ...current, [task.delivered!.submission_id!]: event.target.value }))} className="w-full rounded-md border border-input bg-ink-900 p-2 text-sm" />
+                        <div className="flex flex-wrap gap-3">
+                          <Button disabled={reviewing !== null} onClick={() => handleReview(task.delivered!.submission_id!, "approved")}>{t("client.detail.approve")}</Button>
+                          <Button variant="outline" disabled={reviewing !== null || !reviewNotes[task.delivered.submission_id]?.trim()} onClick={() => handleReview(task.delivered!.submission_id!, "rework_requested")}>{t("client.detail.requestRevision")}</Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}

@@ -1,0 +1,87 @@
+import { expect, test, type Page } from "@playwright/test";
+
+const date = "2026-09-24T12:00:00Z";
+const user = { id: "user-1", email: "owner@example.com", full_name: "Actual Owner", role: "admin", is_active: true, created_at: date };
+const job = { id: "job-1", client_user_id: "user-1", title: "Actual Job", raw_description: "Original project brief", formatted_summary: "Structured brief", budget_min: 25, budget_max: 50, currency: "USD", deadline: null, status: "quoted", tasks_count: 1, created_at: date, updated_at: date };
+const task = { id: "task-1", job_id: job.id, title: "Actual Task", description: "Produce a useful result", task_type: "writing", status: "open_for_bids", budget: 25, priority: 1, assigned_agent_id: null, created_at: date, updated_at: date };
+const agent = { id: "agent-1", developer_user_id: "user-1", name: "Actual Agent", slug: "actual-agent", description: "Writes useful results", endpoint_url: "https://example.test/worker", auth_type: "none", status: "active", capabilities: [{ id: "cap-1", agent_id: "agent-1", capability_name: "writing", version: "1.0", metadata_json: null }], supported_task_types: ["writing"], average_score: 87.5, success_rate: 0.8, completed_tasks_count: 4, created_at: date, updated_at: date };
+const bid = { id: "bid-1", task_id: task.id, agent_id: agent.id, agent_name: agent.name, price: 23, eta_hours: 2, confidence_score: 0.9, proposal_text: "Actual proposal", status: "submitted", created_at: date, updated_at: date };
+const submission = { id: "sub-1", task_id: task.id, agent_id: agent.id, assignment_id: "assignment-1", output_json: { result: "Actual result" }, summary: "Actual submitted result", artifact_urls_json: [], status: "submitted", created_at: date, updated_at: date };
+const matching = [{ agent_id: agent.id, agent_name: agent.name, combined_score: 0.92, capability_score: 1, historical_score: 0.8, reasons: ["Supports writing"] }];
+
+async function mockApi(page: Page, writes: Array<{ method: string; path: string; body: unknown }>) {
+  await page.addInitScript(() => { localStorage.setItem("auth_token", "test-token"); localStorage.setItem("taskmatch_locale", "en"); });
+  await page.route("**/api/v1/**", async route => {
+    const request = route.request();
+    const url = new URL(request.url());
+    const path = url.pathname.replace("/api/v1", "");
+    if (request.method() !== "GET") {
+      writes.push({ method: request.method(), path: path + url.search, body: request.postDataJSON() });
+      return route.fulfill({ status: 409, json: { detail: "State changed; refresh before retrying" } });
+    }
+    const responses: Record<string, unknown> = {
+      "/auth/me": user,
+      "/users/user-1": user,
+      "/jobs/job-1": job,
+      "/tasks": { tasks: [task], total: 1 },
+      "/tasks/task-1": task,
+      "/tasks/task-1/bids": { bids: [bid], total: 1 },
+      "/tasks/task-1/submissions": [submission],
+      "/tasks/task-1/reviews": [{ id: "review-1", submission_id: "sub-1", reviewer_user_id: "user-1", decision: "rework_requested", score: null, notes: "Actual review notes", created_at: date, updated_at: date }],
+      "/dashboard/agent-matching/task-1": matching,
+      "/dashboard/mcp-decisions": [{ id: "decision-1", entity_id: "job-1", entity_type: "Job", decision_type: "formatting", reasoning: "Actual reasoning", confidence: 0.9, created_at: date }],
+      "/dashboard/feedback-notes": [{ id: "note-1", agent_id: agent.id, author: "Admin", category: "quality", note: "Actual feedback", created_at: date }],
+      "/agents/agent-1": agent,
+      "/agents/agent-1/stats": { agent_id: agent.id, total_submissions: 6, approved_submissions: 4 },
+    };
+    if (!(path in responses)) return route.fulfill({ status: 404, json: { detail: `Unexpected test route ${path}` } });
+    return route.fulfill({ json: responses[path] });
+  });
+}
+
+test("admin job detail composes actual resource shapes without invented status writes", async ({ page }) => {
+  await mockApi(page, []);
+  await page.goto("/admin/jobs/job-1");
+  await expect(page.getByRole("heading", { name: "Actual Job", exact: true })).toBeVisible();
+  await expect(page.getByText("Original project brief", { exact: true })).toBeVisible();
+  await expect(page.getByText("Actual Task", { exact: true })).toBeVisible();
+  await expect(page.getByText("Actual reasoning", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Edit Status" })).toHaveCount(0);
+  await expect(page.getByText(/NaN|Invalid Date/)).toHaveCount(0);
+});
+
+test("admin agent detail maps capabilities, recorded metrics and feedback", async ({ page }) => {
+  const writes: Array<{ method: string; path: string; body: unknown }> = [];
+  await mockApi(page, writes);
+  await page.goto("/admin/agents/agent-1");
+  await expect(page.getByRole("heading", { name: "Actual Agent", exact: true })).toBeVisible();
+  await expect(page.getByText("87.5", { exact: true })).toBeVisible();
+  await expect(page.getByText("Actual feedback", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "State changed" })).toBeVisible();
+  expect(writes[0]).toEqual({ method: "PUT", path: "/agents/agent-1", body: { status: "paused" } });
+  await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeVisible();
+  await page.getByPlaceholder("Add a feedback note...").fill("Keep my note after failure");
+  await page.getByRole("button", { name: "Add Note", exact: true }).click();
+  await expect.poll(() => writes.length).toBe(2);
+  expect(writes[1]).toEqual({ method: "POST", path: "/dashboard/feedback-notes", body: { agent_id: "agent-1", category: "quality", note: "Keep my note after failure" } });
+  await expect(page.getByPlaceholder("Add a feedback note...")).toHaveValue("Keep my note after failure");
+});
+
+test("admin task detail uses real matching, bid, submission and review contracts", async ({ page }) => {
+  const writes: Array<{ method: string; path: string; body: unknown }> = [];
+  await mockApi(page, writes);
+  await page.goto("/admin/tasks/task-1");
+  await expect(page.getByRole("heading", { name: "Actual Task", exact: true })).toBeVisible();
+  await expect(page.getByText("Actual proposal", { exact: true })).toBeVisible();
+  await expect(page.getByText("Actual submitted result", { exact: true })).toBeVisible();
+  await expect(page.getByText("Actual review notes", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Assign", exact: true })).toBeDisabled();
+  await page.getByLabel("Agent to assign").selectOption("agent-1");
+  await page.getByRole("button", { name: "Assign", exact: true }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "State changed" })).toBeVisible();
+  expect(writes[0]).toEqual({ method: "POST", path: "/tasks/task-1/assign?agent_id=agent-1", body: null });
+  await page.getByRole("button", { name: "Validate", exact: true }).click();
+  await expect.poll(() => writes.length).toBe(2);
+  expect(writes[1].path).toBe("/mcp/validate-submission/sub-1");
+});

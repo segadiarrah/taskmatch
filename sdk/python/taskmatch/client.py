@@ -89,11 +89,11 @@ class TaskMatchClient:
         """
         headers = self._headers(kwargs.pop("headers", None))
         resp = self._http.request(method, path, headers=headers, **kwargs)
-        if resp.status_code >= 400:
+        if not resp.is_success:
             try:
                 body = resp.json()
-                detail = body.get("detail", body)
-            except Exception:  # noqa: BLE001 - non-JSON error body
+                detail = body.get("detail", body) if isinstance(body, dict) else body
+            except ValueError:
                 detail = resp.text
             raise TaskMatchError(resp.status_code, detail, resp)
         if resp.status_code == 204 or not resp.content:
@@ -128,10 +128,11 @@ class TaskMatchClient:
             data={"username": email, "password": password},
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
-        if resp.status_code >= 400:
+        if not resp.is_success:
             try:
-                detail = resp.json().get("detail", resp.text)
-            except Exception:  # noqa: BLE001
+                body = resp.json()
+                detail = body.get("detail", body) if isinstance(body, dict) else body
+            except ValueError:
                 detail = resp.text
             raise TaskMatchError(resp.status_code, detail, resp)
         data = resp.json()
@@ -146,8 +147,10 @@ class TaskMatchClient:
         role: str,
         organization_name: Optional[str] = None,
     ) -> dict:
-        """Create a new account. ``role`` is one of ``client``,
-        ``agent_developer`` or ``admin``. ``POST /v1/auth/register``."""
+        """Create a ``client`` or ``agent_developer`` account.
+
+        ``POST /v1/auth/register`` returns the user; call :meth:`login` next.
+        """
         body = {
             "email": email,
             "password": password,
@@ -237,9 +240,9 @@ class TaskMatchClient:
 
         A URL-friendly ``slug`` is generated from ``name`` automatically.
         ``auth_type`` is one of ``none``, ``api_key`` or ``bearer`` and describes
-        how the platform authenticates when it dispatches work to
-        ``endpoint_url``. ``supported_task_types`` gates which open tasks the
-        agent may bid on.
+        the endpoint's declared authentication scheme. External dispatch is not
+        implemented; use assignment polling. ``supported_task_types`` describes
+        the task types the runner should bid on.
         """
         body: dict = {
             "name": name,
@@ -283,7 +286,8 @@ class TaskMatchClient:
         """Report agent liveness. ``POST /v1/agents/{id}/heartbeat``.
 
         ``status`` is one of ``active``, ``paused`` or ``disabled``.
-        ``current_load`` is an optional 0-1 fraction of capacity in use.
+        ``current_load`` is an optional 0-1 fraction of capacity in use. The API
+        currently persists only status and the heartbeat timestamp.
         """
         body: dict = {"status": status}
         if current_load is not None:
@@ -341,6 +345,23 @@ class TaskMatchClient:
             "GET", f"/tasks/{task_id}/bids", params={"skip": skip, "limit": limit}
         )
 
+    def list_assignments(self, status: Optional[str] = None, limit: int = 20) -> dict:
+        """List the current developer's assignments. Returns ``{items: [...]}``.
+
+        ``GET /v1/developer/assignments`` supports at most 100 rows and no offset.
+        """
+        params: dict = {"limit": limit}
+        if status is not None:
+            params["status"] = status
+        return self._request("GET", "/developer/assignments", params=params)
+
+    def list_task_assignments(self, task_id: str) -> dict:
+        """List this developer's assignments on a task (``{items: [...]}``).
+
+        ``GET /v1/tasks/{id}/assignments/mine`` includes agent IDs and statuses.
+        """
+        return self._request("GET", f"/tasks/{task_id}/assignments/mine")
+
     # ------------------------------------------------------------------ #
     # Bids
     # ------------------------------------------------------------------ #
@@ -383,10 +404,9 @@ class TaskMatchClient:
     ) -> dict:
         """Submit completed work. ``POST /v1/tasks/{task_id}/submissions``.
 
-        ``assignment_id`` is the assignment created when your bid was selected
-        (delivered to your ``endpoint_url`` when the platform dispatches the
-        task). ``output_json`` is the structured result the validator checks
-        against the task's ``validation_spec_json``.
+        ``assignment_id`` is the ``id`` returned by :meth:`list_task_assignments`.
+        ``output_json`` is the structured result; include fields required by the
+        task's ``output_spec_json`` and a human-readable ``summary``.
         """
         body: dict = {
             "task_id": task_id,
