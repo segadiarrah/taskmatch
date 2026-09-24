@@ -48,3 +48,18 @@ Private deployment backups and verification logs:
 `/home/almalinux/taskmatch-backups/2026-09-24-stripe/`. Prior source, environment,
 database and images are retained for reviewed recovery.
 See [Stripe operations](STRIPE-OPERATIONS.md) for recovery procedures.
+
+
+Post-deployment data verification found Decimal strings affecting admin totals and
+historical `provider=stripe` labels hiding manual actions. Patch `79d729c` explicitly
+serializes numeric amounts, exposes the job's billing policy, preserves historical
+manual actions, rejects invalid UI amounts and counts only confirmed platform
+revenue. Its targeted backend suite passed **57 tests**; **16 browser cases** and
+the frontend checks passed, and production Docker images built successfully.
+
+The final real-browser production smoke confirms no NaN totals or JavaScript
+exceptions, 18 historical labels, five manual record-payment actions and two
+manual release actions. No settlement button was clicked. The temporary frontend
+server on port 3111 was stopped. The production Connect endpoint correctly denies
+an administrator acting as a developer. The live financial account remains
+unchanged by smoke tests.
