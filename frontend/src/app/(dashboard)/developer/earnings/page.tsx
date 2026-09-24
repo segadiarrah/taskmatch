@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { apiGet } from "@/lib/api";
+import ConnectPanel from "./connect-panel";
+import { Select } from "@/components/ui/select";
+import { billingStatusKey, paymentProviderKey } from "@/lib/billing";
 import { useTranslation } from "@/lib/i18n";
-import { formatCurrency, formatDate, formatStatus } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,14 +30,21 @@ import {
   Receipt,
 } from "lucide-react";
 
-interface EarningsSummary {
+interface CurrencySummary {
   total_earned: number;
   pending_payments: number;
   this_month: number;
   currency: string;
 }
 
+interface EarningsSummary {
+  by_currency: CurrencySummary[];
+}
+
 interface Payment {
+  provider: string;
+  transfer_id: string | null;
+  payout_error: string | null;
   id: string;
   task_id: string;
   task_title: string;
@@ -61,33 +71,30 @@ const paymentStatusBadgeVariant = (status: string) => {
 export default function EarningsPage() {
   const { t } = useTranslation();
   const [summary, setSummary] = useState<EarningsSummary | null>(null);
+  const [selectedCurrency, setSelectedCurrency] = useState("");
+  const [page, setPage] = useState(0);
+  const [total, setTotal] = useState(0);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchEarnings() {
-      try {
-        setLoading(true);
-        setError(null);
+  const fetchEarnings = useCallback(async () => {
+    try {
+      setLoading(true); setError(null);
+      const [summaryData, paymentsData] = await Promise.all([
+        apiGet<EarningsSummary>("/v1/developer/earnings/summary"),
+        apiGet<{ items: Payment[]; total: number }>(`/v1/developer/earnings/payments?skip=${page * 50}&limit=50`),
+      ]);
+      setSummary(summaryData);
+      setPayments(paymentsData.items ?? []);
+      setTotal(paymentsData.total ?? paymentsData.items.length);
+    } catch { setError(t("billing.loadFailed")); }
+    finally { setLoading(false); }
+  }, [page, t]);
 
-        const [summaryData, paymentsData] = await Promise.all([
-          apiGet<EarningsSummary>("/v1/developer/earnings/summary"),
-          apiGet<{ items: Payment[] }>("/v1/developer/earnings/payments"),
-        ]);
+  useEffect(() => { void fetchEarnings(); }, [fetchEarnings]);
 
-        setSummary(summaryData);
-        setPayments(paymentsData.items ?? []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load earnings data");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchEarnings();
-  }, []);
-
-  if (loading) {
+  if (loading && !summary) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -95,7 +102,9 @@ export default function EarningsPage() {
     );
   }
 
-  const currency = summary?.currency ?? "USD";
+  const summaries = summary?.by_currency ?? [];
+  const current = summaries.find(item => item.currency === selectedCurrency) ?? summaries[0];
+  const currency = current?.currency ?? "";
 
   return (
     <div className="space-y-6">
@@ -116,6 +125,8 @@ export default function EarningsPage() {
         </p>
       </div>
 
+      <ConnectPanel />
+
       {/* Error */}
       {error && (
         <div className="flex items-center gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-4">
@@ -125,23 +136,26 @@ export default function EarningsPage() {
             variant="outline"
             size="sm"
             className="ml-auto"
-            onClick={() => window.location.reload()}
+            onClick={() => void fetchEarnings()}
           >
             {t("developer.earnings.retry")}
           </Button>
         </div>
       )}
 
+      {summaries.length > 0 && <Select aria-label={t("billing.currency")} value={currency} onChange={event => setSelectedCurrency(event.target.value)} className="w-36">
+        {summaries.map(item => <option key={item.currency} value={item.currency}>{item.currency}</option>)}
+      </Select>}
       {/* Summary Cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      {current && <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription className="eyebrow">{t("developer.earnings.totalEarned")}</CardDescription>
             <DollarSign className="h-5 w-5 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="font-display text-3xl font-medium text-success">
-              {formatCurrency(summary?.total_earned ?? 0, currency)}
+            <div data-testid="total-earned" className="font-display text-3xl font-medium text-success">
+              {formatCurrency(current.total_earned, currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {t("developer.earnings.totalEarnedHint")}
@@ -156,7 +170,7 @@ export default function EarningsPage() {
           </CardHeader>
           <CardContent>
             <div className="font-display text-3xl font-medium text-ink-50">
-              {formatCurrency(summary?.pending_payments ?? 0, currency)}
+              {formatCurrency(current.pending_payments, currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {t("developer.earnings.pendingHint")}
@@ -171,23 +185,24 @@ export default function EarningsPage() {
           </CardHeader>
           <CardContent>
             <div className="font-display text-3xl font-medium text-ink-50">
-              {formatCurrency(summary?.this_month ?? 0, currency)}
+              {formatCurrency(current.this_month, currency)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {t("developer.earnings.thisMonthHint")}
             </p>
           </CardContent>
         </Card>
-      </div>
+      </div>}
 
       {/* Payments Table */}
+      {summary && <>
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Receipt className="h-5 w-5 text-muted-foreground" />
             {t("developer.earnings.historyTitle")}
           </CardTitle>
-          <CardDescription>{t("developer.earnings.historySubtitle")}</CardDescription>
+          <CardDescription>{t("connect.historyMeaning")}</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           {payments.length === 0 ? (
@@ -229,6 +244,8 @@ export default function EarningsPage() {
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {payment.agent_name}
+                      <p className="text-xs">{t(paymentProviderKey(payment.provider))}</p>
+                      {payment.payout_error && <p className="text-xs text-danger">{payment.payout_error}</p>}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs text-ink-100">
                       {formatCurrency(payment.gross_amount, payment.currency)}
@@ -244,7 +261,7 @@ export default function EarningsPage() {
                         variant={paymentStatusBadgeVariant(payment.status)}
                         className="text-xs"
                       >
-                        {formatStatus(payment.status)}
+                        {payment.provider === "stripe_connect" && payment.status === "paid" ? t("billing.status.transferred") : t(billingStatusKey(payment.status))}
                       </Badge>
                     </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">
@@ -257,6 +274,12 @@ export default function EarningsPage() {
           )}
         </CardContent>
       </Card>
+      <div className="flex items-center justify-between">
+        <Button variant="outline" disabled={loading || page === 0} onClick={() => setPage(page - 1)}>{t("billing.previous")}</Button>
+        <span className="text-sm text-muted-foreground">{t("billing.page", { page: page + 1 })}</span>
+        <Button variant="outline" disabled={loading || (page + 1) * 50 >= total} onClick={() => setPage(page + 1)}>{t("billing.next")}</Button>
+      </div>
+      </>}
     </div>
   );
 }

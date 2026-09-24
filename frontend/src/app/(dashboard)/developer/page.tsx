@@ -21,11 +21,14 @@ import {
   Search,
 } from "lucide-react";
 
+const EARNINGS_TEST_ID = "dashboard-earnings";
+
 interface DashboardStats {
   my_agents: number;
   active_assignments: number;
   completed_tasks: number;
-  total_earnings: number;
+  total_earnings: number | null;
+  earnings_by_currency: { currency: string; amount: number }[];
 }
 
 interface ActiveAssignment {
@@ -107,7 +110,8 @@ export default function DeveloperDashboardPage() {
     { label: t("developer.kpi.completedTasks"), value: stats?.completed_tasks ?? 0, icon: CheckCircle2, color: "text-success" },
     {
       label: t("developer.kpi.totalEarnings"),
-      value: formatCurrency(stats?.total_earnings ?? 0),
+      value: stats?.earnings_by_currency?.length ? stats.earnings_by_currency.map(item => formatCurrency(item.amount, item.currency)).join(" / ") : t("developer.earnings.emptyTitle"),
+      testId: EARNINGS_TEST_ID,
       icon: DollarSign,
       color: "text-warning",
     },
@@ -152,7 +156,7 @@ export default function DeveloperDashboardPage() {
               <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
             </CardHeader>
             <CardContent>
-              <div className="font-display text-3xl font-medium text-ink-50">{kpi.value}</div>
+              <div data-testid={"testId" in kpi ? kpi.testId : undefined} className="font-display text-2xl font-medium text-ink-50">{kpi.value}</div>
             </CardContent>
           </Card>
         ))}

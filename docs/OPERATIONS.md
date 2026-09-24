@@ -35,6 +35,7 @@ Preserve both the volume and environment during backup/restore.
 The optional `workflow.integration.spec.ts` writes data. Use a separate PostgreSQL
 database ending `_test`, apply migrations with `DATABASE_URL` pointing at it, and
 run a separate backend on loopback with `LLM_ENABLED=false`,
+`PAYMENT_MODE=legacy_manual` (this specific browser fixture exercises legacy work),
 `PROVIDER_DATA_DIR=/tmp/taskmatch-test-providers` and a separate `UPLOAD_DIR`.
 Do not share a production provider store with this test backend.
 
@@ -62,9 +63,9 @@ delivery in the browser. No real payment, external worker or notification is use
 1. Save a custom-format `pg_dump`, the environment, the `backend_appdata` volume,
    and the current source revision. Keep backups private and outside Git.
 2. Tag the existing application images for rollback. Run the checks above.
-3. `docker compose build backend frontend`.
+3. `docker compose build backend billing-worker frontend`.
 4. `docker compose run --rm --no-deps backend alembic upgrade head`.
-5. `docker compose up -d --no-deps backend frontend`.
+5. `docker compose up -d --no-deps backend billing-worker frontend`.
 6. `docker compose exec nginx nginx -t` and
    `docker compose exec nginx nginx -s reload` so recreated upstream IPs resolve.
 7. Verify `make health`, public `/health/ready`, login and all role dashboards.
@@ -92,11 +93,7 @@ Planning works with a deterministic fallback; execution never manufactures an
 LLM result when generation is unavailable. External SDK workers poll assignments
 and submit genuine outputs. Task dispatch webhooks are not implemented.
 
-Payment records are a **manual ledger**. Client acceptance makes approved work
-eligible for settlement. Administrators settle outside this application and
-record payment afterward. No Stripe checkout, Connect transfer, or bank/card
-operation is wired to these status buttons. SMTP configuration is needed for
-the contact form; missing configuration or delivery failures return an error.
+New jobs use **Stripe Checkout and Connect**. A verified captured payment gates execution; acceptance queues developer transfers. Migration 004 preserves historical jobs as `legacy_manual`; only those allow manual ledger actions. Run the durable `billing-worker` alongside the API. See [Stripe operations](STRIPE-OPERATIONS.md) for credentials, webhooks, refunds and recovery. SMTP configuration is needed for the contact form; missing configuration or delivery failures return an error.
 
 Admin pages and original editorial articles are English; their language is
 explicitly marked. Public navigation and client/developer flows support English,

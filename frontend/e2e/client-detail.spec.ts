@@ -4,7 +4,7 @@ async function prepare(page: Page, status = "client_review") {
   await page.addInitScript(() => { localStorage.setItem("auth_token", "test-token"); localStorage.setItem("taskmatch_locale", "en"); });
   await page.route("**/api/v1/auth/me", route => route.fulfill({ json: { id: "client-test", full_name: "Client", email: "client@example.test", role: "client", is_active: true } }));
   await page.route("**/api/v1/jobs/job-test/**", route => route.fulfill({ status: 404, json: { detail: "Not available" } }));
-  await page.route("**/api/v1/jobs/job-test", route => route.fulfill({ json: { id: "job-test", title: "Real API job", raw_description: "The saved raw brief", status, budget_min: 10, budget_max: 50, currency: "USD", auto_select_enabled: false, tasks_count: 1, created_at: "2026-09-24T12:00:00Z", updated_at: "2026-09-24T12:00:00Z" } }));
+  await page.route("**/api/v1/jobs/job-test", route => route.fulfill({ json: { id: "job-test", title: "Real API job", billing_mode: "legacy_manual", raw_description: "The saved raw brief", status, budget_min: 10, budget_max: 50, currency: "USD", auto_select_enabled: false, tasks_count: 1, created_at: "2026-09-24T12:00:00Z", updated_at: "2026-09-24T12:00:00Z" } }));
 }
 function plan(status = "client_review", taskStatus = "approved") {
   return { ready: true, planning: false, job: { id: "job-test", status, currency: "USD" }, spec: { objective: "Review result", deliverables: [], constraints: [], success_criteria: [] }, tasks: [{ id: "task-test", title: "Completed report", status: taskStatus, task_type: "analysis", budget: 10, matched_agents: [], delivered: { submission_id: "submission-test", summary: "Result evidence", result_preview: "Actual report", status: taskStatus } }], stages: [], payment: null };

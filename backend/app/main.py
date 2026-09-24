@@ -2,22 +2,24 @@
 
 from __future__ import annotations
 
-from contextlib import asynccontextmanager
-from collections.abc import AsyncGenerator
 import asyncio
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+from datetime import UTC, datetime, timedelta
 
 from fastapi import Depends, FastAPI
-from fastapi.responses import JSONResponse
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
-from redis.asyncio import Redis
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
+from redis.asyncio import Redis
+from sqlalchemy import select, text
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.router import router as api_v1_router
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.logging import get_logger, setup_logging
-from app.api.v1.router import router as api_v1_router
+from app.services.stripe_gateway import StripeGatewayError, StripeSignatureError
 
 _is_prod = settings.ENV == "production"
 
@@ -79,8 +81,20 @@ async def readiness_check(db: AsyncSession = Depends(get_db)) -> JSONResponse:
     try:
         async with asyncio.timeout(3):
             await db.execute(text("SELECT 1"))
-            async with Redis.from_url(settings.REDIS_URL, socket_connect_timeout=2, socket_timeout=2) as redis:
+            async with Redis.from_url(
+                settings.REDIS_URL, socket_connect_timeout=2, socket_timeout=2
+            ) as redis:
                 await redis.ping()
+            if settings.ENV == "production" and settings.PAYMENT_MODE == "stripe":
+                from app.models.billing import BillingWorkerHeartbeat
+
+                stamp = await db.scalar(
+                    select(BillingWorkerHeartbeat.updated_at).where(
+                        BillingWorkerHeartbeat.id == "billing"
+                    )
+                )
+                if not stamp or stamp < datetime.now(UTC) - timedelta(seconds=90):
+                    raise RuntimeError("Billing worker is unavailable")
     except Exception:
         # The dependency commits successful responses. Reset a failed probe's
         # transaction first so it cannot turn this deliberate 503 into a 500.
@@ -91,3 +105,17 @@ async def readiness_check(db: AsyncSession = Depends(get_db)) -> JSONResponse:
             pass
         return JSONResponse({"status": "unavailable", "app": settings.APP_NAME}, status_code=503)
     return JSONResponse({"status": "ready", "app": settings.APP_NAME})
+
+
+@app.exception_handler(StripeGatewayError)
+async def stripe_error_handler(request, exc):
+    code = (
+        400
+        if isinstance(exc, StripeSignatureError)
+        else (
+            503
+            if exc.status_code in (401, 403) or exc.retryable
+            else (409 if exc.status_code == 409 else 502)
+        )
+    )
+    return JSONResponse(status_code=code, content={"detail": str(exc)})

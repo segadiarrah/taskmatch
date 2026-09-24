@@ -120,6 +120,7 @@ function scoreBadgeVariant(score: number): "success" | "info" | "warning" {
 }
 
 interface ExecutionPlanProps {
+  billingMode: "stripe" | "legacy_manual";
   jobId: string;
   jobStatus: string;
   fallbackCurrency: string;
@@ -128,12 +129,14 @@ interface ExecutionPlanProps {
 
 export default function ExecutionPlan({
   jobId,
+  billingMode,
   jobStatus,
   fallbackCurrency,
   onSubmitted,
 }: ExecutionPlanProps) {
   const { t } = useTranslation();
   const isDraft = jobStatus === "draft";
+  const isLegacy = billingMode === "legacy_manual";
 
   const [plan, setPlan] = useState<PlanResponse | null>(null);
   const [loading, setLoading] = useState(!isDraft);
@@ -317,7 +320,7 @@ export default function ExecutionPlan({
   const jobDone = plan?.job.status === "completed";
   const canRelease = plan?.job.status === "client_review" && tasks.length > 0 && tasks.every((task) => task.status === "approved");
   const fmtMoney = (n: number, ccy: string) =>
-    new Intl.NumberFormat(undefined, { style: "currency", currency: ccy || "EUR", maximumFractionDigits: 0 }).format(n);
+    new Intl.NumberFormat(undefined, { style: "currency", currency: ccy || "EUR", maximumFractionDigits: 2 }).format(n);
 
   return (
     <Card>
@@ -353,7 +356,7 @@ export default function ExecutionPlan({
                     {jobDone ? t("client.plan.escrowReleasedTitle") : t("client.plan.escrowHeldTitle")}
                   </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    {jobDone ? t("client.plan.escrowReleasedBody") : payment ? t("client.plan.escrowHeldBody", {
+                    {jobDone ? t(isLegacy ? "client.plan.escrowReleasedBody" : "billing.acceptedStripe") : payment ? t("client.plan.escrowHeldBody", {
                       gross: fmtMoney(payment.gross_amount, payment.currency),
                       net: fmtMoney(payment.net_amount, payment.currency),
                       fee: fmtMoney(payment.platform_fee, payment.currency),

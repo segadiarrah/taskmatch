@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiGet, apiPost } from "@/lib/api";
+import { CheckoutSession, stripeUrl } from "@/lib/billing";
 import { useTranslation } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -103,13 +104,16 @@ const ACTION_REJECT = "reject";
 
 export function QuotePanel({
   jobId,
+  billingMode,
   onAccepted,
 }: {
   jobId: string;
+  billingMode: "stripe" | "legacy_manual";
   /** Lets the parent restart its own polling once execution begins. */
   onAccepted?: () => void;
 }) {
   const { t } = useTranslation();
+  const isLegacy = billingMode === "legacy_manual";
   const [data, setData] = useState<QuoteResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<"accept" | "reject" | null>(null);
@@ -151,7 +155,12 @@ export function QuotePanel({
     setBusy(ACTION_ACCEPT);
     setError(null);
     try {
-      await apiPost(`/v1/jobs/${jobId}/quote/accept`, {});
+      const result = await apiPost<CheckoutSession>(`/v1/jobs/${jobId}/quote/accept`, {});
+      if (billingMode !== "legacy_manual") {
+        const url = stripeUrl(result.checkout_url);
+        if (url) { window.location.assign(url); return; }
+        if (result.status !== "paid") { setError(t("billing.invalidLink")); return; }
+      }
       await load();
       onAccepted?.();
     } catch {
@@ -248,7 +257,7 @@ export function QuotePanel({
 
       <CardContent className="space-y-6">
         {error && (
-          <p className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+          <p role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
             {error}
           </p>
         )}
@@ -408,8 +417,8 @@ export function QuotePanel({
               <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-signal-400" />
               <p className="text-xs text-muted-foreground">
                 {t(
-                  "quote.gateNotice",
-                  "Approving starts execution and records the quoted amount. No funds are charged or held here; payment is arranged externally after you accept delivery.",
+                  isLegacy ? "billing.legacyNotice" : "quote.gateNotice",
+                  "Approve this quote and pay through Stripe Checkout. Execution starts only after the server verifies payment. Developer transfers follow your acceptance of completed work.",
                 )}
               </p>
             </div>
@@ -425,7 +434,7 @@ export function QuotePanel({
               <Button onClick={handleAccept} disabled={busy !== null}>
                 {busy === ACTION_ACCEPT
                   ? t("quote.accepting", "Approving…")
-                  : t("quote.accept", "Approve & start")}
+                  : isLegacy ? t("quote.accept") : t("billing.quotePay")}
               </Button>
             </div>
 

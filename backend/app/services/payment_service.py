@@ -25,6 +25,7 @@ from app.models.audit import AuditLog
 from app.models.job import Job
 from app.models.payment import PaymentRecord, PaymentStatus
 from app.models.task import Task
+from app.services.task_access import lock_job
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 
@@ -48,6 +49,11 @@ _VALID_TRANSITIONS: dict[PaymentStatus, set[PaymentStatus]] = {
         PaymentStatus.refunded,
     },
     PaymentStatus.paid: {PaymentStatus.refunded},
+    # Provider-controlled states have no manual transitions.
+    PaymentStatus.processing: set(),
+    PaymentStatus.blocked: set(),
+    PaymentStatus.failed: set(),
+    PaymentStatus.reversed: set(),
     PaymentStatus.refunded: set(),  # terminal
     PaymentStatus.cancelled: set(),  # terminal (using string comparison below)
 }
@@ -103,6 +109,13 @@ async def _transition(
     target: PaymentStatus,
 ) -> PaymentRecord:
     """Perform a validated state transition and log it."""
+    job = await lock_job(db, payment.job_id)
+    if job.billing_mode != "legacy_manual" or payment.funding_id is not None:
+        raise ValueError("Stripe settlements cannot be changed by the legacy manual service")
+    payment = await db.scalar(select(PaymentRecord).where(PaymentRecord.id == payment.id)
+                              .with_for_update().execution_options(populate_existing=True))
+    if target in (PaymentStatus.releasable, PaymentStatus.paid) and job.status != "completed":
+        raise ValueError("The client must accept delivery before settlement")
     previous = PaymentStatus(payment.payment_status)
     _assert_transition(previous, target, payment.id)
 
@@ -171,6 +184,10 @@ async def create_payment_for_task(
     if job is None:
         raise ValueError(f"Job {task.job_id} not found for task {task_id}")
 
+    job = await lock_job(db, job.id)
+    if job.billing_mode != "legacy_manual":
+        raise ValueError("Stripe allocations must be created by the funded workflow")
+
     if task.budget is None or task.budget <= 0:
         raise ValueError(
             f"Task {task_id} has no budget set; cannot create payment"
@@ -227,8 +244,7 @@ async def authorize_payment(
 ) -> PaymentRecord:
     """Move a payment from ``pending`` to ``authorized``.
 
-    In production this would call Stripe to place a hold on the client's
-    payment method.
+    Legacy bookkeeping only; this never invokes a payment provider.
 
     Parameters
     ----------
@@ -252,7 +268,6 @@ async def authorize_payment(
     if payment is None:
         raise ValueError(f"Payment {payment_id} not found")
 
-    # In production: call stripe.PaymentIntent.confirm() or similar
     logger.info(
         "payment.authorizing",
         payment_id=str(payment_id),

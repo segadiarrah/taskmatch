@@ -17,7 +17,7 @@ from app.models.submission import Submission, SubmissionStatus
 from app.models.task import Task
 from app.models.user import User
 from app.schemas.review import ReviewCreate, ReviewResponse
-from app.services.task_access import require_task_access
+from app.services.task_access import load_execution_task, require_task_access
 from app.services.workflow_service import apply_review
 
 router = APIRouter()
@@ -45,25 +45,14 @@ async def create_review(
     - If ``rejected`` or ``rework_requested`` with retries remaining: increment
       the task retry count and set the task back to ``validation_failed``.
     """
-    # Validate submission exists.
-    sub_result = await db.execute(
-        select(Submission).where(Submission.id == submission_id).with_for_update().execution_options(populate_existing=True)
+    task_id = await db.scalar(select(Submission.task_id).where(Submission.id == submission_id))
+    if task_id is None:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    _, task = await load_execution_task(db, task_id)
+    submission = await db.scalar(
+        select(Submission).where(Submission.id == submission_id)
+        .with_for_update().execution_options(populate_existing=True)
     )
-    submission = sub_result.scalar_one_or_none()
-    if submission is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Submission not found",
-        )
-
-    # Validate the task.
-    task_result = await db.execute(select(Task).where(Task.id == submission.task_id))
-    task = task_result.scalar_one_or_none()
-    if task is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Associated task not found",
-        )
 
     await require_task_access(db, task, current_user)
     if submission.status not in (SubmissionStatus.submitted, SubmissionStatus.under_review):

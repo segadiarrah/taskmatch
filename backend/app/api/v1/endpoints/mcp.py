@@ -24,9 +24,9 @@ from app.core.deps import require_role
 from app.middleware.audit import log_audit
 from app.models.job import Job, JobStatus
 from app.models.submission import Submission
-from app.models.task import Task
 from app.models.user import User
 from app.services import mcp_service, quote_service
+from app.services.task_access import load_execution_task
 
 router = APIRouter()
 
@@ -123,10 +123,7 @@ async def match_agents(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Find and rank active agents suitable for a task (explainable scoring)."""
-    task_result = await db.execute(select(Task).where(Task.id == task_id))
-    task = task_result.scalar_one_or_none()
-    if task is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+    _, task = await load_execution_task(db, task_id)
 
     try:
         ranked = await mcp_service.match_agents(db, task_id)
@@ -156,10 +153,7 @@ async def rank_bids(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Rank submitted bids for a task and shortlist the top candidate."""
-    task_result = await db.execute(select(Task).where(Task.id == task_id))
-    task = task_result.scalar_one_or_none()
-    if task is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+    _, task = await load_execution_task(db, task_id)
 
     try:
         ranked = await mcp_service.rank_bids(db, task_id)
@@ -190,6 +184,10 @@ async def validate_submission(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Validate a submission against its task's output spec and record a review."""
+    task_id = await db.scalar(select(Submission.task_id).where(Submission.id == submission_id))
+    if task_id is None:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    await load_execution_task(db, task_id)
     sub_result = await db.execute(select(Submission).where(Submission.id == submission_id).with_for_update().execution_options(populate_existing=True))
     submission = sub_result.scalar_one_or_none()
     if submission is None:

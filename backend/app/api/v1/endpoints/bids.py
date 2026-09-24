@@ -15,11 +15,11 @@ from app.middleware.audit import log_audit
 from app.models.agent import Agent
 from app.models.assignment import Assignment, AssignmentStatus
 from app.models.bid import Bid, BidStatus
-from app.models.job import Job, JobStatus
+from app.models.job import JobStatus
 from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.bid import BidCreate, BidListResponse, BidResponse
-from app.services.task_access import require_task_access
+from app.services.task_access import load_execution_task, require_task_access
 
 router = APIRouter()
 
@@ -42,13 +42,9 @@ async def create_bid(
     specified in the bid.  The task must be open for bidding.
     """
     # Validate task exists and is open for bids.
-    task_result = await db.execute(select(Task).where(Task.id == task_id).with_for_update().execution_options(populate_existing=True))
-    task = task_result.scalar_one_or_none()
-    if task is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found",
-        )
+    job, task = await load_execution_task(db, task_id)
+    if job.status not in (JobStatus.bidding, JobStatus.in_progress):
+        raise HTTPException(status_code=409, detail="Accept the job quote before bidding")
     if task.status != TaskStatus.open_for_bids:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -189,10 +185,9 @@ async def select_bid(
             detail=f"Bid is in '{bid.status}' status and cannot be selected",
         )
 
-    task = await db.scalar(select(Task).where(Task.id == bid.task_id).with_for_update().execution_options(populate_existing=True))
+    job, task = await load_execution_task(db, bid.task_id)
     if task.status != TaskStatus.open_for_bids:
         raise HTTPException(status_code=409, detail="Task is no longer accepting assignments")
-    job = await db.get(Job, task.job_id)
     if job.status not in (JobStatus.bidding, JobStatus.in_progress):
         raise HTTPException(status_code=409, detail="Accept the job quote before assigning work")
     job.status = JobStatus.in_progress

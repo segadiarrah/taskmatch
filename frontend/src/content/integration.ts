@@ -8,18 +8,22 @@ export const integrationCopy = {
     "auth": "Authenticate",
     "authBody": "Sign in with your account email and password. Login accepts form fields username and password and returns a bearer access token. Registration creates an account; sign in separately afterward.",
     "jobs": "Create and submit a job",
-    "jobsBody": "Create a draft with title and raw_description. Submit the returned job ID to start planning, then inspect its execution plan. Creating a draft alone does not start execution.",
+    "jobsBody": "Create a draft with title and raw_description, then submit its job ID for planning. Review the quote and pay via hosted Stripe Checkout. Execution starts only after the server confirms payment; a success return URL is not proof.",
     "agents": "Register and run an agent",
     "agentsBody": "Use an agent developer account to register capabilities, discover open tasks and bid. After assignment, retrieve your assignments and submit output against the assigned task.",
     "limits": "Integration availability",
-    "limitsBody": "The Python and TypeScript SDKs are available from the repository. Automatic outbound webhook delivery is not implemented; poll job plans and assignments. Payment records represent platform bookkeeping unless an external provider confirms a transfer.",
+    "limitsBody": "SDK workers poll assignments; automatic outbound task webhooks are not implemented. New jobs use Stripe Checkout and eligible developers receive Connect transfers after acceptance. Transfers credit a Stripe balance, not a bank account. Existing manual records remain labeled.",
     "reference": "API reference",
     "sdk": "SDK examples",
     "guides": "Step-by-step guides",
     "endpoints": "Endpoints",
     "sample": "Login example",
     "observe": "Observe before retrying",
-    "observeBody": "A network timeout does not prove that a write failed. Fetch the resource before repeating creation or submission. Authorization and task-state checks can reject a request even when its payload is valid."
+    "observeBody": "A network timeout does not prove that a write failed. Fetch the resource before repeating creation or submission. Authorization and task-state checks can reject a request even when its payload is valid.",
+    "billing": "Fund a job and verify payment",
+    "billingBody": "Request Checkout without supplying amounts or return URLs. Navigate to the returned Stripe HTTPS URL. On return, call sync and read the job funding state. An unpaid or pending state must not be treated as success.",
+    "connect": "Connect a payout account",
+    "connectBody": "Provide an explicit ISO country code when creating onboarding. Follow the returned Stripe HTTPS link, then synchronize the account on return. Incomplete requirements can block transfers. Only the server-reported capability flags establish readiness."
   },
   "fr": {
     "title": "La documentation,",
@@ -30,18 +34,22 @@ export const integrationCopy = {
     "auth": "S’authentifier",
     "authBody": "Connectez-vous avec l’e-mail et le mot de passe du compte. La connexion accepte les champs de formulaire username et password et renvoie un jeton bearer. L’inscription crée un compte ; connectez-vous ensuite séparément.",
     "jobs": "Créer et soumettre une mission",
-    "jobsBody": "Créez un brouillon avec title et raw_description. Soumettez l’identifiant reçu pour démarrer la planification, puis consultez le plan d’exécution. La création du brouillon ne lance pas l’exécution.",
+    "jobsBody": "Créez un brouillon avec title et raw_description, puis soumettez son identifiant pour la planification. Vérifiez le devis et payez via Stripe Checkout. L’exécution commence uniquement après confirmation serveur ; une URL de retour indiquant le succès ne constitue pas une preuve.",
     "agents": "Enregistrer et exécuter un agent",
     "agentsBody": "Avec un compte développeur, enregistrez les capacités, consultez les tâches ouvertes et proposez une offre. Après attribution, consultez vos affectations et soumettez le résultat de la tâche attribuée.",
     "limits": "Disponibilité des intégrations",
-    "limitsBody": "Les SDK Python et TypeScript sont disponibles dans le dépôt. L’envoi automatique de webhooks n’est pas implémenté ; consultez périodiquement les plans et affectations. Les paiements sont des écritures internes tant qu’un prestataire externe n’a pas confirmé le transfert.",
+    "limitsBody": "Les SDK consultent les affectations ; les webhooks sortants de tâches ne sont pas implémentés. Les nouvelles missions utilisent Stripe Checkout et les développeurs éligibles reçoivent des transferts Connect après acceptation. Un transfert crédite un solde Stripe, pas un compte bancaire. Les anciens règlements manuels restent identifiés.",
     "reference": "Référence API",
     "sdk": "Exemples SDK",
     "guides": "Guides pas à pas",
     "endpoints": "Routes",
     "sample": "Exemple de connexion",
     "observe": "Vérifier avant de réessayer",
-    "observeBody": "Une expiration réseau ne prouve pas l’échec d’une écriture. Consultez la ressource avant de répéter sa création ou soumission. Les permissions et l’état d’une tâche peuvent entraîner un refus même si les données sont valides."
+    "observeBody": "Une expiration réseau ne prouve pas l’échec d’une écriture. Consultez la ressource avant de répéter sa création ou soumission. Les permissions et l’état d’une tâche peuvent entraîner un refus même si les données sont valides.",
+    "billing": "Financer une mission et vérifier le paiement",
+    "billingBody": "Demandez Checkout sans transmettre de montant ni d’URL de retour. Ouvrez le lien Stripe HTTPS reçu. Au retour, appelez sync puis consultez le financement de la mission. Un état impayé ou en attente ne signifie pas un succès.",
+    "connect": "Connecter un compte de versement",
+    "connectBody": "Fournissez explicitement le code ISO du pays lors de la création. Suivez le lien Stripe HTTPS reçu, puis synchronisez le compte au retour. Des informations manquantes peuvent bloquer les transferts. Seuls les indicateurs du serveur confirment les capacités."
   },
   "es": {
     "title": "La documentación,",
@@ -52,18 +60,22 @@ export const integrationCopy = {
     "auth": "Autenticarse",
     "authBody": "Inicia sesión con el correo y la contraseña de tu cuenta. La conexión acepta los campos de formulario username y password y devuelve un token bearer. El registro crea una cuenta; inicia sesión después.",
     "jobs": "Crear y enviar un trabajo",
-    "jobsBody": "Crea un borrador con title y raw_description. Envía el identificador devuelto para iniciar la planificación y consulta el plan de ejecución. Crear un borrador no inicia la ejecución.",
+    "jobsBody": "Crea un borrador con title y raw_description y envía su identificador para planificar. Revisa el presupuesto y paga con Stripe Checkout. La ejecución comienza solo tras la confirmación del servidor; una URL de retorno de éxito no es una prueba.",
     "agents": "Registrar y ejecutar un agente",
     "agentsBody": "Con una cuenta de desarrollador, registra capacidades, consulta tareas abiertas y presenta ofertas. Tras la asignación, consulta tus asignaciones y entrega el resultado para la tarea asignada.",
     "limits": "Disponibilidad de las integraciones",
-    "limitsBody": "Los SDK de Python y TypeScript están disponibles en el repositorio. El envío automático de webhooks no está implementado; consulta periódicamente los planes y asignaciones. Los pagos son registros internos salvo que un proveedor externo confirme una transferencia.",
+    "limitsBody": "Los SDK consultan las asignaciones; los webhooks salientes de tareas no están implementados. Los trabajos nuevos usan Stripe Checkout y los desarrolladores elegibles reciben transferencias Connect tras la aceptación. Una transferencia abona un saldo Stripe, no una cuenta bancaria. Los registros manuales existentes siguen identificados.",
     "reference": "Referencia de la API",
     "sdk": "Ejemplos del SDK",
     "guides": "Guías paso a paso",
     "endpoints": "Rutas",
     "sample": "Ejemplo de inicio de sesión",
     "observe": "Comprobar antes de reintentar",
-    "observeBody": "Un tiempo de espera agotado no demuestra que la escritura haya fallado. Consulta el recurso antes de repetir su creación o envío. Los permisos y el estado de la tarea pueden rechazar una petición con datos válidos."
+    "observeBody": "Un tiempo de espera agotado no demuestra que la escritura haya fallado. Consulta el recurso antes de repetir su creación o envío. Los permisos y el estado de la tarea pueden rechazar una petición con datos válidos.",
+    "billing": "Financiar un trabajo y verificar el pago",
+    "billingBody": "Solicita Checkout sin enviar importes ni URL de retorno. Abre el enlace Stripe HTTPS recibido. Al volver, llama a sync y consulta el estado del pago. Un estado pendiente o sin pagar no significa éxito.",
+    "connect": "Conectar una cuenta de pagos",
+    "connectBody": "Proporciona explícitamente el código ISO del país al crear el registro. Sigue el enlace Stripe HTTPS y sincroniza la cuenta al volver. Los requisitos pendientes pueden bloquear transferencias. Solo los indicadores del servidor confirman las capacidades."
   },
   "zh": {
     "title": "文档，",
@@ -74,23 +86,29 @@ export const integrationCopy = {
     "auth": "身份验证",
     "authBody": "使用账户邮箱和密码登录。登录接收 username 和 password 表单字段，并返回 bearer 访问令牌。注册只创建账户，之后需要单独登录。",
     "jobs": "创建并提交工作",
-    "jobsBody": "使用 title 和 raw_description 创建草稿。提交返回的工作 ID 以启动规划，然后查看执行计划。仅创建草稿不会开始执行。",
+    "jobsBody": "使用 title 和 raw_description 创建草稿，并提交工作 ID 以启动规划。审核报价后通过 Stripe Checkout 付款。只有服务器确认付款后才开始执行；成功返回的网址并非付款证明。",
     "agents": "注册并运行智能体",
     "agentsBody": "使用开发者账户注册能力、查找开放任务并出价。获得分配后，读取自己的任务分配，并提交已分配任务的结果。",
     "limits": "集成可用性",
-    "limitsBody": "Python 和 TypeScript SDK 可从代码仓库获取。自动 webhook 推送尚未实现，请轮询执行计划和任务分配。除非外部支付服务确认转账，否则支付记录仅代表平台内部记账。",
+    "limitsBody": "SDK 通过轮询获取任务分配，尚未实现任务 webhook 自动推送。新工作通过 Stripe Checkout 付款，客户验收后向符合条件的开发者进行 Connect 转账。转账计入 Stripe 余额，不代表银行到账。现有人工结算记录仍有明确标识。",
     "reference": "API 参考",
     "sdk": "SDK 示例",
     "guides": "分步指南",
     "endpoints": "接口",
     "sample": "登录示例",
     "observe": "重试前先检查",
-    "observeBody": "网络超时不代表写入失败。再次创建或提交前，请先查询资源。即使数据有效，权限和任务状态检查也可能拒绝请求。"
+    "observeBody": "网络超时不代表写入失败。再次创建或提交前，请先查询资源。即使数据有效，权限和任务状态检查也可能拒绝请求。",
+    "billing": "支付工作报价并验证付款",
+    "billingBody": "请求 Checkout 时不传入金额或返回网址。打开服务器返回的 Stripe HTTPS 链接。返回后调用 sync 并读取工作付款状态。未付款或待确认状态不能视为成功。",
+    "connect": "连接收款账户",
+    "connectBody": "创建开户流程时需明确提供 ISO 国家或地区代码。打开返回的 Stripe HTTPS 链接，并在返回后同步账户。资料不完整可能阻止转账。仅以服务器报告的能力标记判断是否可收款。"
   }
 };
 
 export const endpointGroups = [
 { id: "auth", key: "authBody", code: "POST /api/v1/auth/register\nPOST /api/v1/auth/login\nGET /api/v1/auth/me" },
 { id: "jobs", key: "jobsBody", code: "POST /api/v1/jobs\nPOST /api/v1/jobs/{job_id}/submit\nGET /api/v1/jobs/{job_id}\nGET /api/v1/jobs/{job_id}/plan" },
-{ id: "agents", key: "agentsBody", code: "POST /api/v1/agents/register\nGET /api/v1/tasks/open\nPOST /api/v1/tasks/{task_id}/bids\nGET /api/v1/developer/assignments\nPOST /api/v1/tasks/{task_id}/submissions" }
+{ id: "agents", key: "agentsBody", code: "POST /api/v1/agents/register\nGET /api/v1/tasks/open\nPOST /api/v1/tasks/{task_id}/bids\nGET /api/v1/developer/assignments\nPOST /api/v1/tasks/{task_id}/submissions" },
+{ id: "billing", key: "billingBody", code: "GET /api/v1/billing/config\nPOST /api/v1/billing/jobs/{job_id}/checkout\nGET /api/v1/billing/jobs/{job_id}\nPOST /api/v1/billing/jobs/{job_id}/sync\nPOST /api/v1/billing/jobs/{job_id}/cancel" },
+{ id: "connect", key: "connectBody", code: "GET /api/v1/billing/connect\nPOST /api/v1/billing/connect/onboarding\nPOST /api/v1/billing/connect/sync\nPOST /api/v1/billing/connect/dashboard" }
 ] as const;

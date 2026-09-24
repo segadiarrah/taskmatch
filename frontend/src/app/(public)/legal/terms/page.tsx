@@ -5,24 +5,7 @@ import { LegalPageShell, LegalSection } from "@/components/public/legal-shell";
 import { useTranslation, type Locale } from "@/lib/i18n";
 import { LEGAL_ENTITY, publisherLine } from "@/lib/legal-entity";
 
-/**
- * Terms of service.
- *
- * These are the terms, not a summary of terms kept elsewhere. The previous
- * version ended by escalating disputes "to binding arbitration under the
- * governing law set out in the full contractual terms" and warned that "no
- * summary page should be treated as a substitute for the complete contractual
- * terms" — pointing at a document that does not exist. A contract that defers
- * its governing law to a missing annex has no governing law.
- *
- * So this page now carries what it was deferring: who may contract (only
- * professionals, which is what keeps consumer law and the P2B Regulation out of
- * scope), who owns the deliverables, the liability cap, how the relationship
- * ends, and which law and which courts apply.
- *
- * The escrow and dispute mechanics were the one part that was already specific,
- * and they are kept as they were.
- */
+/** Service terms with payment mechanics matching the implemented billing flow. */
 
 type Section = {
   title: string;
@@ -57,8 +40,8 @@ const COPY: Record<Locale, Copy> = {
     eyebrow: "Legal / Terms",
     title: "Terms of Service",
     summary:
-      "The terms that govern access to and use of TaskMatch.ai — who may contract, how the marketplace works, payments and escrow, who owns the deliverables, liability, and the law that applies.",
-    updatedAt: "Last updated: 13 August 2026",
+      "The terms that govern access to and use of TaskMatch.ai — who may contract, how the marketplace works, payments and transfers, who owns the deliverables, liability, and the law that applies.",
+    updatedAt: "Last updated: 24 September 2026",
     operatedBy: "TaskMatch.ai is operated by",
     sections: {
       acceptance: {
@@ -94,7 +77,7 @@ const COPY: Record<Locale, Copy> = {
         title: "4. Fees and payments",
         paragraphs: [
           "TaskMatch sets the price of a task and presents it before any work begins. Platform fees are those published on the pricing page at the time of the order. Prices are exclusive of VAT, which is added where applicable.",
-          "The current platform records payment obligations in an internal ledger. Accepting work does not itself transfer funds. External settlement must be arranged and confirmed separately; availability and terms must be agreed before placing an order.",
+          "New jobs are paid through Stripe Checkout before execution. Eligible developers receive Connect transfers after client acceptance. Stripe manages bank payouts separately; existing manual payment records remain explicitly identified.",
         ],
         bullets: [
           "Clients are responsible for lawful briefs, accurate requirements and a valid payment method.",
@@ -103,20 +86,20 @@ const COPY: Record<Locale, Copy> = {
         ],
       },
       disputes: {
-        title: "5. Escrow, validation and disputes",
+        title: "5. Funding, validation and payment disputes",
         paragraphs: [
-          "Payment for every task is held in escrow the moment a client accepts a bid. Funds are never released to an executor — AI agent or human expert — until the delivered work has passed validation against the explicit success criteria captured when the task was structured.",
-          "The escrow lifecycle and dispute path are as follows:",
+          "New jobs use Stripe Checkout to pay the server-priced quote before execution. TaskMatch starts work only after verifying payment with Stripe. This is platform funding, not a legal escrow service.",
+          "Developer transfers and refunds follow these steps:",
         ],
         bullets: [
-          "Hold: on assignment, the task budget is captured and held in escrow; the executor sees committed funds, the client sees protected funds.",
-          "Validation: a delivered submission is scored against the task's success criteria. A passing score moves the task to client review; a failing score returns it to the executor for revision.",
-          "Release: the client accepts the validated deliverable and escrow releases payment to the executor, net of platform fees. Acceptance is also triggered automatically after the review window if no dispute is raised.",
-          "Dispute: a client may contest a deliverable during the review window, stating the criteria they believe were not met. Escrow remains frozen while the dispute is open.",
+          "Payment: the quoted amount and currency are fixed by the server and paid through hosted Stripe Checkout. Closing or returning from Checkout is not proof of payment.",
+          "Validation: delivered work is reviewed against the agreed success criteria. The client can request revisions before accepting delivery.",
+          "Transfer: accepting completed work queues the agreed net amount for each eligible developer’s connected Stripe account. Incomplete onboarding can block a transfer. Credit to a Stripe balance does not establish that a bank payout has occurred.",
+          "Review: charge disputes or externally initiated partial refunds pause further work and transfers for review. Acceptance is not automatic after a time window.",
         ],
         closing: [
-          "When a dispute is opened, TaskMatch reviews the task specification, the validation record and the delivered artifacts. Outcomes include release to the executor, a revision cycle with a new validation pass, partial settlement reflecting work completed, or a full refund to the client. Because every state transition — intake, matching, scoring, validation and settlement — is written to an append-only decision log, each dispute is adjudicated against an auditable record rather than after-the-fact claims.",
-          "This internal process is the first route for any disagreement between a client and an executor. Chargebacks and payment reversals are handled through our payment processor against the same evidence trail.",
+          "Administrators can request a full refund of the remaining payment balance. Existing transfers must be reconciled or reversed first; the refund is shown as complete only after confirmation by Stripe.",
+          "Existing jobs explicitly marked for manual settlement retain that arrangement. Contact TaskMatch for a delivery or payment dispute; the platform does not promise automatic dispute resolution.",
         ],
       },
       ip: {
@@ -138,7 +121,7 @@ const COPY: Record<Locale, Copy> = {
       termination: {
         title: "8. Ending the relationship",
         paragraphs: [
-          "You may close your account at any time. Tasks already in escrow run to settlement so that neither side is left holding an unresolved payment.",
+          "You may close your account at any time. Closing an account does not cancel outstanding payment, refund or delivery obligations.",
           "We may terminate for breach of these terms, or without cause on thirty days' written notice. Suspension for security or fraud can take effect immediately, with the reason given as soon as it safely can be.",
           "Provisions that are meant to survive — fees due, ownership, liability, confidentiality, governing law — survive the end of the contract.",
         ],
@@ -164,8 +147,8 @@ const COPY: Record<Locale, Copy> = {
     eyebrow: "Mentions légales / Conditions",
     title: "Conditions générales d’utilisation",
     summary:
-      "Les conditions qui régissent l’accès à TaskMatch.ai et son utilisation — qui peut contracter, comment fonctionne la place de marché, paiements et séquestre, propriété des livrables, responsabilité et droit applicable.",
-    updatedAt: "Dernière mise à jour : 13 août 2026",
+      "Les conditions qui régissent l’accès à TaskMatch.ai et son utilisation — qui peut contracter, comment fonctionne la place de marché, paiements et transferts, propriété des livrables, responsabilité et droit applicable.",
+    updatedAt: "Dernière mise à jour : 24 septembre 2026",
     operatedBy: "TaskMatch.ai est exploité par",
     sections: {
       acceptance: {
@@ -201,7 +184,7 @@ const COPY: Record<Locale, Copy> = {
         title: "4. Frais et paiements",
         paragraphs: [
           "TaskMatch fixe le prix d’une tâche et le présente avant tout démarrage. Les frais de plateforme sont ceux publiés sur la page Tarifs au moment de la commande. Les prix s’entendent hors taxes, la TVA étant ajoutée le cas échéant.",
-          "La plateforme actuelle enregistre les obligations de paiement dans un registre interne. L’acceptation du travail ne transfère aucun fonds. Le règlement externe doit être organisé et confirmé séparément ; sa disponibilité et ses modalités doivent être convenues avant toute commande.",
+          "Les nouvelles missions sont payées via Stripe Checkout avant exécution. Les développeurs éligibles reçoivent des transferts Connect après acceptation du client. Stripe gère séparément les versements bancaires ; les anciens règlements manuels restent identifiés.",
         ],
         bullets: [
           "Le client répond de la licéité de ses briefs, de l’exactitude de ses exigences et de la validité de son moyen de paiement.",
@@ -210,20 +193,20 @@ const COPY: Record<Locale, Copy> = {
         ],
       },
       disputes: {
-        title: "5. Séquestre, validation et litiges",
+        title: "5. Financement, validation et contestations de paiement",
         paragraphs: [
-          "Le paiement de chaque tâche est placé sous séquestre dès que le client accepte une offre. Les fonds ne sont jamais libérés à un exécutant — agent IA ou expert humain — avant que le travail livré ait passé la validation au regard des critères de succès explicites fixés lors de la structuration de la tâche.",
-          "Le cycle de séquestre et le parcours de litige sont les suivants :",
+          "Les nouvelles missions utilisent Stripe Checkout pour régler le devis calculé par le serveur avant l’exécution. TaskMatch démarre le travail uniquement après vérification du paiement auprès de Stripe. Ce financement de la plateforme ne constitue pas un service de séquestre juridique.",
+          "Les transferts aux développeurs et les remboursements suivent ces étapes :",
         ],
         bullets: [
-          "Blocage : à l’affectation, le budget de la tâche est capturé et placé sous séquestre ; l’exécutant voit des fonds engagés, le client des fonds protégés.",
-          "Validation : la remise est notée au regard des critères de succès. Une note suffisante fait passer la tâche en revue client ; une note insuffisante la renvoie à l’exécutant pour révision.",
-          "Libération : le client accepte le livrable validé et le séquestre verse le paiement à l’exécutant, net des frais de plateforme. L’acceptation intervient aussi automatiquement à l’issue du délai de revue si aucun litige n’est ouvert.",
-          "Litige : le client peut contester un livrable pendant le délai de revue, en indiquant les critères qu’il estime non satisfaits. Le séquestre reste gelé tant que le litige est ouvert.",
+          "Paiement : le montant et la devise du devis sont fixés par le serveur et réglés sur la page Stripe Checkout. Fermer cette page ou en revenir ne prouve pas le paiement.",
+          "Validation : le travail livré est examiné selon les critères convenus. Le client peut demander des modifications avant d’accepter la livraison.",
+          "Transfert : l’acceptation du travail terminé déclenche la mise en file du montant net convenu pour le compte Stripe connecté de chaque développeur éligible. Une inscription incomplète peut bloquer un transfert. Le crédit d’un solde Stripe ne confirme pas un versement bancaire.",
+          "Examen : les contestations de paiement ou remboursements partiels initiés ailleurs suspendent la suite du travail et les transferts pour examen. L’acceptation n’est pas automatique après un délai.",
         ],
         closing: [
-          "Lorsqu’un litige est ouvert, TaskMatch examine la spécification de la tâche, la trace de validation et les livrables. L’issue peut être la libération au profit de l’exécutant, un cycle de révision suivi d’une nouvelle validation, un règlement partiel reflétant le travail accompli, ou un remboursement intégral au client. Comme chaque transition d’état — réception, appariement, notation, validation et règlement — est inscrite dans un journal de décisions en ajout seul, chaque litige est tranché au regard d’une trace auditable plutôt que d’affirmations rétrospectives.",
-          "Ce processus interne est la première voie pour tout désaccord entre un client et un exécutant. Les rétrofacturations et annulations de paiement sont traitées via notre prestataire de paiement sur la base de la même trace.",
+          "Les administrateurs peuvent demander le remboursement intégral du solde restant. Les transferts existants doivent d’abord être rapprochés ou annulés ; le remboursement n’est indiqué comme terminé qu’après confirmation de Stripe.",
+          "Les missions existantes explicitement indiquées en règlement manuel conservent ce fonctionnement. Contactez TaskMatch en cas de litige de livraison ou de paiement ; la plateforme ne promet pas de résolution automatique.",
         ],
       },
       ip: {
@@ -245,7 +228,7 @@ const COPY: Record<Locale, Copy> = {
       termination: {
         title: "8. Fin de la relation",
         paragraphs: [
-          "Vous pouvez fermer votre compte à tout moment. Les tâches déjà sous séquestre vont jusqu’à leur règlement, afin qu’aucune des parties ne reste avec un paiement en suspens.",
+          "Vous pouvez fermer votre compte à tout moment. La fermeture du compte n’annule pas les obligations de paiement, remboursement ou livraison en cours.",
           "Nous pouvons résilier en cas de manquement aux présentes conditions, ou sans motif moyennant un préavis écrit de trente jours. Une suspension pour raison de sécurité ou de fraude peut prendre effet immédiatement, le motif étant communiqué dès que cela est possible sans risque.",
           "Les stipulations destinées à survivre — sommes dues, propriété, responsabilité, confidentialité, droit applicable — survivent à la fin du contrat.",
         ],
@@ -271,8 +254,8 @@ const COPY: Record<Locale, Copy> = {
     eyebrow: "Legal / Términos",
     title: "Términos del servicio",
     summary:
-      "Los términos que rigen el acceso y el uso de TaskMatch.ai — quién puede contratar, cómo funciona el mercado, pagos y depósito en garantía, propiedad de los entregables, responsabilidad y ley aplicable.",
-    updatedAt: "Última actualización: 13 de agosto de 2026",
+      "Los términos que rigen el acceso y el uso de TaskMatch.ai — quién puede contratar, cómo funciona el mercado, pagos y transferencias, propiedad de los entregables, responsabilidad y ley aplicable.",
+    updatedAt: "Última actualización: 24 de septiembre de 2026",
     operatedBy: "TaskMatch.ai está operado por",
     sections: {
       acceptance: {
@@ -308,7 +291,7 @@ const COPY: Record<Locale, Copy> = {
         title: "4. Tarifas y pagos",
         paragraphs: [
           "TaskMatch fija el precio de una tarea y lo presenta antes de que empiece el trabajo. Las comisiones son las publicadas en la página de precios en el momento del pedido. Los precios no incluyen IVA, que se añade cuando corresponde.",
-          "La plataforma actual registra las obligaciones de pago en un registro interno. Aceptar el trabajo no transfiere fondos. La liquidación externa debe acordarse y confirmarse por separado; su disponibilidad y condiciones deben pactarse antes de contratar.",
+          "Los trabajos nuevos se pagan con Stripe Checkout antes de ejecutarse. Los desarrolladores elegibles reciben transferencias Connect tras la aceptación del cliente. Stripe gestiona los pagos bancarios por separado; los registros manuales existentes siguen identificados.",
         ],
         bullets: [
           "El cliente responde de la licitud de sus briefs, de la exactitud de sus requisitos y de la validez de su medio de pago.",
@@ -317,20 +300,20 @@ const COPY: Record<Locale, Copy> = {
         ],
       },
       disputes: {
-        title: "5. Depósito en garantía, validación y disputas",
+        title: "5. Financiación, validación y disputas de pago",
         paragraphs: [
-          "El pago de cada tarea queda en depósito en garantía en cuanto el cliente acepta una oferta. Los fondos nunca se liberan al ejecutor — agente de IA o experto humano — hasta que el trabajo entregado supera la validación frente a los criterios de éxito explícitos fijados al estructurar la tarea.",
-          "El ciclo del depósito y la vía de disputa son los siguientes:",
+          "Los trabajos nuevos usan Stripe Checkout para pagar el presupuesto calculado por el servidor antes de la ejecución. TaskMatch inicia el trabajo solo tras verificar el pago con Stripe. Se trata de financiación en la plataforma, no de un servicio jurídico de depósito en garantía.",
+          "Las transferencias a desarrolladores y los reembolsos siguen estos pasos:",
         ],
         bullets: [
-          "Retención: al asignarse, el presupuesto de la tarea se captura y se retiene; el ejecutor ve fondos comprometidos, el cliente ve fondos protegidos.",
-          "Validación: la entrega se puntúa frente a los criterios de éxito. Una puntuación suficiente pasa la tarea a revisión del cliente; una insuficiente la devuelve al ejecutor para revisión.",
-          "Liberación: el cliente acepta el entregable validado y el depósito libera el pago al ejecutor, neto de comisiones. La aceptación también se activa automáticamente al terminar el plazo de revisión si no se abre disputa.",
-          "Disputa: el cliente puede impugnar un entregable durante el plazo de revisión, indicando los criterios que considera incumplidos. El depósito permanece congelado mientras la disputa esté abierta.",
+          "Pago: el servidor fija el importe y la moneda del presupuesto, que se paga en Stripe Checkout. Cerrar esa página o volver desde ella no demuestra que se haya pagado.",
+          "Validación: el trabajo entregado se revisa según los criterios acordados. El cliente puede pedir cambios antes de aceptar la entrega.",
+          "Transferencia: aceptar el trabajo completado pone en cola el importe neto acordado para la cuenta Stripe conectada de cada desarrollador elegible. Un registro incompleto puede bloquearla. Abonar un saldo Stripe no confirma un pago bancario.",
+          "Revisión: las disputas de cargos o los reembolsos parciales iniciados externamente suspenden nuevos trabajos y transferencias para su revisión. La aceptación no se produce automáticamente al vencer un plazo.",
         ],
         closing: [
-          "Cuando se abre una disputa, TaskMatch revisa la especificación de la tarea, el registro de validación y los artefactos entregados. Los desenlaces incluyen la liberación al ejecutor, un ciclo de revisión con nueva validación, una liquidación parcial acorde al trabajo realizado, o un reembolso íntegro al cliente. Como cada transición de estado — recepción, emparejamiento, puntuación, validación y liquidación — se escribe en un registro de decisiones de solo adición, cada disputa se resuelve frente a un historial auditable y no frente a afirmaciones posteriores.",
-          "Este proceso interno es la primera vía para cualquier desacuerdo entre un cliente y un ejecutor. Los contracargos y reversos de pago se tramitan a través de nuestro procesador de pagos con el mismo historial probatorio.",
+          "Los administradores pueden solicitar el reembolso íntegro del saldo restante. Las transferencias existentes deben conciliarse o revertirse primero; el reembolso solo se muestra completado tras la confirmación de Stripe.",
+          "Los trabajos existentes marcados explícitamente para liquidación manual conservan ese acuerdo. Contacta con TaskMatch si existe una disputa de entrega o pago; la plataforma no promete una resolución automática.",
         ],
       },
       ip: {
@@ -352,7 +335,7 @@ const COPY: Record<Locale, Copy> = {
       termination: {
         title: "8. Fin de la relación",
         paragraphs: [
-          "Puedes cerrar tu cuenta en cualquier momento. Las tareas ya en depósito llegan hasta su liquidación, para que ninguna parte quede con un pago sin resolver.",
+          "Puedes cerrar tu cuenta en cualquier momento. Cerrar la cuenta no cancela las obligaciones pendientes de pago, reembolso o entrega.",
           "Podemos resolver el contrato por incumplimiento de estos términos, o sin causa con un preaviso escrito de treinta días. La suspensión por seguridad o fraude puede ser inmediata, indicando el motivo tan pronto como sea seguro hacerlo.",
           "Las cláusulas destinadas a subsistir — importes debidos, propiedad, responsabilidad, confidencialidad, ley aplicable — subsisten a la terminación.",
         ],
@@ -378,8 +361,8 @@ const COPY: Record<Locale, Copy> = {
     eyebrow: "法律 / 条款",
     title: "服务条款",
     summary:
-      "规范 TaskMatch.ai 访问与使用的条款——谁可以订立合同、市场如何运作、付款与资金托管、交付物归属、责任范围以及适用法律。",
-    updatedAt: "最后更新：2026 年 8 月 13 日",
+      "规范 TaskMatch.ai 访问与使用的条款——谁可以订立合同、市场如何运作、付款与转账、交付物归属、责任范围以及适用法律。",
+    updatedAt: "最后更新：2026 年 9 月 24 日",
     operatedBy: "TaskMatch.ai 的运营方为",
     sections: {
       acceptance: {
@@ -410,7 +393,7 @@ const COPY: Record<Locale, Copy> = {
         title: "4. 费用与付款",
         paragraphs: [
           "TaskMatch 设定子任务价格，并在任何工作开始前予以呈现。平台费用以下单时定价页面公布的标准为准。价格不含增值税，适用时另行加收。",
-          "当前平台在内部账簿中记录付款义务。接受工作本身不会转移资金。外部结算必须单独安排和确认，并在下单前就可用性和条款达成一致。",
+          "新工作在执行前通过 Stripe Checkout 付款。客户验收后，符合条件的开发者通过 Connect 获得转账。银行付款由 Stripe 单独管理；现有人工结算记录仍明确标识。",
         ],
         bullets: [
           "客户对其需求说明的合法性、要求的准确性以及支付方式的有效性负责。",
@@ -419,20 +402,20 @@ const COPY: Record<Locale, Copy> = {
         ],
       },
       disputes: {
-        title: "5. 资金托管、验证与争议",
+        title: "5. 付款、验证与支付争议",
         paragraphs: [
-          "客户一旦接受报价，该子任务的款项即进入托管。在交付的工作通过针对任务结构化时所确定的明确验收标准的验证之前，资金绝不会释放给执行方——无论是 AI 智能体还是人类专家。",
-          "托管生命周期与争议路径如下：",
+          "新工作需在执行前，通过 Stripe Checkout 支付服务器计算的报价。TaskMatch 仅在向 Stripe 核实付款后启动工作。这属于平台收款，不是法律意义上的资金托管服务。",
+          "开发者转账和退款遵循以下流程：",
         ],
         bullets: [
-          "冻结：分配时，任务预算被扣划并置于托管；执行方看到已承诺资金，客户看到受保护资金。",
-          "验证：提交的成果按任务验收标准评分。通过则进入客户审阅；未通过则退回执行方修订。",
-          "释放：客户接受经验证的交付物，托管在扣除平台费用后向执行方付款。若审阅期内未提出争议，也会自动视为接受。",
-          "争议：客户可在审阅期内对交付物提出异议，并说明其认为未满足的标准。争议期间托管资金保持冻结。",
+          "付款：报价金额和币种由服务器确定，并在 Stripe Checkout 页面支付。关闭支付页面或从该页面返回不代表付款成功。",
+          "验证：按约定的验收标准审核交付内容。客户可以在验收前要求修改。",
+          "转账：验收已完成工作后，将为每位符合条件的开发者创建约定净额的 Stripe 关联账户转账任务。开户未完成可能阻止转账。金额计入 Stripe 余额不代表银行已收到款项。",
+          "审核：支付争议或外部发起的部分退款会暂停后续工作和转账，等待审核。工作不会因审核期限届满而自动验收。",
         ],
         closing: [
-          "争议提出后，TaskMatch 会审阅任务规格、验证记录与交付物。处理结果可能是向执行方释放资金、进入修订并重新验证、按已完成工作部分结算，或全额退款给客户。由于每一次状态流转——受理、匹配、评分、验证与结算——都写入只可追加的决策日志，每一起争议都基于可审计的记录裁断，而非事后主张。",
-          "该内部流程是客户与执行方之间任何分歧的第一途径。拒付与付款撤销通过我们的支付服务商处理，依据同一套证据链。",
+          "管理员可以申请退还剩余的全部可退款金额。已有转账必须先完成核对或撤销，只有 Stripe 确认后才显示退款完成。",
+          "明确标记为人工结算的现有工作保留原有安排。交付或付款存在争议时请联系 TaskMatch；平台不承诺自动解决争议。",
         ],
       },
       ip: {
@@ -454,7 +437,7 @@ const COPY: Record<Locale, Copy> = {
       termination: {
         title: "8. 关系的终止",
         paragraphs: [
-          "你可以随时关闭账户。已进入托管的子任务将继续至结算完成，以免任何一方留有未了结的款项。",
+          "你可以随时关闭账户。关闭账户不会取消尚未完成的付款、退款或交付义务。",
           "我们可因违反本条款而终止，或在提前三十天书面通知后无因终止。出于安全或欺诈原因的暂停可立即生效，并在安全可行时尽快说明理由。",
           "应当存续的条款——应付款项、权属、责任、保密、适用法律——在合同终止后继续有效。",
         ],

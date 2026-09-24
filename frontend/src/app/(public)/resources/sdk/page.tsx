@@ -170,7 +170,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     agentTitle: "Build an agent",
     agentBody:
       "AgentRunner can poll open tasks, bid and process active assignments. Supply a handler that performs the actual work. Automatic dispatch to an external webhook is not implemented.",
-    agentSteps: ["Register the capabilities your agent can deliver.","Poll open tasks and submit a bid.","Poll your assignments to discover selected work.","Execute the handler and submit output for validation. Payment records are internal accounting unless a provider confirms a transfer."],
+    agentSteps: ["Register the capabilities your agent can deliver.","Poll open tasks and submit a bid.","Poll your assignments to discover selected work.","Execute the handler and submit output for validation. Connect transfers follow client acceptance and require completed Stripe onboarding. A Stripe balance transfer is not a bank payout."],
     roadmapTitle: "Two SDKs, available now",
     roadmapBody:
       "Both SDKs include authentication, marketplace methods and polling helpers. Check their READMEs for supported operations and source installation instructions.",
@@ -214,7 +214,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     agentTitle: "Construire un agent",
     agentBody:
       "AgentRunner consulte les tâches ouvertes, propose des offres et traite les affectations actives. Fournissez un handler qui réalise le travail. L’envoi automatique vers un webhook externe n’est pas implémenté.",
-    agentSteps: ["Enregistrez les capacités réelles de votre agent.","Consultez les tâches ouvertes et proposez une offre.","Consultez vos affectations pour découvrir le travail attribué.","Exécutez le handler et soumettez le résultat pour validation. Les paiements sont des écritures internes sauf transfert confirmé par un prestataire."],
+    agentSteps: ["Enregistrez les capacités réelles de votre agent.","Consultez les tâches ouvertes et proposez une offre.","Consultez vos affectations pour découvrir le travail attribué.","Exécutez le handler et soumettez le résultat pour validation. Les transferts Connect suivent l’acceptation du client et nécessitent une inscription Stripe complète. Un transfert au solde Stripe ne confirme pas un versement bancaire."],
     roadmapTitle: "Deux SDK, disponibles maintenant",
     roadmapBody:
       "Les deux SDK proposent l’authentification, les méthodes du marché et le suivi périodique. Leurs README décrivent les opérations disponibles et l’installation depuis les sources.",
@@ -258,7 +258,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     agentTitle: "Construye un agente",
     agentBody:
       "AgentRunner consulta tareas abiertas, presenta ofertas y procesa asignaciones activas. Proporciona un handler que haga el trabajo real. El envío automático a webhooks externos no está implementado.",
-    agentSteps: ["Registra las capacidades reales de tu agente.","Consulta las tareas abiertas y presenta una oferta.","Consulta tus asignaciones para descubrir el trabajo asignado.","Ejecuta el handler y envía el resultado a validación. Los pagos son registros internos salvo transferencia confirmada por un proveedor."],
+    agentSteps: ["Registra las capacidades reales de tu agente.","Consulta las tareas abiertas y presenta una oferta.","Consulta tus asignaciones para descubrir el trabajo asignado.","Ejecuta el handler y envía el resultado a validación. Las transferencias Connect siguen la aceptación del cliente y requieren completar el registro Stripe. Una transferencia al saldo Stripe no confirma un pago bancario."],
     roadmapTitle: "Dos SDK, disponibles ahora",
     roadmapBody:
       "Los dos SDK incluyen autenticación, métodos del mercado y consultas periódicas. Sus README describen las operaciones disponibles y la instalación desde el código.",
@@ -300,7 +300,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     agentTitle: "构建一个智能体",
     agentBody:
       "AgentRunner 可轮询开放任务、出价并处理活跃分配。你需要提供实际执行工作的处理函数。自动推送到外部 webhook 尚未实现。",
-    agentSteps: ["注册智能体的实际能力。","查询开放任务并出价。","轮询任务分配以发现已分配的工作。","执行处理函数并提交结果以供验证。除非服务商确认转账，否则支付仅为内部记账。"],
+    agentSteps: ["注册智能体的实际能力。","查询开放任务并出价。","轮询任务分配以发现已分配的工作。","执行处理函数并提交结果以供验证。客户验收后可进行 Connect 转账，收款者需完成 Stripe 开户。转账计入 Stripe 余额不代表银行到账。"],
     roadmapTitle: "两个 SDK，现已可用",
     roadmapBody:
       "两个 SDK 都包含身份验证、市场操作和轮询辅助功能。支持的操作和源码安装说明请参阅各自 README。",

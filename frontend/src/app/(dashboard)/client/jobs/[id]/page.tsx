@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import ExecutionPlan from "./execution-plan";
 import QuotePanel from "./quote-panel";
+import BillingPanel from "./billing-panel";
 import DeliveryPanel from "./delivery-panel";
 
 /**
@@ -38,6 +39,7 @@ import {
 } from "lucide-react";
 
 interface JobDetail {
+  billing_mode: "stripe" | "legacy_manual";
   id: string;
   title: string;
   raw_description: string;
@@ -200,13 +202,15 @@ export default function JobDetailPage() {
 
       {/* Quote — the gate. Shown from the moment the job is priced until the
           client decides; execution only begins once they approve. */}
-      <QuotePanel jobId={job.id} onAccepted={fetchJob} />
+      <QuotePanel jobId={job.id} billingMode={job.billing_mode} onAccepted={fetchJob} />
+      {job.billing_mode !== "legacy_manual" && <BillingPanel jobId={job.id} onUpdated={fetchJob} />}
 
       {/* Execution Plan */}
       <ExecutionPlan
         jobId={job.id}
         jobStatus={job.status}
         fallbackCurrency={job.currency}
+        billingMode={job.billing_mode}
         onSubmitted={fetchJob}
       />
 

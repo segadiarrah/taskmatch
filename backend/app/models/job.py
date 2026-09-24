@@ -68,6 +68,9 @@ class Job(TimestampMixin, Base):
     currency: Mapped[str] = mapped_column(
         String(8), nullable=False, default="USD", server_default="USD"
     )
+    billing_mode: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="stripe", server_default="stripe"
+    )
     deadline: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True
     )

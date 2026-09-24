@@ -28,7 +28,7 @@ from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.quote import OfferAcceptRequest, QuoteRejectRequest
 from app.services import quote_service
-from app.services.task_access import require_task_access
+from app.services.task_access import load_execution_task, require_task_access
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 
@@ -216,6 +216,10 @@ async def accept_quote(
     client approves the estimate before work begins. Settlement is manual.
     """
     job = await _load_owned_job(db, job_id, current_user, lock=True)
+    if job.billing_mode != "legacy_manual":
+        from app.services.billing_service import create_checkout
+
+        return await create_checkout(db, job, current_user)
     if job.status != JobStatus.quoted:
         raise HTTPException(status_code=409, detail="Job is no longer awaiting quote acceptance")
     quote = await quote_service.current_quote(db, job_id)
@@ -275,7 +279,9 @@ async def reject_quote(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     """Decline the price. Nothing executes and nothing is billed."""
-    await _load_owned_job(db, job_id, current_user, lock=True)
+    job = await _load_owned_job(db, job_id, current_user, lock=True)
+    from app.services.billing_service import assert_quote_editable
+    await assert_quote_editable(db, job)
     quote = await quote_service.current_quote(db, job_id)
     if quote is None:
         raise HTTPException(
@@ -314,6 +320,8 @@ async def refresh_quote(
     delivery mode — an installation costs more than a document.
     """
     job = await _load_owned_job(db, job_id, current_user, lock=True)
+    from app.services.billing_service import assert_quote_editable
+    await assert_quote_editable(db, job)
     if job.status in (
         JobStatus.bidding,
         JobStatus.cancelled,
@@ -430,10 +438,7 @@ async def accept_offer(
     Restricted to experts and admins — claiming work is not something a client
     (their own or anyone else's) may do.
     """
-    task = await db.scalar(select(Task).where(Task.id == task_id).with_for_update().execution_options(populate_existing=True))
-    if task is None:
-        raise HTTPException(status_code=404, detail="Task not found")
-    job = await db.get(Job, task.job_id)
+    job, task = await load_execution_task(db, task_id)
     if task.status != TaskStatus.open_for_bids or job.status not in (JobStatus.bidding, JobStatus.in_progress):
         raise HTTPException(status_code=409, detail="This task is not open for assignment")
     agents_query = select(Agent).where(Agent.developer_user_id == current_user.id, Agent.status == "active")

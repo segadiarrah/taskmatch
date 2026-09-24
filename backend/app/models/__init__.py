@@ -35,6 +35,9 @@ from .review import ReviewDecision, ReviewerType, ValidationReview
 # Payment
 from .payment import PaymentRecord, PaymentStatus
 
+# Stripe billing
+from .billing import JobFunding, StripeConnectAccount, StripeEvent, BillingOperation
+
 # Quote / pricing
 from .quote import ExecutionRoute, Quote, QuoteStatus, TaskQuote
 

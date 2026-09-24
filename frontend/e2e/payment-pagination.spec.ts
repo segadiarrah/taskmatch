@@ -17,6 +17,7 @@ test("admin can reach older payments and totals describe the current page", asyn
     }));
     return route.fulfill({ json });
   });
+  await page.route("**/api/v1/billing/admin/**", route => route.fulfill({ json: [] }));
   await page.goto("/admin/payments");
   await expect(page.getByText("Delivery 0", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Previous page" })).toBeDisabled();

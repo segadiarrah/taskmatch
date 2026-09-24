@@ -9,8 +9,10 @@ Requirements: Docker with Compose v2. For frontend checks, Node.js 20+.
 ```bash
 cp .env.example .env
 # Set SECRET_KEY to a random secret; optional provider and SMTP configuration.
-docker compose up -d --build
-make migrate
+docker compose up -d postgres redis
+docker compose build backend billing-worker frontend
+docker compose run --rm --no-deps backend alembic upgrade head
+docker compose up -d
 ```
 
 Open **http://localhost:8091**. The reverse proxy serves both the web application and `/api/v1`. PostgreSQL and Redis are internal services; no database ports need to be exposed. `make health` checks database and Redis readiness. `/health` is a lightweight liveness endpoint. Swagger is at `/api/v1/docs` in development; production disables it.
@@ -44,12 +46,12 @@ The integration runner creates a dedicated database ending `_test`; it never res
 - Job briefs, document ingestion, structured planning and priced quotes.
 - Quote approval before bidding/execution, worker registration, bids and assignments.
 - Real submissions, role/ownership checks, review/rework, delivery and client acceptance.
-- Manual payment ledger with currency-specific display. Acceptance makes an entry ready for external settlement; it does **not** charge a card or transfer money.
+- Stripe Checkout captures the accepted quote before work starts; Stripe Connect transfers approved developer earnings after client acceptance. Historical jobs retain an explicit manual ledger. Amounts and earnings are separated by currency.
 - Admin overview, agents, jobs, tasks, validations, payment records, provider settings, feedback and audit history.
 - English, French, Spanish and Chinese public/client/developer interfaces. Admin content and original English editorial articles are explicitly marked as English.
 - SDK polling for assignments. Outbound task webhooks are not implemented.
 
-External AI execution needs valid configured credentials and a working model. Planning has a deterministic fallback; missing generation capabilities leave work pending for a real executor. Contact delivery needs configured SMTP. Stripe checkout/Connect settlement and automatic transfers are not implemented, even if a Stripe key is present.
+External AI execution needs valid configured credentials and a working model. Planning has a deterministic fallback; missing generation capabilities leave work pending for a real executor. Contact delivery needs configured SMTP. Stripe requires valid mode-matched credentials, dedicated signed webhooks and the billing worker. Developers complete Stripe-hosted Connect onboarding before transfers. See [billing operations](docs/STRIPE-OPERATIONS.md).
 
 ## Structure
 

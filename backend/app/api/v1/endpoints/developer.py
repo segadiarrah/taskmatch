@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import lazyload, selectinload
 
@@ -57,19 +57,14 @@ async def dashboard_stats(
                 )
             )
         ).scalar_one()
-    earnings = (
-        await db.execute(
-            select(func.coalesce(func.sum(PaymentRecord.net_amount), 0)).where(
-                PaymentRecord.developer_user_id == current_user.id,
-                PaymentRecord.payment_status == PaymentStatus.paid,
-            )
-        )
-    ).scalar_one()
+    earnings = await developer_earnings_summary(current_user=current_user, db=db)
     return {
         "my_agents": int(my_agents),
         "active_assignments": int(active_assignments),
         "completed_tasks": int(completed_tasks),
-        "total_earnings": float(earnings or 0),
+        "total_earnings": earnings["total_earned"],
+        "earnings_by_currency": [{"currency": row["currency"], "amount": row["total_earned"]}
+                                 for row in earnings["by_currency"]],
     }
 
 
@@ -337,98 +332,81 @@ async def developer_earnings_summary(
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    total_earned = float(
-        (
-            await db.execute(
-                select(func.coalesce(func.sum(PaymentRecord.net_amount), 0)).where(
-                    PaymentRecord.developer_user_id == current_user.id,
-                    PaymentRecord.payment_status == PaymentStatus.paid,
-                )
-            )
-        ).scalar()
-        or 0
-    )
-    pending_payments = float(
-        (
-            await db.execute(
-                select(func.coalesce(func.sum(PaymentRecord.net_amount), 0)).where(
-                    PaymentRecord.developer_user_id == current_user.id,
-                    PaymentRecord.payment_status.in_(
-                        [PaymentStatus.releasable, PaymentStatus.authorized, PaymentStatus.pending]
-                    ),
-                )
-            )
-        ).scalar()
-        or 0
-    )
-    month_start = datetime.now(timezone.utc).replace(
-        day=1, hour=0, minute=0, second=0, microsecond=0
-    )
-    this_month = float(
-        (
-            await db.execute(
-                select(func.coalesce(func.sum(PaymentRecord.net_amount), 0)).where(
-                    PaymentRecord.developer_user_id == current_user.id,
-                    PaymentRecord.payment_status == PaymentStatus.paid,
-                    PaymentRecord.created_at >= month_start,
-                )
-            )
-        ).scalar()
-        or 0
-    )
+    month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    paid = PaymentRecord.payment_status == PaymentStatus.paid
+    pending = PaymentRecord.payment_status.in_([
+        PaymentStatus.pending, PaymentStatus.authorized, PaymentStatus.releasable,
+        PaymentStatus.processing, PaymentStatus.blocked, PaymentStatus.failed,
+    ])
+    rows = (await db.execute(
+        select(
+            PaymentRecord.currency,
+            func.sum(case((paid, PaymentRecord.net_amount), else_=0)),
+            func.sum(case((pending, PaymentRecord.net_amount), else_=0)),
+            func.sum(case((paid & (PaymentRecord.updated_at >= month_start), PaymentRecord.net_amount), else_=0)),
+        ).where(PaymentRecord.developer_user_id == current_user.id, PaymentRecord.provider != "platform")
+        .group_by(PaymentRecord.currency).order_by(PaymentRecord.currency)
+    )).all()
+    by_currency = [
+        {"currency": currency, "total_earned": float(earned or 0),
+         "pending_payments": float(waiting or 0), "this_month": float(month or 0)}
+        for currency, earned, waiting, month in rows
+    ]
+    single = by_currency[0] if len(by_currency) == 1 else None
     return {
-        "total_earned": round(total_earned, 2),
-        "pending_payments": round(pending_payments, 2),
-        "this_month": round(this_month, 2),
-        "currency": "EUR",
+        "by_currency": by_currency,
+        "currency": single["currency"] if single else None,
+        "total_earned": single["total_earned"] if single else (0 if not rows else None),
+        "pending_payments": single["pending_payments"] if single else (0 if not rows else None),
+        "this_month": single["this_month"] if single else (0 if not rows else None),
     }
 
 
 @router.get("/developer/earnings/payments", summary="My payment records")
 async def developer_earnings_payments(
+    skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    rows = list(
-        (
-            await db.execute(
-                select(PaymentRecord).options(lazyload("*"))
-                .where(PaymentRecord.developer_user_id == current_user.id)
-                .order_by(PaymentRecord.created_at.desc())
-                .limit(limit)
-            )
-        ).scalars().all()
-    )
-    # Resolve a representative task/agent per payment via its job's first task.
-    items = []
-    for p in rows:
-        task = (
-            await db.execute(
-                select(Task).options(lazyload("*")).where(Task.job_id == p.job_id).order_by(Task.priority).limit(1)
-            )
-        ).scalar_one_or_none()
-        agent_name = ""
-        if task is not None:
-            assignment = (
-                await db.execute(
-                    select(Assignment).options(lazyload("*"), selectinload(Assignment.agent)).where(Assignment.task_id == task.id).limit(1)
-                )
-            ).scalar_one_or_none()
-            if assignment is not None and assignment.agent is not None:
-                agent_name = assignment.agent.name
-        items.append(
+    scope = (PaymentRecord.developer_user_id == current_user.id) & (PaymentRecord.provider != "platform")
+    total = await db.scalar(select(func.count(PaymentRecord.id)).where(scope))
+    rows = (await db.execute(
+        select(PaymentRecord, Task.title, Job.title).options(lazyload("*"))
+        .join(Job, Job.id == PaymentRecord.job_id)
+        .outerjoin(Task, Task.id == PaymentRecord.task_id).where(scope)
+        .order_by(PaymentRecord.created_at.desc(), PaymentRecord.id.desc()).offset(skip).limit(limit)
+    )).all()
+    task_ids = [payment.task_id for payment, _, _ in rows if payment.task_id]
+    names = {}
+    if task_ids:
+        assignments = (await db.execute(
+            select(Assignment.task_id, Agent.name).join(Agent, Agent.id == Assignment.agent_id)
+            .where(Assignment.task_id.in_(task_ids), Agent.developer_user_id == current_user.id)
+            .order_by(Assignment.created_at.desc())
+        )).all()
+        for task_id, agent_name in assignments:
+            names.setdefault(task_id, agent_name)
+    return {
+        "items": [
             {
-                "id": str(p.id),
-                "task_id": str(task.id) if task else "",
-                "task_title": task.title if task else "",
-                "agent_name": agent_name,
-                "gross_amount": float(p.gross_amount),
-                "platform_fee": float(p.platform_fee),
-                "net_amount": float(p.net_amount),
-                "currency": p.currency or "EUR",
-                "status": p.payment_status.value if hasattr(p.payment_status, "value") else str(p.payment_status),
-                "created_at": p.created_at.isoformat() if p.created_at else "",
+                "id": str(payment.id),
+                "task_id": str(payment.task_id) if payment.task_id else "",
+                "task_title": task_title or job_title,
+                "agent_name": names.get(payment.task_id, ""),
+                "gross_amount": float(payment.gross_amount),
+                "platform_fee": float(payment.platform_fee),
+                "net_amount": float(payment.net_amount),
+                "currency": payment.currency,
+                "status": str(payment.payment_status),
+                "payment_status": str(payment.payment_status),
+                "provider": payment.provider,
+                "funding_id": str(payment.funding_id) if payment.funding_id else None,
+                "transfer_id": payment.transfer_id,
+                "payout_error": payment.payout_error,
+                "created_at": payment.created_at.isoformat(),
             }
-        )
-    return {"items": items}
+            for payment, task_title, job_title in rows
+        ],
+        "total": total or 0, "skip": skip, "limit": limit,
+    }

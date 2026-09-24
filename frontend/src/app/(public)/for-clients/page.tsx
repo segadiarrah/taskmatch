@@ -95,7 +95,7 @@ const COPY: Record<Locale, Copy> = {
     stats: [
       { value: 100, suffix: "%", label: "Deliveries validated before acceptance" },
       { value: 4, suffix: "", label: "Explicit stages you can watch" },
-      { value: 0, suffix: "", label: "Payment before validated delivery" },
+      { value: 0, suffix: "", label: "Execution before payment verification" },
     ],
     trustEyebrow: "Built-in trust",
     trustTitle: "Trust is structural, not promised.",
@@ -110,7 +110,7 @@ const COPY: Record<Locale, Copy> = {
       },
       {
         title: "Predictable costs",
-        body: "Clear scoping and escrow payment mean you know what you pay for before execution starts.",
+        body: "The quote states your cost before execution. Pay through Stripe Checkout, then review delivery before developer transfers.",
       },
     ],
     compareTitle: "How it compares",
@@ -172,7 +172,7 @@ const COPY: Record<Locale, Copy> = {
     stats: [
       { value: 100, suffix: "%", label: "Livraisons validées avant acceptation" },
       { value: 4, suffix: "", label: "Étapes explicites que vous suivez" },
-      { value: 0, suffix: "", label: "Paiement avant livraison validée" },
+      { value: 0, suffix: "", label: "Exécution avant vérification du paiement" },
     ],
     trustEyebrow: "Confiance intégrée",
     trustTitle: "La confiance est structurelle, pas promise.",
@@ -187,7 +187,7 @@ const COPY: Record<Locale, Copy> = {
       },
       {
         title: "Des coûts prévisibles",
-        body: "Cadrage clair et paiement sous séquestre : vous savez ce que vous payez avant l’exécution.",
+        body: "Le devis fixe le coût avant exécution. Payez via Stripe Checkout, puis vérifiez la livraison avant les transferts aux développeurs.",
       },
     ],
     compareTitle: "Comparaison",
@@ -249,7 +249,7 @@ const COPY: Record<Locale, Copy> = {
     stats: [
       { value: 100, suffix: "%", label: "Entregas validadas antes de aceptar" },
       { value: 4, suffix: "", label: "Etapas explícitas que puedes seguir" },
-      { value: 0, suffix: "", label: "Pago antes de entrega validada" },
+      { value: 0, suffix: "", label: "Ejecución antes de verificar el pago" },
     ],
     trustEyebrow: "Confianza integrada",
     trustTitle: "La confianza es estructural, no prometida.",
@@ -264,7 +264,7 @@ const COPY: Record<Locale, Copy> = {
       },
       {
         title: "Costes predecibles",
-        body: "Alcance claro y pago en depósito: sabes qué pagas antes de que empiece la ejecución.",
+        body: "El presupuesto fija el coste antes de ejecutar. Paga con Stripe Checkout y revisa la entrega antes de transferir a los desarrolladores.",
       },
     ],
     compareTitle: "Cómo se compara",
@@ -326,7 +326,7 @@ const COPY: Record<Locale, Copy> = {
     stats: [
       { value: 100, suffix: "%", label: "验收前已验证的交付" },
       { value: 4, suffix: "", label: "你可跟踪的明确阶段" },
-      { value: 0, suffix: "", label: "验证交付前的付款" },
+      { value: 0, suffix: "", label: "付款确认前的执行" },
     ],
     trustEyebrow: "内建信任",
     trustTitle: "信任源于结构，而非承诺。",
@@ -341,7 +341,7 @@ const COPY: Record<Locale, Copy> = {
       },
       {
         title: "成本可预测",
-        body: "清晰的范围与托管付款，让你在执行开始前就清楚花费。",
+        body: "报价在执行前明确费用。通过 Stripe Checkout 付款，并在开发者转账前审核交付。",
       },
     ],
     compareTitle: "对比一览",

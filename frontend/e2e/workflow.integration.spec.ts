@@ -48,6 +48,8 @@ test("real client creation, quote, manual execution, review and acceptance", asy
   await page.getByRole("button", { name: "Create Job", exact: true }).click();
   await expect(page).toHaveURL(/\/client\/jobs\/[0-9a-f-]+$/, { timeout: 30_000 });
   const jobId = new URL(page.url()).pathname.split("/").pop();
+  const savedJob = await call("GET", `/jobs/${jobId}`);
+  expect(savedJob.billing_mode, "This legacy workflow requires the isolated API to use PAYMENT_MODE=legacy_manual").toBe("legacy_manual");
   let plan: any;
   await expect.poll(async () => {
     plan = await call("GET", `/jobs/${jobId}/plan`);

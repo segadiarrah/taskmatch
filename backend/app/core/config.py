@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import warnings
+from typing import Literal
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings
@@ -40,6 +41,14 @@ class Settings(BaseSettings):
     # -- Third-party keys (optional) ------------------------------------------
     OPENAI_API_KEY: str | None = None
     STRIPE_SECRET_KEY: str | None = None
+    STRIPE_WEBHOOK_SECRET: str | None = None
+    STRIPE_CONNECT_WEBHOOK_SECRET: str | None = None
+    STRIPE_MODE: Literal["test", "live"] = "test"
+    STRIPE_API_VERSION: str = "2024-06-20"
+    PAYMENT_MODE: Literal["stripe", "legacy_manual"] = "stripe"
+    BILLING_SITE_URL: str = "https://taskmatch.ai"
+    BILLING_WORKER_POLL_SECONDS: float = 2.0
+    BILLING_OPERATION_LEASE_SECONDS: int = 600
 
     # -- LLM (OpenAI-compatible: OpenAI, OpenRouter, DeepSeek, …) --------------
     # When OPENAI_API_KEY is set, the MCP orchestration layer uses the LLM for
@@ -91,6 +100,10 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def _validate_production(self) -> "Settings":
         if self.ENV == "production":
+            if self.PAYMENT_MODE != "stripe":
+                raise ValueError("New production jobs require Stripe payments")
+            if not self.BILLING_SITE_URL.startswith("https://"):
+                raise ValueError("BILLING_SITE_URL must use HTTPS in production")
             if self.SECRET_KEY == "change-me-in-production" or len(self.SECRET_KEY) < 32:
                 raise ValueError(
                     "SECRET_KEY must be at least 32 characters and not the default value in production"

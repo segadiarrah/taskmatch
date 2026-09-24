@@ -50,6 +50,9 @@ class PaymentResponse(BaseModel):
     provider: str = "manual"
     provider_ref: Optional[str] = None
     stripe_payment_intent_id: Optional[str] = None
+    funding_id: Optional[UUID] = None
+    transfer_id: Optional[str] = None
+    payout_error: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

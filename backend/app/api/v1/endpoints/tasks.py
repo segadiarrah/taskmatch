@@ -14,11 +14,16 @@ from app.core.database import get_db
 from app.core.deps import get_current_active_user, require_role
 from app.middleware.audit import log_audit
 from app.models.assignment import Assignment, AssignmentStatus
-from app.models.job import Job, JobStatus
+from app.models.job import JobStatus
 from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.task import TaskListResponse, TaskResponse, TaskUpdate
-from app.services.task_access import require_task_access, task_visibility
+from app.services.task_access import (
+    load_execution_task,
+    lock_job,
+    require_task_access,
+    task_visibility,
+)
 
 router = APIRouter()
 
@@ -147,7 +152,12 @@ async def update_task(
             detail="Task not found",
         )
 
+    from app.services.billing_service import assert_quote_editable
+    job = await lock_job(db, task.job_id)
+    await assert_quote_editable(db, job)
     update_data = body.model_dump(exclude_unset=True)
+    if "status" in update_data and update_data["status"] != task.status:
+        raise HTTPException(status_code=409, detail="Use task workflow actions to change status")
     for field, value in update_data.items():
         setattr(task, field, value)
 
@@ -183,15 +193,7 @@ async def assign_task(
     Creates an assignment record and transitions the task to ``assigned`` status.
     Restricted to administrators.
     """
-    result = await db.execute(select(Task).where(Task.id == task_id).with_for_update().execution_options(populate_existing=True))
-    task = result.scalar_one_or_none()
-    if task is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found",
-        )
-
-    job = await db.get(Job, task.job_id)
+    job, task = await load_execution_task(db, task_id)
     if job.status not in (JobStatus.bidding, JobStatus.in_progress):
         raise HTTPException(status_code=409, detail="Accept the job quote before assigning work")
     if task.status not in (TaskStatus.open_for_bids, TaskStatus.reassigned):

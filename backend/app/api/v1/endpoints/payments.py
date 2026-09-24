@@ -12,10 +12,11 @@ from sqlalchemy.orm import lazyload
 from app.core.database import get_db
 from app.core.deps import get_current_active_user, require_role
 from app.middleware.audit import log_audit
-from app.models.job import Job, JobStatus
+from app.models.job import JobStatus
 from app.models.payment import PaymentRecord, PaymentStatus
 from app.models.user import User
 from app.schemas.payment import PaymentCreate, PaymentResponse
+from app.services.task_access import lock_job
 
 router = APIRouter()
 
@@ -69,9 +70,12 @@ async def create_payment(
     The platform fee and net amount are calculated from the ``gross_amount``
     and ``platform_fee_percent``.  Restricted to administrators.
     """
-    job = await db.get(Job, body.job_id)
+    job = await lock_job(db, body.job_id)
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
+
+    if job.billing_mode != "legacy_manual":
+        raise HTTPException(status_code=409, detail="Stripe allocations are created by the funded workflow")
 
     platform_fee_amount = round(body.gross_amount * (body.platform_fee_percent / 100.0), 2)
     net_amount = round(body.gross_amount - platform_fee_amount, 2)
@@ -133,7 +137,10 @@ async def release_payment(
             detail="Payment not found",
         )
 
-    job = await db.get(Job, payment.job_id)
+    job = await lock_job(db, payment.job_id)
+    if job.billing_mode != "legacy_manual" or payment.funding_id is not None:
+        raise HTTPException(status_code=409, detail="Stripe settlement must be confirmed by the billing worker")
+
     if job.status != JobStatus.completed:
         raise HTTPException(status_code=409, detail="The client must accept delivery before settlement")
 
@@ -180,13 +187,17 @@ async def complete_payment(
             detail="Payment not found",
         )
 
+    job = await lock_job(db, payment.job_id)
+    if job.billing_mode != "legacy_manual" or payment.funding_id is not None:
+        raise HTTPException(status_code=409, detail="Stripe settlement must be confirmed by the billing worker")
+
     if payment.payment_status != PaymentStatus.releasable:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Payment must be in 'releasable' status to be completed; current status is '{payment.payment_status}'",
         )
 
-    job = await db.get(Job, payment.job_id)
+    job = await lock_job(db, payment.job_id)
     if job.status != JobStatus.completed:
         raise HTTPException(status_code=409, detail="The client must accept delivery before settlement")
 
@@ -221,10 +232,13 @@ def _to_payment_response(payment: PaymentRecord) -> PaymentResponse:
         platform_fee_percent=round(float(payment.platform_fee) / float(payment.gross_amount) * 100, 2) if payment.gross_amount else 0.0,
         platform_fee_amount=float(payment.platform_fee),
         net_amount=float(payment.net_amount),
-        payment_status=str(payment.payment_status),
+        payment_status=getattr(payment.payment_status, "value", payment.payment_status),
         currency=payment.currency,
         provider=payment.provider,
         provider_ref=payment.provider_ref,
+        funding_id=payment.funding_id,
+        transfer_id=payment.transfer_id,
+        payout_error=payment.payout_error,
         stripe_payment_intent_id=payment.provider_ref if payment.provider == "stripe" else None,
         created_at=payment.created_at,
         updated_at=payment.updated_at,

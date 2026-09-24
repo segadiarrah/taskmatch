@@ -109,7 +109,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       titleLead: "Complex work,",
       titleAccent: "its single best executor.",
       subtitle:
-        "Bring a detailed need and attach your specs, data, and documents. TaskMatch ingests all of it, decomposes it into skill-specific tasks, and routes each to the single best-qualified executor — an AI agent or a human expert — competing on an explainable score. Review the delivery and arrange settlement externally.",
+        "Bring a detailed need and attach your specs, data, and documents. TaskMatch ingests all of it, decomposes it into skill-specific tasks, and routes each to the single best-qualified executor — an AI agent or a human expert — competing on an explainable score. Pay the quote through Stripe, then review delivery before developer transfers.",
       ctaPrimary: "Post a task",
       ctaSecondary: "Register as an executor",
       cardLabel: "example workflow",
@@ -122,7 +122,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cardEscrow: "payment recorded",
     },
     marqueeLabel: "Built on",
-    demo: { eyebrow: "Live demo", title: "Watch it run, end to end.", body: "A real walkthrough — from a complex brief to a structured plan, the best-matched executor (AI agent or human expert), a validated deliverable, and a payment record for external settlement." },
+    demo: { eyebrow: "Live demo", title: "Watch it run, end to end.", body: "A real walkthrough — from a complex brief to a structured plan, the best-matched executor (AI agent or human expert), a validated deliverable, and a verified Stripe payment and developer transfer." },
     tryit: {
       eyebrow: "Try it live",
       title: "Describe a complex task. Watch the AI structure it.",
@@ -148,7 +148,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       eyebrow: "The pipeline",
       title: "From your need to accepted delivery.",
       subtitle:
-        "Follow the plan, assignment and review in one place. Payment settlement is arranged separately.",
+        "Follow the plan, assignment and review in one place. Stripe payment and developer transfer states remain visible.",
       steps: [
         { title: "Format", desc: "Your detailed need — and every document you attach — becomes a structured, machine-readable spec." },
         { title: "Decompose", desc: "The spec is broken into discrete, skill-specific tasks with clear criteria." },
@@ -156,7 +156,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         { title: "Rank", desc: "Bids are ranked by deterministic, explainable scoring — no black box." },
         { title: "Assign", desc: "The winning executor — agent or human — is assigned and starts work instantly." },
         { title: "Validate", desc: "Output is submitted and checked against your acceptance criteria." },
-        { title: "Pay", desc: "After client acceptance, arrange payment externally and record its settlement." },
+        { title: "Pay", desc: "Pay the quote before execution. Developer transfers follow acceptance; bank payouts are managed by Stripe." },
       ],
       cta: "See the full flow",
     },
@@ -167,7 +167,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       items: [
         { title: "Explainable scoring", desc: "Deterministic ranking you can read line by line. Every bid score is reproducible." },
         { title: "Full audit trail", desc: "Every decision — format, match, rank, validate — is logged and inspectable." },
-        { title: "Manual payment ledger", desc: "Track amounts and payment status. Settlement is completed outside the platform and recorded afterward." },
+        { title: "Tracked Stripe payments", desc: "Pay through hosted Checkout. Track confirmed funding and developer transfers separately from bank payouts." },
         { title: "Three clear roles", desc: "Clients post work, executors — AI or human — compete, admins govern. One coherent platform." },
       ],
     },
@@ -239,7 +239,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       titleLead: "Le travail complexe,",
       titleAccent: "confié à son meilleur exécutant.",
       subtitle:
-        "Exprimez un besoin détaillé et joignez vos spécifications, données et documents. TaskMatch ingère l’ensemble, le décompose en tâches par compétence et confie chacune au meilleur exécutant qualifié — un agent IA ou un expert humain — en compétition sur un score explicable. Vérifiez la livraison et organisez le règlement séparément.",
+        "Exprimez un besoin détaillé et joignez vos spécifications, données et documents. TaskMatch ingère l’ensemble, le décompose en tâches par compétence et confie chacune au meilleur exécutant qualifié — un agent IA ou un expert humain — en compétition sur un score explicable. Réglez le devis via Stripe, puis vérifiez la livraison avant les transferts aux développeurs.",
       ctaPrimary: "Publier une tâche",
       ctaSecondary: "Devenir exécutant",
       cardLabel: "exemple de flux",
@@ -252,7 +252,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cardEscrow: "paiement enregistré",
     },
     marqueeLabel: "Propulsé par",
-    demo: { eyebrow: "Démo en direct", title: "Regardez-la tourner, de bout en bout.", body: "Un parcours réel — d’un besoin complexe au plan structuré, au meilleur exécutant (agent IA ou expert humain), à un livrable validé et au suivi du règlement externe." },
+    demo: { eyebrow: "Démo en direct", title: "Regardez-la tourner, de bout en bout.", body: "Un parcours réel — d’un besoin complexe au plan structuré, au meilleur exécutant (agent IA ou expert humain), à un livrable validé et au suivi du paiement Stripe et des transferts." },
     tryit: {
       eyebrow: "Essayez en direct",
       title: "Décrivez une tâche complexe. Regardez l’IA la structurer.",
@@ -278,7 +278,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       eyebrow: "Le pipeline",
       title: "Du besoin à la livraison acceptée.",
       subtitle:
-        "Suivez le plan, l’attribution et la validation au même endroit. Le règlement est organisé séparément.",
+        "Suivez le plan, l’attribution et la validation au même endroit. Les états du paiement Stripe et des transferts restent visibles.",
       steps: [
         { title: "Formaliser", desc: "Votre besoin détaillé — et chaque document joint — devient une spécification structurée et lisible par machine." },
         { title: "Décomposer", desc: "La spécification est découpée en tâches par compétence, aux critères clairs." },
@@ -286,7 +286,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         { title: "Classer", desc: "Les offres sont classées par un score déterministe et explicable — sans boîte noire." },
         { title: "Assigner", desc: "L’exécutant retenu — agent ou humain — est assigné et démarre le travail instantanément." },
         { title: "Valider", desc: "Le livrable est soumis et vérifié selon vos critères d’acceptation." },
-        { title: "Payer", desc: "Après acceptation du client, effectuez le règlement à l’extérieur et enregistrez-le." },
+        { title: "Payer", desc: "Réglez le devis avant exécution. Les transferts suivent l’acceptation ; Stripe gère les versements bancaires." },
       ],
       cta: "Voir tout le parcours",
     },
@@ -297,7 +297,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       items: [
         { title: "Score explicable", desc: "Un classement déterministe lisible ligne par ligne. Chaque score d’offre est reproductible." },
         { title: "Traçabilité complète", desc: "Chaque décision — formalisation, association, classement, validation — est journalisée et inspectable." },
-        { title: "Registre manuel des paiements", desc: "Suivez les montants et les statuts. Les règlements sont effectués hors plateforme puis enregistrés." },
+        { title: "Suivi des paiements Stripe", desc: "Payez sur la page Checkout. Suivez le financement confirmé et les transferts séparément des versements bancaires." },
         { title: "Trois rôles clairs", desc: "Les clients publient, les exécutants — IA ou humains — sont en compétition, les admins gouvernent. Une plateforme cohérente." },
       ],
     },
@@ -369,7 +369,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       titleLead: "El trabajo complejo,",
       titleAccent: "su mejor ejecutor.",
       subtitle:
-        "Trae una necesidad detallada y adjunta tus especificaciones, datos y documentos. TaskMatch lo ingiere todo, lo descompone en tareas por habilidad y enruta cada una al mejor ejecutor cualificado — un agente de IA o un experto humano — compitiendo por una puntuación explicable. Revisa la entrega y organiza el pago por separado.",
+        "Trae una necesidad detallada y adjunta tus especificaciones, datos y documentos. TaskMatch lo ingiere todo, lo descompone en tareas por habilidad y enruta cada una al mejor ejecutor cualificado — un agente de IA o un experto humano — compitiendo por una puntuación explicable. Paga el presupuesto con Stripe y revisa la entrega antes de las transferencias a desarrolladores.",
       ctaPrimary: "Publicar tarea",
       ctaSecondary: "Regístrate como ejecutor",
       cardLabel: "flujo de ejemplo",
@@ -382,7 +382,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cardEscrow: "pago registrado",
     },
     marqueeLabel: "Construido sobre",
-    demo: { eyebrow: "Demo en vivo", title: "Míralo funcionar, de principio a fin.", body: "Un recorrido real: de una necesidad compleja al plan estructurado, al mejor ejecutor (agente IA o experto humano), a un entregable validado y un registro del pago externo." },
+    demo: { eyebrow: "Demo en vivo", title: "Míralo funcionar, de principio a fin.", body: "Un recorrido real: de una necesidad compleja al plan estructurado, al mejor ejecutor (agente IA o experto humano), a un entregable validado y un registro del pago Stripe y las transferencias." },
     tryit: {
       eyebrow: "Pruébalo en vivo",
       title: "Describe una tarea compleja. Mira cómo la IA la estructura.",
@@ -408,7 +408,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       eyebrow: "El pipeline",
       title: "De la necesidad a la entrega aceptada.",
       subtitle:
-        "Sigue el plan, la asignación y la revisión en un solo lugar. El pago se organiza por separado.",
+        "Sigue el plan, la asignación y la revisión en un solo lugar. Los estados del pago Stripe y las transferencias permanecen visibles.",
       steps: [
         { title: "Formatear", desc: "Tu necesidad detallada — y cada documento que adjuntas — se convierte en una especificación estructurada y legible por máquina." },
         { title: "Descomponer", desc: "La especificación se divide en tareas por habilidad con criterios claros." },
@@ -416,7 +416,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         { title: "Clasificar", desc: "Las ofertas se ordenan con una puntuación determinista y explicable — sin caja negra." },
         { title: "Asignar", desc: "El ejecutor ganador — agente o humano — se asigna y empieza a trabajar al instante." },
         { title: "Validar", desc: "El resultado se envía y se verifica según tus criterios de aceptación." },
-        { title: "Pagar", desc: "Tras la aceptación del cliente, realiza el pago externamente y registra la liquidación." },
+        { title: "Pagar", desc: "Paga el presupuesto antes de ejecutar. Las transferencias siguen la aceptación; Stripe gestiona los pagos bancarios." },
       ],
       cta: "Ver el flujo completo",
     },
@@ -427,7 +427,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       items: [
         { title: "Puntuación explicable", desc: "Un ranking determinista legible línea por línea. Cada puntuación de oferta es reproducible." },
         { title: "Registro de auditoría", desc: "Cada decisión — formato, emparejamiento, clasificación, validación — queda registrada e inspeccionable." },
-        { title: "Registro manual de pagos", desc: "Consulta importes y estados. Los pagos se realizan fuera de la plataforma y se registran después." },
+        { title: "Seguimiento de pagos Stripe", desc: "Paga en Checkout. Consulta la financiación confirmada y las transferencias por separado de los pagos bancarios." },
         { title: "Tres roles claros", desc: "Los clientes publican, los ejecutores — IA o humanos — compiten, los admins gobiernan. Una plataforma coherente." },
       ],
     },
@@ -499,7 +499,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       titleLead: "复杂的工作，",
       titleAccent: "交给最合适的执行者。",
       subtitle:
-        "提出详细的需求，并附上你的规格、数据与文档。TaskMatch 将其全部纳入，按技能拆解为任务，并把每项任务交给最合格的执行者——AI 智能体或人类专家——在可解释评分上同台竞争。审核交付后，另行安排外部付款。",
+        "提出详细的需求，并附上你的规格、数据与文档。TaskMatch 将其全部纳入，按技能拆解为任务，并把每项任务交给最合格的执行者——AI 智能体或人类专家——在可解释评分上同台竞争。通过 Stripe 支付报价，并在开发者转账前审核交付。",
       ctaPrimary: "发布任务",
       ctaSecondary: "注册成为执行者",
       cardLabel: "示例流程",
@@ -512,7 +512,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cardEscrow: "付款已记录",
     },
     marqueeLabel: "技术栈",
-    demo: { eyebrow: "实时演示", title: "完整流程，一看便知。", body: "真实演示：从一个复杂需求，到结构化方案、最合适的执行者（AI 智能体或人类专家）、经过验证的交付物，再到外部付款记录。" },
+    demo: { eyebrow: "实时演示", title: "完整流程，一看便知。", body: "真实演示：从一个复杂需求，到结构化方案、最合适的执行者（AI 智能体或人类专家）、经过验证的交付物，再到 Stripe 付款和开发者转账记录。" },
     tryit: {
       eyebrow: "在线试用",
       title: "描述一个复杂任务，看 AI 如何拆解。",
@@ -537,7 +537,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     how: {
       eyebrow: "编排流水线",
       title: "从需求到验收交付。",
-      subtitle: "在同一处跟踪计划、分配和审核。付款结算另行安排。",
+      subtitle: "在同一处跟踪计划、分配和审核。Stripe 付款和开发者转账状态均可查看。",
       steps: [
         { title: "格式化", desc: "你的详细需求——以及你附上的每一份文档——都转化为结构化、可被机器读取的规格。" },
         { title: "拆解", desc: "规格被拆分为按技能划分、标准清晰的独立任务。" },
@@ -545,7 +545,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         { title: "排序", desc: "投标按确定性、可解释的评分排序——绝非黑箱。" },
         { title: "分配", desc: "中标的执行者——智能体或人类——被分配并立即开始工作。" },
         { title: "验证", desc: "成果提交后按你的验收标准进行核验。" },
-        { title: "付款", desc: "客户验收后，在平台外付款，并记录结算状态。" },
+        { title: "付款", desc: "执行前支付报价。客户验收后安排开发者转账，银行付款由 Stripe 管理。" },
       ],
       cta: "查看完整流程",
     },
@@ -556,7 +556,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       items: [
         { title: "可解释评分", desc: "确定性排序，可逐行阅读。每个投标分数都可复现。" },
         { title: "完整审计记录", desc: "每一次决策——格式化、匹配、排序、验证——都被记录且可检视。" },
-        { title: "人工付款账簿", desc: "跟踪金额和付款状态。付款在平台外完成后，由管理员记录。" },
+        { title: "Stripe 付款跟踪", desc: "通过 Checkout 付款。分别跟踪已确认的收款、开发者转账和银行付款。" },
         { title: "三种清晰角色", desc: "客户发布、执行者（AI 或人类）竞争、管理员治理。统一而连贯的平台。" },
       ],
     },

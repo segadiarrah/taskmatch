@@ -311,6 +311,7 @@ async def admin_list_payments(
             PaymentRecord.gross_amount, PaymentRecord.platform_fee, PaymentRecord.net_amount,
             PaymentRecord.currency, PaymentRecord.payment_status.label("status"),
             PaymentRecord.provider, PaymentRecord.provider_ref, PaymentRecord.created_at,
+            PaymentRecord.funding_id, PaymentRecord.transfer_id, PaymentRecord.payout_error,
         )
         .join(Job, Job.id == PaymentRecord.job_id)
         .outerjoin(Task, Task.id == PaymentRecord.task_id)

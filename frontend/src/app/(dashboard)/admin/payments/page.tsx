@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
-import { apiGet, apiPut } from "@/lib/api";
+import { apiGet, apiPut, apiPost, ApiError } from "@/lib/api";
 import { formatCurrency, formatStatus } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
+import BillingAdminPanel from "./billing-admin-panel";
 import {
   Table,
   TableHeader,
@@ -26,6 +27,9 @@ import {
 } from "lucide-react";
 
 interface Payment {
+  funding_id: string | null;
+  transfer_id: string | null;
+  payout_error: string | null;
   id: string;
   job_id: string;
   job_title: string;
@@ -45,7 +49,7 @@ interface Payment {
   completed_at: string | null;
 }
 
-const paymentStatuses = ["pending", "authorized", "releasable", "paid", "cancelled", "refunded"];
+const paymentStatuses = ["pending", "authorized", "releasable", "paid", "cancelled", "refunded", "processing", "blocked", "failed", "reversed"];
 
 const statusBadgeVariant: Record<string, "secondary" | "info" | "default" | "warning" | "purple" | "success" | "destructive"> = {
   pending: "secondary",
@@ -54,6 +58,10 @@ const statusBadgeVariant: Record<string, "secondary" | "info" | "default" | "war
   paid: "success",
   cancelled: "destructive",
   refunded: "purple",
+  processing: "info",
+  blocked: "warning",
+  failed: "destructive",
+  reversed: "secondary",
 };
 
 export default function PaymentsPage() {
@@ -101,6 +109,14 @@ export default function PaymentsPage() {
     }
   }
 
+  async function handleTransfer(payment: Payment) {
+    if (!window.confirm(`Retry a real Stripe transfer of ${formatCurrency(payment.net_amount, payment.currency)} to ${payment.developer_name}? This credits their Stripe balance, not their bank account.`)) return;
+    setActionError(null); setActionLoading(payment.id);
+    try { await apiPost(`/v1/billing/payments/${payment.id}/retry`, {}); await fetchPayments(page); }
+    catch (error) { setActionError(error instanceof ApiError ? error.message : "Could not retry the transfer. Check Stripe and the saved state before retrying."); }
+    finally { setActionLoading(null); }
+  }
+
   async function handleComplete(paymentId: string) {
     if (!window.confirm("Confirm that this payment has already been settled externally. This action records the payment; it does not transfer money.")) return;
     setActionError(null);
@@ -118,20 +134,22 @@ export default function PaymentsPage() {
 
   const currency = currencyFilter || payments[0]?.currency || "EUR";
   const currencyPayments = payments.filter((payment) => payment.currency === currency);
-  const totalFor = (status: string) => currencyPayments.filter((payment) => payment.status === status).reduce((total, payment) => total + payment.gross_amount, 0);
+  const totalFor = (status: string) => currencyPayments.filter((payment) => payment.status === status && payment.provider !== "platform").reduce((total, payment) => total + payment.gross_amount, 0);
   const summary = { total_pending: totalFor("pending"), total_releasable: totalFor("releasable"), total_released: totalFor("authorized"), total_completed: totalFor("paid") };
   const filteredPayments = currencyPayments.filter((payment) => statusFilter === "all" || payment.status === statusFilter);
 
   return (
     <div className="space-y-6">
-      {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{actionError}</p>}
+      {actionError && <p role="alert" data-testid="payment-action-error" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{actionError}</p>}
       {/* Header */}
       <div>
         <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Payments</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Manage payment records. Settle funds externally, then record the payment here.
+          Track Stripe transfers and legacy manual settlement. A Stripe transfer credits a connected balance; bank payouts are managed separately.
         </p>
       </div>
+
+      <BillingAdminPanel />
 
       <p className="text-xs text-muted-foreground">Totals below cover the payments on page {page + 1} in the selected currency.</p>
 
@@ -158,7 +176,7 @@ export default function PaymentsPage() {
               <div>
                 <p className="text-sm font-medium text-info">Releasable</p>
                 <p className="mt-1 font-display text-2xl font-medium text-ink-50">{formatCurrency(summary.total_releasable, currency)}</p>
-                <p className="mt-0.5 text-xs text-ink-500">Ready for external settlement</p>
+                <p className="mt-0.5 text-xs text-ink-500">Ready for transfer or manual settlement</p>
               </div>
               <div className="rounded-md border border-info/30 bg-info/10 p-3">
                 <Send className="h-5 w-5 text-info" />
@@ -188,7 +206,7 @@ export default function PaymentsPage() {
               <div>
                 <p className="text-sm font-medium text-success">Completed</p>
                 <p className="mt-1 font-display text-2xl font-medium text-ink-50">{formatCurrency(summary.total_completed, currency)}</p>
-                <p className="mt-0.5 text-xs text-ink-500">Recorded as paid</p>
+                <p className="mt-0.5 text-xs text-ink-500">Transfers and manual settlements recorded</p>
               </div>
               <div className="rounded-md border border-success/30 bg-success/10 p-3">
                 <CheckCircle2 className="h-5 w-5 text-success" />
@@ -198,6 +216,8 @@ export default function PaymentsPage() {
           <div className="absolute -bottom-3 -right-3 h-20 w-20 rounded-full bg-success/5" />
         </Card>
       </div>
+
+      <p className="text-xs text-muted-foreground">Platform revenue on this page: {formatCurrency(currencyPayments.filter(payment => payment.provider === "platform").reduce((sum, payment) => sum + payment.gross_amount, 0), currency)}. This is retained platform revenue, not a bank payout.</p>
 
       {/* Filter */}
       <Card>
@@ -270,6 +290,8 @@ export default function PaymentsPage() {
                       <div>
                         <p className="text-ink-300">{payment.developer_name || "Unassigned"}</p>
                         <p className="text-xs text-ink-500">{payment.provider}</p>
+                        {payment.transfer_id && <p className="font-mono text-xs text-muted-foreground">{payment.transfer_id}</p>}
+                        {payment.payout_error && <p className="max-w-xs text-xs text-danger">{payment.payout_error}</p>}
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-mono font-semibold text-foreground">
@@ -283,12 +305,13 @@ export default function PaymentsPage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant={statusBadgeVariant[payment.status] || "secondary"}>
-                        {formatStatus(payment.status)}
+                        {payment.provider === "platform" ? "Platform revenue" : payment.provider === "stripe_connect" && payment.status === "paid" ? "Transferred to Stripe balance" : formatStatus(payment.status)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        {["pending", "authorized"].includes(payment.status) && (
+                        {payment.provider === "stripe_connect" && ["releasable", "failed", "blocked"].includes(payment.status) && <Button size="sm" variant="outline" disabled={actionLoading === payment.id} onClick={() => void handleTransfer(payment)}>Retry Stripe transfer</Button>}
+                        {payment.provider === "manual" && ["pending", "authorized"].includes(payment.status) && (
                           <Button
                             size="sm"
                             onClick={() => handleRelease(payment.id)}
@@ -298,7 +321,7 @@ export default function PaymentsPage() {
                             {actionLoading === payment.id ? "..." : "Mark releasable"}
                           </Button>
                         )}
-                        {payment.status === "releasable" && (
+                        {payment.provider === "manual" && payment.status === "releasable" && (
                           <Button
                             size="sm"
                             className="bg-success text-ink-950 hover:brightness-110"
@@ -309,7 +332,7 @@ export default function PaymentsPage() {
                             {actionLoading === payment.id ? "..." : "Record payment"}
                           </Button>
                         )}
-                        {payment.status === "paid" && (
+                        {payment.provider === "manual" && payment.status === "paid" && (
                           <span className="flex items-center gap-1 font-mono text-xs font-medium text-success">
                             <CheckCircle2 className="h-3 w-3" />
                             Paid

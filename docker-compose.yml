@@ -68,6 +68,35 @@ services:
     networks:
       - taskmatch_net
 
+  # Durable Stripe events, transfers and refunds; starts after migrations.
+  billing-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - ENV=${ENV:-development}
+      - PROVIDER_DATA_DIR=/appdata
+      - UPLOAD_DIR=/appdata/uploads
+    volumes:
+      - ./backend:/app
+      - backend_appdata:/appdata
+    command: ["python", "-m", "app.services.billing_worker"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import time,pathlib; p=pathlib.Path('/tmp/taskmatch-billing-heartbeat'); assert p.exists() and time.time()-p.stat().st_mtime < 90"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - taskmatch_net
+
   # ---------------------------------------------------------------------------
   # Next.js Frontend
   # ---------------------------------------------------------------------------

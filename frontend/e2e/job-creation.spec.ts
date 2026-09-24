@@ -15,7 +15,7 @@ for (const failure of ["upload", "submit"] as const) {
       return route.fulfill({ json: { id: "draft-test" } });
     });
     await page.route("**/api/v1/jobs/draft-test/**", route => route.fulfill({ status: 404, json: { detail: "Not available" } }));
-    await page.route("**/api/v1/jobs/draft-test", route => route.fulfill({ json: { id: "draft-test", title: "Retryable job", raw_description: "Saved description", status: "submitted", budget_min: 10, budget_max: 50, currency: "USD", tasks_count: 0, auto_select_enabled: false, created_at: "2026-09-24T12:00:00Z", updated_at: "2026-09-24T12:00:00Z" } }));
+    await page.route("**/api/v1/jobs/draft-test", route => route.fulfill({ json: { id: "draft-test", title: "Retryable job", billing_mode: "legacy_manual", raw_description: "Saved description", status: "submitted", budget_min: 10, budget_max: 50, currency: "USD", tasks_count: 0, auto_select_enabled: false, created_at: "2026-09-24T12:00:00Z", updated_at: "2026-09-24T12:00:00Z" } }));
     await page.route("**/api/v1/jobs/draft-test/documents", route => {
       uploads += 1;
       return route.fulfill(failure === "upload" && uploads === 1 ? { status: 503, json: { detail: "Upload unavailable" } } : { json: { total_documents: 1, ingested_chars: 12 } });

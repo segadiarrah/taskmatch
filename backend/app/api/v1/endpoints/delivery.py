@@ -157,6 +157,8 @@ async def update_delivery_plan(
     longer match the work. Re-quote first.
     """
     job = await _load_owned_job(db, job_id, current_user, lock=True)
+    from app.services.billing_service import assert_quote_editable
+    await assert_quote_editable(db, job)
     plan = await _load_plan(db, job_id)
 
     mode_changing = body.mode is not None and body.mode != plan.mode

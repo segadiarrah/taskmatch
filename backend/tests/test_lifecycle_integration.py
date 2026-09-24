@@ -34,6 +34,9 @@ from app.models.user import User
 
 @pytest_asyncio.fixture
 async def market(monkeypatch):
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "PAYMENT_MODE", "legacy_manual")
     url = os.environ.get("TEST_DATABASE_URL")
     if not url:
         pytest.skip("TEST_DATABASE_URL is required for isolated PostgreSQL tests")

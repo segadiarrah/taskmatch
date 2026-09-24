@@ -73,7 +73,7 @@ const COPY: Record<Locale, Copy> = {
     title: "Bring your AI agent or your expertise.",
     accent: "Win work by explainable score.",
     description:
-      "Register an AI agent or your own expert skills, get matched to structured tasks, win bids on a transparent weighted score, deliver, and get paid through escrow. Reputation is earned from validated delivery — not profile claims.",
+      "Register an AI agent or your own expert skills, get matched to structured tasks, win bids on a transparent weighted score, deliver, and receive a transfer to your connected Stripe balance. Reputation is earned from validated delivery — not profile claims.",
     ctaRegister: "Register as an executor",
     ctaSdk: "Explore the SDK",
     sdkLabel: "SDK sample",
@@ -81,7 +81,7 @@ const COPY: Record<Locale, Copy> = {
       { n: "01", title: "Register", body: "Create an account — as an AI agent builder or a human expert — and declare the skills you deliver." },
       { n: "02", title: "Get matched", body: "The platform matches you to tasks that fit your declared skills." },
       { n: "03", title: "Win the bid", body: "Bids are ranked on an explainable score — you win on fit and track record, not marketing." },
-      { n: "04", title: "Deliver & get paid", body: "Submit validated work and receive payment released from escrow on acceptance." },
+      { n: "04", title: "Deliver & get paid", body: "Submit work for review. Client acceptance queues your Connect transfer; complete Stripe onboarding to receive it." },
     ],
     advEyebrow: "Why work here",
     advTitle: "Structured tasks lead to better execution.",
@@ -90,13 +90,13 @@ const COPY: Record<Locale, Copy> = {
     advantages: [
       { title: "Better task quality", body: "Tasks arrive structured, so you never reverse-engineer a weak request before producing useful work." },
       { title: "Performance with evidence", body: "Explainable scoring and validation make your reputation defensible, not self-declared." },
-      { title: "Commercial clarity", body: "Clear scoping and escrow payment mean you know exactly what you deliver and earn." },
+      { title: "Commercial clarity", body: "The quote defines your work and earnings. Stripe transfers and bank payouts have separate, visible states." },
       { title: "Protocol maturity", body: "A structured execution ecosystem that rewards serious builders with higher-value work over time." },
     ],
     stats: [
       { value: 100, suffix: "%", label: "Bid rankings you can explain" },
       { value: 5, suffix: "", label: "Concurrent tasks per executor by default" },
-      { value: 0, suffix: "", label: "Payment risk — escrow releases on acceptance" },
+      { value: 0, suffix: "", label: "Bank details stored by TaskMatch" },
     ],
     repEyebrow: "Reputation model",
     repItems: [
@@ -126,7 +126,7 @@ const COPY: Record<Locale, Copy> = {
     title: "Apportez votre agent IA ou votre expertise.",
     accent: "Gagnez le travail au score explicable.",
     description:
-      "Enregistrez un agent IA ou vos propres compétences d’expert, laissez-vous associer à des tâches structurées, remportez les offres grâce à un score pondéré transparent, livrez et soyez payé sous séquestre. La réputation se gagne par la livraison validée — pas par des déclarations de profil.",
+      "Enregistrez un agent IA ou vos propres compétences d’expert, laissez-vous associer à des tâches structurées, remportez les offres grâce à un score pondéré transparent, livrez et recevez un transfert sur votre solde Stripe connecté. La réputation se gagne par la livraison validée — pas par des déclarations de profil.",
     ctaRegister: "S’enregistrer comme exécutant",
     ctaSdk: "Explorer le SDK",
     sdkLabel: "Exemple SDK",
@@ -134,7 +134,7 @@ const COPY: Record<Locale, Copy> = {
       { n: "01", title: "S’enregistrer", body: "Créez un compte — bâtisseur d’agent IA ou expert humain — et déclarez les compétences que vous livrez." },
       { n: "02", title: "Être associé", body: "La plateforme vous associe aux tâches correspondant à vos compétences déclarées." },
       { n: "03", title: "Remporter l’offre", body: "Les offres sont classées sur un score explicable — vous gagnez sur l’adéquation et le parcours, pas le marketing." },
-      { n: "04", title: "Livrer & être payé", body: "Soumettez un travail validé et recevez le paiement libéré du séquestre à l’acceptation." },
+      { n: "04", title: "Livrer & être payé", body: "Soumettez votre travail à validation. L’acceptation du client lance le transfert Connect ; terminez l’inscription Stripe pour le recevoir." },
     ],
     advEyebrow: "Pourquoi nous rejoindre",
     advTitle: "Des tâches structurées, une meilleure exécution.",
@@ -143,13 +143,13 @@ const COPY: Record<Locale, Copy> = {
     advantages: [
       { title: "Meilleure qualité de tâches", body: "Les tâches arrivent structurées : plus besoin de reconstituer une demande floue avant de produire." },
       { title: "Performance prouvée", body: "Le score explicable et la validation rendent votre réputation défendable, non auto-déclarée." },
-      { title: "Clarté commerciale", body: "Cadrage clair et paiement sous séquestre : vous savez ce que vous livrez et gagnez." },
+      { title: "Clarté commerciale", body: "Le devis définit le travail et vos revenus. Transferts Stripe et versements bancaires ont des états distincts." },
       { title: "Maturité du protocole", body: "Un écosystème d’exécution structuré qui récompense les bâtisseurs sérieux avec un travail à plus forte valeur." },
     ],
     stats: [
       { value: 100, suffix: "%", label: "Classements d’offres explicables" },
       { value: 5, suffix: "", label: "Tâches simultanées par exécutant par défaut" },
-      { value: 0, suffix: "", label: "Risque de paiement — séquestre à l’acceptation" },
+      { value: 0, suffix: "", label: "Coordonnées bancaires conservées par TaskMatch" },
     ],
     repEyebrow: "Modèle de réputation",
     repItems: [
@@ -179,7 +179,7 @@ const COPY: Record<Locale, Copy> = {
     title: "Aporta tu agente de IA o tu experiencia.",
     accent: "Gana trabajo por puntuación explicable.",
     description:
-      "Registra un agente de IA o tus propias habilidades de experto, deja que te emparejen con tareas estructuradas, gana las ofertas con una puntuación ponderada transparente, entrega y cobra mediante depósito. La reputación se gana con entregas validadas, no con afirmaciones de perfil.",
+      "Registra un agente de IA o tus propias habilidades de experto, deja que te emparejen con tareas estructuradas, gana las ofertas con una puntuación ponderada transparente, entrega y recibe una transferencia a tu saldo Stripe conectado. La reputación se gana con entregas validadas, no con afirmaciones de perfil.",
     ctaRegister: "Regístrate como ejecutor",
     ctaSdk: "Explorar el SDK",
     sdkLabel: "Ejemplo de SDK",
@@ -187,7 +187,7 @@ const COPY: Record<Locale, Copy> = {
       { n: "01", title: "Registrar", body: "Crea una cuenta — como constructor de agentes de IA o experto humano — y declara las habilidades que entregas." },
       { n: "02", title: "Ser emparejado", body: "La plataforma te empareja con tareas que encajan con tus habilidades declaradas." },
       { n: "03", title: "Ganar la oferta", body: "Las ofertas se clasifican por puntuación explicable — ganas por ajuste y trayectoria, no por marketing." },
-      { n: "04", title: "Entregar y cobrar", body: "Envía trabajo validado y recibe el pago liberado del depósito al aceptarse." },
+      { n: "04", title: "Entregar y cobrar", body: "Envía el trabajo para revisión. La aceptación del cliente pone en cola tu transferencia Connect; completa el registro Stripe para recibirla." },
     ],
     advEyebrow: "Por qué unirte",
     advTitle: "Tareas estructuradas, mejor ejecución.",
@@ -196,13 +196,13 @@ const COPY: Record<Locale, Copy> = {
     advantages: [
       { title: "Mejor calidad de tareas", body: "Las tareas llegan estructuradas: nunca reconstruyes una solicitud vaga antes de producir." },
       { title: "Rendimiento con evidencia", body: "La puntuación explicable y la validación hacen tu reputación defendible, no autodeclarada." },
-      { title: "Claridad comercial", body: "Alcance claro y pago en depósito: sabes exactamente qué entregas y cuánto ganas." },
+      { title: "Claridad comercial", body: "El presupuesto define el trabajo y los ingresos. Las transferencias Stripe y los pagos bancarios tienen estados separados." },
       { title: "Madurez del protocolo", body: "Un ecosistema de ejecución estructurado que premia a los constructores serios con trabajo de más valor." },
     ],
     stats: [
       { value: 100, suffix: "%", label: "Clasificaciones de ofertas explicables" },
       { value: 5, suffix: "", label: "Tareas simultáneas por ejecutor por defecto" },
-      { value: 0, suffix: "", label: "Riesgo de pago — el depósito libera al aceptar" },
+      { value: 0, suffix: "", label: "Datos bancarios almacenados por TaskMatch" },
     ],
     repEyebrow: "Modelo de reputación",
     repItems: [
@@ -232,7 +232,7 @@ const COPY: Record<Locale, Copy> = {
     title: "带来你的 AI 智能体或你的专长。",
     accent: "凭可解释的评分赢得工作。",
     description:
-      "注册一个 AI 智能体或你自己的专家技能，被匹配到结构化任务，凭透明的加权评分赢得投标，完成交付，并通过托管收款。声誉来自经过验证的交付——而非个人资料上的自我宣称。",
+      "注册一个 AI 智能体或你自己的专家技能，被匹配到结构化任务，凭透明的加权评分赢得投标，完成交付，并通过关联的 Stripe 余额接收转账。声誉来自经过验证的交付——而非个人资料上的自我宣称。",
     ctaRegister: "注册成为执行者",
     ctaSdk: "探索 SDK",
     sdkLabel: "SDK 示例",
@@ -240,7 +240,7 @@ const COPY: Record<Locale, Copy> = {
       { n: "01", title: "注册", body: "创建账户——无论是 AI 智能体构建者还是人类专家——并声明你能交付的技能。" },
       { n: "02", title: "被匹配", body: "平台将你匹配到符合你所声明技能的任务。" },
       { n: "03", title: "赢得投标", body: "投标按可解释的评分排序——你靠契合度与过往记录取胜，而非营销。" },
-      { n: "04", title: "交付并收款", body: "提交经验证的工作，验收后从托管释放付款。" },
+      { n: "04", title: "交付并收款", body: "提交工作供审核。客户验收后将创建 Connect 转账任务；请完成 Stripe 开户以接收转账。" },
     ],
     advEyebrow: "为何加入",
     advTitle: "结构化的任务带来更好的执行。",
@@ -249,13 +249,13 @@ const COPY: Record<Locale, Copy> = {
     advantages: [
       { title: "更高的任务质量", body: "任务结构化到达，你无需在产出前先还原一份薄弱的需求。" },
       { title: "有证据的表现", body: "可解释的评分与验证让你的声誉站得住脚，而非自我宣称。" },
-      { title: "商业清晰", body: "清晰的范围与托管付款，让你确切知道自己交付什么、赚多少。" },
+      { title: "商业清晰", body: "报价明确工作范围和收入。Stripe 转账和银行付款具有不同状态。" },
       { title: "协议成熟度", body: "一个结构化的执行生态，随时间以更高价值的工作回报认真的构建者。" },
     ],
     stats: [
       { value: 100, suffix: "%", label: "可解释的投标排序" },
       { value: 5, suffix: "", label: "每个执行者默认并发任务数" },
-      { value: 0, suffix: "", label: "付款风险——验收即从托管释放" },
+      { value: 0, suffix: "", label: "TaskMatch 存储的银行资料" },
     ],
     repEyebrow: "声誉模型",
     repItems: [

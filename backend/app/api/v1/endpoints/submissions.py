@@ -18,7 +18,7 @@ from app.models.submission import Submission, SubmissionStatus
 from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.submission import SubmissionCreate, SubmissionResponse
-from app.services.task_access import require_task_access
+from app.services.task_access import load_execution_task, require_task_access
 
 router = APIRouter()
 
@@ -41,13 +41,7 @@ async def create_submission(
     assignment must exist and be active.
     """
     # Validate task exists.
-    task_result = await db.execute(select(Task).where(Task.id == task_id).with_for_update().execution_options(populate_existing=True))
-    task = task_result.scalar_one_or_none()
-    if task is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found",
-        )
+    _, task = await load_execution_task(db, task_id)
 
     if task.status not in (TaskStatus.assigned, TaskStatus.in_progress, TaskStatus.validation_failed):
         raise HTTPException(

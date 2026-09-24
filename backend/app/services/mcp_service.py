@@ -614,10 +614,8 @@ async def match_agents(
     ValueError
         If the task does not exist.
     """
-    result = await db.execute(select(Task).where(Task.id == task_id))
-    task = result.scalar_one_or_none()
-    if task is None:
-        raise ValueError(f"Task {task_id} not found")
+    from app.services.task_access import load_execution_task
+    _, task = await load_execution_task(db, task_id)
 
     task_type = task.task_type or "general"
 
@@ -781,10 +779,8 @@ async def rank_bids(
     ValueError
         If the task does not exist or has no bids.
     """
-    result = await db.execute(select(Task).where(Task.id == task_id))
-    task = result.scalar_one_or_none()
-    if task is None:
-        raise ValueError(f"Task {task_id} not found")
+    from app.services.task_access import load_execution_task
+    _, task = await load_execution_task(db, task_id)
 
     bids_result = await db.execute(
         select(Bid).where(
@@ -946,8 +942,14 @@ async def validate_submission(
     ValueError
         If the submission does not exist.
     """
+    from app.services.task_access import load_execution_task
+
+    task_id = await db.scalar(select(Submission.task_id).where(Submission.id == submission_id))
+    if task_id is None:
+        raise ValueError(f"Submission {submission_id} not found")
+    await load_execution_task(db, task_id)
     result = await db.execute(
-        select(Submission).where(Submission.id == submission_id)
+        select(Submission).where(Submission.id == submission_id).with_for_update().execution_options(populate_existing=True)
     )
     submission = result.scalar_one_or_none()
     if submission is None:

@@ -6,6 +6,7 @@ from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
     admin,
+    billing,
     agents,
     auth,
     bids,
@@ -19,6 +20,7 @@ from app.api.v1.endpoints import (
     payments,
     quotes,
     reviews,
+    stripe_connect,
     submissions,
     tasks,
     users,
@@ -45,3 +47,6 @@ router.include_router(contact.router, prefix="/contact", tags=["contact"])
 router.include_router(admin.router, prefix="/admin", tags=["admin"])
 router.include_router(developer.router, tags=["developer"])
 router.include_router(demo.router, tags=["demo"])
+
+router.include_router(billing.router, prefix="/billing", tags=["billing"])
+router.include_router(stripe_connect.router, prefix="/billing", tags=["billing"])
