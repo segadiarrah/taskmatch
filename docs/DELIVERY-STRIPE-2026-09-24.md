@@ -34,5 +34,17 @@ no keys or full Checkout URLs belong in this report. No live charge, transfer or
 refund was made as a test. Developer KYC and bank-account activation remain steps
 performed by the developer with Stripe before funds can be transferred.
 
-Deployment and live read-only verification are recorded after the final gate.
+Deployed commit `de2dc4c` to https://taskmatch.ai with schema 004. Backend and
+billing worker containers are healthy; `/health/ready` returns 200. Production
+Alembic metadata check reports no missing changes. Authenticated billing config
+reports live Checkout and Connect enabled; administrator funding, operation and
+ledger endpoints return 200. Both public webhook routes accept valid dedicated
+signatures and reject invalid ones with 400; the synthetic probes were ignored
+without financial operations. Stripe confirms both dedicated live endpoints are
+enabled at the pinned API version. All 30 historical jobs remain `legacy_manual`;
+there were zero Stripe funding/operation rows at the post-deployment smoke check.
+
+Private deployment backups and verification logs:
+`/home/almalinux/taskmatch-backups/2026-09-24-stripe/`. Prior source, environment,
+database and images are retained for reviewed recovery.
 See [Stripe operations](STRIPE-OPERATIONS.md) for recovery procedures.
