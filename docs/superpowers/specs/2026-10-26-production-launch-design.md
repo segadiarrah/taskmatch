@@ -1,6 +1,6 @@
 # Taskmatch — préparation du lancement commercial
 
-Date : 2026-10-26. Statut : approuvé par l’utilisateur le 2026-10-29 ; implémentation en cours.
+Date : 2026-10-26. Statut : approuvé par l’utilisateur le 2026-10-29 ; implémentation et vérifications terminées ; intégration en cours.
 
 ## Demande
 

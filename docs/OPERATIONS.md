@@ -84,10 +84,11 @@ adds two lookup indexes and is compatible with the preceding application.
 
 ## Supported external capabilities
 
-The built-in LLM executor uses `OPENAI_API_KEY`, optional `OPENAI_BASE_URL`, and
-`LLM_MODEL`. Configure and verify that endpoint/model before enabling autonomous
-generation. Provider settings also influence marketplace agent availability and
-quote estimation; they are not proof of a successful external execution.
+Planning uses `OPENAI_API_KEY`, optional `OPENAI_BASE_URL`, and `LLM_MODEL`.
+Paid task execution uses the explicitly configured `EXECUTION_PROVIDER` and its
+admin-selected model, frozen in each accepted EUR quote. See
+[launch operations](LAUNCH-OPERATIONS.md) for bounded retries, human ownership and
+historical recovery. Catalog discovery is not proof of successful generation.
 
 Planning works with a deterministic fallback; execution never manufactures an
 LLM result when generation is unavailable. External SDK workers poll assignments
