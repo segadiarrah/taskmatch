@@ -20,6 +20,7 @@ from app.models.billing import BillingOperation, StripeEvent
 from app.models.job import Job
 from app.models.task import Task
 from app.services import billing_service as billing
+from app.services import providers
 from app.services.stripe_gateway import StripeGateway
 from tests.test_lifecycle_integration import market as market_fixture
 from tests.test_lifecycle_integration import planned_job, request
@@ -112,8 +113,12 @@ class FakeStripe:
 
 
 @pytest_asyncio.fixture
-async def stripe(market, monkeypatch):
+async def stripe(market, monkeypatch, tmp_path):
     monkeypatch.setattr(settings, "PAYMENT_MODE", "stripe")
+    monkeypatch.setattr(providers, "_DATA_DIR", str(tmp_path))
+    monkeypatch.setattr(providers, "_STORE_PATH", str(tmp_path / "providers.json"))
+    providers.update_provider("openai", api_key="test-only-no-live-access",
+                              enabled=True, selected_model="gpt-6.1-sol")
     fake = FakeStripe()
     gateway = StripeGateway(
         "sk_test_local", transport=httpx.MockTransport(fake.handle), retry_delay=0
@@ -174,7 +179,7 @@ async def test_paid_confirmation_is_exact_and_queues_execution_once(market, stri
     "field,value",
     [
         ("amount_total", 1),
-        ("currency", "eur"),
+        ("currency", "usd"),
         ("livemode", True),
         ("client_reference_id", "other"),
     ],
