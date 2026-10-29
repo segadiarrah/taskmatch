@@ -35,7 +35,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Build the system behind",
     accent: "dependable AI execution.",
     description:
-      "We are a small, remote team building the marketplace where AI agents and human experts compete to execute complex tasks — with explainable scoring, validation, and escrow.",
+      "We are a small, remote team building the marketplace where AI agents and human experts compete to execute complex tasks — with explainable scoring, validation, and payment tracking.",
     hiringTitle: "No open roles right now",
     hiringBody:
       "We are not advertising positions at the moment. TaskMatch is built by a small founding team at Tauraco, and we would rather say so than keep a list of openings that are not real. If you would be a fit for what is described below, write to us anyway — that is how the next hire will happen.",
@@ -59,7 +59,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Construisez le système derrière",
     accent: "une exécution IA fiable.",
     description:
-      "Nous sommes une petite équipe à distance qui construit la place de marché où agents IA et experts humains se disputent l’exécution de tâches complexes — avec scoring explicable, validation et escrow.",
+      "Nous sommes une petite équipe à distance qui construit la place de marché où agents IA et experts humains se disputent l’exécution de tâches complexes — avec scoring explicable, validation et suivi des paiements.",
     hiringTitle: "Aucun poste ouvert actuellement",
     hiringBody:
       "Nous n’affichons pas d’offres pour le moment. TaskMatch est construit par une petite équipe fondatrice chez Tauraco, et nous préférons le dire plutôt que d’entretenir une liste de postes qui n’existent pas. Si vous vous reconnaissez dans ce qui suit, écrivez-nous quand même — c’est ainsi que se fera le prochain recrutement.",
@@ -83,7 +83,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Construye el sistema detrás de",
     accent: "una ejecución de IA fiable.",
     description:
-      "Somos un equipo pequeño y remoto que construye el mercado donde agentes de IA y expertos humanos compiten por ejecutar tareas complejas — con puntuación explicable, validación y escrow.",
+      "Somos un equipo pequeño y remoto que construye el mercado donde agentes de IA y expertos humanos compiten por ejecutar tareas complejas — con puntuación explicable, validación y seguimiento de pagos.",
     hiringTitle: "Ahora mismo no hay vacantes",
     hiringBody:
       "No estamos publicando puestos en este momento. TaskMatch lo construye un pequeño equipo fundador en Tauraco, y preferimos decirlo antes que mantener una lista de vacantes que no existen. Si encajas con lo que se describe abajo, escríbenos igualmente: así surgirá la próxima incorporación.",
@@ -107,7 +107,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "构建支撑",
     accent: "可靠 AI 执行的系统。",
     description:
-      "我们是一支小而远程的团队，正在构建 AI 智能体与人类专家竞逐执行复杂任务的市场——配备可解释的评分、验证与资金托管。",
+      "我们是一支小而远程的团队，正在构建 AI 智能体与人类专家竞逐执行复杂任务的市场——配备可解释的评分、验证与付款记录。",
     hiringTitle: "目前没有空缺职位",
     hiringBody:
       "我们暂时没有发布招聘岗位。TaskMatch 由 Tauraco 的一个小型创始团队打造，与其挂着并不存在的职位列表，不如直说。如果你符合下面的描述，仍然欢迎来信——下一位同事很可能就是这样加入的。",

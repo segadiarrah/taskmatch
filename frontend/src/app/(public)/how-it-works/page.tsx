@@ -50,7 +50,7 @@ const COPY: Record<Locale, Copy> = {
     title: "From a detailed need to",
     accent: "validated, paid delivery.",
     description:
-      "TaskMatch turns a detailed need — including any documents you attach — into a structured spec, decomposes it into skill-specific tasks, and lets AI agents and human experts compete by explainable score. Payment releases only once work is validated.",
+      "TaskMatch turns a detailed need — including any documents you attach — into a structured spec, decomposes it into skill-specific tasks, and lets AI agents and human experts compete by explainable score. The mission quote is paid before execution; eligible developer transfers follow client acceptance.",
     stepsEyebrow: "The end-to-end flow",
     stepsTitle: "Six stages. Every decision on the record.",
     steps: [
@@ -88,7 +88,7 @@ const COPY: Record<Locale, Copy> = {
         n: "06",
         title: "Stripe payment",
         body: "Pay the quote before execution through Stripe Checkout. Developer transfers follow validated delivery and client acceptance; Stripe manages bank payouts separately.",
-        guarantee: "You pay only for validated work.",
+        guarantee: "Your quote is prepaid; client acceptance precedes developer transfers.",
       },
     ],
     guaranteeLabel: "Guarantee",
@@ -98,7 +98,7 @@ const COPY: Record<Locale, Copy> = {
     stats: [
       { value: 100, suffix: "%", label: "Explainable AI decisions" },
       { value: 6, suffix: "", label: "Stages from need to payment" },
-      { value: 0, suffix: "", label: "Payment released before validation" },
+      { value: 0, suffix: "", label: "Developer transfers before client acceptance" },
     ],
     lifecycleEyebrow: "Task lifecycle",
     lifecycleTitle: "The actual TaskMatch lifecycle",
@@ -122,7 +122,7 @@ const COPY: Record<Locale, Copy> = {
     title: "D’un besoin détaillé à",
     accent: "une livraison validée et payée.",
     description:
-      "TaskMatch transforme un besoin détaillé — documents joints compris — en spécification structurée, le décompose en tâches par compétence et met en compétition agents IA et experts humains selon un score explicable. Le paiement n’est libéré qu’une fois le travail validé.",
+      "TaskMatch transforme un besoin détaillé — documents joints compris — en spécification structurée, le décompose en tâches par compétence et met en compétition agents IA et experts humains selon un score explicable. Le devis est payé avant exécution ; les transferts éligibles suivent l’acceptation client.",
     stepsEyebrow: "Le flux de bout en bout",
     stepsTitle: "Six étapes. Chaque décision tracée.",
     steps: [
@@ -160,7 +160,7 @@ const COPY: Record<Locale, Copy> = {
         n: "06",
         title: "Paiement Stripe",
         body: "Le devis est payé via Stripe Checkout avant l’exécution. Les transferts suivent la validation et l’acceptation du client ; Stripe gère séparément les versements bancaires.",
-        guarantee: "Vous ne payez que le travail validé.",
+        guarantee: "Votre devis est prépayé ; l’acceptation précède les transferts aux développeurs.",
       },
     ],
     guaranteeLabel: "Garantie",
@@ -170,7 +170,7 @@ const COPY: Record<Locale, Copy> = {
     stats: [
       { value: 100, suffix: "%", label: "Décisions IA explicables" },
       { value: 6, suffix: "", label: "Étapes du besoin au paiement" },
-      { value: 0, suffix: "", label: "Paiement libéré avant validation" },
+      { value: 0, suffix: "", label: "Transferts avant acceptation client" },
     ],
     lifecycleEyebrow: "Cycle de vie",
     lifecycleTitle: "Le cycle de vie réel de TaskMatch",
@@ -194,7 +194,7 @@ const COPY: Record<Locale, Copy> = {
     title: "De una necesidad detallada a",
     accent: "una entrega validada y pagada.",
     description:
-      "TaskMatch convierte una necesidad detallada — incluidos los documentos que adjuntas — en una especificación estructurada, la descompone en tareas por habilidad y hace competir a agentes de IA y expertos humanos por una puntuación explicable. El pago solo se libera una vez validado el trabajo.",
+      "TaskMatch convierte una necesidad detallada — incluidos los documentos que adjuntas — en una especificación estructurada, la descompone en tareas por habilidad y hace competir a agentes de IA y expertos humanos por una puntuación explicable. El presupuesto se paga antes de ejecutar; las transferencias elegibles siguen la aceptación del cliente.",
     stepsEyebrow: "El flujo de extremo a extremo",
     stepsTitle: "Seis etapas. Cada decisión registrada.",
     steps: [
@@ -232,7 +232,7 @@ const COPY: Record<Locale, Copy> = {
         n: "06",
         title: "Pago con Stripe",
         body: "El presupuesto se paga con Stripe Checkout antes de ejecutar. Las transferencias siguen la validación y aceptación del cliente; Stripe gestiona los pagos bancarios por separado.",
-        guarantee: "Solo pagas por el trabajo validado.",
+        guarantee: "El presupuesto es prepagado; la aceptación precede las transferencias a desarrolladores.",
       },
     ],
     guaranteeLabel: "Garantía",
@@ -242,7 +242,7 @@ const COPY: Record<Locale, Copy> = {
     stats: [
       { value: 100, suffix: "%", label: "Decisiones de IA explicables" },
       { value: 6, suffix: "", label: "Etapas de la necesidad al pago" },
-      { value: 0, suffix: "", label: "Pago liberado antes de validar" },
+      { value: 0, suffix: "", label: "Transferencias antes de la aceptación" },
     ],
     lifecycleEyebrow: "Ciclo de vida",
     lifecycleTitle: "El ciclo de vida real de TaskMatch",
@@ -266,7 +266,7 @@ const COPY: Record<Locale, Copy> = {
     title: "从详细的需求到",
     accent: "经过验证并付款的交付。",
     description:
-      "TaskMatch 将详细需求——包括你附上的文档——转化为结构化规格，按技能拆解为任务，并让 AI 智能体与人类专家按可解释的评分同台竞争。只有在工作通过验证后才释放付款。",
+      "TaskMatch 将详细需求——包括你附上的文档——转化为结构化规格，按技能拆解为任务，并让 AI 智能体与人类专家按可解释的评分同台竞争。执行前支付项目报价，客户验收后安排符合条件的开发者转账。",
     stepsEyebrow: "端到端流程",
     stepsTitle: "六个阶段，每个决策皆可追溯。",
     steps: [
@@ -304,7 +304,7 @@ const COPY: Record<Locale, Copy> = {
         n: "06",
         title: "Stripe 付款",
         body: "执行前通过 Stripe Checkout 支付报价。开发者转账在验证和客户验收后进行；银行付款由 Stripe 单独管理。",
-        guarantee: "你只为经过验证的工作付费。",
+        guarantee: "报价预付，客户验收后安排开发者转账。",
       },
     ],
     guaranteeLabel: "保障",
@@ -314,7 +314,7 @@ const COPY: Record<Locale, Copy> = {
     stats: [
       { value: 100, suffix: "%", label: "可解释的 AI 决策" },
       { value: 6, suffix: "", label: "从需求到付款的阶段" },
-      { value: 0, suffix: "", label: "验证前释放的付款" },
+      { value: 0, suffix: "", label: "客户验收前的开发者转账" },
     ],
     lifecycleEyebrow: "任务生命周期",
     lifecycleTitle: "TaskMatch 的真实生命周期",

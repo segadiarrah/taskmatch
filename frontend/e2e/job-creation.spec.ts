@@ -11,6 +11,7 @@ for (const failure of ["upload", "submit"] as const) {
     });
     await page.route("**/api/v1/auth/me", route => route.fulfill({ json: { id: "client-test", full_name: "Test Client", email: "test@example.com", role: "client", is_active: true } }));
     await page.route("**/api/v1/jobs", route => {
+      expect(route.request().postDataJSON().currency).toBe("EUR");
       creations += 1;
       return route.fulfill({ json: { id: "draft-test" } });
     });
@@ -26,6 +27,8 @@ for (const failure of ["upload", "submit"] as const) {
     });
     await page.route("**/api/v1/jobs/draft-test/plan", route => route.fulfill({ json: { ready: false, status: "submitted", tasks: [] } }));
     await page.goto("/client/jobs/new");
+    await expect(page.locator("#currency")).toHaveValue("EUR");
+    await expect(page.locator("#currency option")).toHaveCount(1);
     await page.locator("#title").fill("Retryable job");
     await page.locator("#description").fill("Use the attached requirements to prepare a report.");
     await page.locator("#budget_min").fill("10");

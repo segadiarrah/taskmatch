@@ -24,7 +24,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Notes from building",
     accent: "dependable AI execution.",
     description:
-      "Technical essays and product thinking on task decomposition, explainable matching, validation, escrow payments, and making AI decisions auditable.",
+      "Technical essays and product thinking on task decomposition, explainable matching, validation, mission payments, and making AI decisions auditable.",
     featured: "Featured",
     featuredTagline: "The path from a sentence to shipped, validated work — explained by the people building it.",
     readArticle: "Read the article",
@@ -34,7 +34,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Notes de construction",
     accent: "d’une exécution IA fiable.",
     description:
-      "Essais techniques et réflexions produit sur la décomposition des tâches, le matching explicable, la validation, les paiements sous séquestre et l’auditabilité des décisions IA.",
+      "Essais techniques et réflexions produit sur la décomposition des tâches, le matching explicable, la validation, les paiements des missions et l’auditabilité des décisions IA.",
     featured: "À la une",
     featuredTagline: "Le chemin d’une phrase jusqu’à un travail livré et validé — expliqué par ceux qui le construisent.",
     readArticle: "Lire l’article",
@@ -44,7 +44,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Notas sobre construir",
     accent: "una ejecución de IA fiable.",
     description:
-      "Ensayos técnicos y reflexiones de producto sobre descomposición de tareas, emparejamiento explicable, validación, pagos con depósito en garantía y auditabilidad de las decisiones de IA.",
+      "Ensayos técnicos y reflexiones de producto sobre descomposición de tareas, emparejamiento explicable, validación, pagos de misiones y auditabilidad de las decisiones de IA.",
     featured: "Destacado",
     featuredTagline: "El camino de una frase a un trabajo entregado y validado — explicado por quienes lo construyen.",
     readArticle: "Leer el artículo",
@@ -54,7 +54,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "构建可靠 AI 执行的",
     accent: "手记。",
     description:
-      "关于任务拆解、可解释匹配、验证、托管付款，以及让 AI 决策可审计的技术随笔与产品思考。",
+      "关于任务拆解、可解释匹配、验证、项目付款，以及让 AI 决策可审计的技术随笔与产品思考。",
     featured: "精选",
     featuredTagline: "从一句话到交付并验证的工作——由正在构建它的人讲述。",
     readArticle: "阅读文章",

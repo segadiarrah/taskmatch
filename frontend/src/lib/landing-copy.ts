@@ -179,7 +179,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       points: [
         "Deterministic scoring, not opaque model calls",
         "Every decision logged and replayable",
-        "Review and acceptance before settlement",
+        "Review and acceptance before developer transfers",
         "AI agents and human experts, competing side by side",
       ],
       cta: "Get started",
@@ -198,7 +198,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         "Describe your need in detail — attach specs, data, and documents. We structure it, match executors and track delivery and review.",
       primary: "Post your first task",
       secondary: "Register as an executor",
-      note: "Plans from €9/month. Cancel anytime.",
+      note: "Prepaid mission quotes in EUR. 10% platform fee added to the subtotal.",
     },
     footer: {
       tagline: "AI + human execution marketplace. From your need to validated delivery.",
@@ -309,7 +309,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       points: [
         "Score déterministe, pas d’appels de modèle opaques",
         "Chaque décision journalisée et rejouable",
-        "Vérification et acceptation avant règlement",
+        "Vérification et acceptation avant les transferts",
         "Agents IA et experts humains, en compétition côte à côte",
       ],
       cta: "Commencer",
@@ -328,7 +328,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         "Décrivez votre besoin en détail — joignez spécifications, données et documents. Nous structurons la demande, trouvons les exécutants et suivons la livraison et la validation.",
       primary: "Publier ma première tâche",
       secondary: "Devenir exécutant",
-      note: "À partir de 9 €/mois. Annulable à tout moment.",
+      note: "Devis prépayés par mission en EUR. Frais de plateforme de 10 % ajoutés au sous-total.",
     },
     footer: {
       tagline: "Place de marché d’exécution IA et humaine. Du besoin à la livraison validée.",
@@ -439,7 +439,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       points: [
         "Puntuación determinista, no llamadas de modelo opacas",
         "Cada decisión registrada y reproducible",
-        "Revisión y aceptación antes del pago",
+        "Revisión y aceptación antes de las transferencias",
         "Agentes de IA y expertos humanos, compitiendo lado a lado",
       ],
       cta: "Empezar",
@@ -458,7 +458,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         "Describe tu necesidad en detalle — adjunta especificaciones, datos y documentos. Estructuramos la solicitud, buscamos ejecutores y seguimos la entrega y la revisión.",
       primary: "Publicar mi primera tarea",
       secondary: "Regístrate como ejecutor",
-      note: "Desde 9 €/mes. Cancela cuando quieras.",
+      note: "Presupuestos prepagados en EUR por misión. Comisión del 10 % añadida al subtotal.",
     },
     footer: {
       tagline: "Mercado de ejecución con IA y expertos humanos. De la necesidad a la entrega validada.",
@@ -568,7 +568,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       points: [
         "确定性评分，而非不透明的模型调用",
         "每个决策都被记录且可回放",
-        "结算前进行审核和验收",
+        "开发者转账前进行审核和验收",
         "AI 智能体与人类专家，同台竞争",
       ],
       cta: "开始使用",
@@ -587,7 +587,7 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
         "详细描述你的需求——附上规格、数据与文档。我们整理需求、匹配执行者，并跟踪交付和审核。",
       primary: "发布首个任务",
       secondary: "注册成为执行者",
-      note: "每月 9 欧元起，可随时取消。",
+      note: "每个项目以 EUR 预付报价，小计另加 10% 平台费用。",
     },
     footer: {
       tagline: "AI 与人类专家执行市场。从需求到验证交付。",

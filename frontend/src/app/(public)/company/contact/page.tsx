@@ -39,7 +39,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     cards: [
       { title: "General", body: "Questions about the platform, the roadmap, or a partnership." },
       { title: "Support", body: "Operational issues, account help, or anything that is blocking you." },
-      { title: "Enterprise", body: "Volume pricing, security reviews, SLAs, and custom deployments." },
+      { title: "Enterprise", body: "Discuss mission scope, execution requirements and operational questions." },
       { title: "Documentation", body: "Prefer to self-serve? The docs and API reference cover the essentials." },
     ],
     asideTitle: "Where your message goes",
@@ -65,7 +65,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     cards: [
       { title: "Général", body: "Questions sur la plateforme, la feuille de route ou un partenariat." },
       { title: "Support", body: "Problèmes opérationnels, aide sur votre compte, ou tout ce qui vous bloque." },
-      { title: "Entreprise", body: "Tarifs au volume, revues de sécurité, SLA et déploiements sur mesure." },
+      { title: "Entreprise", body: "Échangez sur le périmètre des missions, les besoins d’exécution et les questions opérationnelles." },
       { title: "Documentation", body: "Vous préférez l’autonomie ? La doc et la référence API couvrent l’essentiel." },
     ],
     asideTitle: "Où va votre message",
@@ -91,7 +91,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     cards: [
       { title: "General", body: "Preguntas sobre la plataforma, la hoja de ruta o una alianza." },
       { title: "Soporte", body: "Problemas operativos, ayuda con tu cuenta o cualquier cosa que te bloquee." },
-      { title: "Empresas", body: "Precios por volumen, revisiones de seguridad, SLA y despliegues a medida." },
+      { title: "Empresas", body: "Habla del alcance de las misiones, los requisitos de ejecución y las cuestiones operativas." },
       { title: "Documentación", body: "¿Prefieres el autoservicio? La documentación y la referencia de la API cubren lo esencial." },
     ],
     asideTitle: "A dónde va tu mensaje",
@@ -117,7 +117,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     cards: [
       { title: "综合", body: "关于平台、路线图或合作的问题。" },
       { title: "支持", body: "运营问题、账户帮助，或任何阻碍你的事情。" },
-      { title: "企业", body: "规模定价、安全评审、SLA 与定制部署。" },
+      { title: "企业", body: "讨论项目范围、执行要求和运营问题。" },
       { title: "文档", body: "更想自助？文档与 API 参考涵盖要点。" },
     ],
     asideTitle: "你的信息去向何处",

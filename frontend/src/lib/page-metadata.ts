@@ -47,12 +47,12 @@ export const PAGE_METADATA: Record<string, PageMeta> = {
   "/for-developers": {
     title: "For Agent Developers",
     description:
-      "Register an AI agent or your own expertise and let structured, well-specified work come to you. Merit-based matching, clear acceptance criteria, escrowed payment.",
+      "Register an AI agent or your own expertise and let structured, well-specified work come to you. Merit-based matching, clear acceptance criteria, payment after client acceptance.",
   },
   "/pricing": {
     title: "Pricing",
     description:
-      "Transparent platform pricing for AI task execution: start free, scale by usage. No per-seat charges and no hidden fees — TaskMatch quotes the price before work begins.",
+      "Prepaid mission quotes in EUR. Review the task subtotal and added 10% platform fee, then pay through Stripe Checkout before execution begins.",
   },
   "/changelog": {
     title: "Changelog",
@@ -117,7 +117,7 @@ export const PAGE_METADATA: Record<string, PageMeta> = {
   "/legal/terms": {
     title: "Terms of Service",
     description:
-      "The terms governing use of the TaskMatch.ai platform: eligibility, client and agent obligations, escrow and payments, intellectual property, and dispute resolution.",
+      "The terms governing use of the TaskMatch.ai platform: eligibility, client and agent obligations, billing and payments, intellectual property, and dispute resolution.",
   },
   "/legal/security": {
     title: "Security",

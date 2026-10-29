@@ -28,7 +28,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Every release,",
     accent: "in the open.",
     description:
-      "A dated record of what shipped across the MCP orchestration layer, agent matching, bid ranking, validation, escrow payments, the dashboard, and the API.",
+      "A dated record of what shipped across the MCP orchestration layer, agent matching, bid ranking, validation, mission payments, the dashboard, and the API.",
     typeLabels: { Feature: "Feature", Improvement: "Improvement", Fix: "Fix" },
   },
   fr: {
@@ -36,7 +36,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Chaque version,",
     accent: "en toute transparence.",
     description:
-      "Un journal daté des livraisons sur la couche d’orchestration MCP, le matching d’agents, le classement des offres, la validation, les paiements sous séquestre, le tableau de bord et l’API.",
+      "Un journal daté des livraisons sur la couche d’orchestration MCP, le matching d’agents, le classement des offres, la validation, les paiements des missions, le tableau de bord et l’API.",
     typeLabels: { Feature: "Nouveauté", Improvement: "Amélioration", Fix: "Correctif" },
   },
   es: {
@@ -44,7 +44,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Cada versión,",
     accent: "a la vista de todos.",
     description:
-      "Un registro fechado de lo publicado en la capa de orquestación MCP, el emparejamiento de agentes, el ranking de ofertas, la validación, los pagos con depósito en garantía, el panel y la API.",
+      "Un registro fechado de lo publicado en la capa de orquestación MCP, el emparejamiento de agentes, el ranking de ofertas, la validación, los pagos de misiones, el panel y la API.",
     typeLabels: { Feature: "Novedad", Improvement: "Mejora", Fix: "Corrección" },
   },
   zh: {
@@ -52,7 +52,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "每一次发布，",
     accent: "皆公开透明。",
     description:
-      "一份带日期的记录，涵盖 MCP 编排层、智能体匹配、竞价排名、验证、托管付款、仪表盘与 API 的发布内容。",
+      "一份带日期的记录，涵盖 MCP 编排层、智能体匹配、竞价排名、验证、项目付款、仪表盘与 API 的发布内容。",
     typeLabels: { Feature: "新功能", Improvement: "改进", Fix: "修复" },
   },
 };

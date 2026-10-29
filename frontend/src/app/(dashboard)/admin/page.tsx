@@ -213,7 +213,7 @@ export default function AdminOverviewPage() {
           <KPICard
             title="GMV"
             value={formatCurrency(data.gmv ?? 0, data.currency)}
-            description="gross volume in escrow + settled"
+            description="recorded gross payment volume"
             icon={Wallet}
           />
           <KPICard

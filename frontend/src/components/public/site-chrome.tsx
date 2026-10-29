@@ -64,7 +64,7 @@ const LABELS: Record<Locale, NavLabels> = {
     terms: "Terms of Service", termsDesc: "Commercial and platform terms",
     security: "Security", securityDesc: "Security posture and controls",
     fProduct: "Product", fSolutions: "Solutions", fCompany: "Company", fLegal: "Legal",
-    enterprise: "Enterprise", agentSDK: "Agent SDK", about: "About", careers: "Careers",
+    enterprise: "Mission pricing", agentSDK: "Agent SDK", about: "About", careers: "Careers",
     contact: "Contact", blog: "Blog", compliance: "Compliance", rights: "All rights reserved.", notice: "Legal notice",
   },
   fr: {
@@ -80,7 +80,7 @@ const LABELS: Record<Locale, NavLabels> = {
     terms: "Conditions d’utilisation", termsDesc: "Conditions commerciales et de la plateforme",
     security: "Sécurité", securityDesc: "Posture et contrôles de sécurité",
     fProduct: "Produit", fSolutions: "Solutions", fCompany: "Entreprise", fLegal: "Légal",
-    enterprise: "Entreprise", agentSDK: "SDK Agent", about: "À propos", careers: "Carrières",
+    enterprise: "Tarifs des missions", agentSDK: "SDK Agent", about: "À propos", careers: "Carrières",
     contact: "Contact", blog: "Blog", compliance: "Conformité", rights: "Tous droits réservés.", notice: "Mentions légales",
   },
   es: {
@@ -96,7 +96,7 @@ const LABELS: Record<Locale, NavLabels> = {
     terms: "Términos del servicio", termsDesc: "Términos comerciales y de la plataforma",
     security: "Seguridad", securityDesc: "Postura y controles de seguridad",
     fProduct: "Producto", fSolutions: "Soluciones", fCompany: "Empresa", fLegal: "Legal",
-    enterprise: "Empresas", agentSDK: "SDK de agentes", about: "Acerca de", careers: "Empleo",
+    enterprise: "Precios por misión", agentSDK: "SDK de agentes", about: "Acerca de", careers: "Empleo",
     contact: "Contacto", blog: "Blog", compliance: "Cumplimiento", rights: "Todos los derechos reservados.", notice: "Aviso legal",
   },
   zh: {
@@ -112,7 +112,7 @@ const LABELS: Record<Locale, NavLabels> = {
     terms: "服务条款", termsDesc: "商业与平台条款",
     security: "安全", securityDesc: "安全态势与控制",
     fProduct: "产品", fSolutions: "解决方案", fCompany: "公司", fLegal: "法律",
-    enterprise: "企业版", agentSDK: "智能体 SDK", about: "关于", careers: "招聘",
+    enterprise: "项目报价", agentSDK: "智能体 SDK", about: "关于", careers: "招聘",
     contact: "联系我们", blog: "博客", compliance: "合规", rights: "版权所有。", notice: "法律声明",
   },
 };

@@ -215,50 +215,44 @@ def score_bid(bid, task, peer_bids):
   },
   {
     slug: "escrow-payments-for-autonomous-agent-work",
-    title: "Escrow payments for autonomous agent work",
+    title: "Mission funding and developer transfers",
     excerpt:
-      "When the worker is an autonomous agent, “pay on delivery” needs a precise definition. We use escrow-style holds released only against validated work — here is how the money moves.",
-    date: "2025-03-11",
+      "A prepaid mission quote, server-confirmed funding, client acceptance and developer transfers are separate steps. Here is the launch payment policy.",
+    date: "2026-10-29",
     author: { name: "Sega Diarrah", role: "Founder" },
-    readingTime: "6 min read",
+    readingTime: "3 min read",
     tag: "Payments",
     body: [
       {
         paragraphs: [
-          "Trust in a marketplace is ultimately about money changing hands at the right moment. A client should never pay for work that failed, and an agent should never do work it might not be paid for. Those two guarantees are in tension, and escrow is how we resolve it: funds are committed up front but held by the platform until validation decides their fate.",
-          "For human freelancing, escrow is a familiar pattern. What is different here is that the worker is often an autonomous agent — an external HTTP worker that picks up an assignment, does the work, and posts a submission without a human in the loop. That raises the bar on precision, because there is no goodwill negotiation to fall back on. The release conditions have to be mechanical.",
+          "Updated for the launch payment policy. This article replaces an earlier description of escrow-style payments and partial settlement. TaskMatch uses prepaid mission funding through Stripe; it does not provide a legal escrow service.",
+          "Each new mission receives an itemized quote in EUR. A platform fee of 10% is added to the task subtotal. AI task prices include provider costs, orchestration and validation, so the platform fee is not the entire platform margin. Accepted quotes keep their agreed amounts if provider prices change.",
         ],
       },
       {
-        heading: "The lifecycle of a held payment",
+        heading: "Payment before execution",
         paragraphs: [
-          "When a bid wins, the client’s payment for that task moves into a held state tied to the assignment. The agent can see that the funds are committed, which is what makes it safe for it to start work. From there the money follows the task’s validation outcome deterministically:",
-        ],
-        bullets: [
-          "Held — funds are committed to the assignment the moment the bid is accepted.",
-          "Released — the submission passed validation; funds move to the agent’s balance.",
-          "Refunded — the submission failed terminally or the task was cancelled; funds return to the client.",
-          "Disputed — a human review is pending; funds stay held until the review resolves.",
+          "The client accepts the quote and pays through hosted Stripe Checkout. Execution starts only after server-side payment confirmation. Returning from Checkout or seeing a success screen does not by itself establish that a payment succeeded.",
         ],
       },
       {
-        heading: "Release is a consequence, not a decision",
+        heading: "Validation, acceptance and transfer",
         paragraphs: [
-          "The important design property is that payment release is not a separate human action. It is a downstream consequence of validation. When a submission is marked approved by the validation pipeline, the payment transition to released fires automatically as part of the same flow. Nobody has to remember to pay the agent, and nobody can withhold payment on validated work.",
-          "This closes the loop that makes autonomous work viable. An agent developer can register a worker, let it bid and execute unattended, and trust that validated submissions turn into balance without a human approving each payout. That is the difference between a demo and an economy.",
+          "Task submissions and required human reviews are recorded separately. Automated structure checks do not establish that a real-world task was completed. Once all required work is ready, the client reviews the delivery and can request corrections before acceptance.",
+          "Client acceptance queues eligible transfers to external developers with a ready Stripe Connect account. Incomplete onboarding or a payment freeze can prevent a transfer. Credit to the connected Stripe balance is separate from arrival in a bank account. Internal platform work does not create an external developer transfer.",
         ],
       },
       {
-        heading: "Handling partial and failed work",
+        heading: "Failures and refunds",
         paragraphs: [
-          "Because payments are held per task rather than per job, partial delivery is handled cleanly. If a job of five tasks has four approved and one failed, four payments release and one refunds. The client is charged only for validated work, and the failed task can be re-opened for bidding without touching the settled tasks.",
-          "Terminal failure — an agent that never submits, or repeatedly fails validation past a retry limit — triggers a refund and returns the task to the open pool. The client is made whole, and the marketplace re-routes the work. No manual reconciliation required.",
+          "Independent tasks can continue when one task fails. Retries are bounded by attempts, budget and funding state. An operator may arrange human intervention when automatic execution cannot proceed.",
+          "If a mission cannot be delivered, an operator can cancel it and request a full refund through the payments workflow. Refunds require Stripe confirmation and any prior transfers must be reconciled. Partial delivery and partial refunds are not offered at launch. A failed task does not automatically refund the mission or mark incomplete work accepted.",
         ],
       },
       {
-        heading: "Why we log every transition",
+        heading: "Recorded payment state",
         paragraphs: [
-          "Every payment state change is recorded with the assignment, the validation result that triggered it, and a timestamp. That ledger is what lets a client reconcile a job’s cost line by line, and what lets an agent developer see exactly why a given payout did or did not happen. In a system where money moves without a human pressing the button each time, the audit trail is not paperwork — it is the thing that makes people comfortable letting the button press itself.",
+          "Funding, refund and transfer states are recorded separately so clients, developers and operators can inspect what happened. A charge dispute freezes further work and transfers for review. Historical missions explicitly marked for manual settlement retain that arrangement.",
         ],
       },
     ],
@@ -387,7 +381,7 @@ def score_bid(bid, task, peer_bids):
       {
         heading: "6. Validation and payment",
         paragraphs: [
-          "The submission runs through validation: automated checks first, optional human review second. If it passes, the task is approved and the escrow-held payment releases to the agent automatically. If it fails, the failure is specific and the task can be re-worked or re-bid, with the client charged only for validated work. The guarantee this final stage adds is the one that matters most: you pay for delivery, not for effort.",
+          "The submission runs through automated checks and any required human review. Mission funding was paid before execution; eligible developer transfers follow client acceptance of the complete delivery. Failed tasks require bounded retries or operator intervention. At launch, a mission that cannot be delivered can be cancelled for a full refund through the payments workflow; partial delivery and partial refunds are not offered.",
         ],
       },
       {

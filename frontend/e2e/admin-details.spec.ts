@@ -25,6 +25,7 @@ async function mockApi(page: Page, writes: Array<{ method: string; path: string;
       "/jobs/job-1": job,
       "/tasks": { tasks: [task], total: 1 },
       "/tasks/task-1": task,
+      "/tasks/task-1/execution": { assignment: null, review_required: false, reviewer_name: null, can_review: false, operations: [], can_retry: false, recovery: null },
       "/tasks/task-1/bids": { bids: [bid], total: 1 },
       "/tasks/task-1/submissions": [submission],
       "/tasks/task-1/reviews": [{ id: "review-1", submission_id: "sub-1", reviewer_user_id: "user-1", decision: "rework_requested", score: null, notes: "Actual review notes", created_at: date, updated_at: date }],
@@ -81,7 +82,66 @@ test("admin task detail uses real matching, bid, submission and review contracts
   await page.getByRole("button", { name: "Assign", exact: true }).click();
   await expect(page.getByRole("alert").filter({ hasText: "State changed" })).toBeVisible();
   expect(writes[0]).toEqual({ method: "POST", path: "/tasks/task-1/assign?agent_id=agent-1", body: null });
-  await page.getByRole("button", { name: "Validate", exact: true }).click();
+  await page.getByRole("button", { name: "Run structural validation", exact: true }).click();
   await expect.poll(() => writes.length).toBe(2);
   expect(writes[1].path).toBe("/mcp/validate-submission/sub-1");
+});
+
+test("admin submits own human assignment and sees bounded execution recovery", async ({ page }) => {
+  await mockApi(page, []);
+  let submitted = false;
+  let retryCount = 0;
+  await page.route("**/api/v1/tasks/task-1/execution", route => route.fulfill({ json: {
+    assignment: { id: "human-assignment", agent_id: "sega-agent", agent_name: "Sega", owner_user_id: user.id, kind: "human", status: submitted ? "submitted" : "assigned", can_submit: !submitted },
+    review_required: true, reviewer_name: "Sega", operations: [{ id: "op-1", status: "failed", attempts: 3, last_error: "Provider budget exhausted", available_at: date }], can_retry: !submitted,
+    recovery: { eligible: false, reason: "Legacy mission requires operator review" },
+  } }));
+  await page.route("**/api/v1/tasks/task-1/retry", route => { retryCount++; return route.fulfill({ json: { status: "pending" } }); });
+  await page.route("**/api/v1/tasks/task-1/submissions", route => {
+    if (route.request().method() === "GET") return route.fulfill({ json: [] });
+    expect(route.request().postDataJSON()).toEqual({ task_id: "task-1", agent_id: "sega-agent", assignment_id: "human-assignment", output_json: { result: "Complete human deliverable", summary: "Verified result" }, summary: "Verified result" });
+    submitted = true;
+    return route.fulfill({ json: { id: "human-submission" } });
+  });
+  await page.goto("/admin/tasks/task-1");
+  await expect(page.getByText("Provider budget exhausted", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Retry task", exact: true }).click();
+  await expect.poll(() => retryCount).toBe(1);
+  await page.getByLabel("Deliverable result").fill("Complete human deliverable");
+  await page.getByLabel("Delivery summary").fill("Verified result");
+  await page.getByRole("button", { name: "Submit human deliverable" }).click();
+  await expect(page.getByLabel("Deliverable result")).toHaveCount(0);
+  expect(submitted).toBe(true);
+});
+
+test("human delivery failures preserve the draft and review uses the explicit human contract", async ({ page }) => {
+  await mockApi(page, []);
+  let allowSubmit = true;
+  let reviews = 0;
+  await page.route("**/api/v1/tasks/task-1/execution", route => route.fulfill({ json: {
+    assignment: { id: "human-assignment", agent_id: "sega-agent", agent_name: "Sega", kind: "human", status: "assigned", can_submit: allowSubmit },
+    review_required: true, reviewer_name: "Sega", can_review: !allowSubmit, operations: [], can_retry: false, recovery: null,
+  } }));
+  await page.route("**/api/v1/tasks/task-1/submissions", route => route.request().method() === "POST"
+    ? route.fulfill({ status: 409, json: { detail: "Assignment is no longer active" } })
+    : route.fulfill({ json: [submission] }));
+  await page.route("**/api/v1/submissions/sub-1/reviews", route => {
+    expect(route.request().postDataJSON()).toEqual({ submission_id: "sub-1", decision: "rework_requested", notes: "Please verify the source data" });
+    reviews++;
+    return route.fulfill({ json: { id: "review-2" } });
+  });
+  await page.goto("/admin/tasks/task-1");
+  await page.getByLabel("Deliverable result").fill("Keep actual work");
+  await page.getByLabel("Delivery summary").fill("Keep summary");
+  await page.getByRole("button", { name: "Submit human deliverable" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Assignment is no longer active" })).toBeVisible();
+  await expect(page.getByLabel("Deliverable result")).toHaveValue("Keep actual work");
+  await expect(page.getByRole("button", { name: "Approve human review" })).toHaveCount(0);
+  allowSubmit = false;
+  await page.reload();
+  await expect(page.getByLabel("Deliverable result")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Request corrections" })).toBeDisabled();
+  await page.getByLabel("Human review notes").fill("Please verify the source data");
+  await page.getByRole("button", { name: "Request corrections" }).click();
+  await expect.poll(() => reviews).toBe(1);
 });

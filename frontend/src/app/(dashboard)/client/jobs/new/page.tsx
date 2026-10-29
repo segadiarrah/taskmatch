@@ -46,7 +46,7 @@ interface UploadResult {
   total_documents?: number;
 }
 
-const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD"];
+const CURRENCIES = ["EUR"];
 
 const ACCEPTED_DOC_TYPES = ".pdf,.doc,.docx,.txt,.md,.csv,.json,.rtf,.xls,.xlsx,.ppt,.pptx";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "/api";
@@ -72,7 +72,7 @@ export default function CreateJobPage() {
   const [description, setDescription] = useState("");
   const [budgetMin, setBudgetMin] = useState("");
   const [budgetMax, setBudgetMax] = useState("");
-  const [currency, setCurrency] = useState("USD");
+  const currency = "EUR";
   const [deadline, setDeadline] = useState("");
   const [autoSelect, setAutoSelect] = useState(false);
   const [requirements, setRequirements] = useState<Requirement[]>([]);
@@ -439,7 +439,7 @@ export default function CreateJobPage() {
                 <Select
                   id="currency"
                   value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
+                  disabled
                 >
                   {CURRENCIES.map((c) => (
                     <option key={c} value={c}>

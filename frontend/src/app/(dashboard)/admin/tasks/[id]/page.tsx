@@ -1,5 +1,6 @@
 "use client";
 
+import { ExecutionPanel } from "./execution-panel";
 import React, { useState, useEffect, useCallback } from "react";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { useParams, useRouter } from "next/navigation";
@@ -206,7 +207,7 @@ export default function TaskDetailPage() {
               disabled={actionLoading || !task.submissions.some(item => ["submitted", "under_review"].includes(item.status))}
             >
               <ShieldCheck className="mr-1 h-4 w-4" />
-              Validate
+              Run structural validation
             </Button>
           </div>
         </div>
@@ -221,6 +222,8 @@ export default function TaskDetailPage() {
           <p className="text-sm leading-relaxed text-ink-300">{task.description}</p>
         </CardContent>
       </Card>
+
+      <ExecutionPanel key={taskId} taskId={taskId} submissions={task.submissions} onChanged={fetchTask} />
 
       {/* Assigned Agent + Agent Matching Panel */}
       <div className="grid gap-6 lg:grid-cols-2">
@@ -379,6 +382,7 @@ export default function TaskDetailPage() {
                     <span className="font-mono text-xs text-ink-500">{timeAgo(sub.submitted_at)}</span>
                   </div>
                   <p className="mt-2 text-sm text-ink-300">{sub.summary}</p>
+                  <details className="mt-3 text-sm text-ink-300"><summary className="cursor-pointer text-signal-400">Inspect submitted result</summary><pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-md border border-ink-700 p-4">{JSON.stringify(sub.output_json, null, 2)}</pre></details>
                   {sub.deliverable_url && (
                     <a
                       href={sub.deliverable_url}

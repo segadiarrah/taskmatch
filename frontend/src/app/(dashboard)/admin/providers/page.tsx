@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
-import { apiGet, apiPut } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { apiGet, apiPost, apiPut } from "@/lib/api";
+import { cn, formatDateTime } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,10 @@ interface Provider {
   enabled: boolean;
   key_set: boolean;
   key_hint: string | null;
+  available_models?: string[];
+  catalog_checked_at?: string | null;
+  catalog_error?: string | null;
+  selected_model_available?: boolean;
 }
 
 interface ProvidersResponse {
@@ -51,71 +55,8 @@ interface Draft {
   message: string;
 }
 
-const FALLBACK_PROVIDERS: Provider[] = [
-  {
-    provider: "openai",
-    label: "OpenAI",
-    base_url: "https://api.openai.com/v1",
-    models: ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "o3"],
-    selected_model: "gpt-4o",
-    enabled: false,
-    key_set: false,
-    key_hint: null,
-  },
-  {
-    provider: "anthropic",
-    label: "Anthropic",
-    base_url: "https://api.anthropic.com",
-    models: ["claude-opus-4", "claude-sonnet-4", "claude-3-5-haiku"],
-    selected_model: "claude-sonnet-4",
-    enabled: false,
-    key_set: false,
-    key_hint: null,
-  },
-  {
-    provider: "google",
-    label: "Google Gemini",
-    base_url: "https://generativelanguage.googleapis.com",
-    models: ["gemini-2.5-pro", "gemini-2.5-flash"],
-    selected_model: "gemini-2.5-flash",
-    enabled: false,
-    key_set: false,
-    key_hint: null,
-  },
-  {
-    provider: "mistral",
-    label: "Mistral",
-    base_url: "https://api.mistral.ai/v1",
-    models: ["mistral-large", "mistral-small", "codestral"],
-    selected_model: "mistral-small",
-    enabled: false,
-    key_set: false,
-    key_hint: null,
-  },
-  {
-    provider: "xai",
-    label: "xAI Grok",
-    base_url: "https://api.x.ai/v1",
-    models: ["grok-4", "grok-3", "grok-3-mini"],
-    selected_model: "grok-3",
-    enabled: false,
-    key_set: false,
-    key_hint: null,
-  },
-  {
-    provider: "deepseek",
-    label: "DeepSeek",
-    base_url: "https://api.deepseek.com",
-    models: ["deepseek-chat", "deepseek-reasoner"],
-    selected_model: "deepseek-chat",
-    enabled: false,
-    key_set: false,
-    key_hint: null,
-  },
-];
-
 function competingStatus(enabled: boolean, keySet: boolean) {
-  if (enabled && keySet) return { label: "Competing", variant: "success" as const };
+  if (enabled && keySet) return { label: "Configured", variant: "success" as const };
   if (enabled && !keySet) return { label: "Enabled (no key)", variant: "warning" as const };
   return { label: "Off", variant: "secondary" as const };
 }
@@ -139,6 +80,7 @@ export default function ProvidersPage() {
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [checking, setChecking] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProviders();
@@ -165,6 +107,20 @@ export default function ProvidersPage() {
       ...prev,
       [providerId]: { ...prev[providerId], ...patch },
     }));
+  }
+
+  async function checkCatalog(p: Provider) {
+    setChecking(p.provider);
+    patchDraft(p.provider, { saveState: "idle", message: "" });
+    try {
+      await apiPost(`/v1/admin/providers/${p.provider}/refresh`);
+      const data = await apiGet<ProvidersResponse>("/v1/admin/providers");
+      setProviders(data.providers);
+      const updated = data.providers.find(item => item.provider === p.provider);
+      patchDraft(p.provider, { saveState: updated?.catalog_error ? "error" : "success", message: updated?.catalog_error || "Catalog checked. Access, pricing and execution limits still apply." });
+    } catch (cause) {
+      patchDraft(p.provider, { saveState: "error", message: cause instanceof Error ? cause.message : "Catalog check failed. The last recorded catalog is retained." });
+    } finally { setChecking(null); }
   }
 
   async function handleSave(p: Provider) {
@@ -200,15 +156,13 @@ export default function ProvidersPage() {
           enabled: res.provider.enabled,
           apiKey: "",
           saveState: "success",
-          message: res.competing
-            ? "Saved. This provider is now competing on tasks."
-            : "Saved.",
+          message: "Configuration saved. Access, protocol compatibility and pricing determine execution eligibility.",
         },
       }));
-    } catch {
+    } catch (cause) {
       patchDraft(p.provider, {
         saveState: "error",
-        message: "Could not save. Check the key and try again.",
+        message: cause instanceof Error ? cause.message : "Could not save. Check the key and try again.",
       });
     }
   }
@@ -223,9 +177,8 @@ export default function ProvidersPage() {
       <div>
         <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">AI Providers</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Plug in the major market LLMs so they compete as executors alongside
-          developer-registered agents. Enabled providers can pick up and execute
-          incoming requests immediately, without waiting for a developer agent to sign up.
+          Configure providers and inspect models available to your account. Execution also requires
+          a supported protocol, known pricing and sufficient mission budget.
         </p>
       </div>
 
@@ -233,9 +186,8 @@ export default function ProvidersPage() {
       <div className="flex items-start gap-3 rounded-md border border-info/30 bg-info/10 p-4">
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-info" />
         <p className="text-sm leading-relaxed text-info">
-          Providers you enable here register as platform agents that bid on and execute
-          tasks automatically &mdash; before any developer agent signs up. Keys are stored
-          server-side and never displayed again.
+          Model catalog access does not prove generation will succeed. Disabled providers remain
+          disabled when their catalog is checked. Keys are stored server-side and never displayed again.
         </p>
       </div>
 
@@ -259,7 +211,7 @@ export default function ProvidersPage() {
             </div>
             <div>
               <p className="font-display text-2xl font-medium text-ink-50">{competingCount}</p>
-              <p className="text-xs text-muted-foreground">Competing Now</p>
+              <p className="text-xs text-muted-foreground">Enabled with Key</p>
             </div>
           </CardContent>
         </Card>
@@ -299,7 +251,7 @@ export default function ProvidersPage() {
           {providers.map((p) => {
             const draft = drafts[p.provider];
             if (!draft) return null;
-            const status = competingStatus(draft.enabled, p.key_set || !!draft.apiKey.trim());
+            const status = competingStatus(p.enabled, p.key_set);
             return (
               <Card key={p.provider}>
                 <CardContent className="pt-6">
@@ -358,6 +310,7 @@ export default function ProvidersPage() {
                         Model version
                       </label>
                       <Select
+                        aria-label={`${p.label} model version`}
                         value={draft.selected_model}
                         onChange={(e) =>
                           patchDraft(p.provider, {
@@ -367,7 +320,7 @@ export default function ProvidersPage() {
                           })
                         }
                       >
-                        {p.models.map((m) => (
+                        {Array.from(new Set([draft.selected_model, ...p.models])).filter(Boolean).map((m) => (
                           <option key={m} value={m}>
                             {m}
                           </option>
@@ -410,17 +363,26 @@ export default function ProvidersPage() {
                     </div>
                   </div>
 
+                  <div className="mt-5 space-y-2 rounded-md border border-ink-700 p-4 text-sm text-ink-300">
+                    <p>{p.catalog_checked_at ? `Last catalog check: ${formatDateTime(p.catalog_checked_at)}` : "Model catalog has not been checked for this account."}</p>
+                    {p.catalog_checked_at && <p>{p.available_models?.length ?? 0} models visible to this account</p>}
+                    {p.catalog_error && <p role="alert" className="text-danger">{p.catalog_error}. The last recorded catalog is retained.</p>}
+                    {p.selected_model_available === false && <p className="text-warning">The selected model is unavailable in the latest catalog. Choose an eligible model before using it for new missions.</p>}
+                    <p className="text-xs text-ink-400">The model selector lists supported, priced text models. Account visibility alone does not establish execution eligibility. Catalog checks use the saved key; save key changes before checking.</p>
+                    <Button variant="outline" size="sm" disabled={checking !== null || draft.saveState === "saving" || !p.key_set} onClick={() => checkCatalog(p)}>{checking === p.provider ? "Checking catalog…" : "Check model catalog"}</Button>
+                  </div>
+
                   {/* Footer: save + status message */}
                   <div className="mt-5 flex items-center justify-between gap-3">
                     <div className="min-h-[20px] text-sm">
                       {draft.saveState === "success" && (
-                        <span className="flex items-center gap-1 text-success">
+                        <span role="status" className="flex items-center gap-1 text-success">
                           <CheckCircle2 className="h-4 w-4" />
                           {draft.message}
                         </span>
                       )}
                       {draft.saveState === "error" && (
-                        <span className="flex items-center gap-1 text-danger">
+                        <span role="alert" className="flex items-center gap-1 text-danger">
                           <AlertCircle className="h-4 w-4" />
                           {draft.message}
                         </span>
@@ -429,7 +391,7 @@ export default function ProvidersPage() {
                     <Button
                       size="sm"
                       onClick={() => handleSave(p)}
-                      disabled={draft.saveState === "saving"}
+                      disabled={draft.saveState === "saving" || checking !== null}
                     >
                       {draft.saveState === "saving" ? (
                         <>
