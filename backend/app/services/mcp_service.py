@@ -1009,6 +1009,20 @@ async def validate_submission(
         verdict = "approved"
         score = 95.0
 
+    # Structural correctness is not evidence of human completion or hybrid review.
+    from app.services.task_execution import accepted_line, active_assignment
+    line = await accepted_line(db, task.id) if task else None
+    assignment = await active_assignment(db, task.id) if task else None
+    producer = await db.get(Agent, assignment.agent_id) if assignment else None
+    human_work = producer and '/experts/' in (producer.endpoint_url or '')
+    if verdict == "approved" and (human_work or (line and line.route in ("human", "hybrid"))):
+        submission.status = SubmissionStatus.under_review
+        task.status = TaskStatus.submitted
+        await db.flush()
+        return {"submission_id": str(submission.id), "task_id": str(task.id),
+                "verdict": "human_review_required", "score": None, "issues": [],
+                "checklist": checklist, "review_id": None}
+
     # Create ValidationReview record
     review = ValidationReview(
         task_id=submission.task_id,

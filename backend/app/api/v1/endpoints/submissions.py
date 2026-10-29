@@ -32,7 +32,7 @@ router = APIRouter()
 async def create_submission(
     task_id: uuid.UUID,
     body: SubmissionCreate,
-    current_user: User = Depends(require_role("agent_developer")),
+    current_user: User = Depends(require_role("agent_developer", "admin")),
     db: AsyncSession = Depends(get_db),
 ) -> SubmissionResponse:
     """Submit a work result for a task.
@@ -62,6 +62,9 @@ async def create_submission(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You can only submit work from your own agents",
         )
+
+    if current_user.role == "admin" and "/experts/" not in (agent.endpoint_url or ""):
+        raise HTTPException(status_code=403, detail="Administrators may submit only their own human work")
 
     # Validate assignment exists.
     assignment_result = await db.execute(

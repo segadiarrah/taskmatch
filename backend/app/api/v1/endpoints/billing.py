@@ -37,7 +37,7 @@ async def config(user=Depends(get_current_active_user)):
     return {
         "enabled": enabled,
         "mode": settings.STRIPE_MODE if enabled else "unconfigured",
-        "currencies": ["USD", "EUR", "GBP"],
+        "currencies": ["EUR"],
         "connect_enabled": enabled and bool(settings.STRIPE_CONNECT_WEBHOOK_SECRET),
     }
 
@@ -264,6 +264,10 @@ async def admin_operations(
 async def retry_operation(
     operation_id: uuid.UUID, user=Depends(require_role("admin")), db=Depends(get_db)
 ):
+    existing = await db.get(BillingOperation, operation_id)
+    if existing and existing.kind == "execute_task":
+        from app.services.execution_state import retry_task
+        return await retry_task(db, uuid.UUID(existing.entity_id), user)
     operation = await db.scalar(
         select(BillingOperation).where(BillingOperation.id == operation_id).with_for_update()
     )

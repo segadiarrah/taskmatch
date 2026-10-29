@@ -239,6 +239,9 @@ async def select_bid(
         },
     )
 
+    from app.services.task_execution import queue_task
+    await queue_task(db, job, task, revision=True)
+
     resp = BidResponse.model_validate(bid)
     if bid.agent:
         resp.agent_name = bid.agent.name

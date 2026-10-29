@@ -48,7 +48,7 @@ async def create_review(
     task_id = await db.scalar(select(Submission.task_id).where(Submission.id == submission_id))
     if task_id is None:
         raise HTTPException(status_code=404, detail="Submission not found")
-    _, task = await load_execution_task(db, task_id)
+    job, task = await load_execution_task(db, task_id)
     submission = await db.scalar(
         select(Submission).where(Submission.id == submission_id)
         .with_for_update().execution_options(populate_existing=True)
@@ -57,6 +57,17 @@ async def create_review(
     await require_task_access(db, task, current_user)
     if submission.status not in (SubmissionStatus.submitted, SubmissionStatus.under_review):
         raise HTTPException(status_code=409, detail="Submission has already been reviewed")
+    from app.services.task_execution import accepted_line, sega, queue_task
+    from app.models.agent import Agent
+    line = await accepted_line(db, task.id)
+    producer = await db.get(Agent, submission.agent_id, options=[lazyload("*")])
+    human_work = producer and "/experts/" in (producer.endpoint_url or "")
+    if human_work and producer.developer_user_id == current_user.id:
+        raise HTTPException(403, "Human work must be reviewed by the client or another administrator")
+    if line and line.route == "hybrid" and not human_work:
+        reviewer = await sega(db)
+        if reviewer is None or reviewer.id != current_user.id:
+            raise HTTPException(403, "This hybrid task requires its designated human reviewer")
     # Determine reviewer type from role.
     role = str(current_user.role)
     if role == "admin":
@@ -77,6 +88,9 @@ async def create_review(
     db.add(review)
 
     await apply_review(db, task, submission, body.decision)
+    if task.status == "validation_failed" and producer and producer.slug.startswith("llm-"):
+        task.input_spec_json = {**(task.input_spec_json or {}), "revision_feedback": body.notes or "Please correct the deliverable"}
+        await queue_task(db, job, task, revision=True)
 
     await db.flush()
     await db.refresh(review)

@@ -155,7 +155,17 @@ async def update_task(
     from app.services.billing_service import assert_quote_editable
     job = await lock_job(db, task.job_id)
     await assert_quote_editable(db, job)
+    task = await db.scalar(select(Task).options(lazyload('*')).where(Task.id == task_id)
+                           .with_for_update().execution_options(populate_existing=True))
     update_data = body.model_dump(exclude_unset=True)
+    if 'input_spec_json' in update_data:
+        protected = {key: value for key, value in (task.input_spec_json or {}).items()
+                     if key.startswith('_execution_') or key == '_human_reviewer_id'}
+        supplied = update_data['input_spec_json'] or {}
+        if any((key.startswith('_execution_') or key == '_human_reviewer_id')
+               and (key not in protected or value != protected[key]) for key, value in supplied.items()):
+            raise HTTPException(409, 'Execution counters and ownership are managed by workflow actions')
+        update_data['input_spec_json'] = {**supplied, **protected}
     if "status" in update_data and update_data["status"] != task.status:
         raise HTTPException(status_code=409, detail="Use task workflow actions to change status")
     for field, value in update_data.items():
@@ -236,9 +246,73 @@ async def assign_task(
         payload={"agent_id": str(agent_id), "assignment_id": str(assignment.id)},
     )
 
+    from app.services.task_execution import queue_task
+    await queue_task(db, job, task, revision=True)
+
     return {
         "assignment_id": str(assignment.id),
         "task_id": str(task_id),
         "agent_id": str(agent_id),
         "status": getattr(assignment.status, "value", assignment.status),
     }
+
+
+@router.get('/{task_id}/execution', summary='Task execution, human ownership and recovery preview')
+async def execution_state(task_id: uuid.UUID,
+                          current_user: User = Depends(get_current_active_user),
+                          db: AsyncSession = Depends(get_db)) -> dict:
+    from app.services.execution_state import task_state
+    task = await db.get(Task, task_id, options=[lazyload('*')])
+    if task is None:
+        raise HTTPException(404, 'Task not found')
+    return await task_state(db, task, current_user)
+
+
+@router.post('/{task_id}/retry', summary='Retry one task within its existing funding and cost budget')
+async def retry_execution(task_id: uuid.UUID,
+                          current_user: User = Depends(require_role('admin')),
+                          db: AsyncSession = Depends(get_db)) -> dict:
+    from app.services.execution_state import retry_task
+    return await retry_task(db, task_id, current_user)
+
+
+from pydantic import BaseModel, Field
+
+
+class HistoricalRecoveryRequest(BaseModel):
+    provider: str = Field(min_length=1, max_length=64)
+    model: str = Field(min_length=1, max_length=128)
+    quote_id: uuid.UUID
+    approved_max_cost_eur: float = Field(ge=0, allow_inf_nan=False)
+
+
+@router.get('/{task_id}/recovery-preview', summary='Preview historical task recovery without changing it')
+async def preview_recovery(task_id: uuid.UUID, provider: str, model: str,
+                           current_user: User = Depends(require_role('admin')),
+                           db: AsyncSession = Depends(get_db)) -> dict:
+    from app.services.execution_state import recovery_preview
+    task = await db.get(Task, task_id, options=[lazyload('*')])
+    if task is None:
+        raise HTTPException(404, 'Task not found')
+    return await recovery_preview(db, task, current_user, provider, model)
+
+
+@router.post('/{task_id}/recover', summary='Approve the previewed historical execution budget')
+async def approve_recovery(task_id: uuid.UUID, body: HistoricalRecoveryRequest,
+                           current_user: User = Depends(require_role('admin')),
+                           db: AsyncSession = Depends(get_db)) -> dict:
+    from app.services.execution_state import recover_task
+    return await recover_task(db, task_id, current_user, body)
+
+
+class TaskReassignmentRequest(BaseModel):
+    agent_id: uuid.UUID
+    reason: str = Field(min_length=1, max_length=2000)
+
+
+@router.post('/{task_id}/reassign', summary='Repair blocked work without resetting its price or spent budget')
+async def reassign_task(task_id: uuid.UUID, body: TaskReassignmentRequest,
+                        current_user: User = Depends(require_role('admin')),
+                        db: AsyncSession = Depends(get_db)) -> dict:
+    from app.services.task_reassignment import reassign_task as repair
+    return await repair(db, task_id, body.agent_id, body.reason, current_user)

@@ -78,9 +78,9 @@ async def run_once(factory=async_session_factory, *, execution=None):
         )
         if execution is not None:
             ready = ready.where(
-                BillingOperation.kind == "execute"
+                BillingOperation.kind.in_(("execute", "execute_task"))
                 if execution
-                else BillingOperation.kind != "execute"
+                else BillingOperation.kind.not_in(("execute", "execute_task"))
             )
         operation = await db.scalar(ready)
         if not operation:
@@ -108,6 +108,9 @@ async def run_once(factory=async_session_factory, *, execution=None):
             await processors.transfer(operation_id, factory)
         elif kind in ("refund", "reverse_refund"):
             await processors.refund(operation_id, factory, reversal_only=kind == "reverse_refund")
+        elif kind == "execute_task":
+            from app.services.task_execution import dispatch
+            await dispatch(operation_id, claim_attempt, factory)
         elif kind == "execute":
             from app.api.v1.endpoints.jobs import _execute_job, _run_revision
 
@@ -214,7 +217,7 @@ async def consume(*, execution):
 async def main():
     logging.basicConfig(level=logging.INFO)
     # Provider execution can await many slow model calls. Financial events and
-    # refunds retain a dedicated consumer while one job executes at a time.
+    # refunds retain a dedicated consumer while bounded task attempts execute.
     await asyncio.gather(consume(execution=False), consume(execution=True))
 
 

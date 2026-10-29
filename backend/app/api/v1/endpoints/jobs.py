@@ -77,198 +77,18 @@ async def _generate_plan(job_id: uuid.UUID) -> None:
 
 
 async def _execute_job(job_id: uuid.UUID) -> None:
-    """Background: match agents and start execution. Runs only after quote acceptance.
-
-    Everything that costs the client money lives on this side of the gate.
-    """
-    from app.services.billing_service import require_execution_funding
-
-    async with async_session_factory() as db:
-        try:
-            job = await lock_job(db, job_id)
-            await require_execution_funding(db, job)
-            if job.status not in (JobStatus.bidding, JobStatus.in_progress):
-                return
-            tasks = list((await db.execute(
-                select(Task).where(Task.job_id == job_id).order_by(Task.priority, Task.id)
-            )).scalars())
-            created_tasks = [
-                {"id": str(t.id), "title": t.title, "task_type": t.task_type,
-                 "budget": float(t.budget) if t.budget else None}
-                for t in tasks if t.status == TaskStatus.open_for_bids
-            ]
-            for task in created_tasks:
-                await mcp_service.match_agents(db, uuid.UUID(task["id"]))
-            await _auto_execute(db, job, created_tasks)
-            await db.commit()
-            logger.info("execute.complete", job_id=str(job_id), task_count=len(created_tasks))
-        except Exception as exc:
-            await db.rollback()
-            logger.warning("execute.failed", job_id=str(job_id), error=str(exc))
-            raise
-
-
-async def _auto_execute(db: AsyncSession, job: Job, created_tasks: list[dict]) -> None:
-    """Have active platform LLM agents auto-bid on each task, and (if the job
-    has auto-select enabled) assign the strongest bid — so complex requests
-    start executing immediately, before any developer agent bids."""
-    from app.services.billing_service import require_execution_funding
-
-    job = await lock_job(db, job.id)
-    await require_execution_funding(db, job)
-    if not llm_service.llm_available():
-        return
-    platform_agents = list(
-        (
-            await db.execute(
-                select(Agent).join(User, User.id == Agent.developer_user_id).where(
-                    User.role == "admin",
-                    User.is_active.is_(True),
-                    Agent.status == AgentStatus.active,
-                    Agent.slug.like("llm-%"),
-                )
-            )
-        )
-        .scalars()
-        .all()
-    )
-    if not platform_agents:
-        return
-
-    for t in created_tasks:
-        task_id = uuid.UUID(t["id"])
-        task = (await db.execute(select(Task).where(Task.id == task_id).with_for_update().execution_options(populate_existing=True))).scalar_one_or_none()
-        if task is None or task.status != TaskStatus.open_for_bids:
-            continue
-        priced_task = await db.scalar(select(TaskQuote).join(Quote, Quote.id == TaskQuote.quote_id).where(
-            TaskQuote.task_id == task_id, Quote.status == QuoteStatus.accepted
-        ).order_by(TaskQuote.created_at.desc()).limit(1))
-        if priced_task is None or priced_task.route != ExecutionRoute.llm:
-            continue
-        budget = float(task.budget) if task.budget else 0.0
-        task_type = (task.task_type or "general").lower()
-
-        # Candidate platform agents that support this task type (or general).
-        candidates = [
-            a
-            for a in platform_agents
-            if not a.supported_task_types
-            or task_type in [str(x).lower() for x in a.supported_task_types]
-        ] or platform_agents
-
-        existing_bids = {bid.agent_id: bid for bid in (await db.execute(
-            select(Bid).options(lazyload("*")).where(
-                Bid.task_id == task_id, Bid.agent_id.in_([agent.id for agent in candidates[:3]]),
-                Bid.status.in_([BidStatus.submitted, BidStatus.shortlisted]),
-            )
-        )).scalars()}
-        bids: list[Bid] = []
-        for idx, agent in enumerate(candidates[:3]):
-            if agent.id in existing_bids:
-                bids.append(existing_bids[agent.id])
-                continue
-            # Slightly different prices/ETAs so ranking is meaningful.
-            price = round(budget * (0.62 + 0.06 * idx), 2) if budget else None
-            bid = Bid(
-                id=uuid.uuid4(),
-                task_id=task_id,
-                agent_id=agent.id,
-                price=Decimal(str(price)) if price is not None else Decimal("0"),
-                eta_hours=6.0 + 4.0 * idx,
-                confidence_score=min(0.99, (agent.success_rate or 0.85)),
-                proposal_text=f"{agent.name} can execute this {task_type} task immediately using its model.",
-                status=BidStatus.submitted,
-            )
-            db.add(bid)
-            bids.append(bid)
-        await db.flush()
-
-        if not bids:
-            continue
-
-        # Rank the bids (records an MCP decision + shortlists the top one).
-        await mcp_service.rank_bids(db, task_id)
-
-        # Auto-assign the strongest bid when the client opted in, then have the
-        # platform agent actually execute the task (produce a validated result).
-        if job.auto_select_enabled:
-            shortlisted = (
-                await db.execute(
-                    select(Bid)
-                    .where(Bid.task_id == task_id, Bid.status == BidStatus.shortlisted)
-                    .limit(1)
-                )
-            ).scalar_one_or_none()
-            winner = shortlisted or bids[0]
-            winner.status = BidStatus.selected
-            assignment = Assignment(
-                id=uuid.uuid4(),
-                task_id=task_id,
-                agent_id=winner.agent_id,
-                bid_id=winner.id,
-                status=AssignmentStatus.active,
-            )
-            db.add(assignment)
-            task.status = TaskStatus.assigned
-            job.status = JobStatus.in_progress
-            await db.flush()
-
-            winner_agent = next((a for a in platform_agents if a.id == winner.agent_id), None)
-            if winner_agent is not None:
-                await _deliver_task(db, task, winner_agent, assignment)
-
-    # If the platform executed every task, prepare delivery for client review.
-    if job.auto_select_enabled:
-        await _finalize_job_if_done(db, job)
-
-    logger.info("plan.autoexec", job_id=str(job.id), platform_agents=len(platform_agents))
+    """Dispatch durable task operations; each result commits independently."""
+    from app.services.task_execution import schedule_job
+    await schedule_job(job_id, async_session_factory)
 
 
 async def _deliver_task(db: AsyncSession, task: Task, agent: Agent, assignment: Assignment) -> None:
-    """A platform agent executes an assigned task: generate a deliverable via the
-    LLM, submit the genuine result, and run MCP validation."""
+    """Compatibility dispatcher: provider calls belong to the durable worker."""
+    from app.services.task_execution import queue_task
     job, task = await load_execution_task(db, task.id)
-    system = (
-        f"You are {agent.name}, an autonomous execution agent on TaskMatch. "
-        f"Produce a concrete, professional deliverable for the assigned task. Be specific and useful."
-    )
-    user = (
-        f"Task: {task.title}\n"
-        f"Type: {task.task_type}\n"
-        f"Details: {(task.description or '')[:2000]}\n"
-        f"Revision feedback: {(task.input_spec_json or {}).get('revision_feedback', '')}\n\n"
-        "Return a JSON object: {\"result\": \"<the deliverable as markdown; real content, not a plan to do it>\", "
-        "\"summary\": \"<one-sentence summary of what you delivered>\"}."
-    )
-    output: dict = {}
-    llm = await llm_service.call_llm_json(system, user, max_tokens=1400)
-    if isinstance(llm, dict) and llm.get("result"):
-        output = {
-            "result": str(llm.get("result"))[:8000],
-            "summary": str(llm.get("summary") or f"Delivered: {task.title}"),
-            "produced_by": agent.name,
-        }
-    else:
-        logger.warning("execution.unavailable", task_id=str(task.id), agent_id=str(agent.id))
-        if job.billing_mode != "legacy_manual":
-            raise RuntimeError("The execution provider returned no deliverable")
-        return
-
-    submission = Submission(
-        id=uuid.uuid4(),
-        task_id=task.id,
-        agent_id=agent.id,
-        assignment_id=assignment.id,
-        output_json=output,
-        artifact_urls_json=[],
-        summary=output["summary"],
-        status=SubmissionStatus.submitted,
-    )
-    db.add(submission)
-    await db.flush()
-
-    await mcp_service.validate_submission(db, submission.id)
-
+    owner = await db.get(User, agent.developer_user_id, options=[lazyload("*")])
+    if agent.slug.startswith("llm-") and owner and owner.role == "admin":
+        await queue_task(db, job, task)
 
 
 # Kept as an internal alias for existing execution callers.
@@ -798,47 +618,9 @@ class DisputeRequest(BaseModel):
 
 
 async def _run_revision(job_id: uuid.UUID, reason: str) -> None:
-    """Background: re-execute a disputed job's tasks and re-validate, returning it
-    to client review. Escrow stays frozen (never paid) throughout the revision."""
-    async with async_session_factory() as db:
-        try:
-            from app.services.billing_service import require_execution_funding
-
-            job = await lock_job(db, job_id)
-            await require_execution_funding(db, job)
-            if job.status != JobStatus.in_progress:
-                return
-            tasks = list((await db.execute(select(Task).where(Task.job_id == job_id))).scalars().all())
-            for task in tasks:
-                assignment = (
-                    await db.execute(
-                        select(Assignment)
-                        .where(Assignment.task_id == task.id)
-                        .order_by(Assignment.created_at.desc())
-                        .limit(1)
-                    )
-                ).scalar_one_or_none()
-                if assignment is None:
-                    continue
-                agent = (await db.execute(select(Agent).where(Agent.id == assignment.agent_id))).scalar_one_or_none()
-                if agent is None:
-                    continue
-                # Reopen the assignment so the executor can deliver a revised result.
-                assignment.status = AssignmentStatus.active
-                assignment.completed_at = None
-                await db.flush()
-                owner = await db.get(User, agent.developer_user_id)
-                if agent.slug.startswith("llm-") and owner.role == "admin" and owner.is_active:
-                    await _deliver_task(db, task, agent, assignment)
-            job = (await db.execute(select(Job).where(Job.id == job_id))).scalar_one_or_none()
-            if job is not None:
-                await _finalize_job_if_done(db, job)
-            await db.commit()
-            logger.info("dispute.revision_complete", job_id=str(job_id))
-        except Exception as exc:  # noqa: BLE001
-            await db.rollback()
-            logger.warning("dispute.revision_failed", job_id=str(job_id), error=str(exc))
-            raise
+    """Resume the revised generation through the same durable task dispatcher."""
+    from app.services.task_execution import schedule_job
+    await schedule_job(job_id, async_session_factory, revision=True)
 
 
 @router.post("/{job_id}/dispute", summary="Request a revision before settlement")
@@ -874,7 +656,8 @@ async def dispute_job(
     for t in tasks:
         if t.status == TaskStatus.approved:
             t.status = TaskStatus.validation_failed
-            t.input_spec_json = {**(t.input_spec_json or {}), "revision_feedback": body.reason}
+            t.input_spec_json = {**(t.input_spec_json or {}), "revision_feedback": body.reason,
+                                 "_execution_generation": int((t.input_spec_json or {}).get("_execution_generation", 0)) + 1}
             assignments = (await db.execute(select(Assignment).where(
                 Assignment.task_id == t.id, Assignment.status == AssignmentStatus.completed
             ))).scalars()
