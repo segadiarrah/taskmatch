@@ -45,17 +45,21 @@ def _parse_spec(job: Job) -> dict[str, Any]:
     return parsed if isinstance(parsed, dict) else {}
 
 
-def pricing_model() -> str:
-    """Which model's rates to price against.
-
-    Prefers a provider the admin has actually enabled, so the quote reflects what
-    will really execute the work; falls back to the configured default.
-    """
+def pricing_provider() -> dict:
+    """Select a usable provider once; all task quotes freeze this selection."""
     for provider in providers.enabled_providers():
         cfg = providers.get_provider(provider)
-        if cfg and cfg.get("selected_model"):
-            return str(cfg["selected_model"])
-    return settings.PRICING_DEFAULT_MODEL
+        if (cfg and cfg.get("selected_model_available")
+                and not (cfg.get("refresh_status") == "error" and not cfg.get("last_refreshed_at"))):
+            return cfg
+    if settings.PAYMENT_MODE == "legacy_manual":
+        return {"provider": "openai", "selected_model": settings.PRICING_DEFAULT_MODEL,
+                "base_url": providers.CATALOG["openai"]["base_url"]}
+    raise ValueError("No enabled provider with an available priced model")
+
+
+def pricing_model() -> str:
+    return str(pricing_provider()["selected_model"])
 
 
 #: Words in a brief that mean the client expects the thing to be *running*, not
@@ -130,25 +134,37 @@ async def create_quote_for_job(
     if not tasks:
         raise ValueError(f"Job {job_id} has no tasks to price")
 
+    if (job.currency or pricing_service.BASE_CURRENCY) != "EUR":
+        raise ValueError("New quotes must use EUR")
     spec = _parse_spec(job)
     plan = await ensure_delivery_plan(db, job, spec)
     needs_human_delivery = plan.mode in (DeliveryMode.installation, DeliveryMode.hosted)
-    model = pricing_model()
+    task_specs = [
+        {"title": t.title, "description": t.description, "task_type": t.task_type,
+         "requires_human": bool((t.input_spec_json or {}).get("requires_human")) or needs_human_delivery}
+        for t in tasks
+    ]
+    needs_llm = any(
+        pricing_service.route_for_task(task_type=t["task_type"], description=t["description"],
+                                       requires_human=t["requires_human"]) is not pricing_service.ExecutionRoute.human
+        for t in task_specs
+    )
+    execution = None
+    model = None
+    if needs_llm:
+        provider_config = pricing_provider()
+        model = str(provider_config["selected_model"])
+        execution = pricing_service.execution_snapshot(
+            provider=provider_config["provider"], model=model,
+            base_url=provider_config["base_url"],
+            max_input_tokens=settings.EXECUTION_MAX_INPUT_TOKENS,
+            max_output_tokens=settings.EXECUTION_MAX_OUTPUT_TOKENS,
+            max_attempts=settings.EXECUTION_MAX_ATTEMPTS,
+            fx_usd_to_eur=settings.PRICING_USD_TO_EUR,
+        )
 
     quote_result = pricing_service.price_job(
-        tasks=[
-            {
-                "title": t.title,
-                "description": t.description,
-                "task_type": t.task_type,
-                "requires_human": bool(
-                    (t.input_spec_json or {}).get("requires_human")
-                ) or needs_human_delivery,
-            }
-            for t in tasks
-        ],
-        model=model,
-        spec=spec,
+        tasks=task_specs, model=model, execution=execution, spec=spec,
         currency=job.currency or pricing_service.BASE_CURRENCY,
     )
 
@@ -194,7 +210,7 @@ async def create_quote_for_job(
                 route=ExecutionRoute(task_price.route.value),
                 complexity=task_price.complexity.value,
                 task_type=task_price.task_type,
-                model_slug=task_price.model,
+                model_slug=task_price.model if task_price.route is not pricing_service.ExecutionRoute.human else None,
                 est_input_tokens=task_price.est_input_tokens,
                 est_output_tokens=task_price.est_output_tokens,
                 token_cost=Decimal(str(task_price.token_cost)),
@@ -208,7 +224,9 @@ async def create_quote_for_job(
                 discipline=task_price.discipline,
                 seniority=task_price.seniority,
                 rationale=task_price.rationale,
-                breakdown_json=task_price.to_dict(),
+                breakdown_json={**task_price.to_dict(), "execution": (
+                    execution if task_price.route is not pricing_service.ExecutionRoute.human else None
+                )},
             )
         )
 

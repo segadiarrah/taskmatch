@@ -114,13 +114,16 @@ async def update_provider(
     current_user: User = Depends(require_role("admin")),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
-    updated = providers.update_provider(
-        provider,
-        api_key=payload.api_key,
-        enabled=payload.enabled,
-        selected_model=payload.selected_model,
-        base_url=payload.base_url,
-    )
+    try:
+        updated = providers.update_provider(
+            provider,
+            api_key=payload.api_key,
+            enabled=payload.enabled,
+            selected_model=payload.selected_model,
+            base_url=payload.base_url,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     if updated is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown provider")
 
@@ -141,6 +144,14 @@ async def update_provider(
     # Return the masked/public view.
     public = next((p for p in providers.list_providers() if p["provider"] == provider), None)
     return {"provider": public, "competing": competing}
+
+
+@router.post("/providers/{provider}/refresh", summary="Refresh accessible priced text models")
+async def refresh_provider(provider: str, current_user: User = Depends(require_role("admin"))) -> dict:
+    public = await providers.refresh_provider_models(provider)
+    if public is None:
+        raise HTTPException(status_code=404, detail="Unknown provider")
+    return {"provider": public}
 
 
 # ---------------------------------------------------------------------------

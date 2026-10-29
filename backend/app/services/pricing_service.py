@@ -25,14 +25,15 @@ from __future__ import annotations
 import math
 import re
 from dataclasses import asdict, dataclass, field
-from decimal import ROUND_HALF_UP, Decimal
+from decimal import ROUND_HALF_UP, ROUND_UP, Decimal
 from enum import Enum
 from typing import Any, Iterable, Optional
 
 # Bumped whenever a rate table or formula changes, so a stored quote can always be
 # traced back to the engine that produced it.
-PRICING_VERSION = "2026-08-10.1"
-RATES_AS_OF = "2026-08-10"
+from app.services.model_catalog import MODEL_RATES, RATES_AS_OF, model_rate
+
+PRICING_VERSION = "2026-10-29.1"
 
 
 # --------------------------------------------------------------------------- #
@@ -79,8 +80,7 @@ MODEL_RATES_USD: dict[str, tuple[float, float]] = {
     "grok-3": (3.00, 15.00),
 }
 
-#: Used when a provider slug is not in the catalog. Deliberately on the expensive
-#: side of the range: an unknown model must never be under-priced.
+#: Legacy standalone estimates without a model only. Unknown model IDs raise.
 DEFAULT_RATE_USD: tuple[float, float] = (3.00, 15.00)
 
 
@@ -100,20 +100,53 @@ def _normalise_model(model: str | None) -> str:
     return slug
 
 
-def resolve_model_rate(model: str | None) -> tuple[float, float]:
-    """Return ``(usd_per_1m_input, usd_per_1m_output)`` for a model slug.
+# Keep legacy prices above while adding exact modern model coverage.
+for _rates in MODEL_RATES.values():
+    for _model, _rate in _rates.items():
+        MODEL_RATES_USD.setdefault(_normalise_model(_model), _rate)
 
-    Falls back to :data:`DEFAULT_RATE_USD` rather than raising — an unrecognised
-    model must still produce a quote.
-    """
+
+def resolve_model_rate(model: str | None) -> tuple[float, float]:
+    """Resolve exact verified rates; unknown models cannot receive prepaid quotes."""
+    if model is None:
+        return DEFAULT_RATE_USD  # legacy standalone estimation only
+    for rates in MODEL_RATES.values():
+        if model in rates:
+            return rates[model]
     slug = _normalise_model(model)
     if slug in MODEL_RATES_USD:
         return MODEL_RATES_USD[slug]
-    # Tolerate suffixed deployment ids ("claude-sonnet-5-fast", dated snapshots).
-    for key, rate in MODEL_RATES_USD.items():
-        if slug.startswith(key):
-            return rate
-    return DEFAULT_RATE_USD
+    raise ValueError(f"No verified model rate for {model}")
+
+
+def execution_snapshot(*, provider: str, model: str, max_input_tokens: int,
+                       max_output_tokens: int, max_attempts: int = 3,
+                       base_url: str | None = None, fx_usd_to_eur: float | None = None) -> dict:
+    """Freeze the maximum billable spend, including hidden reasoning tokens."""
+    from app.services.model_catalog import CATALOG
+    rate_in, rate_out = model_rate(provider, model)
+    if base_url and base_url.rstrip("/") != CATALOG[provider]["base_url"].rstrip("/"):
+        raise ValueError("No verified pricing for custom provider endpoint")
+    if (any(type(n) is not int for n in (max_attempts, max_input_tokens, max_output_tokens))
+            or not 1 <= max_attempts <= 3 or not 1 <= max_input_tokens <= 64000
+            or not 1 <= max_output_tokens <= 32000):
+        raise ValueError("Execution token/attempt limits exceeded")
+    fx = USD_TO_EUR if fx_usd_to_eur is None else fx_usd_to_eur
+    if not math.isfinite(fx) or fx <= 0:
+        raise ValueError("Invalid USD/EUR quote conversion")
+    amount = ((Decimal(max_input_tokens) * Decimal(str(rate_in)) +
+               Decimal(max_output_tokens) * Decimal(str(rate_out))) /
+              Decimal(1_000_000) * Decimal(str(fx)))
+    per_attempt = amount.quantize(Decimal("0.000001"), rounding=ROUND_UP)
+    # Decimal multiplication before serialising avoids floating-point undershoot.
+    maximum = (per_attempt * max_attempts).quantize(Decimal("0.000001"), rounding=ROUND_UP) + Decimal("0.000001")
+    return {"provider": provider, "model": model,
+            "base_url": base_url or CATALOG[provider]["base_url"],
+            "rates": {"input_usd_per_million": rate_in, "output_usd_per_million": rate_out},
+            "rates_as_of": RATES_AS_OF, "fx_usd_to_eur": fx,
+            "max_input_tokens": max_input_tokens, "max_output_tokens": max_output_tokens,
+            "max_attempts": max_attempts, "max_cost_eur": float(maximum),
+            "per_attempt_cost_eur": float(per_attempt)}
 
 
 # --------------------------------------------------------------------------- #
@@ -570,6 +603,7 @@ def price_task(
     description: str = "",
     task_type: str | None = None,
     model: str | None = None,
+    execution: dict | None = None,
     deliverable_count: int = 0,
     criteria_count: int = 0,
     job_context_chars: int = 0,
@@ -605,6 +639,8 @@ def price_task(
     raw_token_cost = token_cost_eur(
         tokens.billable_input_tokens, tokens.billable_output_tokens, model
     )
+    if execution is not None:
+        raw_token_cost = float(execution["max_cost_eur"])
     compute = raw_token_cost * COMPUTE_MULTIPLIER
     orchestration = ORCHESTRATION_FEE_EUR[complexity]
     validation_raw = token_cost_eur(
@@ -626,6 +662,8 @@ def price_task(
         capped = True
         raised_to_floor = False
 
+    if execution is not None and price < float(execution["max_cost_eur"]):
+        raise ValueError("Execution budget exceeds competitive task price")
     price = _money(price)
 
     route = route_for_task(
@@ -707,6 +745,7 @@ def price_job(
     tasks: Iterable[dict[str, Any]],
     model: str | None = None,
     spec: dict[str, Any] | None = None,
+    execution: dict | None = None,
     currency: str = BASE_CURRENCY,
 ) -> JobQuote:
     """Price every task of a job and assemble the totals.
@@ -714,6 +753,8 @@ def price_job(
     ``tasks`` are dicts carrying at least ``title``/``description``/``task_type``
     — the shape ``mcp_service.decompose_job`` already returns.
     """
+    if currency != BASE_CURRENCY:
+        raise ValueError("New quotes must use EUR")
     spec = spec or {}
     deliverables = spec.get("deliverables") or []
     criteria = spec.get("success_criteria") or []
@@ -728,6 +769,7 @@ def price_job(
                 description=str(task.get("description") or ""),
                 task_type=task.get("task_type"),
                 model=model,
+                execution=execution,
                 deliverable_count=len(deliverables),
                 criteria_count=len(criteria),
                 job_context_chars=job_context_chars,

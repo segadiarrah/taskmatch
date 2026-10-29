@@ -14,54 +14,17 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import datetime, timezone
 from typing import Any
 
 import structlog
+
+from app.services.model_catalog import CATALOG, RATES_AS_OF, SOURCES
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 
 _DATA_DIR = os.environ.get("PROVIDER_DATA_DIR", "/app/data")
 _STORE_PATH = os.path.join(_DATA_DIR, "providers.json")
-
-# The market catalog: provider -> label, OpenAI-compatible base_url, and the
-# model versions offered. Extend freely; this is what the admin page renders.
-CATALOG: dict[str, dict[str, Any]] = {
-    "openai": {
-        "label": "OpenAI",
-        "base_url": "https://api.openai.com/v1",
-        "models": ["gpt-4o", "gpt-4.1", "gpt-4o-mini", "o3"],
-    },
-    "anthropic": {
-        "label": "Anthropic",
-        "base_url": "https://api.anthropic.com/v1",
-        "models": ["claude-opus-4.8", "claude-sonnet-4.5", "claude-haiku-4.5"],
-    },
-    "google": {
-        "label": "Google",
-        "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
-        "models": ["gemini-2.5-pro", "gemini-2.5-flash"],
-    },
-    "mistral": {
-        "label": "Mistral",
-        "base_url": "https://api.mistral.ai/v1",
-        "models": ["mistral-large-latest", "mistral-small-latest"],
-    },
-    "deepseek": {
-        "label": "DeepSeek",
-        "base_url": "https://api.deepseek.com/v1",
-        "models": ["deepseek-chat", "deepseek-reasoner"],
-    },
-    "xai": {
-        "label": "xAI (Grok)",
-        "base_url": "https://api.x.ai/v1",
-        "models": ["grok-4", "grok-3"],
-    },
-    "openrouter": {
-        "label": "OpenRouter",
-        "base_url": "https://openrouter.ai/api/v1",
-        "models": ["deepseek/deepseek-chat-v3-0324", "openai/gpt-4o", "anthropic/claude-sonnet-4.5"],
-    },
-}
 
 
 def _load() -> dict[str, dict[str, Any]]:
@@ -99,11 +62,12 @@ def list_providers() -> list[dict[str, Any]]:
                 "provider": provider,
                 "label": meta["label"],
                 "base_url": cfg.get("base_url") or meta["base_url"],
-                "models": meta["models"],
+                "models": cfg.get("available_models", meta["models"]),
                 "selected_model": cfg.get("selected_model") or meta["models"][0],
                 "enabled": bool(cfg.get("enabled")),
                 "key_set": bool(cfg.get("api_key")),
                 "key_hint": _mask(cfg.get("api_key")),
+                **_catalog_status(provider, cfg),
             }
         )
     return out
@@ -120,9 +84,10 @@ def get_provider(provider: str) -> dict[str, Any] | None:
         "label": meta["label"],
         "base_url": cfg.get("base_url") or meta["base_url"],
         "api_key": cfg.get("api_key"),  # internal use only
-        "models": meta["models"],
+        "models": cfg.get("available_models", meta["models"]),
         "selected_model": cfg.get("selected_model") or meta["models"][0],
         "enabled": bool(cfg.get("enabled")),
+        **_catalog_status(provider, cfg),
     }
 
 
@@ -138,11 +103,13 @@ def update_provider(
         return None
     state = _load()
     cfg = state.get(provider, {})
+    if selected_model is not None and selected_model not in cfg.get("available_models", CATALOG[provider]["models"]):
+        raise ValueError(f"Unavailable or unpriced model: {selected_model}")
     if api_key is not None:
         cfg["api_key"] = api_key.strip()
     if enabled is not None:
         cfg["enabled"] = bool(enabled)
-    if selected_model is not None and selected_model in CATALOG[provider]["models"]:
+    if selected_model is not None:
         cfg["selected_model"] = selected_model
     if base_url is not None:
         cfg["base_url"] = base_url.strip()
@@ -155,4 +122,74 @@ def update_provider(
 def enabled_providers() -> list[str]:
     """Providers that are toggled on AND have a key — eligible to compete."""
     state = _load()
-    return [p for p, cfg in state.items() if cfg.get("enabled") and cfg.get("api_key")]
+    return [p for p, cfg in state.items() if p in CATALOG and cfg.get("enabled") and cfg.get("api_key")]
+
+
+def _catalog_status(provider: str, cfg: dict) -> dict:
+    models = cfg.get("available_models", CATALOG[provider]["models"])
+    selected = cfg.get("selected_model") or CATALOG[provider]["models"][0]
+    return {
+        "available_models": models,
+        "selected_model_available": selected in models,
+        "catalog_verified_at": RATES_AS_OF,
+        "catalog_source": SOURCES[provider],
+        "refresh_status": cfg.get("refresh_status", "catalog"),
+        "last_refreshed_at": cfg.get("last_refreshed_at"),
+        "last_refresh_attempt_at": cfg.get("last_refresh_attempt_at"),
+        "refresh_error": cfg.get("refresh_error"),
+        "catalog_checked_at": cfg.get("last_refreshed_at"),
+        "catalog_error": cfg.get("refresh_error"),
+    }
+
+
+async def _fetch_models(provider: str, cfg: dict) -> list[str]:
+    import httpx
+    if not cfg.get("api_key"):
+        raise ValueError("Provider key is required")
+    headers = {"Authorization": f"Bearer {cfg['api_key']}"}
+    url = cfg["base_url"].rstrip("/") + "/models"
+    params = {}
+    if provider == "anthropic":
+        headers = {"x-api-key": cfg["api_key"], "anthropic-version": "2023-06-01"}
+    elif provider == "google":
+        url = "https://generativelanguage.googleapis.com/v1beta/models"
+        headers = {"x-goog-api-key": cfg["api_key"]}
+        params = {"pageSize": 1000}
+    found = []
+    async with httpx.AsyncClient(timeout=20) as client:
+        for _ in range(20):
+            response = await client.get(url, headers=headers, params=params)
+            response.raise_for_status()
+            body = response.json()
+            entries = body.get("data", body.get("models", []))
+            for item in entries:
+                model = (item.get("id") or item.get("name") or "").removeprefix("models/")
+                if model in CATALOG[provider]["models"]:
+                    found.append(model)
+            if body.get("nextPageToken"):
+                params["pageToken"] = body["nextPageToken"]
+            elif body.get("has_more") and body.get("last_id"):
+                params["after_id"] = body["last_id"]
+            else:
+                return list(dict.fromkeys(found))
+    raise ValueError("Model pagination exceeded limit")
+
+
+async def refresh_provider_models(provider: str) -> dict | None:
+    cfg = get_provider(provider)
+    if cfg is None:
+        return None
+    attempted = datetime.now(timezone.utc).isoformat()
+    try:
+        models = await _fetch_models(provider, cfg)
+        state = _load()
+        saved = state.setdefault(provider, {})
+        saved.update(available_models=models, refresh_status="success",
+                     last_refreshed_at=attempted, refresh_error=None)
+    except Exception:
+        state = _load()
+        saved = state.setdefault(provider, {})
+        saved.update(refresh_status="error", refresh_error="Model refresh failed; last known catalog retained.")
+    saved["last_refresh_attempt_at"] = attempted
+    _save(state)
+    return next(p for p in list_providers() if p["provider"] == provider)

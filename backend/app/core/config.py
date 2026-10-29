@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     # generative steps. Planning has a deterministic fallback; task execution
     # requires a real provider response or an external worker submission.
     OPENAI_BASE_URL: str | None = None  # e.g. https://openrouter.ai/api/v1
-    LLM_MODEL: str = "gpt-4o-mini"
+    LLM_MODEL: str = "gpt-6.1-sol"
     LLM_TIMEOUT_SECONDS: int = 30
     LLM_ENABLED: bool = True
 
@@ -74,9 +74,13 @@ class Settings(BaseSettings):
     # A quote is honoured for this long; beyond it, provider rates may have moved
     # and the job must be re-priced before execution.
     QUOTE_VALIDITY_DAYS: int = 14
-    # Model used to price LLM-routed tasks when no provider is enabled. Only
-    # affects the *estimate* — the executing agent may use a different model.
-    PRICING_DEFAULT_MODEL: str = "claude-sonnet-5"
+    # Legacy estimation only. Stripe quotes require an enabled provider.
+    # FX is an explicit quote conversion, frozen with each execution budget.
+    PRICING_DEFAULT_MODEL: str = "gpt-6.1-sol"
+    PRICING_USD_TO_EUR: float = Field(default=0.92, gt=0)
+    EXECUTION_MAX_INPUT_TOKENS: int = Field(default=32000, ge=1, le=64000)
+    EXECUTION_MAX_OUTPUT_TOKENS: int = Field(default=16000, ge=1, le=32000)
+    EXECUTION_MAX_ATTEMPTS: int = Field(default=3, ge=1, le=3)
 
     # -- Contact form email (SMTP, e.g. Brevo relay) --------------------------
     SMTP_HOST: str | None = None

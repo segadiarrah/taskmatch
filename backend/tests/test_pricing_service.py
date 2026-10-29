@@ -51,10 +51,9 @@ class TestModelRates:
     def test_normalises_provider_slugs(self, raw, expected):
         assert ps._normalise_model(raw) == expected
 
-    def test_unknown_model_falls_back_rather_than_raising(self):
-        assert ps.resolve_model_rate("some-model-that-does-not-exist") == (
-            ps.DEFAULT_RATE_USD
-        )
+    def test_unknown_model_cannot_receive_prepaid_quote(self):
+        with pytest.raises(ValueError, match="rate"):
+            ps.resolve_model_rate("some-model-that-does-not-exist")
 
     def test_output_is_never_cheaper_than_input(self):
         """A rate table where output < input is almost certainly a transcription slip."""
