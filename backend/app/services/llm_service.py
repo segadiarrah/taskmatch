@@ -165,7 +165,7 @@ async def execute_task_output(system_prompt: str, user_prompt: str, *, execution
     provider_called = False
     try:
         provider, model = execution["provider"], execution["model"]
-        model_rate(provider, model)
+        current_rates = model_rate(provider, model)
         cfg = providers.get_provider(provider)
         if not cfg or not cfg.get("enabled") or not cfg.get("api_key"):
             raise ProviderExecutionError("Provider is disabled or has no configured key", retryable=False)
@@ -193,6 +193,17 @@ async def execute_task_output(system_prompt: str, user_prompt: str, *, execution
         maximum = (max_input * rate_in + max_output * rate_out) / Decimal(1_000_000) * fx
         if reserve < maximum or total < reserve * attempts:
             raise ProviderExecutionError("Execution budget does not cover its limits", retryable=False)
+        if provider != "openrouter":
+            # Direct APIs do not accept a per-token price ceiling. Keep the
+            # accepted snapshot immutable and stop if current known rates no
+            # longer fit its reserved maximum. OpenRouter enforces the frozen
+            # rates through provider.max_price in the request instead.
+            current_in, current_out = (Decimal(str(rate)) for rate in current_rates)
+            if not all(rate.is_finite() and rate > 0 for rate in (current_in, current_out)):
+                raise ProviderExecutionError("Invalid current provider rates", retryable=False)
+            current_maximum = (max_input * current_in + max_output * current_out) / Decimal(1_000_000) * fx
+            if current_maximum > reserve:
+                raise ProviderExecutionError("Current provider rates exceed the frozen execution budget", retryable=False)
         provider_called = True
         text, usage = await _provider_request(
             provider=provider, model=model, api_key=cfg["api_key"], base_url=base_url,

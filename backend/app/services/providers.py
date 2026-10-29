@@ -91,6 +91,11 @@ def get_provider(provider: str) -> dict[str, Any] | None:
     }
 
 
+def _provider_identity(provider: str, cfg: dict) -> tuple[str | None, str]:
+    """Scope account catalog evidence to the credential and endpoint checked."""
+    return (cfg.get("api_key"), (cfg.get("base_url") or CATALOG[provider]["base_url"]).rstrip("/"))
+
+
 def update_provider(
     provider: str,
     *,
@@ -103,6 +108,7 @@ def update_provider(
         return None
     state = _load()
     cfg = state.get(provider, {})
+    previous_identity = _provider_identity(provider, cfg)
     if selected_model is not None and selected_model not in cfg.get("available_models", CATALOG[provider]["models"]):
         raise ValueError(f"Unavailable or unpriced model: {selected_model}")
     if api_key is not None:
@@ -113,6 +119,12 @@ def update_provider(
         cfg["selected_model"] = selected_model
     if base_url is not None:
         cfg["base_url"] = base_url.strip()
+    if previous_identity[0] and previous_identity != _provider_identity(provider, cfg):
+        # The previous account's access is not evidence for its replacement.
+        # Preserve the administrator's model choice and enabled switch, but
+        # require an explicit check before this identity receives new quotes.
+        cfg.update(available_models=[], refresh_status="unverified", last_refreshed_at=None,
+                   last_refresh_attempt_at=None, refresh_error=None)
     state[provider] = cfg
     _save(state)
     logger.info("providers.updated", provider=provider, enabled=cfg.get("enabled"), key_set=bool(cfg.get("api_key")))
@@ -161,15 +173,29 @@ async def _fetch_models(provider: str, cfg: dict) -> list[str]:
             response = await client.get(url, headers=headers, params=params)
             response.raise_for_status()
             body = response.json()
-            entries = body.get("data", body.get("models", []))
+            key = "models" if provider == "google" else "data"
+            if not isinstance(body, dict) or not isinstance(body.get(key), list):
+                raise ValueError("Invalid model catalog response")
+            entries = body[key]
             for item in entries:
-                model = (item.get("id") or item.get("name") or "").removeprefix("models/")
+                model_id = (item.get("id") or item.get("name")) if isinstance(item, dict) else None
+                if not isinstance(model_id, str) or not model_id.strip():
+                    raise ValueError("Invalid model catalog entry")
+                model = model_id.removeprefix("models/")
                 if model in CATALOG[provider]["models"]:
                     found.append(model)
-            if body.get("nextPageToken"):
-                params["pageToken"] = body["nextPageToken"]
-            elif body.get("has_more") and body.get("last_id"):
-                params["after_id"] = body["last_id"]
+            token = body.get("nextPageToken")
+            if token is not None and not isinstance(token, str):
+                raise ValueError("Invalid model catalog cursor")
+            if "has_more" in body and not isinstance(body["has_more"], bool):
+                raise ValueError("Invalid model catalog pagination")
+            if token:
+                params["pageToken"] = token
+            elif body.get("has_more"):
+                cursor = body.get("last_id")
+                if not isinstance(cursor, str) or not cursor:
+                    raise ValueError("Missing model catalog cursor")
+                params["after_id"] = cursor
             else:
                 return list(dict.fromkeys(found))
     raise ValueError("Model pagination exceeded limit")
@@ -180,16 +206,21 @@ async def refresh_provider_models(provider: str) -> dict | None:
     if cfg is None:
         return None
     attempted = datetime.now(timezone.utc).isoformat()
+    identity = _provider_identity(provider, cfg)
     try:
         models = await _fetch_models(provider, cfg)
-        state = _load()
-        saved = state.setdefault(provider, {})
-        saved.update(available_models=models, refresh_status="success",
-                     last_refreshed_at=attempted, refresh_error=None)
+        changes = dict(available_models=models, refresh_status="success",
+                       last_refreshed_at=attempted, refresh_error=None)
     except Exception:
-        state = _load()
-        saved = state.setdefault(provider, {})
-        saved.update(refresh_status="error", refresh_error="Model refresh failed; last known catalog retained.")
+        changes = dict(refresh_status="error", refresh_error="Model refresh failed; last known catalog retained.")
+    state = _load()
+    saved = state.setdefault(provider, {})
+    # An in-flight response from an old credential, endpoint or older check
+    # must not re-validate a changed account or replace newer access evidence.
+    if (_provider_identity(provider, saved) != identity
+            or (saved.get("last_refresh_attempt_at") or "") > attempted):
+        return next(p for p in list_providers() if p["provider"] == provider)
+    saved.update(changes)
     saved["last_refresh_attempt_at"] = attempted
     _save(state)
     return next(p for p in list_providers() if p["provider"] == provider)
