@@ -46,16 +46,21 @@ def _parse_spec(job: Job) -> dict[str, Any]:
 
 
 def pricing_provider() -> dict:
-    """Select a usable provider once; all task quotes freeze this selection."""
-    for provider in providers.enabled_providers():
-        cfg = providers.get_provider(provider)
-        if (cfg and cfg.get("selected_model_available")
-                and not (cfg.get("refresh_status") == "error" and not cfg.get("last_refreshed_at"))):
-            return cfg
-    if settings.PAYMENT_MODE == "legacy_manual":
+    """Freeze the explicitly configured execution route, never another provider."""
+    provider = settings.EXECUTION_PROVIDER
+    cfg = providers.get_provider(provider)
+    if (cfg and cfg.get("enabled") and cfg.get("api_key")
+            and cfg.get("selected_model_available")
+            and cfg.get("refresh_status") not in ("error", "unverified")):
+        return cfg
+    # Historical manual-ledger workflows can still produce an offline estimate
+    # before any OpenAI key is configured. This is not executable authorization.
+    if (settings.PAYMENT_MODE == "legacy_manual" and provider == "openai"
+            and cfg and not cfg.get("api_key")
+            and cfg.get("refresh_status") == "catalog"):
         return {"provider": "openai", "selected_model": settings.PRICING_DEFAULT_MODEL,
                 "base_url": providers.CATALOG["openai"]["base_url"]}
-    raise ValueError("No enabled provider with an available priced model")
+    raise ValueError("The configured execution provider must be an enabled provider with a key and an available priced model; repair or refresh its configuration")
 
 
 def pricing_model() -> str:

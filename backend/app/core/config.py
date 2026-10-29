@@ -78,6 +78,8 @@ class Settings(BaseSettings):
     # FX is an explicit quote conversion, frozen with each execution budget.
     PRICING_DEFAULT_MODEL: str = "gpt-6.1-sol"
     PRICING_USD_TO_EUR: float = Field(default=0.92, gt=0)
+    # New task quotes select only this provider; accepted quotes retain their route.
+    EXECUTION_PROVIDER: Literal["openai", "anthropic", "google", "mistral", "deepseek", "xai", "openrouter"] = "openai"
     EXECUTION_MAX_INPUT_TOKENS: int = Field(default=32000, ge=1, le=64000)
     EXECUTION_MAX_OUTPUT_TOKENS: int = Field(default=16000, ge=1, le=32000)
     EXECUTION_MAX_ATTEMPTS: int = Field(default=3, ge=1, le=3)

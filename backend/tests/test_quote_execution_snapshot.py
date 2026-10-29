@@ -2,6 +2,7 @@
 import pytest
 from sqlalchemy import select
 from test_lifecycle_integration import market, planned_job
+from app.core.config import settings
 from app.models.quote import TaskQuote
 from app.services import providers
 
@@ -10,6 +11,7 @@ from app.services import providers
 async def test_persisted_quote_freezes_provider_and_rates(market, tmp_path, monkeypatch):
     monkeypatch.setattr(providers, '_DATA_DIR', str(tmp_path))
     monkeypatch.setattr(providers, '_STORE_PATH', str(tmp_path / 'providers.json'))
+    monkeypatch.setattr(settings, 'EXECUTION_PROVIDER', 'anthropic')
     providers.update_provider('anthropic', api_key='fake-key', enabled=True, selected_model='claude-sonnet-5-5')
     plan = await planned_job(market)
     async with market.db() as db:
