@@ -207,3 +207,34 @@ test("task reassignment requires an audit reason and retains inputs when the ser
   await expect(page.getByLabel("Reason for reassignment")).toHaveValue("Complete the remaining human work");
   expect(reassignments).toBe(1);
 });
+
+test("refresh execution loads asynchronous submissions and review permission", async ({ page }) => {
+  await mockApi(page, []);
+  let finished = false;
+  await page.route("**/api/v1/tasks/task-1/submissions", route => route.fulfill({ json: finished ? [submission] : [] }));
+  await page.route("**/api/v1/tasks/task-1/execution", route => route.fulfill({ json: {
+    assignment: null, review_required: true, reviewer_name: "Sega", can_review: finished,
+    operations: [{ id: "op-1", status: finished ? "done" : "processing", attempts: 1, last_error: null }],
+    can_retry: false, recovery: null,
+  } }));
+  await page.goto("/admin/tasks/task-1");
+  await expect(page.getByRole("button", { name: "Approve human review" })).toHaveCount(0);
+  finished = true;
+  await page.getByRole("button", { name: "Refresh execution", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Approve human review" })).toBeVisible();
+  await expect(page.locator("p").filter({ hasText: /^Actual submitted result$/ })).toBeVisible();
+});
+
+test("refresh execution preserves an unfinished human draft", async ({ page }) => {
+  await mockApi(page, []);
+  await page.route("**/api/v1/tasks/task-1/execution", route => route.fulfill({ json: {
+    assignment: { id: "human-assignment", agent_id: "sega-agent", agent_name: "Sega", kind: "human", status: "assigned", can_submit: true },
+    review_required: true, reviewer_name: null, can_review: false, operations: [], can_retry: false, recovery: null,
+  } }));
+  await page.goto("/admin/tasks/task-1");
+  await page.getByLabel("Deliverable result").fill("Keep the unfinished work");
+  await page.getByLabel("Delivery summary").fill("Keep the summary");
+  await page.getByRole("button", { name: "Refresh execution", exact: true }).click();
+  await expect(page.getByLabel("Deliverable result")).toHaveValue("Keep the unfinished work");
+  await expect(page.getByLabel("Delivery summary")).toHaveValue("Keep the summary");
+});

@@ -14,9 +14,9 @@ import { LEGAL_ENTITY } from "@/lib/legal-entity";
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const guide = getGuideBySlug(params.slug);
+  const guide = getGuideBySlug((await params).slug);
   if (!guide) return buildUnknownArticleMetadata("Guide");
 
   return buildArticleMetadata({
@@ -31,14 +31,14 @@ export function generateStaticParams() {
   return guides.map((guide) => ({ slug: guide.slug }));
 }
 
-export default function GuideLayout({
+export default async function GuideLayout({
   children,
   params,
 }: {
   children: ReactNode;
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const guide = getGuideBySlug(params.slug);
+  const guide = getGuideBySlug((await params).slug);
 
   const guideJsonLd = guide && {
     "@context": "https://schema.org",

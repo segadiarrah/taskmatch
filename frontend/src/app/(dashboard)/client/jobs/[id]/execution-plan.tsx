@@ -51,6 +51,7 @@ interface PlanTask {
   status: string;
   revision_count?: number;
   matched_agents: MatchedAgent[];
+  review_access?: { can_review: boolean; reviewer_name: string | null; error?: boolean };
   delivered?: {
     submission_id?: string;
     summary: string | null;
@@ -158,6 +159,17 @@ export default function ExecutionPlan({
   const load = useCallback(async () => {
     try {
       const data = await apiGet<PlanResponse>(`/v1/jobs/${jobId}/plan`);
+      // Review authority follows the actual executor and designated reviewer,
+      // including human takeover of a formerly automated task.
+      data.tasks = await Promise.all(data.tasks.map(async task => {
+        if (!task.delivered?.submission_id || (task.delivered.status !== "submitted" && task.delivered.status !== "under_review")) return task;
+        try {
+          const access = await apiGet<{ can_review: boolean; reviewer_name: string | null }>(`/v1/tasks/${task.id}/execution`);
+          return { ...task, review_access: { can_review: access.can_review === true, reviewer_name: access.reviewer_name } };
+        } catch {
+          return { ...task, review_access: { can_review: false, reviewer_name: null, error: true } };
+        }
+      }));
       if (!activeRef.current) return;
       setLoadError(false);
       setPlan(data);
@@ -233,6 +245,7 @@ export default function ExecutionPlan({
   };
 
   const handleReview = async (submissionId: string, decision: "approved" | "rework_requested") => {
+    if (!plan?.tasks.some(task => task.delivered?.submission_id === submissionId && task.review_access?.can_review)) return;
     setReviewing(submissionId);
     setActionError(null);
     try {
@@ -627,7 +640,18 @@ export default function ExecutionPlan({
                         </pre>
                       </div>
                     ) : null}
-                    {task.delivered?.submission_id && (task.delivered.status === "submitted" || task.delivered.status === "under_review") && (
+                    {task.delivered?.submission_id && (task.delivered.status === "submitted" || task.delivered.status === "under_review") && task.review_access?.error && (
+                      <div className="mt-3 space-y-2 rounded-lg border p-4">
+                        <p role="alert" className="text-sm text-danger">{t("client.detail.reviewAccessFailed", "Review permissions could not be loaded.")}</p>
+                        <Button variant="outline" onClick={() => void load()}>{t("client.detail.reloadReviewAccess", "Reload review permissions")}</Button>
+                      </div>
+                    )}
+                    {task.delivered?.submission_id && (task.delivered.status === "submitted" || task.delivered.status === "under_review") && !task.review_access?.error && !task.review_access?.can_review && (
+                      <p className="mt-3 text-sm text-ink-300">{task.review_access?.reviewer_name
+                        ? t("client.detail.waitingReviewer", { reviewer: task.review_access.reviewer_name })
+                        : t("client.detail.waitingReview", "Waiting for the designated reviewer.")}</p>
+                    )}
+                    {task.delivered?.submission_id && (task.delivered.status === "submitted" || task.delivered.status === "under_review") && task.review_access?.can_review && (
                       <div className="mt-3 space-y-3 rounded-lg border p-4">
                         <label className="block text-sm font-medium" htmlFor={`review-${task.id}`}>{t("client.detail.reviewNotesLabel")}</label>
                         <textarea id={`review-${task.id}`} value={reviewNotes[task.delivered.submission_id] ?? ""} onChange={(event) => setReviewNotes((current) => ({ ...current, [task.delivered!.submission_id!]: event.target.value }))} className="w-full rounded-md border border-input bg-ink-900 p-2 text-sm" />

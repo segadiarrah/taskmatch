@@ -62,8 +62,8 @@ export default function TaskDetailPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState("");
 
-  const fetchTask = useCallback(async () => {
-    setLoading(true);
+  const fetchTask = useCallback(async (background = false) => {
+    if (!background) setLoading(true);
     setLoadError(false);
     try {
       const data = await loadAdminTaskDetail(apiGet, taskId);
@@ -223,7 +223,7 @@ export default function TaskDetailPage() {
         </CardContent>
       </Card>
 
-      <ExecutionPanel key={taskId} taskId={taskId} submissions={task.submissions} onChanged={fetchTask} />
+      <ExecutionPanel key={taskId} taskId={taskId} submissions={task.submissions} onChanged={() => fetchTask(true)} />
 
       {/* Assigned Agent + Agent Matching Panel */}
       <div className="grid gap-6 lg:grid-cols-2">

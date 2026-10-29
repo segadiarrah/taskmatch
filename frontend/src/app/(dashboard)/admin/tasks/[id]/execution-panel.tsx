@@ -50,6 +50,13 @@ export function ExecutionPanel({ taskId, submissions, onChanged }: { taskId: str
   }, [taskId]);
   useEffect(() => { void refresh(); }, [refresh]);
 
+  async function refreshTask() {
+    setBusy(true);
+    try {
+      await Promise.all([refresh(), onChanged()]);
+    } finally { setBusy(false); }
+  }
+
   async function retry() {
     setBusy(true); setError(null); setMessage(null);
     try {
@@ -113,7 +120,10 @@ export function ExecutionPanel({ taskId, submissions, onChanged }: { taskId: str
               {execution.review_required && <p className="text-warning">Human review required{execution.reviewer_name ? ` · ${execution.reviewer_name}` : ""}. Automatic validation alone does not approve this task.</p>}
               {execution.recovery && <p>{execution.recovery.reason}</p>}
             </div>
-            <Button variant="outline" onClick={retry} disabled={busy || loading || !execution.can_retry}>Retry task</Button>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={refreshTask} disabled={busy || loading}>Refresh execution</Button>
+              <Button variant="outline" onClick={retry} disabled={busy || loading || !execution.can_retry}>Retry task</Button>
+            </div>
           </div>
           {execution.operations.length ? <ul className="space-y-3" aria-label="Execution attempts">{execution.operations.map(operation => (
             <li key={operation.id} className="rounded-md border border-ink-700 bg-ink-900/40 p-4 text-sm">

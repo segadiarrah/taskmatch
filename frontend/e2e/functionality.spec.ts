@@ -72,7 +72,7 @@ test("admin payments render actual ledger states and preserve them on failed act
   await page.goto("/admin/payments");
   await expect(page.getByText("Test delivery", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Mark releasable" }).click();
-  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(page.getByTestId("payment-action-error")).toBeVisible();
   await expect(page.getByRole("row").filter({ hasText: "Test delivery" })).toContainText("Pending");
 });
 

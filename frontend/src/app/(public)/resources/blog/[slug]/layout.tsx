@@ -15,9 +15,9 @@ import { LEGAL_ENTITY } from "@/lib/legal-entity";
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const post = getPostBySlug(params.slug);
+  const post = getPostBySlug((await params).slug);
   if (!post) return buildUnknownArticleMetadata("Article");
 
   return buildArticleMetadata({
@@ -34,14 +34,14 @@ export function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }));
 }
 
-export default function BlogPostLayout({
+export default async function BlogPostLayout({
   children,
   params,
 }: {
   children: ReactNode;
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const post = getPostBySlug(params.slug);
+  const post = getPostBySlug((await params).slug);
 
   // Article structured data. A search engine can attribute the writing to a
   // named author and a named publisher instead of treating it as loose text.
