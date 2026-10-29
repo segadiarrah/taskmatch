@@ -1,6 +1,8 @@
 """Persisted funding gates and settlement allocation regressions."""
 
 import uuid
+from datetime import timedelta
+from unittest.mock import AsyncMock
 from decimal import Decimal
 
 import pytest
@@ -15,6 +17,8 @@ from app.models.job import Job
 from app.models.payment import PaymentRecord
 from app.models.quote import Quote, TaskQuote
 from app.models.task import Task
+from app.models.submission import Submission
+from app.services import billing_worker, llm_service
 from tests.test_lifecycle_integration import (
     assigned_task,
     planned_job,
@@ -418,9 +422,9 @@ async def platform_worker(market, job_id, auto_select=False):
         worker = Agent(
             developer_user_id=market.users["admin"].id,
             name="Platform worker",
-            slug="llm-test",
+            slug="llm-openai",
             description="Platform",
-            endpoint_url="https://example.test",
+            endpoint_url="https://api.openai.com/v1",
             status="active",
         )
         db.add(worker)
@@ -436,40 +440,69 @@ async def test_execution_retry_does_not_duplicate_platform_bids(market, monkeypa
     await request(market, "POST", f"/jobs/{job_id}/quote/accept")
     worker = await platform_worker(market, job_id)
     await funding_for(market, job_id)
-    monkeypatch.setattr(jobs.llm_service, "llm_available", lambda: True)
+    generate = AsyncMock(side_effect=AssertionError("Manual selection must not generate work"))
+    monkeypatch.setattr(llm_service, "execute_task_output", generate)
     await jobs._execute_job(uuid.UUID(job_id))
     await jobs._execute_job(uuid.UUID(job_id))
     async with market.db() as db:
-        bids = list(
-            (
-                await db.execute(
-                    select(Bid).where(Bid.task_id == uuid.UUID(task_id), Bid.agent_id == worker.id)
-                )
-            ).scalars()
-        )
+        operations = list((await db.execute(select(BillingOperation).where(
+            BillingOperation.kind == "execute_task"))).scalars())
+        assert len(operations) == 1
+        assert operations[0].payload["execution"]["provider"] == "openai"
+        assert operations[0].payload["execution"]["model"] == "gpt-6.1-sol"
+    assert await billing_worker.run_once(market.db, execution=True)
+    # Simulate delivery of the same durable operation after a worker restart.
+    async with market.db() as db:
+        operation = await db.get(BillingOperation, operations[0].id)
+        assert operation.status == "done"
+        operation.status = "pending"
+        operation.available_at = operation.created_at - timedelta(seconds=1)
+        await db.commit()
+    assert await billing_worker.run_once(market.db, execution=True)
+    async with market.db() as db:
+        bids = list((await db.execute(select(Bid).where(
+            Bid.task_id == uuid.UUID(task_id), Bid.agent_id == worker.id))).scalars())
         assert len(bids) == 1
+        assert await db.scalar(select(Assignment.id).where(Assignment.task_id == uuid.UUID(task_id))) is None
+    generate.assert_not_called()
 
 
 async def test_execution_failure_is_retried_without_committing_fake_completion(market, monkeypatch):
     plan = await planned_job(market)
     job_id, task_id = plan["job"]["id"], plan["tasks"][0]["id"]
     await request(market, "POST", f"/jobs/{job_id}/quote/accept")
-    await platform_worker(market, job_id, auto_select=True)
+    worker = await platform_worker(market, job_id, auto_select=True)
     await funding_for(market, job_id)
-    monkeypatch.setattr(jobs.llm_service, "llm_available", lambda: True)
-
-    async def unavailable(*args, **kwargs):
-        return None
-
-    monkeypatch.setattr(jobs.llm_service, "call_llm_json", unavailable)
-    with pytest.raises(RuntimeError, match="deliverable"):
-        await jobs._execute_job(uuid.UUID(job_id))
-    async with market.db() as db:
-        assert (await db.get(Task, uuid.UUID(task_id))).status == "open_for_bids"
-        assert (
-            await db.scalar(select(Assignment.id).where(Assignment.task_id == uuid.UUID(task_id)))
-            is None
-        )
+    generate = AsyncMock(return_value=None)
+    monkeypatch.setattr(llm_service, "execute_task_output", generate)
+    await jobs._execute_job(uuid.UUID(job_id))
+    generate.assert_not_called()  # The job dispatcher only enqueues work.
+    assignment_id = None
+    for attempt in (1, 2):
+        assert await billing_worker.run_once(market.db, execution=True)
+        async with market.db() as db:
+            task = await db.get(Task, uuid.UUID(task_id))
+            assert task.status == "assigned"
+            assignments = list((await db.execute(select(Assignment).where(
+                Assignment.task_id == task.id))).scalars())
+            assert len(assignments) == 1 and assignments[0].status == "active"
+            assert assignments[0].agent_id == worker.id
+            if assignment_id is None:
+                assignment_id = assignments[0].id
+            assert assignments[0].id == assignment_id
+            assert await db.scalar(select(Submission.id).where(Submission.task_id == task.id)) is None
+            operation = await db.scalar(select(BillingOperation).where(
+                BillingOperation.kind == "execute_task", BillingOperation.entity_id == str(task.id)))
+            assert operation.status == "pending"
+            assert operation.payload["calls"] == attempt
+            assert operation.payload["attempt_log"][-1]["outcome"] == "unavailable"
+            assert task.input_spec_json["_execution_calls"] == attempt
+            assert operation.payload["reserved_cost_eur"] > 0
+            assert (await db.get(Job, uuid.UUID(job_id))).status == "in_progress"
+            operation.available_at = operation.created_at - timedelta(seconds=1)
+            await db.commit()
+    assert generate.await_count == 2
+    assert generate.call_args.kwargs["execution"]["provider"] == "openai"
 
 
 async def test_stripe_revision_is_queued_durably(market):

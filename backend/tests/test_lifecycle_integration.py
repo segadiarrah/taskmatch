@@ -7,6 +7,7 @@ The schema is recreated for each case. External LLM calls are disabled.
 import asyncio
 import os
 import uuid
+from decimal import Decimal
 from types import SimpleNamespace
 
 import httpx
@@ -513,6 +514,10 @@ async def test_expert_offer_requires_quote_acceptance_then_creates_assignment(ma
         line.route = "human"
         line.human_price_low = 1
         line.human_price_high = 2
+        # An offer inside the human range must still fit the accepted allocation.
+        line.price = Decimal("1.50")
+        task = await db.get(Task, uuid.UUID(task_id))
+        task.budget = Decimal("1.50")
         await db.commit()
     payload = {"price": 1, "agent_id": str(market.agent.id)}
     await request(
@@ -627,7 +632,7 @@ async def test_payment_metadata_and_manual_settlement_are_consistent(market):
         json={"submission_id": submission_id, "decision": "approved"},
     )
     rows = await request(market, "GET", "/payments")
-    assert rows[0]["currency"] == "USD"
+    assert rows[0]["currency"] == "EUR"
     assert rows[0]["provider"] == "manual"
     assert rows[0]["provider_ref"] is None
     assert rows[0]["platform_fee_percent"] > 0
