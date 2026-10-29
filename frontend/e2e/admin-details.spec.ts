@@ -145,3 +145,65 @@ test("human delivery failures preserve the draft and review uses the explicit hu
   await page.getByRole("button", { name: "Request corrections" }).click();
   await expect.poll(() => reviews).toBe(1);
 });
+
+test("historical recovery requires a current cost preview and preserves server conflicts", async ({ page }) => {
+  await mockApi(page, []);
+  let recoveries = 0;
+  await page.route("**/api/v1/tasks/task-1/execution", route => route.fulfill({ json: {
+    assignment: null, review_required: false, reviewer_name: null, can_review: false, operations: [], can_retry: false,
+    recovery: { eligible: true, reason: "Historical execution needs an approved cost limit" },
+  } }));
+  await page.route("**/api/v1/admin/providers", route => route.fulfill({ json: { providers: [
+    { provider: "openai", label: "OpenAI", enabled: true, key_set: true, models: ["gpt-6-luna", "model-2"] },
+    { provider: "disabled", label: "Disabled provider", enabled: false, key_set: true, models: ["disabled-model"] },
+  ] } }));
+  await page.route("**/api/v1/tasks/task-1/recovery-preview?**", route => {
+    const query = new URL(route.request().url()).searchParams;
+    return route.fulfill({ json: { eligible: true, quote_id: "historical-quote", execution: { provider: query.get("provider"), model: query.get("model"), max_cost_eur: "0.1256" } } });
+  });
+  await page.route("**/api/v1/tasks/task-1/recover", route => {
+    expect(route.request().postDataJSON()).toEqual({ provider: "openai", model: "model-2", quote_id: "historical-quote", approved_max_cost_eur: "0.1256" });
+    recoveries++;
+    return route.fulfill({ status: 409, json: { detail: "Quote changed; preview again" } });
+  });
+  await page.goto("/admin/tasks/task-1");
+  await expect(page.getByRole("button", { name: "Approve cost limit and recover" })).toHaveCount(0);
+  await expect(page.getByLabel("Recovery provider").locator("option")).toHaveCount(2);
+  await page.getByLabel("Recovery provider").selectOption("openai");
+  await page.getByLabel("Recovery model").selectOption("gpt-6-luna");
+  await page.getByRole("button", { name: "Preview recovery" }).click();
+  await expect(page.getByText("0.1256 EUR", { exact: true })).toBeVisible();
+  await page.getByLabel("Recovery model").selectOption("model-2");
+  await expect(page.getByRole("button", { name: "Approve cost limit and recover" })).toHaveCount(0);
+  expect(recoveries).toBe(0);
+  await page.getByRole("button", { name: "Preview recovery" }).click();
+  await page.getByRole("button", { name: "Approve cost limit and recover" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Quote changed; preview again" })).toBeVisible();
+  await expect(page.getByLabel("Recovery model")).toHaveValue("model-2");
+  expect(recoveries).toBe(1);
+});
+
+test("task reassignment requires an audit reason and retains inputs when the server rejects the route", async ({ page }) => {
+  await mockApi(page, []);
+  let reassignments = 0;
+  await page.route("**/api/v1/tasks/task-1/execution", route => route.fulfill({ json: {
+    assignment: null, review_required: false, reviewer_name: null, can_review: false, operations: [], can_retry: false, can_reassign: true,
+    recovery: { eligible: false, reason: "Task already has a frozen execution route" },
+  } }));
+  await page.route("**/api/v1/agents?**", route => route.fulfill({ json: { agents: [{ id: "sega-agent", name: "Sega", status: "active" }], total: 1 } }));
+  await page.route("**/api/v1/tasks/task-1/reassign", route => {
+    expect(route.request().postDataJSON()).toEqual({ agent_id: "sega-agent", reason: "Complete the remaining human work" });
+    reassignments++;
+    return route.fulfill({ status: 409, json: { detail: "Funding is frozen" } });
+  });
+  await page.goto("/admin/tasks/task-1");
+  await expect(page.getByRole("button", { name: "Preview recovery" })).toHaveCount(0);
+  await page.getByLabel("Replacement executor").selectOption("sega-agent");
+  await expect(page.getByRole("button", { name: "Reassign task", exact: true })).toBeDisabled();
+  await page.getByLabel("Reason for reassignment").fill("Complete the remaining human work");
+  await page.getByRole("button", { name: "Reassign task", exact: true }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Funding is frozen" })).toBeVisible();
+  await expect(page.getByLabel("Replacement executor")).toHaveValue("sega-agent");
+  await expect(page.getByLabel("Reason for reassignment")).toHaveValue("Complete the remaining human work");
+  expect(reassignments).toBe(1);
+});

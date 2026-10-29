@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth";
+import { HistoricalRecoveryPanel } from "./historical-recovery-panel";
+import { ReassignmentPanel } from "./reassignment-panel";
 import { apiGet, apiPost } from "@/lib/api";
 import { formatDateTime, formatStatus } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,10 +20,12 @@ interface Execution {
   operations: { id: string; status: string; attempts: number; last_error: string | null; available_at: string | null }[];
   can_retry: boolean;
   can_review: boolean;
+  can_reassign?: boolean;
   recovery: { eligible: boolean; reason: string } | null;
 }
 
 export function ExecutionPanel({ taskId, submissions, onChanged }: { taskId: string; submissions: { id: string; status: string; summary: string | null }[]; onChanged: () => Promise<void> }) {
+  const { user } = useAuth();
   const [execution, setExecution] = useState<Execution | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -117,6 +122,8 @@ export function ExecutionPanel({ taskId, submissions, onChanged }: { taskId: str
               {operation.available_at && <p className="mt-2 text-xs text-ink-400">Available from {formatDateTime(operation.available_at)}</p>}
             </li>
           ))}</ul> : <p className="text-sm text-ink-400">No execution attempts recorded.</p>}
+          {user?.role === "admin" && execution.recovery?.eligible && <HistoricalRecoveryPanel taskId={taskId} onChanged={async () => { await refresh(); await onChanged(); }} />}
+          {user?.role === "admin" && execution.can_reassign && <ReassignmentPanel taskId={taskId} onChanged={async () => { await refresh(); await onChanged(); }} />}
           {execution.assignment?.can_submit && <form onSubmit={submit} className="space-y-4 border-t border-ink-700 pt-5">
             <h3 className="font-semibold text-ink-50">Submit your human deliverable</h3>
             <p className="text-sm text-ink-300">Record the actual work completed for your assignment. Submission does not mark the mission accepted.</p>
