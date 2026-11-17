@@ -135,7 +135,7 @@ export default function ExecutionPlan({
   fallbackCurrency,
   onSubmitted,
 }: ExecutionPlanProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const isDraft = jobStatus === "draft";
   const isLegacy = billingMode === "legacy_manual";
 
@@ -533,7 +533,7 @@ export default function ExecutionPlan({
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="font-medium text-sm text-ink-100">{task.title}</p>
                           <Badge variant="info" className="capitalize">
-                            {formatStatus(task.task_type)}
+                            {formatStatus(task.task_type, locale)}
                           </Badge>
                           {task.priority !== null && task.priority !== undefined && task.priority !== "" && (
                             <Badge variant="outline" className="font-normal">
@@ -549,7 +549,7 @@ export default function ExecutionPlan({
                             </Badge>
                           )}
                           <span className="font-mono text-xs font-medium text-success">
-                            {formatCurrency(task.budget, currency)}
+                            {formatCurrency(task.budget, currency, locale)}
                           </span>
                         </div>
                         {task.description && (
@@ -576,6 +576,18 @@ export default function ExecutionPlan({
                         <ol className="mt-3 space-y-2">
                           {agents.map((agent, aIdx) => {
                             const best = aIdx === 0;
+                            const reasoning = agent.reasoning?.trim();
+                            const platformReasoning = !!reasoning && /^Score \d+(?:\.\d+)?\/100:\s*(?:(?:capability|success_rate|avg_score|experience)=\d+(?:\.\d+)?(?:,\s*)?)+$/.test(reasoning);
+                            const matchingReason = (!reasoning || platformReasoning)
+                              ? agent.breakdown && [agent.breakdown.capability_match, agent.breakdown.success_rate, agent.breakdown.average_score, agent.breakdown.completed_tasks_count].every(Number.isFinite)
+                                ? t("client.plan.reason", {
+                                    capability: Math.round(agent.breakdown.capability_match),
+                                    rate: Math.round(agent.breakdown.success_rate),
+                                    score: Math.round(agent.breakdown.average_score),
+                                    count: Math.round(agent.breakdown.completed_tasks_count),
+                                  })
+                                : t("client.plan.reasonFallback")
+                              : reasoning;
                             return (
                               <li
                                 key={agent.agent_id}
@@ -609,7 +621,7 @@ export default function ExecutionPlan({
                                   </Badge>
                                 </div>
                                 <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
-                                  {agent.reasoning?.trim() || (agent.breakdown ? t("client.plan.reason", { capability: Math.round(agent.breakdown.capability_match), rate: Math.round(agent.breakdown.success_rate), count: agent.breakdown.completed_tasks_count }) : t("client.plan.reasonFallback"))}
+                                  {matchingReason}
                                 </p>
                               </li>
                             );

@@ -1,10 +1,14 @@
 "use client";
 
+import { allCapabilities } from "@/lib/admin-vocabulary";
+
+import { useAdminCopy, adminSource } from "@/lib/admin-copy";
+
 import React, { useState, useEffect } from "react";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { useRouter } from "next/navigation";
 import { apiGet } from "@/lib/api";
-import { cn, formatStatus } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,17 +40,15 @@ interface Agent {
 }
 
 const statusConfig: Record<string, { color: string; label: string; dot: string }> = {
-  active: { color: "border-success/40 bg-success/5", label: "Active", dot: "bg-success" },
-  paused: { color: "border-warning/40 bg-warning/5", label: "Paused", dot: "bg-warning" },
-  disabled: { color: "border-danger/40 bg-danger/5", label: "Disabled", dot: "bg-danger" },
+  active: { color: "border-success/40 bg-success/5", label: adminSource("Active"), dot: "bg-success" },
+  paused: { color: "border-warning/40 bg-warning/5", label: adminSource("Paused"), dot: "bg-warning" },
+  disabled: { color: "border-danger/40 bg-danger/5", label: adminSource("Disabled"), dot: "bg-danger" },
 };
 
-const allCapabilities = [
-  "react", "nextjs", "nodejs", "python", "typescript", "postgresql",
-  "aws", "docker", "ml", "api-design", "testing", "devops",
-];
+
 
 export default function AgentsPage() {
+  const { a, formatStatus, formatNumber, formatPercent } = useAdminCopy();
   const router = useRouter();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,10 +105,8 @@ export default function AgentsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Agent Directory</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Browse and manage registered AI agents on the platform.
-        </p>
+        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">{a("Agent Directory")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{a("Browse and manage registered AI agents on the platform.")}</p>
       </div>
 
       {/* Filters */}
@@ -116,7 +116,7 @@ export default function AgentsPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-500" />
               <Input
-                placeholder="Search by name or developer..."
+                placeholder={a("Search by name or developer...")}
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -129,19 +129,19 @@ export default function AgentsPage() {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="w-36"
               >
-                <option value="all">All Statuses</option>
-                <option value="active">Active</option>
-                <option value="paused">Paused</option>
-                <option value="disabled">Disabled</option>
+                <option value="all">{a("All Statuses")}</option>
+                <option value="active">{a("Active")}</option>
+                <option value="paused">{a("Paused")}</option>
+                <option value="disabled">{a("Disabled")}</option>
               </Select>
               <Select
                 value={capabilityFilter}
                 onChange={(e) => setCapabilityFilter(e.target.value)}
                 className="w-40"
               >
-                <option value="all">All Capabilities</option>
+                <option value="all">{a("All Capabilities")}</option>
                 {allCapabilities.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>{formatStatus(c)}</option>
                 ))}
               </Select>
             </div>
@@ -158,9 +158,9 @@ export default function AgentsPage() {
             </div>
             <div>
               <p className="font-display text-2xl font-medium text-ink-50">
-                {agents.filter((a) => a.status === "active").length}
+                {formatNumber(agents.filter((a) => a.status === "active").length)}
               </p>
-              <p className="text-xs text-muted-foreground">Active Agents</p>
+              <p className="text-xs text-muted-foreground">{a("Active Agents")}</p>
             </div>
           </CardContent>
         </Card>
@@ -171,9 +171,9 @@ export default function AgentsPage() {
             </div>
             <div>
               <p className="font-display text-2xl font-medium text-ink-50">
-                {agents.reduce((sum, a) => sum + a.completed_tasks, 0)}
+                {formatNumber(agents.reduce((sum, a) => sum + a.completed_tasks, 0))}
               </p>
-              <p className="text-xs text-muted-foreground">Total Completed</p>
+              <p className="text-xs text-muted-foreground">{a("Total Completed")}</p>
             </div>
           </CardContent>
         </Card>
@@ -185,10 +185,10 @@ export default function AgentsPage() {
             <div>
               <p className="font-display text-2xl font-medium text-ink-50">
                 {agents.length > 0
-                  ? (agents.reduce((sum, a) => sum + a.avg_score, 0) / agents.length).toFixed(1)
+                  ? formatNumber((agents.reduce((sum, a) => sum + a.avg_score, 0) / agents.length), 1)
                   : "0"}
               </p>
-              <p className="text-xs text-muted-foreground">Avg. Score</p>
+              <p className="text-xs text-muted-foreground">{a("Avg. Score")}</p>
             </div>
           </CardContent>
         </Card>
@@ -199,11 +199,11 @@ export default function AgentsPage() {
             </div>
             <div>
               <p className="font-display text-2xl font-medium text-ink-50">
-                {agents.filter((a) => a.kind !== "human").length}
+                {formatNumber(agents.filter((a) => a.kind !== "human").length)}
                 <span className="text-ink-600"> / </span>
-                {agents.filter((a) => a.kind === "human").length}
+                {formatNumber(agents.filter((a) => a.kind === "human").length)}
               </p>
-              <p className="text-xs text-muted-foreground">AI agents / Human experts</p>
+              <p className="text-xs text-muted-foreground">{a("AI agents / Human experts")}</p>
             </div>
           </CardContent>
         </Card>
@@ -214,8 +214,8 @@ export default function AgentsPage() {
         <Card>
           <CardContent className="flex h-48 flex-col items-center justify-center text-center pt-6">
             <Bot className="h-10 w-10 text-ink-600" />
-            <p className="mt-3 text-sm font-medium text-muted-foreground">No agents found</p>
-            <p className="text-xs text-ink-500">Try adjusting your search or filters</p>
+            <p className="mt-3 text-sm font-medium text-muted-foreground">{a("No agents found")}</p>
+            <p className="text-xs text-ink-500">{a("Try adjusting your search or filters")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -242,7 +242,7 @@ export default function AgentsPage() {
                             variant={agent.kind === "human" ? "outline" : "secondary"}
                             className="text-[10px]"
                           >
-                            {agent.kind === "human" ? "Human" : "AI"}
+                            {agent.kind === "human" ? a("Human") : a("AI")}
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">{agent.developer_name}</p>
@@ -255,12 +255,12 @@ export default function AgentsPage() {
                   <div className="mt-4 flex flex-wrap gap-1">
                     {agent.capabilities.slice(0, 4).map((cap) => (
                       <Badge key={cap} variant="outline" className="text-[10px]">
-                        {cap}
+                        {formatStatus(cap)}
                       </Badge>
                     ))}
                     {agent.capabilities.length > 4 && (
                       <Badge variant="secondary" className="text-[10px]">
-                        +{agent.capabilities.length - 4}
+                        +{formatNumber(agent.capabilities.length - 4)}
                       </Badge>
                     )}
                   </div>
@@ -271,28 +271,28 @@ export default function AgentsPage() {
                       <div className="flex items-center justify-center gap-1">
                         <TrendingUp className="h-3 w-3 text-success" />
                         <span className="font-mono text-sm font-semibold text-foreground">
-                          {(agent.success_rate * 100).toFixed(0)}%
+                          {formatPercent(agent.success_rate)}
                         </span>
                       </div>
-                      <p className="text-[10px] text-ink-500">Success</p>
+                      <p className="text-[10px] text-ink-500">{a("Success")}</p>
                     </div>
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-1">
                         <Star className="h-3 w-3 text-warning" />
                         <span className="font-mono text-sm font-semibold text-foreground">
-                          {agent.avg_score.toFixed(1)}
+                          {formatNumber(agent.avg_score, 1)}
                         </span>
                       </div>
-                      <p className="text-[10px] text-ink-500">Avg Score</p>
+                      <p className="text-[10px] text-ink-500">{a("Avg Score")}</p>
                     </div>
                     <div className="text-center">
                       <div className="flex items-center justify-center gap-1">
                         <CheckCircle2 className="h-3 w-3 text-info" />
                         <span className="font-mono text-sm font-semibold text-foreground">
-                          {agent.completed_tasks}
+                          {formatNumber(agent.completed_tasks)}
                         </span>
                       </div>
-                      <p className="text-[10px] text-ink-500">Done</p>
+                      <p className="text-[10px] text-ink-500">{a("Done")}</p>
                     </div>
                   </div>
                 </CardContent>

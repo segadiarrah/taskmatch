@@ -117,7 +117,7 @@ const priorityBadgeVariant = (priority: string) => {
 };
 
 export default function TaskDetailPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const params = useParams();
   const taskId = params.id as string;
 
@@ -333,17 +333,17 @@ export default function TaskDetailPage() {
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">{task.title}</h1>
               <Badge variant={statusBadgeVariant(task.status)}>
-                {formatStatus(task.status)}
+                {formatStatus(task.status, locale)}
               </Badge>
               <Badge variant={priorityBadgeVariant(task.priority)} className="capitalize">
-                {task.priority}
+                {typeof task.priority === "string" ? formatStatus(task.priority, locale) : task.priority}
               </Badge>
             </div>
             <p className="text-muted-foreground mt-1">
               <Badge variant="secondary" className="text-xs capitalize mr-2">
-                {task.task_type.replace(/_/g, " ")}
+                {formatStatus(task.task_type, locale)}
               </Badge>
-              {t("developer.taskDetail.created")} {formatDate(task.created_at)}
+              {t("developer.taskDetail.created")} {formatDate(task.created_at, locale)}
             </p>
           </div>
         </div>
@@ -445,7 +445,7 @@ export default function TaskDetailPage() {
                         type="number"
                         min="0"
                         step="0.01"
-                        placeholder={t("developer.taskDetail.budgetPlaceholder", { amount: formatCurrency(task.budget, task.currency) })}
+                        placeholder={t("developer.taskDetail.budgetPlaceholder", { amount: formatCurrency(task.budget, task.currency, locale) })}
                         value={bidPrice}
                         onChange={(e) => setBidPrice(e.target.value)}
                       />
@@ -625,7 +625,7 @@ export default function TaskDetailPage() {
                           </div>
                         </TableCell>
                         <TableCell className="font-mono text-xs font-medium text-ink-100">
-                          {formatCurrency(bid.price, bid.currency)}
+                          {formatCurrency(bid.price, bid.currency, locale)}
                         </TableCell>
                         <TableCell className="font-mono text-xs">{bid.eta_hours}
                           {t("developer.taskDetail.hoursSuffix")}
@@ -633,11 +633,11 @@ export default function TaskDetailPage() {
                         <TableCell className="font-mono text-xs">{(bid.confidence_score * 100).toFixed(0)}%</TableCell>
                         <TableCell>
                           <Badge variant={statusBadgeVariant(bid.status)} className="text-xs">
-                            {formatStatus(bid.status)}
+                            {formatStatus(bid.status, locale)}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {formatDateTime(bid.created_at)}
+                          {formatDateTime(bid.created_at, locale)}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -670,7 +670,7 @@ export default function TaskDetailPage() {
                           <span className="font-mono text-sm font-medium text-ink-100">{sub.score}/100</span>
                         )}
                         <Badge variant={statusBadgeVariant(sub.status)} className="text-xs">
-                          {formatStatus(sub.status)}
+                          {formatStatus(sub.status, locale)}
                         </Badge>
                       </div>
                     </div>
@@ -697,7 +697,7 @@ export default function TaskDetailPage() {
                     )}
 
                     <p className="text-xs text-muted-foreground">
-                      {t("developer.taskDetail.submitted")} {formatDateTime(sub.submitted_at)}
+                      {t("developer.taskDetail.submitted")} {formatDateTime(sub.submitted_at, locale)}
                     </p>
                   </div>
                 ))}
@@ -717,22 +717,22 @@ export default function TaskDetailPage() {
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.taskDetail.status")}</span>
                 <Badge variant={statusBadgeVariant(task.status)}>
-                  {formatStatus(task.status)}
+                  {formatStatus(task.status, locale)}
                 </Badge>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.taskDetail.type")}</span>
-                <span className="font-medium capitalize">{task.task_type.replace(/_/g, " ")}</span>
+                <span className="font-medium capitalize">{formatStatus(task.task_type, locale)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.taskDetail.priority")}</span>
                 <Badge variant={priorityBadgeVariant(task.priority)} className="capitalize">
-                  {task.priority}
+                  {typeof task.priority === "string" ? formatStatus(task.priority, locale) : task.priority}
                 </Badge>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.taskDetail.created")}</span>
-                <span className="font-medium">{formatDate(task.created_at)}</span>
+                <span className="font-medium">{formatDate(task.created_at, locale)}</span>
               </div>
             </CardContent>
           </Card>
@@ -749,7 +749,7 @@ export default function TaskDetailPage() {
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.taskDetail.budget")}</span>
                 <span className="font-mono font-semibold text-success">
-                  {formatCurrency(task.budget, task.currency)}
+                  {formatCurrency(task.budget, task.currency, locale)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -758,7 +758,7 @@ export default function TaskDetailPage() {
                   {task.deadline ? (
                     <span className="flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
-                      {formatDate(task.deadline)}
+                      {formatDate(task.deadline, locale)}
                     </span>
                   ) : (
                     t("developer.taskDetail.noDeadline")
@@ -800,7 +800,7 @@ export default function TaskDetailPage() {
                       </Link>
                     </div>
                     <Badge variant={statusBadgeVariant(assignment.status)} className="text-xs">
-                      {formatStatus(assignment.status)}
+                      {formatStatus(assignment.status, locale)}
                     </Badge>
                   </div>
                 ))}
@@ -816,7 +816,7 @@ export default function TaskDetailPage() {
                   <Info className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">
-                      {t("developer.taskDetail.taskIs")} {formatStatus(task.status).toLowerCase()}
+                      {t("developer.taskDetail.taskIs")} {formatStatus(task.status, locale).toLowerCase()}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {task.status === "completed"

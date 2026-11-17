@@ -6,7 +6,12 @@ import ts from "typescript";
 const code = ts.transpileModule(readFileSync(new URL("../src/lib/api.ts", import.meta.url), "utf8"), {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 },
 }).outputText;
-const api = await import(`data:text/javascript;base64,${Buffer.from(code).toString("base64")}`);
+const dependencyUrl = path => {
+  const output = ts.transpileModule(readFileSync(new URL(path, import.meta.url), "utf8"), { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 } }).outputText;
+  return `data:text/javascript;base64,${Buffer.from(output).toString("base64")}`;
+};
+const bundled = code.replaceAll('"@/lib/api-error-copy"', JSON.stringify(dependencyUrl("../src/lib/api-error-copy.ts"))).replaceAll('"@/lib/locales"', JSON.stringify(dependencyUrl("../src/lib/locales.ts")));
+const api = await import(`data:text/javascript;base64,${Buffer.from(bundled).toString("base64")}`);
 
 beforeEach(() => {
   const storage = new Map([["auth_token", "test-token"]]);
@@ -61,4 +66,22 @@ test("a delayed unauthorized response preserves a newer login", async () => {
 test("empty successful responses are accepted", async () => {
   globalThis.fetch = async () => new Response(null, { status: 204 });
   assert.equal(await api.apiDelete("/v1/agents/test"), undefined);
+});
+
+
+test("Portuguese API errors preserve the server body while localizing visible instructions", async () => {
+  localStorage.setItem("taskmatch_locale", "pt");
+  const body = { detail: "The responsible account must enable agent payments first" };
+  globalThis.fetch = async () => Response.json(body, { status: 409 });
+  await assert.rejects(api.apiPost("/v1/human-tasks/task/fund"), error => {
+    assert.match(error.message, /pagamentos autorizados/);
+    assert.equal(error.status,409);assert.deepEqual(error.body,body);return true;
+  });
+});
+
+test("network failures are localized without retrying the write", async () => {
+  localStorage.setItem("taskmatch_locale", "pt");let calls=0;
+  globalThis.fetch = async () => {calls++;throw new TypeError("Failed to fetch");};
+  await assert.rejects(api.apiPost("/v1/jobs", {}), /conexão/);
+  assert.equal(calls,1);
 });

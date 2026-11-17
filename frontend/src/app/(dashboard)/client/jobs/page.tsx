@@ -70,7 +70,7 @@ const statusBadgeVariant = (status: string) => {
 };
 
 export default function ClientJobsPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -218,19 +218,19 @@ export default function ClientJobsPage() {
                   </TableCell>
                   <TableCell>
                     <Badge variant={statusBadgeVariant(job.status)}>
-                      {formatStatus(job.status)}
+                      {formatStatus(job.status, locale)}
                     </Badge>
                   </TableCell>
                   <TableCell className="whitespace-nowrap font-mono text-xs text-ink-100">
-                    {formatCurrency(job.budget_min, job.currency)} -{" "}
-                    {formatCurrency(job.budget_max, job.currency)}
+                    {formatCurrency(job.budget_min, job.currency, locale)} -{" "}
+                    {formatCurrency(job.budget_max, job.currency, locale)}
                   </TableCell>
                   <TableCell className="text-center font-mono text-xs">{job.task_count}</TableCell>
                   <TableCell className="whitespace-nowrap font-mono text-xs text-muted-foreground">
-                    {job.deadline ? formatDate(job.deadline) : "--"}
+                    {job.deadline ? formatDate(job.deadline, locale) : "--"}
                   </TableCell>
                   <TableCell className="whitespace-nowrap font-mono text-xs text-muted-foreground">
-                    {formatDate(job.created_at)}
+                    {formatDate(job.created_at, locale)}
                   </TableCell>
                   <TableCell>
                     <Link href={`/client/jobs/${job.id}`}>

@@ -137,6 +137,7 @@ test("developer dashboard never combines currencies into a single earnings total
 for (const [locale, status, country] of [
   ["fr", "En attente de paiement", "Pays du compte (code à deux lettres)"],
   ["es", "Pendiente de pago", "País de la cuenta (código de dos letras)"],
+  ["pt", "Aguardando pagamento", "País da conta (código de duas letras)"],
   ["zh", "等待付款", "账户所在国家或地区（两字母代码）"],
 ]) {
   test(`payment and Connect controls are translated in ${locale}`, async ({ page }) => {

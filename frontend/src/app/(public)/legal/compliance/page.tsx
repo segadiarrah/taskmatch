@@ -75,11 +75,24 @@ const COPY: Record<Locale, Copy> = {
       requests: "5. 请求与升级",
     },
   },
+  pt: {
+    eyebrow: "Legal / Conformidade",
+    title: "Conformidade e proteção de dados",
+    summary: "A abordagem do TaskMatch à proteção de dados e à conformidade regulamentar — os princípios do tratamento, os direitos dos titulares dos dados e o modo como os pedidos são tratados.",
+    updatedAt: "Última atualização: 1 de março de 2026",
+    s: {
+      overview: "1. Visão geral da conformidade",
+      principles: "2. Princípios do tratamento",
+      rights: "3. Direitos dos titulares dos dados",
+      operations: "4. Práticas operacionais",
+      requests: "5. Pedidos e encaminhamento"
+    }
+  },
 };
 
 export default function CompliancePage() {
   const { locale } = useTranslation();
-  const c = COPY[locale] ?? COPY.en;
+  const c = COPY[locale];
   const toc = [
     { id: "overview", label: c.s.overview },
     { id: "principles", label: c.s.principles },

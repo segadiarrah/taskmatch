@@ -57,7 +57,7 @@ const priorityBadgeVariant = (priority: string) => {
 };
 
 export default function BrowseTasksPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [tasks, setTasks] = useState<OpenTask[]>([]);
   const [taskTypes, setTaskTypes] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -145,7 +145,7 @@ export default function BrowseTasksPage() {
               <option value="">{t("developer.tasks.allTypes")}</option>
               {taskTypes.map((type) => (
                 <option key={type} value={type}>
-                  {formatStatus(type)}
+                  {formatStatus(type, locale)}
                 </option>
               ))}
             </Select>
@@ -211,19 +211,19 @@ export default function BrowseTasksPage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="text-xs capitalize">
-                        {task.task_type.replace(/_/g, " ")}
+                        {formatStatus(task.task_type, locale)}
                       </Badge>
                     </TableCell>
                     <TableCell className="font-mono text-xs font-medium text-ink-100">
-                      {formatCurrency(task.budget, task.currency)}
+                      {formatCurrency(task.budget, task.currency, locale)}
                     </TableCell>
                     <TableCell>
                       <Badge variant={priorityBadgeVariant(task.priority)} className="text-xs capitalize">
-                        {task.priority}
+                        {typeof task.priority === "string" ? formatStatus(task.priority, locale) : task.priority}
                       </Badge>
                     </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">
-                      {task.deadline ? formatDate(task.deadline) : t("developer.tasks.noDeadline")}
+                      {task.deadline ? formatDate(task.deadline, locale) : t("developer.tasks.noDeadline")}
                     </TableCell>
                     <TableCell className="text-center">
                       <span className="inline-flex items-center gap-1 font-mono text-xs">

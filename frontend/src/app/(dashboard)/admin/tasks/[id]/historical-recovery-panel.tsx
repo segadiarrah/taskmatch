@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminCopy, adminSource, adminError } from "@/lib/admin-copy";
+
 import { useCallback, useEffect, useState } from "react";
 import { apiGet, apiPost } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -20,6 +22,7 @@ interface RecoveryPreview {
 }
 
 export function HistoricalRecoveryPanel({ taskId, onChanged }: { taskId: string; onChanged: () => Promise<void> }) {
+  const { a, formatNumber } = useAdminCopy();
   const [providers, setProviders] = useState<Provider[]>([]);
   const [provider, setProvider] = useState("");
   const [model, setModel] = useState("");
@@ -38,7 +41,7 @@ export function HistoricalRecoveryPanel({ taskId, onChanged }: { taskId: string;
       setProviders(response.providers.filter(item => item.enabled && item.key_set && item.models.length > 0));
     } catch (cause) {
       setLoadFailed(true);
-      setError(cause instanceof Error ? cause.message : "Providers could not be loaded.");
+      setError(adminError(cause, adminSource("Providers could not be loaded.")));
     } finally { setLoading(false); }
   }, []);
   useEffect(() => { void loadProviders(); }, [loadProviders]);
@@ -54,7 +57,7 @@ export function HistoricalRecoveryPanel({ taskId, onChanged }: { taskId: string;
       const query = new URLSearchParams({ provider, model });
       const response = await apiGet<RecoveryPreview>(`/v1/tasks/${taskId}/recovery-preview?${query}`);
       if (!response.eligible) {
-        setError(response.reason || "This task is no longer eligible for historical recovery.");
+        setError(response.reason || adminSource("This task is no longer eligible for historical recovery."));
         return;
       }
       const execution = response.execution;
@@ -64,7 +67,7 @@ export function HistoricalRecoveryPanel({ taskId, onChanged }: { taskId: string;
       }
       setPreview(response);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Recovery could not be previewed.");
+      setError(adminError(cause, adminSource("Recovery could not be previewed.")));
     } finally { setBusy(false); }
   }
 
@@ -76,31 +79,31 @@ export function HistoricalRecoveryPanel({ taskId, onChanged }: { taskId: string;
         provider, model, quote_id: preview.quote_id, approved_max_cost_eur: preview.execution.max_cost_eur,
       });
       setPreview(null);
-      setMessage("Recovery requested. Execution remains subject to the recorded cost limit and funding checks.");
+      setMessage(adminSource("Recovery requested. Execution remains subject to the recorded cost limit and funding checks."));
       await onChanged();
     } catch (cause) {
       setPreview(null);
-      setError(cause instanceof Error ? cause.message : "Recovery failed. Preview again before retrying.");
+      setError(adminError(cause, adminSource("Recovery failed. Preview again before retrying.")));
     } finally { setBusy(false); }
   }
 
   return (
     <section className="space-y-4 border-t border-ink-700 pt-5" aria-labelledby="historical-recovery-title">
-      <h3 id="historical-recovery-title" className="font-semibold text-ink-50">Recover historical task</h3>
-      <p className="text-sm text-ink-300">Choose an execution route and preview its cost limit before recovering this task. Historical mission pricing remains unchanged.</p>
-      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-      {message && <p role="status" className="text-sm text-success">{message}</p>}
-      {loading ? <p className="text-sm text-ink-400">Loading configured providers…</p> : loadFailed ? <Button variant="outline" onClick={loadProviders}>Reload recovery providers</Button> : providers.length === 0 ? <p className="text-sm text-ink-400">No enabled provider with a saved key and priced models is available. Configure a provider before previewing recovery.</p> : <>
+      <h3 id="historical-recovery-title" className="font-semibold text-ink-50">{a("Recover historical task")}</h3>
+      <p className="text-sm text-ink-300">{a("Choose an execution route and preview its cost limit before recovering this task. Historical mission pricing remains unchanged.")}</p>
+      {error && <p role="alert" className="text-sm text-danger">{a(error)}</p>}
+      {message && <p role="status" className="text-sm text-success">{a(message)}</p>}
+      {loading ? <p className="text-sm text-ink-400">{a("Loading configured providers…")}</p> : loadFailed ? <Button variant="outline" onClick={loadProviders}>{a("Reload recovery providers")}</Button> : providers.length === 0 ? <p className="text-sm text-ink-400">{a("No enabled provider with a saved key and priced models is available. Configure a provider before previewing recovery.")}</p> : <>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2"><label htmlFor="recovery-provider" className="text-sm font-medium">Recovery provider</label><Select id="recovery-provider" value={provider} onChange={event => changeSelection(event.target.value, "")} disabled={busy}><option value="">Select a provider</option>{providers.map(item => <option key={item.provider} value={item.provider}>{item.label}</option>)}</Select></div>
-          <div className="space-y-2"><label htmlFor="recovery-model" className="text-sm font-medium">Recovery model</label><Select id="recovery-model" value={model} onChange={event => changeSelection(provider, event.target.value)} disabled={busy || !provider}><option value="">Select a model</option>{models.map(item => <option key={item} value={item}>{item}</option>)}</Select></div>
+          <div className="space-y-2"><label htmlFor="recovery-provider" className="text-sm font-medium">{a("Recovery provider")}</label><Select id="recovery-provider" value={provider} onChange={event => changeSelection(event.target.value, "")} disabled={busy}><option value="">{a("Select a provider")}</option>{providers.map(item => <option key={item.provider} value={item.provider}>{item.label}</option>)}</Select></div>
+          <div className="space-y-2"><label htmlFor="recovery-model" className="text-sm font-medium">{a("Recovery model")}</label><Select id="recovery-model" value={model} onChange={event => changeSelection(provider, event.target.value)} disabled={busy || !provider}><option value="">{a("Select a model")}</option>{models.map(item => <option key={item} value={item}>{item}</option>)}</Select></div>
         </div>
-        <Button variant="outline" onClick={previewRecovery} disabled={busy || !provider || !model}>Preview recovery</Button>
+        <Button variant="outline" onClick={previewRecovery} disabled={busy || !provider || !model}>{a("Preview recovery")}</Button>
         {preview?.eligible && preview.execution && <div className="space-y-3 rounded-md border border-warning/40 bg-warning/10 p-4 text-sm">
-          <p className="text-ink-300">Execution cost limit: <strong className="font-mono text-ink-50">{preview.execution.max_cost_eur} EUR</strong></p>
+          <p className="text-ink-300">{a("Execution cost limit:")}  <strong className="font-mono text-ink-50">{formatNumber(preview.execution.max_cost_eur, 4)} EUR</strong></p>
           <p className="break-words text-ink-300">{preview.execution.provider} · {preview.execution.model}</p>
-          <p className="text-ink-300">Approving reserves this execution budget for this task. It does not change the client’s accepted quote.</p>
-          <Button onClick={recover} disabled={busy}>Approve cost limit and recover</Button>
+          <p className="text-ink-300">{a("Approving reserves this execution budget for this task. It does not change the client’s accepted quote.")}</p>
+          <Button onClick={recover} disabled={busy}>{a("Approve cost limit and recover")}</Button>
         </div>}
       </>}
     </section>

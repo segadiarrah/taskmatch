@@ -39,6 +39,7 @@ export function WorkerProfile({
     ["fr", c.languageFr],
     ["es", c.languageEs],
     ["zh", c.languageZh],
+    ["pt", c.languagePt],
   ];
   function save(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();

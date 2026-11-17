@@ -4,6 +4,9 @@ import React, { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useTranslation } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { displayCopy } from "@/lib/display-copy";
+import type { Locale } from "@/lib/locales";
 import { humanCopy } from "@/lib/human-copy";
 import { authIntentHref } from "@/lib/public-intent";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
@@ -80,14 +83,14 @@ function getRoleBadgeVariant(role: string): "default" | "info" | "purple" {
   }
 }
 
-function getRoleLabel(role: string): string {
+function getRoleLabel(role: string, locale: Locale): string {
   switch (role) {
     case "admin":
-      return "Admin";
+      return displayCopy[locale].roleAdmin;
     case "client":
-      return "Client";
+      return displayCopy[locale].roleClient;
     case "agent_developer":
-      return "Developer";
+      return displayCopy[locale].roleDeveloper;
     default:
       return role;
   }
@@ -256,7 +259,7 @@ export default function DashboardLayout({
             </button>
             <div className="hidden items-center gap-2 text-sm lg:flex">
               <span className="font-mono text-[11px] uppercase tracking-wider text-ink-500">
-                {getRoleLabel(user.role)}
+                {getRoleLabel(user.role, locale)}
               </span>
               <span className="text-ink-700">/</span>
               <span className="font-medium text-ink-50">
@@ -265,9 +268,10 @@ export default function DashboardLayout({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <LanguageSwitcher />
             <Badge variant={getRoleBadgeVariant(user.role)}>
-              {getRoleLabel(user.role)}
+              {getRoleLabel(user.role, locale)}
             </Badge>
             <div className="hidden items-center gap-2 sm:flex">
               <Avatar size="sm">
@@ -283,7 +287,7 @@ export default function DashboardLayout({
         </header>
 
         {/* Page content */}
-        <main lang={pathname.startsWith("/admin") ? "en" : locale} className="flex-1 overflow-y-auto bg-ink-950 p-4 lg:p-7">
+        <main lang={locale} className="flex-1 overflow-y-auto bg-ink-950 p-4 lg:p-7">
           {children}
         </main>
       </div>

@@ -15,6 +15,20 @@ const LABELS = {
   fr: { signIn: "Se connecter", resources: "Ressources", legal: "Informations légales", contact: "Contact", docs: "Documentation", guides: "Guides", privacy: "Confidentialité", terms: "Conditions", notice: "Mentions légales", security: "Sécurité", about: "À propos", rights: "Tous droits réservés." },
   es: { signIn: "Iniciar sesión", resources: "Recursos", legal: "Información legal", contact: "Contacto", docs: "Documentación", guides: "Guías", privacy: "Privacidad", terms: "Condiciones", notice: "Aviso legal", security: "Seguridad", about: "Acerca de", rights: "Todos los derechos reservados." },
   zh: { signIn: "登录", resources: "资源", legal: "法律信息", contact: "联系", docs: "文档", guides: "指南", privacy: "隐私", terms: "条款", notice: "法律声明", security: "安全", about: "关于", rights: "版权所有。" },
+  pt: {
+    signIn: "Entrar",
+    resources: "Recursos",
+    legal: "Informações legais",
+    contact: "Contato",
+    docs: "Documentação",
+    guides: "Guias",
+    privacy: "Privacidade",
+    terms: "Termos",
+    notice: "Aviso legal",
+    security: "Segurança",
+    about: "Sobre",
+    rights: "Todos os direitos reservados."
+  },
 };
 
 export function SiteLogo({ className = "" }: { className?: string }) {

@@ -6,7 +6,7 @@ import { PageHero } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/motion";
 import { useTranslation, type Locale } from "@/lib/i18n";
 
-import { releases, type EntryType } from "@/content/changelog";
+import { getReleases, type EntryType } from "@/content/changelog";
 
 const typeStyles: Record<EntryType, { className: string }> = {
   Feature: { className: "border border-signal-500/40 bg-signal-500/10 text-signal-400" },
@@ -22,7 +22,7 @@ type Copy = {
   typeLabels: Record<EntryType, string>;
 };
 
-const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
+const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
   en: {
     eyebrow: "Changelog",
     title: "Every release,",
@@ -55,13 +55,24 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       "一份带日期的记录，涵盖 MCP 编排层、智能体匹配、竞价排名、验证、项目付款、仪表盘与 API 的发布内容。",
     typeLabels: { Feature: "新功能", Improvement: "改进", Fix: "修复" },
   },
+  pt: {
+    "eyebrow": "Novidades",
+    "title": "Cada versão,",
+    "accent": "com transparência.",
+    "description": "Um registro datado das novidades na camada de orquestração MCP, correspondência de agentes, classificação de ofertas, validação, pagamentos de missões, painel e API.",
+    "typeLabels": {
+      "Feature": "Novidade",
+      "Improvement": "Melhoria",
+      "Fix": "Correção"
+    }
+  }
 };
 
-const dateLocales: Record<Locale, string> = { en: "en-US", fr: "fr-FR", es: "es-ES", zh: "zh-CN" };
+const dateLocales: Record<Locale, string> = { en: "en-US", fr: "fr-FR", es: "es-ES", zh: "zh-CN", pt: "pt-BR" };
 
 export default function ChangelogPage() {
-  const { locale, t } = useTranslation();
-  const c = COPY[locale] ?? COPY.en;
+  const { locale } = useTranslation();
+  const c = COPY[locale];
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString(dateLocales[locale] ?? "en-US", {
@@ -80,8 +91,7 @@ export default function ChangelogPage() {
         icon={GitCommitVertical}
       />
 
-      <p className="mx-auto max-w-5xl px-4 pb-6 text-sm text-ink-400">{t("publicUi.archiveHistory")}</p>
-      <section lang="en" className="px-4 pb-24 sm:px-6 lg:px-8">
+      <section lang={locale} className="px-4 pb-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
           <div lang={locale} className="mb-8 flex flex-wrap gap-3">
             {(Object.keys(typeStyles) as EntryType[]).map((type) => (
@@ -97,7 +107,7 @@ export default function ChangelogPage() {
           <div className="relative">
             <div className="absolute bottom-2 left-[7px] top-2 w-px bg-ink-800 sm:left-[calc(9rem+7px)]" />
             <div className="space-y-12">
-              {releases.map((release, ri) => (
+              {getReleases(locale).map((release, ri) => (
                 <Reveal
                   key={release.version}
                   delay={ri * 60}

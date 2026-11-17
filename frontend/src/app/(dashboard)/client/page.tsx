@@ -53,7 +53,7 @@ const statusBadgeVariant = (status: string) => {
 
 export default function ClientDashboardPage() {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentJobs, setRecentJobs] = useState<RecentJob[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,7 +105,7 @@ export default function ClientDashboardPage() {
     { label: t("client.kpi.pendingReviews"), value: stats?.pending_reviews ?? 0, icon: ClipboardCheck, color: "text-warning" },
     {
       label: t("client.kpi.totalSpent"),
-      value: formatCurrency(stats?.total_spent ?? 0),
+      value: formatCurrency(stats?.total_spent ?? 0, "EUR", locale),
       icon: DollarSign,
       color: "text-success",
     },
@@ -189,15 +189,15 @@ export default function ClientDashboardPage() {
                     <div className="flex items-center gap-3">
                       <p className="font-medium truncate text-ink-100">{job.title}</p>
                       <Badge variant={statusBadgeVariant(job.status)}>
-                        {formatStatus(job.status)}
+                        {formatStatus(job.status, locale)}
                       </Badge>
                     </div>
                     <div className="mt-1 flex items-center gap-4 font-mono text-xs text-muted-foreground">
                       <span>
-                        {formatCurrency(job.budget_min, job.currency)} - {formatCurrency(job.budget_max, job.currency)}
+                        {formatCurrency(job.budget_min, job.currency, locale)} - {formatCurrency(job.budget_max, job.currency, locale)}
                       </span>
                       <span>{t("client.recent.taskCount", { count: job.task_count })}</span>
-                      <span>{formatDate(job.created_at)}</span>
+                      <span>{formatDate(job.created_at, locale)}</span>
                     </div>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0 ml-4" />

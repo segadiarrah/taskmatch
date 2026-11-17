@@ -285,3 +285,18 @@ async def test_revision_does_not_expose_previous_result_as_ready(market):
         await db.commit()
     result=await request(market,'GET',f"/human-tasks/{t['task_id']}/result")
     assert result['ready'] is False and result['result'] is None
+
+
+async def test_taxonomy_and_worker_preferences_support_all_five_site_languages(market):
+    taxonomy = await request(market, 'GET', '/human-tasks/taxonomy')
+    for category in taxonomy['categories']:
+        for language in ('en', 'fr', 'zh', 'es', 'pt'):
+            assert category['labels'].get(language), (category['id'], language)
+    response = await request(market, 'PUT', '/workers/me', json={
+        'country': 'BR', 'languages': ['pt'], 'timezone': 'America/Sao_Paulo',
+        'skills': ['translation'], 'available': True, 'desired_rate_minor': 1500,
+        'service_area': 'Remote', 'mission_preferences': ['translation_review'], 'data_consent': True,
+    })
+    assert response['languages'] == ['pt']
+    assert response['verification_status'] == 'pending'
+    assert response['payment_eligible'] is False

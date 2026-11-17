@@ -467,13 +467,114 @@ const COPY: Record<Locale, Copy> = {
       },
     },
   },
+  pt: {
+    eyebrow: "Legal / Privacidade",
+    title: "Política de Privacidade",
+    summary: "Quem é responsável pelos seus dados pessoais no TaskMatch.ai, o que tratamos e por quê, com que fundamento jurídico, durante quanto tempo, quem mais lhes acede e os direitos que pode exercer — incluindo sobre decisões tomadas automaticamente pela plataforma.",
+    updatedAt: "Última atualização: 13 de agosto de 2026",
+    controllerIntro: "O responsável pelo tratamento descrito abaixo é",
+    sections: {
+      controller: {
+        title: "1. Responsável pelo tratamento e âmbito",
+        paragraphs: [
+          "Esta política abrange a plataforma TaskMatch.ai, o seu site, a sua API e os canais de suporte associados. Aplica-se aos clientes, aos desenvolvedores de agentes e aos especialistas humanos que executam trabalho através da plataforma.",
+          "Não foi designado um encarregado da proteção de dados: o tratamento não preenche os critérios do artigo 37.º do RGPD. Os pedidos de privacidade são tratados diretamente pelo editor através de privacy@tauraco.ai.",
+          "O conteúdo que um cliente carrega em uma missão — documentos, conjuntos de dados e instruções — é tratado de acordo com as instruções desse cliente. Para esse conteúdo, o TaskMatch atua como subcontratante e o cliente continua como responsável pelo tratamento."
+        ]
+      },
+      data: {
+        title: "2. O que tratamos",
+        paragraphs: [
+          "Tratamos as seguintes categorias:"
+        ],
+        bullets: [
+          "Dados da conta: nome, endereço de e-mail, senha em formato hash, função e organização.",
+          "Dados do perfil dos desenvolvedores de agentes: capacidades, competências, histórico e dados de recebimento.",
+          "Dados de missões e tarefas: instruções, especificações, entregas, propostas, resultados de validação e registros de entrega.",
+          "Dados de faturamento: faturas, registros de pagamentos a profissionais e o token de pagamento conservado pelo nosso processador de pagamentos — os números dos cartões nunca chegam aos nossos servidores.",
+          "Dados técnicos: endereço IP, navegador, metadados de sessão e autenticação e registro de auditoria da plataforma.",
+          "Dados de suporte: as mensagens que nos envia e as nossas respostas."
+        ]
+      },
+      purposes: {
+        title: "3. Finalidades e fundamentos jurídicos",
+        paragraphs: [
+          "Cada finalidade tem um fundamento previsto no artigo 6.º do RGPD. Quando o tratamento depende do consentimento, a sua recusa não afeta a utilização das restantes funcionalidades da plataforma."
+        ],
+        bullets: [
+          "Funcionamento da plataforma — criação de contas, estruturação de missões, correspondência, execução e validação de tarefas e entrega do trabalho: execução do contrato (art. 6.º, n.º 1, alínea b)).",
+          "Faturamento, pagamentos a profissionais e registros contábeis: obrigação legal (art. 6.º, n.º 1, alínea c)).",
+          "Segurança da plataforma, prevenção de fraude, investigação de abusos e registro de auditoria: o nosso interesse legítimo em uma plataforma de confiança, ponderado com os seus direitos (art. 6.º, n.º 1, alínea f)).",
+          "Melhoria da qualidade da correspondência e da validação a partir dos registros operacionais: o nosso interesse legítimo (art. 6.º, n.º 1, alínea f)). Você pode se opor a qualquer momento.",
+          "Comunicações opcionais sobre o produto: o seu consentimento (art. 6.º, n.º 1, alínea a)), que pode retirar a qualquer momento."
+        ]
+      },
+      automated: {
+        title: "4. Decisões automatizadas",
+        paragraphs: [
+          "A plataforma toma decisões automatizadas e queremos indicá-lo claramente. Os pedidos são divididos automaticamente em tarefas, os candidatos à execução são avaliados e ordenados automaticamente e as entregas são verificadas automaticamente face aos critérios de aceitação.",
+          "Quando o executor é um especialista humano, a classificação influencia a atribuição de trabalho remunerado. Trata-se de uma decisão com um efeito significativo em uma pessoa, nos termos do artigo 22.º do RGPD. O processo é supervisionado: os dados usados na avaliação ficam registrados em cada decisão, a classificação pode ser revista por uma pessoa mediante pedido e pode contestar o resultado e pedir a sua reavaliação.",
+          "Para exercer este direito, escreva para privacy@tauraco.ai com a referência da tarefa ou da proposta. Indicaremos os fatores que determinaram a decisão."
+        ]
+      },
+      recipients: {
+        title: "5. Quem recebe os dados",
+        paragraphs: [
+          "Não vendemos dados pessoais nem os compartilhamos para publicidade de terceiros. Os dados chegam apenas a:"
+        ],
+        bullets: [
+          "Outros usuários da plataforma, na medida necessária ao trabalho — o cliente vê o perfil e as entregas do executor atribuído à sua tarefa.",
+          "Fornecedores externos de pagamento, quando ativados, para pagamentos e recebimentos.",
+          "OVH SAS, que aloja os servidores em França, e Cloudflare, Inc., que recebe o tráfego público. Ambos são identificados no aviso legal.",
+          "Autoridades públicas, quando e na medida em que a lei o exija."
+        ]
+      },
+      retention: {
+        title: "6. Durante quanto tempo conservamos os dados",
+        paragraphs: [
+          "Os registros contábeis e de faturamento são conservados durante dez anos a partir do encerramento do exercício, conforme exige o artigo L123-22 do Código Comercial francês. Não podemos reduzir esse prazo.",
+          "Para as restantes categorias, conservamos os dados enquanto a conta estiver aberta e a finalidade subsistir, e depois pelo período necessário para resolver litígios, cumprir uma obrigação legal ou preservar provas de uma entrega. Quando nenhum destes motivos se aplicar, os dados são eliminados ou anonimizados.",
+          "Existe um limite relevante: o registro de auditoria da plataforma permite apenas acrescentar entradas, para manter um histórico verificável das decisões. Um pedido de apagamento relativo a decisões já registradas não pode ser satisfeito através da sua reescrita. Explicaremos o que pode e o que não pode ser removido."
+        ]
+      },
+      transfers: {
+        title: "7. Onde se encontram os dados",
+        paragraphs: [
+          "A aplicação, a base de dados e o armazenamento de objetos funcionam em servidores situados em França, na União Europeia.",
+          "A Cloudflare, que recebe o tráfego público, está estabelecida fora da União Europeia. Essa transferência é abrangida pelas cláusulas contratuais-tipo da Comissão Europeia. A equipe de privacidade disponibiliza informações sobre o fornecedor de pagamento que estiver ativado."
+        ]
+      },
+      rights: {
+        title: "8. Os seus direitos",
+        paragraphs: [
+          "Ao abrigo do RGPD, pode pedir acesso aos seus dados, retificação de dados inexatos, apagamento, limitação do tratamento e portabilidade, e pode opor-se ao tratamento baseado no nosso interesse legítimo. Quando o tratamento depende do consentimento, pode retirá-lo a qualquer momento, sem afetar o tratamento anterior.",
+          "Escreva para privacy@tauraco.ai. Respondemos no prazo de um mês. Podemos pedir primeiro a confirmação da sua identidade e poderemos ter de limitar um pedido caso exponha dados de outro usuário ou a lei nos obrigue a conservar o registro.",
+          "Se você não ficar satisfeito com a nossa resposta, pode apresentar uma reclamação à autoridade de controle francesa: Commission Nationale de l’Informatique et des Libertés (CNIL), 3 place de Fontenoy, TSA 80715, 75334 Paris Cedex 07, France — cnil.fr. Se você residir em outro país da UE, pode dirigir-se à autoridade de controle desse país."
+        ]
+      },
+      cookies: {
+        title: "9. Cookies e armazenamento local",
+        paragraphs: [
+          "O site não utiliza cookies. O token da sua sessão e a preferência de idioma são guardados no armazenamento local do navegador, que permanece no seu dispositivo, exceto quando envia o token para autenticar um pedido. Ambos são estritamente necessários ao funcionamento do serviço e não exigem consentimento. O site não utiliza ferramentas de análise, publicidade nem rastreadores de terceiros.",
+          "Se esta situação mudar, pediremos consentimento antes de guardar qualquer informação e esta seção explicará o que é guardado e por quê."
+        ]
+      },
+      contact: {
+        title: "10. Contato",
+        paragraphs: [
+          "Questões de privacidade e pedidos de exercício de direitos: privacy@tauraco.ai. Comunicação de problemas de segurança: security@tauraco.ai. Outras questões legais: legal@tauraco.ai.",
+          "As alterações substanciais a esta política são anunciadas com pelo menos 30 dias de antecedência, por e-mail e no produto."
+        ]
+      }
+    }
+  },
 };
 
 const SECTION_ORDER = Object.keys(COPY.en.sections) as Array<keyof Copy["sections"]>;
 
 export default function PrivacyPolicyPage() {
   const { locale } = useTranslation();
-  const c = COPY[locale] ?? COPY.en;
+  const c = COPY[locale];
 
   const toc = SECTION_ORDER.map((id) => ({ id, label: c.sections[id].title }));
 

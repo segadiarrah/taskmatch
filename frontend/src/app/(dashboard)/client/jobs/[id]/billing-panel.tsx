@@ -5,6 +5,7 @@ import { CreditCard, ExternalLink, Loader2, RefreshCw } from "lucide-react";
 import { apiGet, apiPost, ApiError } from "@/lib/api";
 import { BillingConfig, CheckoutSession, FundingStatus, billingStatusKey, formatMinor, stripeUrl, payoutStatusKey, isPendingPayout } from "@/lib/billing";
 import { useTranslation } from "@/lib/i18n";
+import { localizePaymentError } from "@/lib/api-error-copy";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -115,13 +116,13 @@ export default function BillingPanel({ jobId, onUpdated }: { jobId: string; onUp
         {config?.mode === "test" && <p className="text-xs text-muted-foreground">{t("billing.testMode")}</p>}
         {!config?.enabled && <p className="text-sm text-warning">{t("billing.unavailable")}</p>}
         {waiting && <p role="status" className="text-sm text-muted-foreground">{t("billing.confirming")}</p>}
-        {funding.error && <p role="alert" className="text-sm text-danger">{funding.error}</p>}
+        {funding.error && <p role="alert" className="text-sm text-danger">{localizePaymentError(funding.error, locale)}</p>}
         {funding.payouts.some(payout => payout.provider !== "platform") && <div className="space-y-2 border-t border-border pt-4">
           <p className="text-sm font-medium">{t("billing.transfers")}</p>
           <p className="text-xs text-muted-foreground">{t("billing.transferMeaning")}</p>
           {funding.payouts.filter(payout => payout.provider !== "platform").map(payout => <div key={payout.id} className="rounded-lg border border-border p-3 text-sm">
             <div className="flex flex-wrap justify-between gap-2"><span>{payout.recipient_name}</span><span>{formatMinor(payout.amount_minor, payout.currency, locale)} · {t(payoutStatusKey(payout.status))}</span></div>
-            {payout.error && <p className="mt-1 text-danger">{payout.error}</p>}
+            {payout.error && <p className="mt-1 text-danger">{localizePaymentError(payout.error, locale)}</p>}
           </div>)}
         </div>}
       </>}

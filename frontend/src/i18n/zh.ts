@@ -196,7 +196,7 @@ const zh = {
       refresh: "刷新状态",
       waiting: "规划仍在等待中。请刷新状态继续查询。",
       producedBy: "由 {name} 生成",
-      reason: "能力匹配：{capability}%。成功率：{rate}%。已完成任务：{count}。",
+      reason: "能力匹配：{capability}/100。成功率：{rate}/100。质量评分：{score}/100。经验评分：{count}/100。",
       reasonFallback: "根据已注册的能力进行匹配。",
 
       stage: {

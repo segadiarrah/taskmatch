@@ -191,7 +191,7 @@ function inCodeContext(ancestors) {
       if (ancestor.expression.name.text === "get") return true;
       if (ancestor.expression.name.text === "includes" && ts.isArrayLiteralExpression(ancestor.expression.expression)) return true;
     }
-    if (ts.isPropertyAssignment(ancestor)) return /^(?:code|sample|command|url|href|endpoint|method|status|id|key|value|type|variant|icon|color|className|tone|path|slug|subsets|axes|keywords)$/i.test(propertyName(ancestor.name) ?? "");
+    if (ts.isPropertyAssignment(ancestor)) return /^(?:code|sample|command|url|href|endpoint|method|status|id|key|value|type|variant|icon|color|className|tone|path|slug|subsets|axes|keywords|attributeFilter)$/i.test(propertyName(ancestor.name) ?? "");
     return false;
   });
 }
@@ -287,7 +287,7 @@ function jsxLiteralRule(node, ancestors) {
  * is an argument to one of these is copy routed through `src/i18n/*.ts` rather
  * than hardcoded text, so it must not be reported as untranslated.
  */
-const translationCallees = new Set(["t", "translate"]);
+const translationCallees = new Set(["t", "translate", "a", "adminSource"]);
 
 function enclosingTranslationCall(node, ancestors) {
   const chain = [...ancestors, node];
@@ -301,7 +301,7 @@ function enclosingTranslationCall(node, ancestors) {
         ? callee.name.text
         : undefined;
     if (name && translationCallees.has(name) && candidate.arguments.includes(chain[index])) {
-      return { call: candidate, argumentIndex: candidate.arguments.indexOf(chain[index]) };
+      return { call: candidate, name, argumentIndex: candidate.arguments.indexOf(chain[index]) };
     }
   }
   return undefined;
@@ -318,7 +318,7 @@ function enclosingTranslationCall(node, ancestors) {
 function translationArgumentRole(node, ancestors) {
   const match = enclosingTranslationCall(node, ancestors);
   if (!match) return undefined;
-  return match.argumentIndex === 0 ? "key" : "fallback";
+  return match.argumentIndex === 0 ? (["a", "adminSource"].includes(match.name) ? "admin-key" : "key") : "fallback";
 }
 
 /**
@@ -371,6 +371,27 @@ export function inspectLocalizationSources(files, options = {}) {
     sourceFile: ts.createSourceFile(file.path, file.source, ts.ScriptTarget.Latest, true, file.path.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS),
   }));
 
+  // A per-language editorial file is data, not an English-only UI exemption.
+  // Its catalogue must provide every supported language; rendered parity is
+  // exercised by editorial-five-languages.spec.ts down to each paragraph.
+  const catalogues = new Map();
+  for (const file of parsed.filter(file => file.localization === "catalogue")) {
+    const group = catalogues.get(file.catalogue) ?? { file, locales: new Set() };
+    if (!file.catalogue || !Array.isArray(file.locales) || !file.locales.length) {
+      issues.push(issue(file, file.sourceFile, file.sourceFile, "catalogue-locale-coverage", "catalogue entries must declare their language coverage"));
+      continue;
+    }
+    for (const locale of file.locales) {
+      if (!LOCALES.includes(locale) || group.locales.has(locale)) issues.push(issue(file, file.sourceFile, file.sourceFile, "catalogue-locale-coverage", `invalid or duplicate catalogue locale: ${locale}`));
+      group.locales.add(locale);
+    }
+    catalogues.set(file.catalogue, group);
+  }
+  for (const [name, { file, locales }] of catalogues) {
+    const missing = LOCALES.filter(locale => !locales.has(locale));
+    if (missing.length) issues.push(issue(file, file.sourceFile, file.sourceFile, "catalogue-locale-coverage", `${name} is missing ${missing.join(", ")}`));
+  }
+
   for (const file of parsed) {
     const scanForbidden = (node) => {
       const value = literalText(node, file.sourceFile);
@@ -403,10 +424,20 @@ export function inspectLocalizationSources(files, options = {}) {
     for (const file of parsed.filter((candidate) => candidate.localization === "dictionary")) {
       const root = exportedObject(file.sourceFile);
       if (!root) continue;
-      dictionaries.set(file.path.match(/\/(en|fr|es|zh)\.ts$/)?.[1], { file, root, shape: shapeOf(root) });
+      dictionaries.set(file.path.match(/\/(en|fr|es|zh|pt)\.ts$/)?.[1], { file, root, shape: shapeOf(root) });
     }
   }
   const englishKeys = dictionaries.get("en")?.shape ?? new Set();
+  let adminKeys = new Set();
+  for (const file of parsed.filter(file => file.path === "src/i18n/admin/copy.ts")) {
+    const collect = node => {
+      const map = localeObject(node, file.sourceFile);
+      if (map) adminKeys = shapeOf(map.get("en"));
+      ts.forEachChild(node, collect);
+    };
+    collect(file.sourceFile);
+  }
+
 
   if (options.runDictionaryParity !== false) {
     for (const file of parsed.filter((candidate) => candidate.localization === "dictionary")) {
@@ -438,12 +469,10 @@ export function inspectLocalizationSources(files, options = {}) {
     }
   }
 
-  // `english-only` files are still parsed — forbidden design commentary and
-  // manifest membership are checked for everyone — but their visible strings are
-  // not required to be locale-backed. See adminEnglishOnly in the manifest.
-  for (const file of parsed.filter(
-    (candidate) => candidate.localization !== "dictionary" && candidate.localization !== "english-only",
-  )) {
+  for (const file of parsed.filter(candidate => candidate.localization !== "dictionary" && candidate.localization !== "catalogue")) {
+    if (file.localization === "english-only") {
+      issues.push(issue(file, file.sourceFile, file.sourceFile, "english-only-exemption", "visible routes and editorial content must support all five locales"));
+    }
     const localizedNodes = [];
     const findLocaleObjects = (node) => {
       const map = localeObject(node, file.sourceFile);
@@ -477,6 +506,10 @@ export function inspectLocalizationSources(files, options = {}) {
         if (translationRole === "key") {
           if (englishKeys.size && !translationKeyResolves(normalized, englishKeys)) {
             issues.push(issue(file, file.sourceFile, node, "unknown-translation-key", `t(“${normalized}”) has no matching key in the English dictionary`));
+          }
+        } else if (translationRole === "admin-key") {
+          if (normalized && adminKeys.size && !translationKeyResolves(normalized, adminKeys)) {
+            issues.push(issue(file, file.sourceFile, node, "unknown-admin-translation-key", `admin source “${normalized}” has no matching catalogue entry`));
           }
         } else if (translationRole === "fallback") {
           // A development default, never rendered once the key resolves.

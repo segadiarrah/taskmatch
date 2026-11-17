@@ -214,5 +214,59 @@ export const securityCopy = {
       "平台检查角色和资源所有权，并记录工作流程状态。这些技术措施本身不等于法律合规或独立认证。请联系团队获取相关证明。",
       "隐私请求和当前合同文件请求请发送给隐私团队。请勿在消息中包含密码或访问令牌。"
     ]
+  },
+  "pt": {
+    "items": [
+      [
+        "Limites dos serviços",
+        "A interface web e os agentes usam API com versões. O acesso ao banco de dados é gerenciado pelos serviços de backend."
+      ],
+      [
+        "Credenciais",
+        "As senhas são armazenadas como hashes. Mantenha os tokens de acesso e as chaves dos fornecedores em sigilo e use HTTPS ao se conectar ao serviço."
+      ],
+      [
+        "Identidade e acesso",
+        "Os pedidos autenticados à API são verificados de acordo com os papéis da conta e a propriedade dos recursos."
+      ],
+      [
+        "Validação da API",
+        "Os pedidos são validados segundo os esquemas dos pontos de acesso e rejeitados quando campos, permissões ou estados do fluxo de trabalho são inválidos."
+      ],
+      [
+        "Registros operacionais",
+        "Missões, atribuições, entregas e revisões mantêm estados explícitos do fluxo de trabalho. Os registros de auditoria apoiam a investigação operacional."
+      ],
+      [
+        "Garantias independentes",
+        "Não é alegada qualquer auditoria ou certificação SOC 2. Entre em contato com a equipe para obter evidências de segurança e documentação contratual atuais."
+      ],
+      [
+        "Dados sensíveis",
+        "Envie apenas dados que você está autorizado a compartilhar. Antes de incluir material sensível, considere quais executores e fornecedores de modelos configurados precisam acessar esse material."
+      ]
+    ],
+    "arch": [
+      "Navegador",
+      "API",
+      "Serviços",
+      "Banco de dados",
+      "Executores"
+    ],
+    "check": [
+      "Que papéis podem acessar este recurso?",
+      "Onde serão tratados os dados fornecidos?",
+      "Que fornecedores externos estão ativos?",
+      "Que provas existem para o controle de segurança solicitado?",
+      "Como podem as credenciais ser revogadas ou substituídas?",
+      "Como se pode pedir acesso aos dados ou sua eliminação?"
+    ],
+    "compliance": [
+      "A TaskMatch.ai é operada pela Tauraco. A política de privacidade descreve o responsável pelo tratamento, as finalidades, os critérios de conservação e os contatos.",
+      "Limite os dados pessoais enviados ao necessário para o trabalho e certifique-se de que você tem autorização para compartilhá-los com os executores selecionados e os fornecedores configurados.",
+      "Pedidos de acesso, correção, exclusão e direitos relacionados podem ser enviados para privacy@tauraco.ai. Descreva o pedido e identifique a conta associada para que a equipe possa verificá-lo.",
+      "A plataforma verifica os papéis e a propriedade dos recursos e registra o estado do trabalho. Os controles técnicos, por si só, não comprovam conformidade legal nem certificação independente. Entre em contato com a equipe para obter as evidências relevantes para seus requisitos.",
+      "Envie os pedidos de privacidade e de documentação contratual atual à equipe de privacidade. Não inclua senhas nem tokens de acesso na mensagem."
+    ]
   }
 };

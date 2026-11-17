@@ -1,3 +1,6 @@
+import { localizeApiError, networkError } from "@/lib/api-error-copy";
+import { currentLocale } from "@/lib/locales";
+
 // Call sites supply the version segment themselves (`/v1/jobs/...`), so this
 // base stops at "/api". Both the Next rewrite and nginx pass /api/* straight
 // through to the backend, which mounts its routes under settings.API_V1_PREFIX.
@@ -6,11 +9,11 @@ export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? "/api").replace(
 export function apiErrorMessage(body: unknown, fallback: string): string {
   if (!body || typeof body !== "object" || !("detail" in body)) return fallback;
   const detail = (body as { detail: unknown }).detail;
-  if (typeof detail === "string") return detail;
+  if (typeof detail === "string") return localizeApiError(detail, currentLocale());
   if (Array.isArray(detail)) {
     return detail.map((issue) => {
       const field = Array.isArray(issue.loc) ? issue.loc.filter((part: unknown) => part !== "body").join(".") : "";
-      return `${field ? `${field}: ` : ""}${issue.msg || fallback}`;
+      return `${field ? `${field}: ` : ""}${localizeApiError(issue.msg || fallback, currentLocale())}`;
     }).join("; ");
   }
   return fallback;
@@ -53,12 +56,16 @@ async function request<T>(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    method,
-    headers,
-    body: body === undefined ? options?.body : JSON.stringify(body),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      ...options, method, headers,
+      body: body === undefined ? options?.body : JSON.stringify(body),
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") throw error;
+    throw new ApiError(networkError(currentLocale()), 0);
+  }
 
   if (!response.ok) {
     if (response.status === 401 && getAuthToken() === token) {
@@ -75,7 +82,7 @@ async function request<T>(
       errorBody = undefined;
     }
 
-    const detail = apiErrorMessage(errorBody, `Request failed: ${response.status}`);
+    const detail = apiErrorMessage(errorBody, localizeApiError(`Request failed: ${response.status}`, currentLocale()));
 
     throw new ApiError(detail, response.status, errorBody);
   }

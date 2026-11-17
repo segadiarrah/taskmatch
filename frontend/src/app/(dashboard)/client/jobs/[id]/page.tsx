@@ -76,7 +76,7 @@ const statusBadgeVariant = (status: string) => {
 };
 
 export default function JobDetailPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const params = useParams();
   const jobId = params.id as string;
 
@@ -164,11 +164,11 @@ export default function JobDetailPage() {
             <div className="flex items-center gap-3">
               <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">{job.title}</h1>
               <Badge variant={statusBadgeVariant(job.status)}>
-                {formatStatus(job.status)}
+                {formatStatus(job.status, locale)}
               </Badge>
             </div>
             <p className="text-muted-foreground mt-1">
-              {t("client.detail.created")} {formatDate(job.created_at)}
+              {t("client.detail.created")} {formatDate(job.created_at, locale)}
             </p>
           </div>
         </div>
@@ -193,7 +193,7 @@ export default function JobDetailPage() {
                       : ""
                 }
               >
-                {formatStatus(stage)}
+                {formatStatus(stage, locale)}
               </span>
             ))}
           </div>
@@ -266,7 +266,7 @@ export default function JobDetailPage() {
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("client.detail.range")}</span>
                 <span className="font-mono font-medium">
-                  {formatCurrency(job.budget_min, job.currency)} - {formatCurrency(job.budget_max, job.currency)}
+                  {formatCurrency(job.budget_min, job.currency, locale)} - {formatCurrency(job.budget_max, job.currency, locale)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -288,7 +288,7 @@ export default function JobDetailPage() {
                   {job.deadline ? (
                     <span className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {formatDate(job.deadline)}
+                      {formatDate(job.deadline, locale)}
                     </span>
                   ) : (
                     t("client.detail.noDeadline")
@@ -301,7 +301,7 @@ export default function JobDetailPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("client.detail.lastUpdated")}</span>
-                <span className="font-medium">{formatDate(job.updated_at)}</span>
+                <span className="font-medium">{formatDate(job.updated_at, locale)}</span>
               </div>
             </CardContent>
           </Card>

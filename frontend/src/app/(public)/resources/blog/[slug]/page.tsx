@@ -7,6 +7,7 @@ import { ArrowLeft, CalendarDays, Clock3, FileQuestion } from "lucide-react";
 import { PageCta } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/motion";
 import { useTranslation, type Locale } from "@/lib/i18n";
+import { LocalizedMetadata } from "@/components/localized-metadata";
 import { getPostBySlug } from "@/content/blog";
 
 const DATE_LOCALE: Record<Locale, string> = {
@@ -14,6 +15,7 @@ const DATE_LOCALE: Record<Locale, string> = {
   fr: "fr-FR",
   es: "es-ES",
   zh: "zh-CN",
+  pt: "pt-BR",
 };
 
 const COPY: Record<
@@ -75,14 +77,24 @@ const COPY: Record<
     ctaPrimary: "立即开始",
     ctaSecondary: "运作方式",
   },
+  pt: {
+    "allArticles": "Todos os artigos",
+    "notFoundTitle": "Artigo não encontrado",
+    "notFoundBody": "Não foi possível encontrar o artigo que procura. Pode ter sido movido ou o link pode estar incorreto.",
+    "backToBlog": "Voltar ao blog",
+    "ctaTitle": "Experimente o ciclo completo",
+    "ctaBody": "Envie um pedido em linguagem natural e acompanhe sua transformação em trabalho estruturado, decomposto, atribuído e validado.",
+    "ctaPrimary": "Começar",
+    "ctaSecondary": "Como funciona"
+  }
 };
 
 export default function BlogArticlePage() {
   const params = useParams();
-  const { locale, t } = useTranslation();
-  const c = COPY[locale] ?? COPY.en;
+  const { locale } = useTranslation();
+  const c = COPY[locale];
   const slug = typeof params.slug === "string" ? params.slug : params.slug?.[0];
-  const post = slug ? getPostBySlug(slug) : undefined;
+  const post = slug ? getPostBySlug(slug, locale) : undefined;
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString(DATE_LOCALE[locale] ?? "en-US", {
@@ -94,6 +106,7 @@ export default function BlogArticlePage() {
   if (!post) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center bg-ink-950 px-4">
+        <LocalizedMetadata title={c.notFoundTitle} description={c.notFoundBody} />
         <Reveal className="max-w-md rounded-lg border border-ink-700 bg-ink-900 p-10 text-center shadow-panel">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg border border-signal-500/30 bg-signal-500/10 text-signal-400">
             <FileQuestion className="h-6 w-6" />
@@ -116,6 +129,7 @@ export default function BlogArticlePage() {
 
   return (
     <div className="min-h-screen bg-ink-950 text-ink-50">
+      <LocalizedMetadata title={post.title} description={post.excerpt} />
       <article className="px-4 pb-8 pt-28 sm:px-6 lg:px-8">
         <Reveal className="mx-auto max-w-3xl">
           <Link
@@ -126,8 +140,7 @@ export default function BlogArticlePage() {
             {c.allArticles}
           </Link>
 
-          <p className="mt-6 text-sm text-ink-400">{t("publicUi.archive")}</p>
-          <div lang="en">
+          <div lang={locale}>
           <div className="mt-8 flex flex-wrap items-center gap-3 eyebrow">
             <span className="rounded-full border border-signal-500/30 bg-signal-500/10 px-3 py-1 text-signal-400">
               {post.tag}
@@ -160,7 +173,7 @@ export default function BlogArticlePage() {
         </Reveal>
       </article>
 
-      <section lang="en" className="px-4 pb-20 sm:px-6 lg:px-8">
+      <section lang={locale} className="px-4 pb-20 sm:px-6 lg:px-8">
         <Reveal className="mx-auto max-w-3xl">
           <div className="rounded-lg border border-ink-700 bg-ink-900 p-8 sm:p-10">
             <div className="space-y-10">

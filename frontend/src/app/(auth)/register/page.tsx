@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authIntentHref, parsePublicIntent, postAuthDestination, type PublicIntent } from "@/lib/public-intent";
 import { COPY as JOURNEY_COPY } from "@/lib/landing-copy";
+import { ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useTranslation, type Locale } from "@/lib/i18n";
 import { Reveal } from "@/components/public/motion";
@@ -19,6 +20,10 @@ const COPY: Record<
     subtitle: string;
     pwTooShort: string;
     failed: string;
+    required: string;
+    emailExists: string;
+    invalidDetails: string;
+    rateLimited: string;
     intent: string;
     postTasks: string;
     postTasksHint: string;
@@ -64,6 +69,10 @@ const COPY: Record<
     privacy: "Privacy Policy",
     haveAccount: "Already have an account?",
     signIn: "Sign in",
+    emailExists: "An account with this email already exists. Sign in instead.",
+    invalidDetails: "Check your name, email and password, then try again.",
+    rateLimited: "Too many attempts. Please wait and try again.",
+    required: "Enter your name, email and password.",
   },
   fr: {
     title: "Créez votre compte",
@@ -89,6 +98,10 @@ const COPY: Record<
     privacy: "Politique de confidentialité",
     haveAccount: "Vous avez déjà un compte ?",
     signIn: "Se connecter",
+    emailExists: "Un compte existe déjà avec cet e-mail. Connectez-vous.",
+    invalidDetails: "Vérifiez votre nom, votre e-mail et votre mot de passe, puis réessayez.",
+    rateLimited: "Trop de tentatives. Patientez avant de réessayer.",
+    required: "Saisissez votre nom, votre e-mail et votre mot de passe.",
   },
   es: {
     title: "Crea tu cuenta",
@@ -114,6 +127,10 @@ const COPY: Record<
     privacy: "Política de privacidad",
     haveAccount: "¿Ya tienes una cuenta?",
     signIn: "Iniciar sesión",
+    emailExists: "Ya existe una cuenta con este correo. Inicia sesión.",
+    invalidDetails: "Comprueba tu nombre, correo y contraseña e inténtalo de nuevo.",
+    rateLimited: "Demasiados intentos. Espera y vuelve a intentarlo.",
+    required: "Introduce tu nombre, correo y contraseña.",
   },
   zh: {
     title: "创建你的账户",
@@ -139,6 +156,39 @@ const COPY: Record<
     privacy: "隐私政策",
     haveAccount: "已有账户？",
     signIn: "登录",
+    emailExists: "此邮箱已注册，请登录。",
+    invalidDetails: "请检查姓名、邮箱和密码后重试。",
+    rateLimited: "尝试次数过多，请稍后重试。",
+    required: "请输入姓名、邮箱和密码。",
+  },
+  pt: {
+    title: "Crie a sua conta",
+    subtitle: "Comece hoje com o TaskMatch.ai",
+    pwTooShort: "A senha deve ter pelo menos 8 caracteres.",
+    failed: "Não foi possível criar a conta. Tente novamente.",
+    intent: "Quero…",
+    postTasks: "Publicar tarefas",
+    postTasksHint: "Preciso de um trabalho feito",
+    runAgents: "Executar agentes",
+    runAgentsHint: "Crio agentes de IA",
+    fullName: "Nome completo",
+    fullNamePlaceholder: "Ana Silva",
+    email: "Endereço de e-mail",
+    emailPlaceholder: "voce@empresa.com",
+    password: "Senha",
+    passwordPlaceholder: "Pelo menos 8 caracteres",
+    createAccount: "Criar conta",
+    creating: "Criando conta…",
+    agreePre: "Ao criar uma conta, aceita os nossos",
+    terms: "Termos de Serviço",
+    and: "e a",
+    privacy: "Política de Privacidade",
+    haveAccount: "Já tem uma conta?",
+    signIn: "Entrar",
+    emailExists: "Já existe uma conta com este e-mail. Entre na sua conta.",
+    invalidDetails: "Verifique o nome, o e-mail e a senha e tente novamente.",
+    rateLimited: "Demasiadas tentativas. Aguarde e tente novamente.",
+    required: "Preencha o nome, o e-mail e a senha.",
   },
 };
 
@@ -147,7 +197,7 @@ function RegisterForm() {
   const router = useRouter();
   const { register, user } = useAuth();
   const { locale } = useTranslation();
-  const c = COPY[locale] ?? COPY.en;
+  const c = COPY[locale];
   const [intent, setIntent] = useState<PublicIntent>(initialIntent);
   const journey = JOURNEY_COPY[locale];
   const [fullName, setFullName] = useState("");
@@ -164,6 +214,15 @@ function RegisterForm() {
     e.preventDefault();
     setError(null);
 
+    if (!fullName.trim() || !email.trim() || !password) {
+      setError(c.required);
+      return;
+    }
+    if (!e.currentTarget.querySelector<HTMLInputElement>("#email")?.validity.valid) {
+      setError(c.invalidDetails);
+      return;
+    }
+
     if (password.length < 8) {
       setError(c.pwTooShort);
       return;
@@ -175,7 +234,12 @@ function RegisterForm() {
       await register({ email, password, full_name: fullName, role: "client" });
       router.push(postAuthDestination("client", intent));
     } catch (err) {
-      setError(err instanceof Error ? err.message : c.failed);
+      const detail = err instanceof ApiError && err.body && typeof err.body === "object" && "detail" in err.body ? err.body.detail : undefined;
+      setError(err instanceof ApiError
+        ? detail === "A user with this email already exists" ? c.emailExists
+          : err.status === 422 ? c.invalidDetails
+            : err.status === 429 ? c.rateLimited : c.failed
+        : c.failed);
     } finally {
       setIsLoading(false);
     }
@@ -205,7 +269,7 @@ function RegisterForm() {
         </div>
       </fieldset>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form noValidate onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="full_name" className="mb-1.5 block text-sm font-medium text-ink-200">
             {c.fullName}

@@ -69,7 +69,7 @@ const paymentStatusBadgeVariant = (status: string) => {
 };
 
 export default function EarningsPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [summary, setSummary] = useState<EarningsSummary | null>(null);
   const [selectedCurrency, setSelectedCurrency] = useState("");
   const [page, setPage] = useState(0);
@@ -155,7 +155,7 @@ export default function EarningsPage() {
           </CardHeader>
           <CardContent>
             <div data-testid="total-earned" className="font-display text-3xl font-medium text-success">
-              {formatCurrency(current.total_earned, currency)}
+              {formatCurrency(current.total_earned, currency, locale)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {t("developer.earnings.totalEarnedHint")}
@@ -170,7 +170,7 @@ export default function EarningsPage() {
           </CardHeader>
           <CardContent>
             <div className="font-display text-3xl font-medium text-ink-50">
-              {formatCurrency(current.pending_payments, currency)}
+              {formatCurrency(current.pending_payments, currency, locale)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {t("developer.earnings.pendingHint")}
@@ -185,7 +185,7 @@ export default function EarningsPage() {
           </CardHeader>
           <CardContent>
             <div className="font-display text-3xl font-medium text-ink-50">
-              {formatCurrency(current.this_month, currency)}
+              {formatCurrency(current.this_month, currency, locale)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {t("developer.earnings.thisMonthHint")}
@@ -248,13 +248,13 @@ export default function EarningsPage() {
                       {payment.payout_error && <p className="text-xs text-danger">{payment.payout_error}</p>}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs text-ink-100">
-                      {formatCurrency(payment.gross_amount, payment.currency)}
+                      {formatCurrency(payment.gross_amount, payment.currency, locale)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                      -{formatCurrency(payment.platform_fee, payment.currency)}
+                      -{formatCurrency(payment.platform_fee, payment.currency, locale)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-xs font-semibold text-success">
-                      {formatCurrency(payment.net_amount, payment.currency)}
+                      {formatCurrency(payment.net_amount, payment.currency, locale)}
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -265,7 +265,7 @@ export default function EarningsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">
-                      {formatDate(payment.created_at)}
+                      {formatDate(payment.created_at, locale)}
                     </TableCell>
                   </TableRow>
                 ))}

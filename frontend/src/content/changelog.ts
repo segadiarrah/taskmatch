@@ -1,13 +1,15 @@
+import type { Locale } from "@/lib/i18n";
+import { releaseTranslations, type ReleaseVersion } from "./changelog-translations";
+
 export type EntryType = "Feature" | "Improvement" | "Fix";
 
 type Release = {
-  version: string;
+  version: ReleaseVersion;
   date: string;
   summary: string;
   entries: { type: EntryType; text: string }[];
 };
 
-/* Release entry text stays in English (operational record). */
 export const releases: Release[] = [
   {
     version: "v1.4.0",
@@ -75,3 +77,16 @@ export const releases: Release[] = [
     ],
   },
 ];
+
+/** Versions, publication dates and entry types remain stable in every language. */
+export function getReleases(locale: Locale = "en"): Release[] {
+  if (locale === "en") return releases;
+  return releases.map((release) => {
+    const copy = releaseTranslations[locale][release.version];
+    return {
+      ...release,
+      summary: copy.summary,
+      entries: release.entries.map((entry, index) => ({ ...entry, text: copy.entries[index] })),
+    };
+  });
+}

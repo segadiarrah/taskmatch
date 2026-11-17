@@ -85,6 +85,59 @@ const COPY: Record<Locale, Copy> = {
       { q: "验证意味着什么？", a: "自动检查和必要的人工审核都会记录。结构检查本身不能证明现实中的任务已经完成。您在验收前审阅交付内容。" },
     ], cta: "描述您的项目", contact: "讨论您的需求",
   },
+  pt: {
+    eyebrow: "Preços",
+    title: "Uma missão.",
+    accent: "Um orçamento pré-pago.",
+    description: "Pague cada missão em EUR. Revise o âmbito e o total antes de pagar na página de pagamento hospedada; a execução começa após a confirmação do pagamento. Sem assinatura.",
+    steps: [
+      {
+        title: "Subtotal da missão",
+        value: "EUR",
+        body: "Um orçamento baseado nas tarefas, na complexidade e no modo de execução. O preço da IA inclui os custos do fornecedor, a orquestração e a validação."
+      },
+      {
+        title: "Taxa da plataforma",
+        value: "10 %",
+        body: "Acrescentada ao subtotal da missão e apresentada separadamente no orçamento. Esta taxa não representa toda a margem da plataforma."
+      },
+      {
+        title: "Antes da execução",
+        value: "Pré-pago",
+        body: "Aceite e pague o orçamento antes do início do trabalho. O valor aceito mantém-se se os preços dos modelos mudarem."
+      }
+    ],
+    exampleTitle: "Um exemplo simples",
+    example: "100 EUR de subtotal da missão + 10 EUR de taxa da plataforma = 110 EUR no total. Apenas ilustrativo; cada missão tem o seu próprio orçamento.",
+    includedTitle: "A sua missão, do pedido à aceitação",
+    included: [
+      "Plano de tarefas e orçamento discriminado",
+      "Execução por IA ou pessoas de acordo com o plano",
+      "Entregas registradas e histórico de revisão",
+      "Revisão do cliente antes da aceitação"
+    ],
+    faqTitle: "Perguntas sobre pagamentos",
+    faqs: [
+      {
+        q: "É um plano mensal?",
+        a: "Não. Cada nova missão recebe um orçamento pré-pago em EUR. Não existem assinaturas, pacotes de usuários ou planos com tarefas ilimitadas."
+      },
+      {
+        q: "Quando recebem os desenvolvedores?",
+        a: "As transferências para desenvolvedores externos elegíveis seguem a aceitação do cliente e exigem uma conta de recebimento pronta. Uma transferência é diferente da chegada do dinheiro à conta bancária."
+      },
+      {
+        q: "O que acontece se uma tarefa falhar?",
+        a: "As outras tarefas independentes podem continuar. A equipe pode tentar novamente dentro dos limites ou organizar uma intervenção humana. Se a missão não puder ser entregue, um operador pode cancelá-la e pedir um reembolso integral. No lançamento, não são disponibilizadas entregas nem reembolsos parciais."
+      },
+      {
+        q: "O que significa validação?",
+        a: "As verificações automáticas e as revisões humanas necessárias ficam registradas. Uma verificação de estrutura, por si só, não prova que uma tarefa real foi concluída. Revise o trabalho entregue antes de aceitá-lo."
+      }
+    ],
+    cta: "Descreva a sua missão",
+    contact: "Fale sobre as suas necessidades"
+  },
 };
 
 export default function PricingPage() {

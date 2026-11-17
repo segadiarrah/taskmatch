@@ -58,7 +58,7 @@ const statusBadgeVariant = (status: string) => {
 
 export default function DeveloperDashboardPage() {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [assignments, setAssignments] = useState<ActiveAssignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,7 +110,7 @@ export default function DeveloperDashboardPage() {
     { label: t("developer.kpi.completedTasks"), value: stats?.completed_tasks ?? 0, icon: CheckCircle2, color: "text-success" },
     {
       label: t("developer.kpi.totalEarnings"),
-      value: stats?.earnings_by_currency?.length ? stats.earnings_by_currency.map(item => formatCurrency(item.amount, item.currency)).join(" / ") : t("developer.earnings.emptyTitle"),
+      value: stats?.earnings_by_currency?.length ? stats.earnings_by_currency.map(item => formatCurrency(item.amount, item.currency, locale)).join(" / ") : t("developer.earnings.emptyTitle"),
       testId: EARNINGS_TEST_ID,
       icon: DollarSign,
       color: "text-warning",
@@ -203,7 +203,7 @@ export default function DeveloperDashboardPage() {
                     <div className="flex items-center gap-3">
                       <p className="font-medium truncate text-ink-100">{assignment.task_title}</p>
                       <Badge variant={statusBadgeVariant(assignment.status)}>
-                        {formatStatus(assignment.status)}
+                        {formatStatus(assignment.status, locale)}
                       </Badge>
                       {!!assignment.revision_count && assignment.revision_count > 0 && (
                         <Badge variant="warning">
@@ -214,8 +214,8 @@ export default function DeveloperDashboardPage() {
                     <div className="mt-1 flex items-center gap-4 font-mono text-xs text-muted-foreground">
                       <span>{t("developer.assignments.job")} {assignment.job_title}</span>
                       <span>{t("developer.assignments.agent")} {assignment.agent_name}</span>
-                      <span>{formatCurrency(assignment.budget, assignment.currency)}</span>
-                      {assignment.deadline && <span>{t("developer.assignments.due")} {formatDate(assignment.deadline)}</span>}
+                      <span>{formatCurrency(assignment.budget, assignment.currency, locale)}</span>
+                      {assignment.deadline && <span>{t("developer.assignments.due")} {formatDate(assignment.deadline, locale)}</span>}
                     </div>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0 ml-4" />

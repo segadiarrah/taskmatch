@@ -38,7 +38,7 @@ export const COPY: Record<Locale, JourneyCopy> = {
     workerTitle: "Bring your skills. Deliver useful work.", workerIntro: "Build your worker profile, find suitable missions and provide evidence of your work. You can also connect an AI agent from the same account.",
   },
   fr: {
-    eyebrow: "TaskMatch · Human Execution Layer",
+    eyebrow: "TaskMatch · Exécution humaine",
     titleLead: "L’exécution humaine", titleAccent: "pour vos agents IA.",
     intro: "Quand une tâche demande une personne, intégrez-la à votre parcours. Décrivez le travail, convenez du prix et vérifiez le résultat au même endroit.",
     mission: "Confier une mission", work: "Trouver une mission", agent: "Connecter un agent", pricing: "Tarifs", learn: "Comment ça marche",
@@ -64,7 +64,7 @@ export const COPY: Record<Locale, JourneyCopy> = {
     workerTitle: "Vos compétences. Un travail utile.", workerIntro: "Créez votre profil d’intervenant, trouvez des missions adaptées et apportez les preuves de votre travail. Vous pouvez aussi connecter un agent IA avec le même compte.",
   },
   es: {
-    eyebrow: "TaskMatch · Human Execution Layer", titleLead: "La ejecución humana", titleAccent: "para tus agentes de IA.",
+    eyebrow: "TaskMatch · Ejecución humana", titleLead: "La ejecución humana", titleAccent: "para tus agentes de IA.",
     intro: "Cuando una tarea necesita a una persona, intégrala en tu flujo. Describe el trabajo, acuerda el precio y revisa el resultado en un solo lugar.",
     mission: "Delegar una misión", work: "Encontrar trabajo", agent: "Conectar un agente", pricing: "Precios", learn: "Cómo funciona",
     paths: [
@@ -88,7 +88,7 @@ export const COPY: Record<Locale, JourneyCopy> = {
     workerTitle: "Tus habilidades. Un trabajo útil.", workerIntro: "Crea tu perfil, encuentra misiones adecuadas y aporta pruebas de tu trabajo. También puedes conectar un agente de IA con la misma cuenta.",
   },
   zh: {
-    eyebrow: "TaskMatch · Human Execution Layer", titleLead: "为 AI 智能体提供", titleAccent: "可靠的人工执行。",
+    eyebrow: "TaskMatch · 人工执行层", titleLead: "为 AI 智能体提供", titleAccent: "可靠的人工执行。",
     intro: "任务需要真人参与时，将人工协助纳入工作流程。在同一个平台描述工作、确认价格并审核结果。",
     mission: "委托任务", work: "寻找工作", agent: "连接智能体", pricing: "定价", learn: "运作方式",
     paths: [
@@ -108,5 +108,70 @@ export const COPY: Record<Locale, JourneyCopy> = {
     trustTitle: "重要步骤，由你决定。", trustBody: "报价不代表已付款，提交结果不代表已验收，转账不代表银行到账。各步骤都有独立的记录状态。",
     terms: "阅读条款", docs: "集成文档", clientTitle: "将需求变成清晰的任务。", clientIntro: "请求远程或现场人工协助。工作开始前，明确成果并确认价格。",
     workerTitle: "用你的技能完成有价值的工作。", workerIntro: "创建工作人员资料，寻找适合任务并提供工作证据。同一个账户也能连接 AI 智能体。",
+  },
+  pt: {
+    eyebrow: "TaskMatch · Camada de execução humana",
+    titleLead: "A execução humana",
+    titleAccent: "para agentes de IA.",
+    intro: "Quando uma tarefa precisa de uma pessoa, integre-a no seu fluxo de trabalho. Descreva o trabalho, combine o preço e revise o resultado em um só lugar.",
+    mission: "Delegar uma missão",
+    work: "Encontrar trabalho",
+    agent: "Conectar um agente",
+    pricing: "Preços",
+    learn: "Como funciona",
+    paths: [
+      {
+        title: "Resolva uma necessidade",
+        body: "Um documento para revisar, uma visita local ou um resultado para verificar. Defina o resultado e as provas de que precisa.",
+        detail: "Descrever → revisar → financiar"
+      },
+      {
+        title: "Ponha as suas competências em prática",
+        body: "Indique as suas competências e disponibilidade, encontre missões adequadas e entregue o seu trabalho para revisão.",
+        detail: "Perfil → missão → entrega"
+      },
+      {
+        title: "Amplie o alcance do seu agente",
+        body: "Deixe o seu agente pedir ajuda humana dentro de uma autorização explícita. Mantenha o controle das permissões e dos limites de despesa.",
+        detail: "Conectar → autorizar → acompanhar"
+      }
+    ],
+    exampleLabel: "Um exemplo, não uma missão em curso",
+    exampleTitle: "Revise um documento antes de enviá-lo.",
+    exampleBody: "O seu agente prepara o texto. Uma pessoa verifica a tradução e devolve as correções com uma breve explicação.",
+    exampleNote: "O âmbito, o preço e os critérios de aceitação são acordados antes da execução. A disponibilidade depende da missão e das qualificações do profissional.",
+    exampleSteps: [
+      "Pedido",
+      "Revisão humana",
+      "Provas",
+      "Aceitação"
+    ],
+    stepsTitle: "Um caminho claro do pedido ao resultado.",
+    steps: [
+      {
+        title: "Descreva a necessidade",
+        body: "Defina o resultado, o prazo e os requisitos de localização ou autorização."
+      },
+      {
+        title: "Acorde e financie",
+        body: "Revise o âmbito e o preço. A execução começa após a confirmação do pagamento."
+      },
+      {
+        title: "Acompanhe o trabalho",
+        body: "Consulte o progresso e as provas entregues para a sua missão."
+      },
+      {
+        title: "Revise o resultado",
+        body: "Aceite a entrega ou peça uma correção. As transferências para os profissionais seguem a aceitação."
+      }
+    ],
+    trustTitle: "A sua decisão em cada passo importante.",
+    trustBody: "Um orçamento não é um pagamento. Um resultado entregue não é uma aceitação. Uma transferência não é um crédito na conta bancária. Cada passo tem o seu próprio estado registrado.",
+    terms: "Ler os termos",
+    docs: "Documentação de integração",
+    clientTitle: "Transforme uma necessidade em uma missão clara.",
+    clientIntro: "Peça ajuda humana, à distância ou no local. Defina o resultado esperado e revise o preço antes do início do trabalho.",
+    workerTitle: "Suas competências. Um trabalho útil.",
+    workerIntro: "Crie o seu perfil profissional, encontre missões adequadas e apresente provas do seu trabalho. Também pode conectar um agente de IA a partir da mesma conta."
   },
 };

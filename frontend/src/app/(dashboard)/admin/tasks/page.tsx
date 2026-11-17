@@ -1,10 +1,14 @@
 "use client";
 
+import { taskStatuses } from "@/lib/admin-vocabulary";
+
+import { useAdminCopy } from "@/lib/admin-copy";
+
 import React, { useState, useEffect } from "react";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { useRouter } from "next/navigation";
 import { apiGet } from "@/lib/api";
-import { cn, formatCurrency, formatStatus } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -50,10 +54,11 @@ const statusBadgeVariant: Record<string, "secondary" | "info" | "default" | "war
   cancelled: "destructive",
 };
 
-const taskStatuses = ["pending", "open_for_bids", "assigned", "in_progress", "submitted", "validation_failed", "approved", "cancelled", "reassigned"];
+
 
 
 export default function TasksPage() {
+  const { a, formatStatus, formatCurrency, formatNumber } = useAdminCopy();
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,10 +101,8 @@ export default function TasksPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Task Management</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Track and manage all decomposed tasks across jobs.
-        </p>
+        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">{a("Task Management")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{a("Track and manage all decomposed tasks across jobs.")}</p>
       </div>
 
       {/* Filters */}
@@ -109,7 +112,7 @@ export default function TasksPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-500" />
               <Input
-                placeholder="Search by task or job title..."
+                placeholder={a("Search by task or job title...")}
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -122,7 +125,7 @@ export default function TasksPage() {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="w-40"
               >
-                <option value="all">All Statuses</option>
+                <option value="all">{a("All Statuses")}</option>
                 {taskStatuses.map((s) => (
                   <option key={s} value={s}>{formatStatus(s)}</option>
                 ))}
@@ -132,7 +135,7 @@ export default function TasksPage() {
                 onChange={(e) => setTypeFilter(e.target.value)}
                 className="w-40"
               >
-                <option value="all">All Types</option>
+                <option value="all">{a("All Types")}</option>
                 {taskTypes.map((t) => (
                   <option key={t} value={t}>{formatStatus(t)}</option>
                 ))}
@@ -154,21 +157,21 @@ export default function TasksPage() {
           ) : filteredTasks.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
               <ListChecks className="h-10 w-10 text-ink-600" />
-              <p className="mt-3 text-sm font-medium text-muted-foreground">No tasks found</p>
-              <p className="text-xs text-ink-500">Try adjusting your filters</p>
+              <p className="mt-3 text-sm font-medium text-muted-foreground">{a("No tasks found")}</p>
+              <p className="text-xs text-ink-500">{a("Try adjusting your filters")}</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Job</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Budget</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Agent</TableHead>
-                  <TableHead className="text-right">Bids</TableHead>
+                  <TableHead>{a("Title")}</TableHead>
+                  <TableHead>{a("Job")}</TableHead>
+                  <TableHead>{a("Type")}</TableHead>
+                  <TableHead>{a("Status")}</TableHead>
+                  <TableHead className="text-right">{a("Budget")}</TableHead>
+                  <TableHead>{a("Priority")}</TableHead>
+                  <TableHead>{a("Agent")}</TableHead>
+                  <TableHead className="text-right">{a("Bids")}</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -196,7 +199,7 @@ export default function TasksPage() {
                         task.priority === 1 ? "text-danger" :
                         task.priority === 2 ? "text-warning" : "text-ink-500"
                       )}>
-                        P{task.priority}
+                        {a("Priority")} {formatNumber(task.priority)}
                       </span>
                     </TableCell>
                     <TableCell className="text-ink-300">
@@ -207,7 +210,7 @@ export default function TasksPage() {
                     <TableCell className="text-right">
                       {task.bids_count > 0 ? (
                         <span className="rounded-sm border border-info/40 bg-info/10 px-1.5 py-0.5 font-mono text-[11px] font-medium text-info">
-                          {task.bids_count}
+                          {formatNumber(task.bids_count)}
                         </span>
                       ) : (
                         <span className="text-ink-600">0</span>

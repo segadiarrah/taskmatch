@@ -30,7 +30,8 @@
         "en": "Address verification",
         "fr": "Vérification d’adresse",
         "es": "Verificar dirección",
-        "zh": "地址核实"
+        "zh": "地址核实",
+        "pt": "Verificação de endereço"
       }
     },
     {
@@ -54,7 +55,8 @@
         "en": "Visual inspection",
         "fr": "Inspection visuelle",
         "es": "Inspección visual",
-        "zh": "目视检查"
+        "zh": "目视检查",
+        "pt": "Inspeção visual"
       }
     },
     {
@@ -77,7 +79,8 @@
         "en": "Public place photo",
         "fr": "Photo d’un lieu public",
         "es": "Foto de lugar público",
-        "zh": "公共场所摄影"
+        "zh": "公共场所摄影",
+        "pt": "Fotografia de local público"
       }
     },
     {
@@ -101,7 +104,8 @@
         "en": "Commercial display",
         "fr": "Affichage commercial",
         "es": "Publicidad comercial",
-        "zh": "商业展示核实"
+        "zh": "商业展示核实",
+        "pt": "Verificação de exposição comercial"
       }
     },
     {
@@ -124,7 +128,8 @@
         "en": "Inventory check",
         "fr": "Contrôle de stocks",
         "es": "Control de inventario",
-        "zh": "库存检查"
+        "zh": "库存检查",
+        "pt": "Verificação de estoque"
       }
     },
     {
@@ -147,7 +152,8 @@
         "en": "Authorized delivery",
         "fr": "Collecte ou dépôt autorisé",
         "es": "Recogida o entrega autorizada",
-        "zh": "授权取件或投递"
+        "zh": "授权取件或投递",
+        "pt": "Entrega autorizada"
       }
     },
     {
@@ -170,7 +176,8 @@
         "en": "User testing",
         "fr": "Test utilisateur",
         "es": "Prueba de usuario",
-        "zh": "用户测试"
+        "zh": "用户测试",
+        "pt": "Teste com usuários"
       }
     },
     {
@@ -193,7 +200,8 @@
         "en": "Translation review",
         "fr": "Traduction et relecture",
         "es": "Traducción y revisión",
-        "zh": "翻译和校对"
+        "zh": "翻译和校对",
+        "pt": "Tradução e revisão"
       }
     },
     {
@@ -216,7 +224,8 @@
         "en": "Data annotation",
         "fr": "Annotation de données",
         "es": "Anotación de datos",
-        "zh": "数据标注"
+        "zh": "数据标注",
+        "pt": "Anotação de dados"
       }
     },
     {
@@ -239,7 +248,8 @@
         "en": "Ai verification",
         "fr": "Vérification de résultats IA",
         "es": "Verificar resultados de IA",
-        "zh": "AI 结果核验"
+        "zh": "AI 结果核验",
+        "pt": "Verificação de resultados de IA"
       }
     },
     {
@@ -263,7 +273,8 @@
         "en": "Document research",
         "fr": "Recherche documentaire",
         "es": "Investigación documental",
-        "zh": "文献研究"
+        "zh": "文献研究",
+        "pt": "Pesquisa documental"
       }
     },
     {
@@ -286,7 +297,8 @@
         "en": "Qualitative evaluation",
         "fr": "Évaluation qualitative",
         "es": "Evaluación cualitativa",
-        "zh": "定性评估"
+        "zh": "定性评估",
+        "pt": "Avaliação qualitativa"
       }
     },
     {
@@ -309,7 +321,8 @@
         "en": "Consented feedback",
         "fr": "Retours utilisateurs consentis",
         "es": "Opiniones con consentimiento",
-        "zh": "经同意的用户反馈"
+        "zh": "经同意的用户反馈",
+        "pt": "Feedback com consentimento"
       }
     },
     {
@@ -333,7 +346,8 @@
         "en": "Document verification",
         "fr": "Vérification de documents",
         "es": "Verificar documentos",
-        "zh": "文件核验"
+        "zh": "文件核验",
+        "pt": "Verificação de documentos"
       }
     },
     {
@@ -356,7 +370,8 @@
         "en": "Multi city verification",
         "fr": "Vérification dans plusieurs villes",
         "es": "Verificación en varias ciudades",
-        "zh": "多城市核验"
+        "zh": "多城市核验",
+        "pt": "Verificação em várias cidades"
       }
     },
     {
@@ -379,7 +394,8 @@
         "en": "Contradictory review",
         "fr": "Contrôle contradictoire",
         "es": "Revisión contradictoria",
-        "zh": "对照审核"
+        "zh": "对照审核",
+        "pt": "Revisão independente de entregas"
       }
     },
     {
@@ -402,7 +418,8 @@
         "en": "Field collection analysis",
         "fr": "Collecte terrain et analyse",
         "es": "Recogida de campo y análisis",
-        "zh": "实地采集与分析"
+        "zh": "实地采集与分析",
+        "pt": "Coleta em campo e análise"
       }
     },
     {
@@ -425,7 +442,8 @@
         "en": "Workflow approval",
         "fr": "Validation d’une étape",
         "es": "Validación de etapa",
-        "zh": "流程步骤确认"
+        "zh": "流程步骤确认",
+        "pt": "Aprovação de etapa do fluxo"
       }
     }
   ]

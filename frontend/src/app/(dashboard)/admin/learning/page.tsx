@@ -1,9 +1,13 @@
 "use client";
 
+import { feedbackCategories, decisionTypes } from "@/lib/admin-vocabulary";
+
+import { useAdminCopy, adminSource } from "@/lib/admin-copy";
+
 import React, { useState, useEffect } from "react";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { apiGet, apiPost } from "@/lib/api";
-import { cn, formatStatus, formatDateTime, timeAgo } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -55,7 +59,7 @@ interface MCPDecision {
   created_at: string;
 }
 
-const feedbackCategories = ["quality", "speed", "reliability", "communication", "cost", "technical", "general"];
+
 
 const categoryColors: Record<string, { variant: "default" | "secondary" | "outline" | "success" | "warning" | "info" | "purple"; box: string; icon: React.ElementType }> = {
   quality: { variant: "purple", box: "bg-[#b49aff]/10 text-[#b49aff]", icon: Star },
@@ -67,7 +71,7 @@ const categoryColors: Record<string, { variant: "default" | "secondary" | "outli
   general: { variant: "outline", box: "bg-ink-800 text-ink-400", icon: Tag },
 };
 
-const decisionTypes = ["format", "decompose", "match", "rank_bids", "validate", "assign", "flag"];
+
 
 const decisionTypeColors: Record<string, string> = {
   format: "info",
@@ -80,6 +84,7 @@ const decisionTypeColors: Record<string, string> = {
 };
 
 export default function LearningPage() {
+  const { a, formatStatus, formatNumber, formatPercent, timeAgo } = useAdminCopy();
   const [activeTab, setActiveTab] = useState("feedback");
   const [feedbackNotes, setFeedbackNotes] = useState<FeedbackNote[]>([]);
   const [mcpDecisions, setMCPDecisions] = useState<MCPDecision[]>([]);
@@ -131,7 +136,7 @@ export default function LearningPage() {
       });
       await fetchData();
     } catch {
-      setActionError("The request failed. No change was saved. Please try again.");
+      setActionError(adminSource("The request failed. No change was saved. Please try again."));
       return;
     } finally {
       setNewNote("");
@@ -147,13 +152,11 @@ export default function LearningPage() {
 
   return (
     <div className="space-y-6">
-      {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{actionError}</p>}
+      {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{a(actionError)}</p>}
       {/* Header */}
       <div>
-        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Learning & Feedback</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Track operator feedback, MCP reasoning, and platform learning insights.
-        </p>
+        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">{a("Learning & Feedback")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{a("Track operator feedback, MCP reasoning, and platform learning insights.")}</p>
       </div>
 
       {/* Summary Stats */}
@@ -165,8 +168,8 @@ export default function LearningPage() {
                 <MessageSquare className="h-4 w-4 text-[#b49aff]" />
               </div>
               <div>
-                <p className="font-display text-2xl font-medium text-ink-50">{feedbackNotes.length}</p>
-                <p className="text-xs text-muted-foreground">Feedback Notes</p>
+                <p className="font-display text-2xl font-medium text-ink-50">{formatNumber(feedbackNotes.length)}</p>
+                <p className="text-xs text-muted-foreground">{a("Feedback Notes")}</p>
               </div>
             </div>
           </CardContent>
@@ -178,8 +181,8 @@ export default function LearningPage() {
                 <Brain className="h-4 w-4 text-signal-400" />
               </div>
               <div>
-                <p className="font-display text-2xl font-medium text-ink-50">{mcpDecisions.length}</p>
-                <p className="text-xs text-muted-foreground">MCP Decisions</p>
+                <p className="font-display text-2xl font-medium text-ink-50">{formatNumber(mcpDecisions.length)}</p>
+                <p className="text-xs text-muted-foreground">{a("MCP Decisions")}</p>
               </div>
             </div>
           </CardContent>
@@ -192,11 +195,11 @@ export default function LearningPage() {
               </div>
               <div>
                 <p className="font-display text-2xl font-medium text-ink-50">
-                  {mcpDecisions.length > 0
-                    ? (mcpDecisions.reduce((s, d) => s + d.confidence, 0) / mcpDecisions.length * 100).toFixed(0)
-                    : 0}%
+                  {formatPercent(mcpDecisions.length > 0
+                    ? mcpDecisions.reduce((s, d) => s + d.confidence, 0) / mcpDecisions.length
+                    : 0)}
                 </p>
-                <p className="text-xs text-muted-foreground">Avg Confidence</p>
+                <p className="text-xs text-muted-foreground">{a("Avg Confidence")}</p>
               </div>
             </div>
           </CardContent>
@@ -209,9 +212,9 @@ export default function LearningPage() {
               </div>
               <div>
                 <p className="font-display text-2xl font-medium text-ink-50">
-                  {new Set(mcpDecisions.map((d) => d.decision_type)).size}
+                  {formatNumber(new Set(mcpDecisions.map((d) => d.decision_type)).size)}
                 </p>
-                <p className="text-xs text-muted-foreground">Decision Types</p>
+                <p className="text-xs text-muted-foreground">{a("Decision Types")}</p>
               </div>
             </div>
           </CardContent>
@@ -221,12 +224,8 @@ export default function LearningPage() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="feedback">
-            Feedback Notes
-          </TabsTrigger>
-          <TabsTrigger value="decisions">
-            MCP Decisions
-          </TabsTrigger>
+          <TabsTrigger value="feedback">{a("Feedback Notes")}</TabsTrigger>
+          <TabsTrigger value="decisions">{a("MCP Decisions")}</TabsTrigger>
         </TabsList>
 
         {/* Feedback Notes Tab */}
@@ -236,9 +235,7 @@ export default function LearningPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-display text-base">
-                  <Plus className="h-4 w-4 text-ink-500" />
-                  Add Feedback Note
-                </CardTitle>
+                  <Plus className="h-4 w-4 text-ink-500" />{a("Add Feedback Note")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -253,20 +250,20 @@ export default function LearningPage() {
                       ))}
                     </Select>
                     <Input
-                      placeholder="Link task ID (optional)"
+                      placeholder={a("Link task ID (optional)")}
                       value={linkTaskId}
                       onChange={(e) => setLinkTaskId(e.target.value)}
                       className="w-full sm:w-44"
                     />
                     <Input
-                      placeholder="Link agent ID (optional)"
+                      placeholder={a("Link agent ID (optional)")}
                       value={linkAgentId}
                       onChange={(e) => setLinkAgentId(e.target.value)}
                       className="w-full sm:w-44"
                     />
                   </div>
                   <Textarea
-                    placeholder="Write your feedback note..."
+                    placeholder={a("Write your feedback note...")}
                     value={newNote}
                     onChange={(e) => setNewNote(e.target.value)}
                     className="min-h-[80px]"
@@ -277,7 +274,7 @@ export default function LearningPage() {
                       disabled={!newNote.trim() || addingNote}
                     >
                       <Plus className="mr-1 h-4 w-4" />
-                      {addingNote ? "Adding..." : "Add Note"}
+                      {addingNote ? a("Adding...") : a("Add Note")}
                     </Button>
                   </div>
                 </div>
@@ -289,7 +286,7 @@ export default function LearningPage() {
               <div className="flex h-48 items-center justify-center">
                 <div className="flex flex-col items-center gap-3">
                   <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
-                  <p className="text-sm text-muted-foreground">Loading feedback notes...</p>
+                  <p className="text-sm text-muted-foreground">{a("Loading feedback notes...")}</p>
                 </div>
               </div>
             ) : loadError ? (
@@ -297,8 +294,8 @@ export default function LearningPage() {
             ) : feedbackNotes.length === 0 ? (
               <div className="flex h-48 flex-col items-center justify-center text-center">
                 <MessageSquare className="h-10 w-10 text-ink-600" />
-                <p className="mt-3 text-sm font-medium text-muted-foreground">No feedback notes yet</p>
-                <p className="text-xs text-ink-500">Add your first note above to start building the knowledge base.</p>
+                <p className="mt-3 text-sm font-medium text-muted-foreground">{a("No feedback notes yet")}</p>
+                <p className="text-xs text-ink-500">{a("Add your first note above to start building the knowledge base.")}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -361,13 +358,13 @@ export default function LearningPage() {
                     onChange={(e) => setDecisionTypeFilter(e.target.value)}
                     className="w-48"
                   >
-                    <option value="all">All Decision Types</option>
+                    <option value="all">{a("All Decision Types")}</option>
                     {decisionTypes.map((dt) => (
                       <option key={dt} value={dt}>{formatStatus(dt)}</option>
                     ))}
                   </Select>
                   <span className="font-mono text-sm text-ink-500">
-                    {filteredDecisions.length} decision{filteredDecisions.length !== 1 ? "s" : ""}
+                    {a("{count} decisions", { count: filteredDecisions.length })}
                   </span>
                 </div>
               </CardContent>
@@ -383,8 +380,8 @@ export default function LearningPage() {
             ) : filteredDecisions.length === 0 ? (
               <div className="flex h-48 flex-col items-center justify-center text-center">
                 <Brain className="h-10 w-10 text-ink-600" />
-                <p className="mt-3 text-sm font-medium text-muted-foreground">No MCP decisions found</p>
-                <p className="text-xs text-ink-500">Try adjusting the filter or wait for MCP to process items.</p>
+                <p className="mt-3 text-sm font-medium text-muted-foreground">{a("No MCP decisions found")}</p>
+                <p className="text-xs text-ink-500">{a("Try adjusting the filter or wait for MCP to process items.")}</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -402,14 +399,14 @@ export default function LearningPage() {
                                 {formatStatus(decision.decision_type)}
                               </Badge>
                               <span className="text-sm font-medium text-ink-200">
-                                {decision.entity_type}: {decision.entity_name}
+                                {formatStatus(decision.entity_type)}: {decision.entity_name}
                               </span>
                             </div>
                             <p className="mt-2 text-sm leading-relaxed text-ink-300">
                               {decision.reasoning}
                             </p>
                             <div className="mt-2 rounded-md border border-ink-800 bg-ink-900 p-2 font-mono text-xs text-ink-400">
-                              <span className="font-medium">Input:</span> {decision.input_data_summary}
+                              <span className="font-medium">{a("Input:")} </span> {decision.input_data_summary}
                             </div>
                           </div>
                         </div>
@@ -422,9 +419,9 @@ export default function LearningPage() {
                               decision.confidence >= 0.7 ? "text-warning" :
                               "text-danger"
                             )}>
-                              {(decision.confidence * 100).toFixed(0)}%
+                              {formatPercent(decision.confidence)}
                             </div>
-                            <p className="eyebrow text-ink-500">Confidence</p>
+                            <p className="eyebrow text-ink-500">{a("Confidence")}</p>
                             <p className="mt-1 font-mono text-xs text-ink-500">{timeAgo(decision.created_at)}</p>
                           </div>
                         </div>
