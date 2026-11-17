@@ -69,6 +69,43 @@ GPS ni une preuve automatique de véracité.
 - Images backend/frontend construites ; sauvegardes PostgreSQL, volume privé,
   configuration et images précédentes vérifiées avant la bascule.
 
-Les contrôles après bascule seront ajoutés après leur exécution. Aucun débit, transfert ou remboursement bancaire réel n'est
+Déployé le **17 novembre 2026**, fonctionnalité `c171aed` et correction de
+montage proxy `3009261`. Migration **005 → 008** appliquée. Les services backend,
+worker, frontend, PostgreSQL, Redis et Nginx fonctionnent avec Human Tasks activé.
+
+L'API et le frontend candidats ont servi pendant le remplacement des services
+canoniques. Le worker compatible a été installé avant l'exposition des nouvelles
+opérations. Les anciens fichiers mobiles et le README de production sont préservés.
+
+Le contrôle public de la carte A2A a détecté un ancien bind mount Nginx resté sur
+l'inode d'avant le checkout : réponse 404 du nouveau chemin, corrigée avant les
+contrôles finaux. Le montage du répertoire a été vérifié avec remplacement atomique
+réel, puis activé en production via un proxy alternatif et la bascule du seul
+vhost TaskMatch. Le vhost frontal a été restauré à l'identique.
+
+**16 contrôles réels après bascule passent**, dont readiness, contrat, carte A2A,
+outils MCP, accès A2A refusé sur tâche absente, API du portail et cinq vues de
+l'espace utilisateur en français ; **zéro erreur JavaScript**. Les captures mobile
+ont été inspectées. Le contrôle public ne trouve pas le nom du prestataire.
+
+Sur deux fenêtres de sondage, **157/160 requêtes readiness ont retourné HTTP 200** ;
+deux timeouts et une connexion réinitialisée ont été observés. Un premier contrôle
+navigateur après rechargement du frontal a aussi rencontré une réinitialisation de
+connexion ; sa relance complète est verte. Ces mesures ne constituent pas une
+preuve d'absence totale d'interruption ni une garantie de disponibilité continue.
+
+SQL après bascule : **33 jobs, 135 tâches, 0 financement, 0 Principal, 0 profil
+travailleur, 0 autorisation de paiement et 0 abonnement sortant**. Aucun compte,
+consentement, mission ou paiement fictif n'a été ajouté à la production.
+
+Pull request : https://github.com/segadiarrah/taskmatch/pull/2 . Le connecteur
+GitHub refusait la création (403) ; la CLI configurée a créé la PR. Les branches
+historiques et `main` restent conservées. Aucun débit, transfert ou remboursement bancaire réel n'est
 nécessaire pour tester cette livraison ; les tests simulent la frontière du
 prestataire et utilisent PostgreSQL isolé.
+
+
+Les contrôles cités sont ceux exécutés sur cet environnement et sur les services
+déployés. Aucun résultat GitHub Actions n’était disponible lors de la livraison,
+bien que les Actions soient activées et le workflow CI présent. Ne pas les
+présenter comme des checks distants passants.

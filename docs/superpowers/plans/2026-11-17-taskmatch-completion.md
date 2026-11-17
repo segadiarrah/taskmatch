@@ -16,5 +16,5 @@
 - [x] Intégrer tous les routeurs, modèles, migrations, worker et UI de configuration des agents/paiements.
 - [x] Exécuter tests backend complets et SDK, frontend check/build/e2e ; corriger toute régression.
 - [x] Revue de conformité fonctionnelle puis revue sécurité/qualité indépendante.
-- [ ] Sauvegarder, déployer le candidat, vérifier puis basculer et contrôler la production.
+- [x] Sauvegarder, déployer le candidat, vérifier puis basculer et contrôler la production.
 - [ ] Mettre à jour la PR et le rapport transmis à sega@tauraco.ai.
