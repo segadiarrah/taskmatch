@@ -16,5 +16,5 @@
 - [x] Frontend demandeur et travailleur, labels traduits, tests navigateur fonctionnels.
 - [x] Tests backend complets isolés, migration up/check, SDK, npm check et build.
 - [x] Revue indépendante, corrections, documentation d'exploitation et rapport final.
-- [ ] Préparer puis vérifier le candidat ; ne pas masquer des fonctions encore manquantes.
+- [x] Préparer puis vérifier le candidat ; ne pas masquer des fonctions encore manquantes.
 - [ ] Envoyer le rapport autorisé à sega@tauraco.ai ; consigner le résultat réel de l'envoi.

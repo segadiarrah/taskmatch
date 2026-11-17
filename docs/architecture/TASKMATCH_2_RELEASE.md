@@ -44,4 +44,33 @@ transfert ou remboursement bancaire réel n'a été effectué pour cette livrais
 
 ## Déploiement
 
-Statut à compléter après vérification effective du candidat et de la bascule.
+Déployé le **17 novembre 2026 vers 14:47 UTC**, source fonctionnelle `edca1f1`.
+Migration **004 → 005** appliquée avec succès. `HUMAN_TASKS_ENABLED=true`.
+
+- Sauvegarde PostgreSQL au format custom, catalogue de l'archive vérifié, bundle
+  Git et copies privées de configuration préparés hors dépôt ; images précédentes
+  taguées `before-human-20261117`. Aucun secret ajouté au dépôt ou au rapport.
+- Images candidates backend/frontend construites et démarrées en parallèle.
+  Bascule Nginx vers le candidat, remplacement des services canoniques, contrôle
+  readiness, puis retour du proxy vers les services canoniques et arrêt du candidat
+  après drainage des anciens workers Nginx. Pas de redémarrage PostgreSQL/Redis.
+- Backend et billing worker sains ; frontend, proxy et readiness publics répondent.
+- Schéma public tm.human-task.v1 vérifié ; écrans demandeur/travailleur authentifiés,
+  accueil et absence d'erreurs navigateur contrôlés en production en lecture seule.
+- **15 sondes curl après bascule : 15 HTTP 200.** Le moniteur urllib initial était
+  rejeté HTTP 403 par le filtrage d'User-Agent et n'est pas une mesure de disponibilité
+  exploitable. HTTPX (transport SDK Python) accède au contrat public en HTTP 200.
+  Ces observations ne constituent pas une garantie générale d'absence d'interruption.
+- Contrôle SQL après déploiement : **33 jobs, 135 tâches, 0 financements**, 0 nouveau
+  Principal et 0 profil travailleur artificiel. Modifications mobiles et README
+  préexistantes toujours présentes et préservées.
+
+Branche publiée : `feat/human-execution-layer-20261117`.
+Pull request de revue : https://github.com/segadiarrah/taskmatch/pull/1 (draft), base
+`taskmatch-2-production-base-20261117` afin d'isoler l'évolution de l'état de
+production existant. `main` n'a pas été modifié. Le connecteur refusait la création
+PR (403) ; la CLI GitHub authentifiée l'a créée avec succès.
+
+Les paiements réels et la vérification d'identité de nouveaux intervenants restent
+à exécuter dans le cadre des premières missions autorisées, avec les gates actifs.
+
