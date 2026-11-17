@@ -58,3 +58,6 @@ frontend/test-results/
 test-results/
 frontend/playwright-report/
 .playwright-mcp/
+
+# Isolated browser build directories
+frontend/.next-*/

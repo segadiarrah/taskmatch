@@ -25,9 +25,9 @@ const ibmPlexMono = IBM_Plex_Mono({
   variable: "--font-mono",
 });
 
-const SITE_TITLE = "TaskMatch.ai — AI task execution, made accountable";
+const SITE_TITLE = "TaskMatch — The Human Execution Layer for AI Agents";
 const SITE_DESCRIPTION =
-  "TaskMatch.ai turns a plain-language brief into structured, decomposed, matched, and validated work — with every AI decision on the record.";
+  "Delegate a mission to AI agents and human experts. Set a budget, follow progress and approve the result in one place.";
 
 /**
  * Site metadata.

@@ -1,15 +1,14 @@
 """Human contracts adapt to the existing Job/Task/Quote execution lifecycle."""
 import json
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from decimal import Decimal, ROUND_DOWN
 from pathlib import Path
 
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import lazyload
 
-from app.core.config import settings
 from app.middleware.audit import log_audit
 from app.models import Job, Task, Quote, TaskQuote
 from app.models.human import HumanTaskRequest
@@ -61,10 +60,10 @@ async def create_contract(db, body, user, delegation, key):
         if job.client_user_id != user.id:
             raise HTTPException(403, 'Parent job belongs to another requester')
         tasks = list((await db.scalars(select(Task).options(lazyload('*')).where(Task.job_id == job.id))).all())
-        if (job.status != 'draft' or job.billing_mode != 'stripe' or job.currency != 'EUR' or any(not t.human_contract_json for t in tasks)
+        if (job.status != 'draft' or job.billing_mode != 'stripe' or job.currency != 'EUR' or (delegation and any(not t.human_contract_json for t in tasks))
                 or await db.scalar(select(Quote.id).where(Quote.job_id == job.id).limit(1))):
             raise HTTPException(409, 'Adding work requires an unquoted Human Tasks draft job; funded changes require an amendment')
-        if any(t.human_contract_json['principal_id'] != str(p.id) for t in tasks):
+        if any(t.human_contract_json and t.human_contract_json['principal_id'] != str(p.id) for t in tasks):
             raise HTTPException(403, 'Parent job has a different principal')
     else:
         if body.parent_task_id:
@@ -112,8 +111,13 @@ async def require_approved_job(db, job):
 async def create_human_quote(db, job):
     from app.services.quote_service import ensure_delivery_plan
     tasks = list((await db.scalars(select(Task).options(lazyload('*')).where(Task.job_id == job.id))).all())
-    if not tasks or any(not t.human_contract_json for t in tasks):
-        raise HTTPException(409, 'Mixed AI/human contract repricing requires an explicit amendment')
+    from app.services.billing_service import assert_quote_editable
+    await assert_quote_editable(db,job)
+    if not tasks:
+        raise HTTPException(409,'At least one step is required')
+    if any(not t.human_contract_json for t in tasks):
+        from app.services.quote_service import create_quote_for_job
+        return await create_quote_for_job(db,job.id)
     await require_approved_job(db, job)
     from app.services.billing_service import assert_quote_editable
     await assert_quote_editable(db, job)
@@ -126,7 +130,8 @@ async def create_human_quote(db, job):
     ceiling = sum(t.human_contract_json['budget']['amount_minor'] for t in tasks)
     if int(total*100) > ceiling:
         raise HTTPException(409, 'Quote exceeds the authorized spending limit')
-    q = Quote(id=uuid.uuid4(), job_id=job.id, currency='EUR', subtotal=subtotal,
+    # Use serialized creation time, not the possibly older transaction start.
+    q = Quote(id=uuid.uuid4(), created_at=func.clock_timestamp(), job_id=job.id, currency='EUR', subtotal=subtotal,
               platform_fee=fee, total=total, pricing_version='tm.human-task.v1',
               status='pending_client', valid_until=min(datetime.fromisoformat(t.human_contract_json['deadline']) for t in tasks),
               breakdown_json={'contract_version': 'tm.human-task.v1', 'authorized_total_minor': ceiling})
@@ -135,7 +140,7 @@ async def create_human_quote(db, job):
     for t in tasks:
         amount = worker_amount(t.human_contract_json['budget']['amount_minor'])
         t.budget = amount
-        db.add(TaskQuote(quote_id=q.id, task_id=t.id, route='human', complexity='S',
+        db.add(TaskQuote(quote_id=q.id, created_at=func.clock_timestamp(), task_id=t.id, route='human', complexity='S',
                         task_type=t.task_type, price=amount, human_price_low=amount,
                         human_price_high=amount, human_hours=t.human_contract_json['expected_duration']/60,
                         breakdown_json={'contract_version':'tm.human-task.v1'}))

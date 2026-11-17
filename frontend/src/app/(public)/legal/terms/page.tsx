@@ -77,7 +77,8 @@ const COPY: Record<Locale, Copy> = {
         title: "4. Fees and payments",
         paragraphs: [
           "TaskMatch sets the price of a task and presents it before any work begins. Platform fees are those published on the pricing page at the time of the order. Prices are exclusive of VAT, which is added where applicable.",
-          "New jobs are paid through Stripe Checkout before execution. Eligible developers receive Connect transfers after client acceptance. Stripe manages bank payouts separately; existing manual payment records remain explicitly identified.",
+          "Payment and payout pages are hosted by an external payment provider. Its identity, terms and privacy notices are displayed in those hosted flows; you can request current provider details from the publisher before proceeding.",
+          "New jobs are paid through the hosted payment page before execution. Eligible developers receive Payout transfers after client acceptance. The payment provider manages bank payouts separately; existing manual payment records remain explicitly identified.",
         ],
         bullets: [
           "Clients are responsible for lawful briefs, accurate requirements and a valid payment method.",
@@ -88,17 +89,17 @@ const COPY: Record<Locale, Copy> = {
       disputes: {
         title: "5. Funding, validation and payment disputes",
         paragraphs: [
-          "New jobs use Stripe Checkout to pay the server-priced quote before execution. TaskMatch starts work only after verifying payment with Stripe. This is platform funding, not a legal escrow service.",
+          "New jobs use the hosted payment page to pay the server-priced quote before execution. TaskMatch starts work only after verifying payment securely. This is platform funding, not a legal escrow service.",
           "Developer transfers and refunds follow these steps:",
         ],
         bullets: [
-          "Payment: the quoted amount and currency are fixed by the server and paid through hosted Stripe Checkout. Closing or returning from Checkout is not proof of payment.",
+          "Payment: the quoted amount and currency are fixed by the server and paid through the hosted payment page. Closing or returning from Checkout is not proof of payment.",
           "Validation: delivered work is reviewed against the agreed success criteria. The client can request revisions before accepting delivery.",
-          "Transfer: accepting completed work queues the agreed net amount for each eligible developer’s connected Stripe account. Incomplete onboarding can block a transfer. Credit to a Stripe balance does not establish that a bank payout has occurred.",
+          "Transfer: accepting completed work queues the agreed net amount for each eligible developer’s connected payout account. Incomplete onboarding can block a transfer. Credit to a payment account balance does not establish that a bank payout has occurred.",
           "Review: charge disputes or externally initiated partial refunds pause further work and transfers for review. Acceptance is not automatic after a time window.",
         ],
         closing: [
-          "Administrators can request a full refund of the remaining payment balance. Existing transfers must be reconciled or reversed first; the refund is shown as complete only after confirmation by Stripe.",
+          "Administrators can request a full refund of the remaining payment balance. Existing transfers must be reconciled or reversed first; the refund is shown as complete only after confirmation by the payment provider.",
           "Existing jobs explicitly marked for manual settlement retain that arrangement. Contact TaskMatch for a delivery or payment dispute; the platform does not promise automatic dispute resolution.",
         ],
       },
@@ -184,7 +185,8 @@ const COPY: Record<Locale, Copy> = {
         title: "4. Frais et paiements",
         paragraphs: [
           "TaskMatch fixe le prix d’une tâche et le présente avant tout démarrage. Les frais de plateforme sont ceux publiés sur la page Tarifs au moment de la commande. Les prix s’entendent hors taxes, la TVA étant ajoutée le cas échéant.",
-          "Les nouvelles missions sont payées via Stripe Checkout avant exécution. Les développeurs éligibles reçoivent des transferts Connect après acceptation du client. Stripe gère séparément les versements bancaires ; les anciens règlements manuels restent identifiés.",
+          "Les pages de paiement et de versement sont hébergées par un prestataire externe. Son identité, ses conditions et sa politique de confidentialité y sont affichées ; vous pouvez demander ses coordonnées actuelles à l’éditeur avant de poursuivre.",
+          "Les nouvelles missions sont payées via la page de paiement hébergée avant exécution. Les développeurs éligibles reçoivent des transferts aux intervenants après acceptation du client. Le prestataire de paiement gère séparément les versements bancaires ; les anciens règlements manuels restent identifiés.",
         ],
         bullets: [
           "Le client répond de la licéité de ses briefs, de l’exactitude de ses exigences et de la validité de son moyen de paiement.",
@@ -195,17 +197,17 @@ const COPY: Record<Locale, Copy> = {
       disputes: {
         title: "5. Financement, validation et contestations de paiement",
         paragraphs: [
-          "Les nouvelles missions utilisent Stripe Checkout pour régler le devis calculé par le serveur avant l’exécution. TaskMatch démarre le travail uniquement après vérification du paiement auprès de Stripe. Ce financement de la plateforme ne constitue pas un service de séquestre juridique.",
+          "Les nouvelles missions utilisent la page de paiement hébergée pour régler le devis calculé par le serveur avant l’exécution. TaskMatch démarre le travail uniquement après vérification du paiement auprès du prestataire de paiement. Ce financement de la plateforme ne constitue pas un service de séquestre juridique.",
           "Les transferts aux développeurs et les remboursements suivent ces étapes :",
         ],
         bullets: [
-          "Paiement : le montant et la devise du devis sont fixés par le serveur et réglés sur la page Stripe Checkout. Fermer cette page ou en revenir ne prouve pas le paiement.",
+          "Paiement : le montant et la devise du devis sont fixés par le serveur et réglés sur la page la page de paiement hébergée. Fermer cette page ou en revenir ne prouve pas le paiement.",
           "Validation : le travail livré est examiné selon les critères convenus. Le client peut demander des modifications avant d’accepter la livraison.",
-          "Transfert : l’acceptation du travail terminé déclenche la mise en file du montant net convenu pour le compte Stripe connecté de chaque développeur éligible. Une inscription incomplète peut bloquer un transfert. Le crédit d’un solde Stripe ne confirme pas un versement bancaire.",
+          "Transfert : l’acceptation du travail terminé déclenche la mise en file du montant net convenu pour le compte de paiement connecté de chaque développeur éligible. Une inscription incomplète peut bloquer un transfert. Le crédit d’un solde du compte de paiement ne confirme pas un versement bancaire.",
           "Examen : les contestations de paiement ou remboursements partiels initiés ailleurs suspendent la suite du travail et les transferts pour examen. L’acceptation n’est pas automatique après un délai.",
         ],
         closing: [
-          "Les administrateurs peuvent demander le remboursement intégral du solde restant. Les transferts existants doivent d’abord être rapprochés ou annulés ; le remboursement n’est indiqué comme terminé qu’après confirmation de Stripe.",
+          "Les administrateurs peuvent demander le remboursement intégral du solde restant. Les transferts existants doivent d’abord être rapprochés ou annulés ; le remboursement n’est indiqué comme terminé qu’après confirmation du prestataire de paiement.",
           "Les missions existantes explicitement indiquées en règlement manuel conservent ce fonctionnement. Contactez TaskMatch en cas de litige de livraison ou de paiement ; la plateforme ne promet pas de résolution automatique.",
         ],
       },
@@ -291,7 +293,8 @@ const COPY: Record<Locale, Copy> = {
         title: "4. Tarifas y pagos",
         paragraphs: [
           "TaskMatch fija el precio de una tarea y lo presenta antes de que empiece el trabajo. Las comisiones son las publicadas en la página de precios en el momento del pedido. Los precios no incluyen IVA, que se añade cuando corresponde.",
-          "Los trabajos nuevos se pagan con Stripe Checkout antes de ejecutarse. Los desarrolladores elegibles reciben transferencias Connect tras la aceptación del cliente. Stripe gestiona los pagos bancarios por separado; los registros manuales existentes siguen identificados.",
+          "Las páginas de pago y cobro las aloja un proveedor externo. Su identidad, condiciones y política de privacidad se muestran en esos flujos; puedes solicitar sus datos actuales al editor antes de continuar.",
+          "Los trabajos nuevos se pagan con la página de pago alojada antes de ejecutarse. Los desarrolladores elegibles reciben transferencias a trabajadores tras la aceptación del cliente. El proveedor de pagos gestiona los pagos bancarios por separado; los registros manuales existentes siguen identificados.",
         ],
         bullets: [
           "El cliente responde de la licitud de sus briefs, de la exactitud de sus requisitos y de la validez de su medio de pago.",
@@ -302,17 +305,17 @@ const COPY: Record<Locale, Copy> = {
       disputes: {
         title: "5. Financiación, validación y disputas de pago",
         paragraphs: [
-          "Los trabajos nuevos usan Stripe Checkout para pagar el presupuesto calculado por el servidor antes de la ejecución. TaskMatch inicia el trabajo solo tras verificar el pago con Stripe. Se trata de financiación en la plataforma, no de un servicio jurídico de depósito en garantía.",
+          "Los trabajos nuevos usan la página de pago alojada para pagar el presupuesto calculado por el servidor antes de la ejecución. TaskMatch inicia el trabajo solo tras verificar el pago de forma segura. Se trata de financiación en la plataforma, no de un servicio jurídico de depósito en garantía.",
           "Las transferencias a desarrolladores y los reembolsos siguen estos pasos:",
         ],
         bullets: [
-          "Pago: el servidor fija el importe y la moneda del presupuesto, que se paga en Stripe Checkout. Cerrar esa página o volver desde ella no demuestra que se haya pagado.",
+          "Pago: el servidor fija el importe y la moneda del presupuesto, que se paga en la página de pago alojada. Cerrar esa página o volver desde ella no demuestra que se haya pagado.",
           "Validación: el trabajo entregado se revisa según los criterios acordados. El cliente puede pedir cambios antes de aceptar la entrega.",
-          "Transferencia: aceptar el trabajo completado pone en cola el importe neto acordado para la cuenta Stripe conectada de cada desarrollador elegible. Un registro incompleto puede bloquearla. Abonar un saldo Stripe no confirma un pago bancario.",
+          "Transferencia: aceptar el trabajo completado pone en cola el importe neto acordado para la cuenta de cobros conectada de cada desarrollador elegible. Un registro incompleto puede bloquearla. Abonar un saldo de la cuenta de pago no confirma un pago bancario.",
           "Revisión: las disputas de cargos o los reembolsos parciales iniciados externamente suspenden nuevos trabajos y transferencias para su revisión. La aceptación no se produce automáticamente al vencer un plazo.",
         ],
         closing: [
-          "Los administradores pueden solicitar el reembolso íntegro del saldo restante. Las transferencias existentes deben conciliarse o revertirse primero; el reembolso solo se muestra completado tras la confirmación de Stripe.",
+          "Los administradores pueden solicitar el reembolso íntegro del saldo restante. Las transferencias existentes deben conciliarse o revertirse primero; el reembolso solo se muestra completado tras la confirmación del proveedor de pagos.",
           "Los trabajos existentes marcados explícitamente para liquidación manual conservan ese acuerdo. Contacta con TaskMatch si existe una disputa de entrega o pago; la plataforma no promete una resolución automática.",
         ],
       },
@@ -393,7 +396,8 @@ const COPY: Record<Locale, Copy> = {
         title: "4. 费用与付款",
         paragraphs: [
           "TaskMatch 设定子任务价格，并在任何工作开始前予以呈现。平台费用以下单时定价页面公布的标准为准。价格不含增值税，适用时另行加收。",
-          "新工作在执行前通过 Stripe Checkout 付款。客户验收后，符合条件的开发者通过 Connect 获得转账。银行付款由 Stripe 单独管理；现有人工结算记录仍明确标识。",
+          "付款和收款页面由外部支付服务商托管，其身份、条款和隐私声明会在页面上显示。继续操作前，你可以向平台运营方索取该服务商的当前信息。",
+          "新工作在执行前通过托管付款页面付款。客户验收后，符合条件的开发者通过 获得转账。银行付款由支付服务商单独管理；现有人工结算记录仍明确标识。",
         ],
         bullets: [
           "客户对其需求说明的合法性、要求的准确性以及支付方式的有效性负责。",
@@ -404,17 +408,17 @@ const COPY: Record<Locale, Copy> = {
       disputes: {
         title: "5. 付款、验证与支付争议",
         paragraphs: [
-          "新工作需在执行前，通过 Stripe Checkout 支付服务器计算的报价。TaskMatch 仅在向 Stripe 核实付款后启动工作。这属于平台收款，不是法律意义上的资金托管服务。",
+          "新工作需在执行前，通过托管付款页面支付服务器计算的报价。TaskMatch 仅在向支付服务商核实付款后启动工作。这属于平台收款，不是法律意义上的资金托管服务。",
           "开发者转账和退款遵循以下流程：",
         ],
         bullets: [
-          "付款：报价金额和币种由服务器确定，并在 Stripe Checkout 页面支付。关闭支付页面或从该页面返回不代表付款成功。",
+          "付款：报价金额和币种由服务器确定，并在托管付款页面页面支付。关闭支付页面或从该页面返回不代表付款成功。",
           "验证：按约定的验收标准审核交付内容。客户可以在验收前要求修改。",
-          "转账：验收已完成工作后，将为每位符合条件的开发者创建约定净额的 Stripe 关联账户转账任务。开户未完成可能阻止转账。金额计入 Stripe 余额不代表银行已收到款项。",
+          "转账：验收已完成工作后，将为每位符合条件的开发者创建约定净额的 关联收款账户转账任务。开户未完成可能阻止转账。金额计入支付账户余额不代表银行已收到款项。",
           "审核：支付争议或外部发起的部分退款会暂停后续工作和转账，等待审核。工作不会因审核期限届满而自动验收。",
         ],
         closing: [
-          "管理员可以申请退还剩余的全部可退款金额。已有转账必须先完成核对或撤销，只有 Stripe 确认后才显示退款完成。",
+          "管理员可以申请退还剩余的全部可退款金额。已有转账必须先完成核对或撤销，只有支付服务商确认后才显示退款完成。",
           "明确标记为人工结算的现有工作保留原有安排。交付或付款存在争议时请联系 TaskMatch；平台不承诺自动解决争议。",
         ],
       },

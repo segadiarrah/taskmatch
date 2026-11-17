@@ -627,7 +627,10 @@ async def process_event(operation_id, factory):
             )
             if remote.get("id") != obj["id"]:
                 raise BillingBlocked("Stripe returned a different Checkout session")
-            if remote.get("payment_status") == "paid":
+            if remote.get('mode') == 'setup' and (remote.get('metadata') or {}).get('taskmatch_authorization_id'):
+                from app.services.payment_authorization import confirm_session
+                await confirm_session(db, remote)
+            elif remote.get("payment_status") == "paid":
                 await billing.confirm_checkout(db, remote)
             elif remote.get("status") == "expired":
                 funding = await db.scalar(
@@ -645,6 +648,12 @@ async def process_event(operation_id, factory):
                         funding.status = "expired"
                         funding.checkout_url = None
         elif kind == "payment_intent.succeeded":
+            from app.services.autonomous_funding import reconcile_intent
+            handled = await reconcile_intent(db, obj['id'], obj.get('metadata'))
+            if handled:
+                event.processed_at = billing.now()
+                await db.commit()
+                return
             sessions = await _list_all(
                 "/checkout/sessions",
                 {"payment_intent": obj["id"], "expand[0]": "data.payment_intent.latest_charge"},

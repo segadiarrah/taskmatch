@@ -14,6 +14,7 @@ from app.models.job import Job, JobStatus
 from app.models.payment import PaymentRecord
 from app.models.quote import Quote, QuoteStatus
 from app.models.user import User
+from app.models.task import Task
 from app.services import quote_service
 from app.services.stripe_gateway import get_gateway, to_minor
 
@@ -240,6 +241,9 @@ def metadata(funding):
 
 async def create_checkout(db, job, user):
     from app.services.human_tasks import require_approved_job
+    from app.services.human_authorization import enabled
+    if await db.scalar(select(Task.id).where(Task.job_id==job.id,Task.human_contract_json.is_not(None)).limit(1)):
+        enabled()
     await require_approved_job(db, job)
     ensure_configured()
     job = await locked_job(db, job.id)
@@ -287,6 +291,8 @@ async def create_checkout(db, job, user):
         funding.checkout_url = None
     if funding and funding.status not in ("creating", "checkout_pending", "cancelled", "expired"):
         raise HTTPException(409, "This payment requires review before another checkout")
+    if funding and (funding.checkout_request or {}).get('method') == 'off_session' and funding.status not in ('cancelled', 'expired'):
+        raise HTTPException(409, 'An agent payment is being reconciled. Refresh its status before starting another payment.')
     # An unknown outcome is retried with the exact persisted request, including
     # expiry, return URLs and email. Never change the key while it is unknown.
     recovering = bool(funding and funding.status == "creating" and funding.checkout_request)

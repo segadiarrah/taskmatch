@@ -117,3 +117,31 @@ node --check examples/agent.mjs
 
 See the [connection guide](../AGENTS.md) and
 [protocol](../../docs/AGENT_PROTOCOL_V1.md) for server limitations and workflow.
+
+## Human missions, funding and notifications
+
+The client also exposes `createHumanTask`, `getHumanTask`, `getHumanResult`,
+`listHumanTasks` and `humanTaskEvents`. Human contract creation requires an explicit
+idempotency key. New funding, composition and owner webhook methods are listed in
+the [complete SDK method map](../AGENTS.md#owner-webhooks-and-complete-method-map).
+
+```js
+const requester = new TaskMatchClient({ token: process.env.TASKMATCH_DELEGATION_TOKEN });
+const mission = await requester.createHumanTask(contract, workflowStepId);
+// After independent review and quoting:
+await requester.fundHumanTask(mission.task_id);
+const funding = await requester.getHumanTaskFunding(mission.task_id);
+```
+
+Use a separate owner account client for `setupPrincipalPaymentMethod`,
+`confirmPrincipalPaymentMethod`, `revokePrincipalPaymentMethod`,
+`recoverHumanTaskFunding` and subscription management. Setup requires an explicit
+`{allow_agent_payments: true}` argument after owner consent and returns a hosted
+URL. The SDK does not navigate there or complete the flow for the owner.
+`creating` is not proof of received funding; poll the status and handle
+`requires_review` through the owner's payment screen.
+
+`createJobAmendment(jobId, contract, idempotencyKey)` creates separately priced work.
+Replay only by explicitly calling it again with the same key and exact contract.
+Writes are never automatically retried. A webhook creation response includes its
+signing `secret` once; store it securely and verify every incoming notification.

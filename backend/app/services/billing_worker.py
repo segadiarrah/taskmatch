@@ -102,7 +102,10 @@ async def run_once(factory=async_session_factory, *, execution=None):
     error = None
     status = "done"
     try:
-        if kind == "stripe_event":
+        if kind == "fund_human_job":
+            from app.services.autonomous_funding import process_funding
+            await process_funding(operation_id, factory)
+        elif kind == "stripe_event":
             await processors.process_event(operation_id, factory)
         elif kind == "transfer":
             await processors.transfer(operation_id, factory)
@@ -147,7 +150,7 @@ async def run_once(factory=async_session_factory, *, execution=None):
         # HTTP refund/retry paths take the parent job before the ledger and
         # outbox. Error projection must preserve that order too.
         funding = payment = None
-        if error and kind in ("refund", "reverse_refund", "transfer"):
+        if error and kind in ("refund", "reverse_refund", "transfer", "fund_human_job"):
             entity_model = PaymentRecord if kind == "transfer" else JobFunding
             entity_uuid = uuid.UUID(entity_id)
             job_id = await db.scalar(
@@ -186,6 +189,9 @@ async def run_once(factory=async_session_factory, *, execution=None):
         operation.available_at = billing.now() + timedelta(
             seconds=min(3600, 2 ** min(operation.attempts, 11))
         )
+        if error and kind == "fund_human_job" and funding and funding.status not in ("paid","cancelled","refund_pending","refunded","partially_refunded","disputed"):
+            funding.status = "requires_review"
+            funding.last_error = "This payment needs attention from the responsible account. Refresh or recover it before retrying."
         if error and kind in ("refund", "reverse_refund"):
             if funding:
                 funding.last_error = error
@@ -214,11 +220,22 @@ async def consume(*, execution):
             await asyncio.sleep(5)
 
 
+async def consume_webhooks():
+    from app.services.protocol_webhooks import run_once as deliver_once
+    while True:
+        try:
+            if settings.HUMAN_TASKS_ENABLED:
+                await deliver_once(async_session_factory)
+        except Exception:
+            logger.exception('Outbound event delivery failed')
+        await asyncio.sleep(settings.BILLING_WORKER_POLL_SECONDS)
+
+
 async def main():
     logging.basicConfig(level=logging.INFO)
     # Provider execution can await many slow model calls. Financial events and
     # refunds retain a dedicated consumer while bounded task attempts execute.
-    await asyncio.gather(consume(execution=False), consume(execution=True))
+    await asyncio.gather(consume(execution=False), consume(execution=True), consume_webhooks())
 
 
 if __name__ == "__main__":

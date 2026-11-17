@@ -102,7 +102,9 @@ async def get_contract(task_id: uuid.UUID, identity=Depends(caller), db=Depends(
         'can_submit': not delegation and assignment is not None and assignment.status=='active' and task.status in ('assigned','in_progress','validation_failed'),
         'can_review': not delegation and not assignment and (job.client_user_id==user.id or user.role=='admin'),
         'can_fund': not delegation and job.client_user_id==user.id and job.status=='quoted',
-        'can_accept': not delegation and job.client_user_id==user.id and job.status=='client_review'}}
+        'can_accept': not delegation and job.client_user_id==user.id and job.status=='client_review',
+        'can_edit_plan': not delegation and job.client_user_id==user.id and job.status=='draft',
+        'can_amend': not delegation and job.client_user_id==user.id and job.status!='draft'}}
 
 
 @router.get('/{task_id}/result')

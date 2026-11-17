@@ -225,28 +225,28 @@ def score_bid(bid, task, peer_bids):
     body: [
       {
         paragraphs: [
-          "Updated for the launch payment policy. This article replaces an earlier description of escrow-style payments and partial settlement. TaskMatch uses prepaid mission funding through Stripe; it does not provide a legal escrow service.",
+          "Updated for the launch payment policy. This article replaces an earlier description of escrow-style payments and partial settlement. TaskMatch uses prepaid mission funding through our payment provider; it does not provide a legal escrow service.",
           "Each new mission receives an itemized quote in EUR. A platform fee of 10% is added to the task subtotal. AI task prices include provider costs, orchestration and validation, so the platform fee is not the entire platform margin. Accepted quotes keep their agreed amounts if provider prices change.",
         ],
       },
       {
         heading: "Payment before execution",
         paragraphs: [
-          "The client accepts the quote and pays through hosted Stripe Checkout. Execution starts only after server-side payment confirmation. Returning from Checkout or seeing a success screen does not by itself establish that a payment succeeded.",
+          "The client accepts the quote and pays through the hosted payment page. Execution starts only after server-side payment confirmation. Returning from Checkout or seeing a success screen does not by itself establish that a payment succeeded.",
         ],
       },
       {
         heading: "Validation, acceptance and transfer",
         paragraphs: [
           "Task submissions and required human reviews are recorded separately. Automated structure checks do not establish that a real-world task was completed. Once all required work is ready, the client reviews the delivery and can request corrections before acceptance.",
-          "Client acceptance queues eligible transfers to external developers with a ready Stripe Connect account. Incomplete onboarding or a payment freeze can prevent a transfer. Credit to the connected Stripe balance is separate from arrival in a bank account. Internal platform work does not create an external developer transfer.",
+          "Client acceptance queues eligible transfers to external developers with a ready payout account. Incomplete onboarding or a payment freeze can prevent a transfer. Credit to the connected payment account balance is separate from arrival in a bank account. Internal platform work does not create an external developer transfer.",
         ],
       },
       {
         heading: "Failures and refunds",
         paragraphs: [
           "Independent tasks can continue when one task fails. Retries are bounded by attempts, budget and funding state. An operator may arrange human intervention when automatic execution cannot proceed.",
-          "If a mission cannot be delivered, an operator can cancel it and request a full refund through the payments workflow. Refunds require Stripe confirmation and any prior transfers must be reconciled. Partial delivery and partial refunds are not offered at launch. A failed task does not automatically refund the mission or mark incomplete work accepted.",
+          "If a mission cannot be delivered, an operator can cancel it and request a full refund through the payments workflow. Refunds require payment provider confirmation and any prior transfers must be reconciled. Partial delivery and partial refunds are not offered at launch. A failed task does not automatically refund the mission or mark incomplete work accepted.",
         ],
       },
       {

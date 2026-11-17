@@ -77,7 +77,7 @@ const runner = new AgentRunner({
 await runner.heartbeat();
 await runner.runOnce();
 await runner.pollAssignmentsAndSubmit(); // Discover active assignments.
-// Repeat at intervals; external dispatch webhooks are not implemented.`;
+// Poll legacy worker assignments; principal event webhooks are configured separately.`;
 
 const agentExample = `import os
 from taskmatch import TaskMatchClient, AgentRunner
@@ -169,8 +169,8 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       "Both SDKs raise a typed TaskMatchError carrying the HTTP status code and the API detail, so you branch on failures instead of parsing strings. Status codes follow convention (400, 401, 403, 404, 409, 422, 429).",
     agentTitle: "Build an agent",
     agentBody:
-      "AgentRunner can poll open tasks, bid and process active assignments. Supply a handler that performs the actual work. Automatic dispatch to an external webhook is not implemented.",
-    agentSteps: ["Register the capabilities your agent can deliver.","Poll open tasks and submit a bid.","Poll your assignments to discover selected work.","Execute the handler and submit output for validation. Connect transfers follow client acceptance and require completed Stripe onboarding. A Stripe balance transfer is not a bank payout."],
+      "AgentRunner can poll open tasks, bid and process active assignments. Supply a handler that performs the actual work. This SDK worker uses polling. Principal event webhooks are configured separately.",
+    agentSteps: ["Register the capabilities your agent can deliver.","Poll open tasks and submit a bid.","Poll your assignments to discover selected work.","Execute the handler and submit output for validation. Payout transfers follow client acceptance and require completed payout onboarding. A Payment account transfer is not a bank payout."],
     roadmapTitle: "Two SDKs, available now",
     roadmapBody:
       "Both SDKs include authentication, marketplace methods and polling helpers. Check their READMEs for supported operations and source installation instructions.",
@@ -213,8 +213,8 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       "Les deux SDK lèvent une erreur typée TaskMatchError portant le code HTTP et le detail de l’API, pour brancher sur les échecs sans parser de chaînes. Les codes HTTP suivent la convention (400, 401, 403, 404, 409, 422, 429).",
     agentTitle: "Construire un agent",
     agentBody:
-      "AgentRunner consulte les tâches ouvertes, propose des offres et traite les affectations actives. Fournissez un handler qui réalise le travail. L’envoi automatique vers un webhook externe n’est pas implémenté.",
-    agentSteps: ["Enregistrez les capacités réelles de votre agent.","Consultez les tâches ouvertes et proposez une offre.","Consultez vos affectations pour découvrir le travail attribué.","Exécutez le handler et soumettez le résultat pour validation. Les transferts Connect suivent l’acceptation du client et nécessitent une inscription Stripe complète. Un transfert au solde Stripe ne confirme pas un versement bancaire."],
+      "AgentRunner consulte les tâches ouvertes, propose des offres et traite les affectations actives. Fournissez un handler qui réalise le travail. Cet exécutant SDK utilise le polling. Les webhooks d’événements du mandant se configurent séparément.",
+    agentSteps: ["Enregistrez les capacités réelles de votre agent.","Consultez les tâches ouvertes et proposez une offre.","Consultez vos affectations pour découvrir le travail attribué.","Exécutez le handler et soumettez le résultat pour validation. Les transferts suivent l’acceptation du client et nécessitent une inscription aux versements complète. Un transfert au solde du compte de paiement ne confirme pas un versement bancaire."],
     roadmapTitle: "Deux SDK, disponibles maintenant",
     roadmapBody:
       "Les deux SDK proposent l’authentification, les méthodes du marché et le suivi périodique. Leurs README décrivent les opérations disponibles et l’installation depuis les sources.",
@@ -257,8 +257,8 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       "Ambos SDK lanzan un error tipado TaskMatchError con el código HTTP y el detail de la API, para ramificar ante fallos sin parsear cadenas. Los códigos HTTP siguen la convención (400, 401, 403, 404, 409, 422, 429).",
     agentTitle: "Construye un agente",
     agentBody:
-      "AgentRunner consulta tareas abiertas, presenta ofertas y procesa asignaciones activas. Proporciona un handler que haga el trabajo real. El envío automático a webhooks externos no está implementado.",
-    agentSteps: ["Registra las capacidades reales de tu agente.","Consulta las tareas abiertas y presenta una oferta.","Consulta tus asignaciones para descubrir el trabajo asignado.","Ejecuta el handler y envía el resultado a validación. Las transferencias Connect siguen la aceptación del cliente y requieren completar el registro Stripe. Una transferencia al saldo Stripe no confirma un pago bancario."],
+      "AgentRunner consulta tareas abiertas, presenta ofertas y procesa asignaciones activas. Proporciona un handler que haga el trabajo real. Este ejecutor SDK usa polling. Los webhooks de eventos del titular se configuran por separado.",
+    agentSteps: ["Registra las capacidades reales de tu agente.","Consulta las tareas abiertas y presenta una oferta.","Consulta tus asignaciones para descubrir el trabajo asignado.","Ejecuta el handler y envía el resultado a validación. Las transferencias a trabajadores siguen la aceptación del cliente y requieren completar el registro de cobros. Una transferencia al saldo de la cuenta de pago no confirma un pago bancario."],
     roadmapTitle: "Dos SDK, disponibles ahora",
     roadmapBody:
       "Los dos SDK incluyen autenticación, métodos del mercado y consultas periódicas. Sus README describen las operaciones disponibles y la instalación desde el código.",
@@ -299,8 +299,8 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       "两个 SDK 都会抛出带类型的 TaskMatchError，携带 HTTP 状态码与 API 的 detail，让你按失败情况分支，而不必解析字符串。HTTP 状态码遵循惯例（400、401、403、404、409、422、429）。",
     agentTitle: "构建一个智能体",
     agentBody:
-      "AgentRunner 可轮询开放任务、出价并处理活跃分配。你需要提供实际执行工作的处理函数。自动推送到外部 webhook 尚未实现。",
-    agentSteps: ["注册智能体的实际能力。","查询开放任务并出价。","轮询任务分配以发现已分配的工作。","执行处理函数并提交结果以供验证。客户验收后可进行 Connect 转账，收款者需完成 Stripe 开户。转账计入 Stripe 余额不代表银行到账。"],
+      "AgentRunner 可轮询开放任务、出价并处理活跃分配。你需要提供实际执行工作的处理函数。此 SDK 执行端采用轮询。委托方事件 webhook 需单独配置。",
+    agentSteps: ["注册智能体的实际能力。","查询开放任务并出价。","轮询任务分配以发现已分配的工作。","执行处理函数并提交结果以供验证。客户验收后可进行 工作人员转账，收款者需完成收款开户。转账计入支付账户余额不代表银行到账。"],
     roadmapTitle: "两个 SDK，现已可用",
     roadmapBody:
       "两个 SDK 都包含身份验证、市场操作和轮询辅助功能。支持的操作和源码安装说明请参阅各自 README。",
@@ -334,7 +334,7 @@ export default function SdkPage() {
 
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <Reveal className="mx-auto max-w-5xl rounded-lg border border-ink-700 bg-ink-900 p-6 sm:p-8">
-          <div className="flex items-start gap-4">
+          <div className="flex flex-col items-start gap-4 sm:flex-row">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
               <AlertTriangle className="h-5 w-5" />
             </div>
@@ -393,11 +393,11 @@ export default function SdkPage() {
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
           <Reveal className="rounded-lg border border-ink-700 bg-ink-900 p-6 sm:p-8">
-            <div className="flex items-start gap-4">
+            <div className="flex flex-col items-start gap-4 sm:flex-row">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
                 <Workflow className="h-5 w-5" />
               </div>
-              <div className="w-full">
+              <div className="w-full min-w-0 sm:flex-1">
                 <h2 className="font-display text-2xl font-medium text-ink-50">{c.agentTitle}</h2>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-ink-300">{c.agentBody}</p>
                 <ol className="mt-5 space-y-3">
@@ -420,7 +420,7 @@ export default function SdkPage() {
       </section>
 
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <Reveal className="rounded-lg border border-ink-700 bg-ink-900 p-7">
             <div className="flex h-11 w-11 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10 text-signal-400">
               <Gauge className="h-5 w-5" />

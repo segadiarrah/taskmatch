@@ -151,3 +151,84 @@ test("human contracts preserve idempotency key and use the result endpoint", asy
   await api.getHumanResult("human");
   assert.equal(seen[1].url,"https://example.test/api/v1/human-tasks/human/result");
 });
+
+test("human workflow wrappers preserve routes, bodies, account token and operation keys", async () => {
+  const seen = [];
+  globalThis.fetch = async (url, init) => {
+    seen.push({path:new URL(url).pathname,method:init.method,body:init.body === undefined ? undefined : JSON.parse(init.body),headers:init.headers});
+    return json({status:"creating"}, init.method === "POST" ? 202 : 200);
+  };
+  const api = client();
+  const contract = {schema_version:"tm.human-task.v1",principal_id:"principal",title:"Additional review"};
+  const ai = {title:"Analyse the evidence",instructions:"Summarise the verified findings",task_type:"research",depends_on:["task"]};
+  const cases = [
+    [()=>api.getHumanTaskFunding("task ?"),"GET","/human-tasks/task%20%3F/fund",undefined],
+    [()=>api.fundHumanTask("task"),"POST","/human-tasks/task/fund",undefined],
+    [()=>api.recoverHumanTaskFunding("task",{payment_intent_id:"pi_confirmed"}),"POST","/human-tasks/task/fund/recover",{payment_intent_id:"pi_confirmed"}],
+    [()=>api.getPrincipalPaymentMethod("principal"),"GET","/principals/principal/payment-method",undefined],
+    [()=>api.setupPrincipalPaymentMethod("principal",{allow_agent_payments:true}),"POST","/principals/principal/payment-method/setup",{allow_agent_payments:true}],
+    [()=>api.confirmPrincipalPaymentMethod("principal"),"POST","/principals/principal/payment-method/confirm",{}],
+    [()=>api.revokePrincipalPaymentMethod("principal"),"DELETE","/principals/principal/payment-method",undefined],
+    [()=>api.getHumanTaskDependencies("task"),"GET","/human-tasks/task/dependencies",undefined],
+    [()=>api.setHumanTaskDependencies("task",["first"]),"PUT","/human-tasks/task/dependencies",{depends_on:["first"]}],
+    [()=>api.createJobAmendment("job",contract,"amendment-1"),"POST","/jobs/job/amendments",contract],
+    [()=>api.addJobAIStep("job",ai),"POST","/jobs/job/steps",ai],
+    [()=>api.listJobSteps("job"),"GET","/jobs/job/steps",undefined],
+    [()=>api.createPrincipalWebhook("principal",{url:"https://hooks.example.test/events",delegation_id:"mandate"}),"POST","/principals/principal/webhooks",{url:"https://hooks.example.test/events",delegation_id:"mandate"}],
+    [()=>api.listPrincipalWebhooks("principal"),"GET","/principals/principal/webhooks",undefined],
+    [()=>api.revokePrincipalWebhook("principal","hook ?"),"DELETE","/principals/principal/webhooks/hook%20%3F",undefined],
+    [()=>api.listPrincipalWebhookDeliveries("principal","hook"),"GET","/principals/principal/webhooks/hook/deliveries",undefined],
+  ];
+  for(const [invoke,method,path,body] of cases) {
+    await invoke();
+    const request=seen.at(-1);
+    assert.equal(request.method,method);
+    assert.equal(request.path,"/api/v1"+path);
+    assert.deepEqual(request.body,body);
+    assert.equal(request.headers.Authorization,"Bearer token");
+  }
+  assert.equal(seen.length,cases.length);
+  assert.equal(seen[9].headers["Idempotency-Key"],"amendment-1");
+  assert.equal(api.token,"token");
+});
+
+test("funding does not retry a failed write or replace a scoped token", async () => {
+  let attempts=0;
+  globalThis.fetch=async(url,init)=>{
+    attempts++;
+    assert.equal(init.headers.Authorization,"Bearer scoped-mandate");
+    assert.equal(init.method,"POST");
+    return json({detail:{status:"requires_review"}},409);
+  };
+  const api=new TaskMatchClient({baseUrl:"https://example.test/api",token:"scoped-mandate"});
+  await assert.rejects(api.fundHumanTask("task"),error=>error instanceof TaskMatchError && error.statusCode===409 && error.detail.status==="requires_review");
+  assert.equal(attempts,1);
+  assert.equal(api.token,"scoped-mandate");
+});
+
+test("amendment retries are explicit and preserve the same key and contract", async () => {
+  const seen=[];
+  const contract={title:"Additional review",budget:{amount_minor:1100,currency:"EUR"}};
+  globalThis.fetch=async(url,init)=>{seen.push(init);return json({task_id:"same-task"},201);};
+  const api=client();
+  assert.deepEqual(await api.createJobAmendment("job",contract,"stable-amendment"),{task_id:"same-task"});
+  assert.equal(seen.length,1);
+  await api.createJobAmendment("job",contract,"stable-amendment");
+  assert.equal(seen.length,2);
+  assert.equal(seen[0].headers["Idempotency-Key"],seen[1].headers["Idempotency-Key"]);
+  assert.equal(seen[0].body,seen[1].body);
+});
+
+test("payment setup transmits explicit consent without elevating caller credentials", async () => {
+  let attempts=0;
+  globalThis.fetch=async(url,init)=>{
+    attempts++;
+    assert.equal(init.headers.Authorization,"Bearer scoped-mandate");
+    assert.deepEqual(JSON.parse(init.body),{allow_agent_payments:true});
+    return json({detail:"Full owner session required"},401);
+  };
+  const api=new TaskMatchClient({token:"scoped-mandate"});
+  await assert.rejects(api.setupPrincipalPaymentMethod("principal",{allow_agent_payments:true}),TaskMatchError);
+  assert.equal(attempts,1);
+  assert.equal(api.token,"scoped-mandate");
+});

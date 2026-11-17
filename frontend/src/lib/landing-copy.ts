@@ -1,617 +1,112 @@
-export type Step = { title: string; desc: string };
+import type { Locale } from "@/lib/i18n";
 
-export interface Copy {
-  nav: {
-    howItWorks: string;
-    pricing: string;
-    forClients: string;
-    forDevelopers: string;
-    signIn: string;
-    cta: string;
-  };
-  hero: {
-    eyebrow: string;
-    titleLead: string;
-    titleAccent: string;
-    subtitle: string;
-    ctaPrimary: string;
-    ctaSecondary: string;
-    cardLabel: string;
-    cardBrief: string;
-    cardStageDone: string;
-    cardStageActive: string;
-    cardMatched: string;
-    cardScore: string;
-    cardAgent: string;
-    cardEscrow: string;
-  };
-  marqueeLabel: string;
-  stats: { label: string }[];
-  demo: { eyebrow: string; title: string; body: string };
-  tryit: {
-    eyebrow: string; title: string; body: string; placeholder: string;
-    examples: string[]; button: string; loading: string;
-    specTitle: string; deliverablesLabel: string; criteriaLabel: string;
-    breakdownTitle: string; matchedLabel: string; errorMsg: string;
-  };
-  how: {
-    eyebrow: string;
-    title: string;
-    subtitle: string;
-    steps: Step[];
-    cta: string;
-  };
-  features: {
-    eyebrow: string;
-    title: string;
-    subtitle: string;
-    items: Step[];
-  };
-  trust: {
-    eyebrow: string;
-    title: string;
-    subtitle: string;
-    points: string[];
-    cta: string;
-  };
-  testimonial: {
-    eyebrow: string;
-    quote: string;
-    name: string;
-    role: string;
-  };
-  cta: {
-    eyebrow: string;
-    title: string;
-    subtitle: string;
-    primary: string;
-    secondary: string;
-    note: string;
-  };
-  footer: {
-    tagline: string;
-    productTitle: string;
-    resourcesTitle: string;
-    companyTitle: string;
-    links: {
-      howItWorks: string;
-      pricing: string;
-      forClients: string;
-      forDevelopers: string;
-      documentation: string;
-      apiReference: string;
-      sdk: string;
-      changelog: string;
-      about: string;
-      careers: string;
-      security: string;
-      privacy: string;
-    };
-    rights: string;
-    terms: string;
-    privacy: string;
-    compliance: string;
-  };
+export interface JourneyCopy {
+  eyebrow: string; titleLead: string; titleAccent: string; intro: string;
+  mission: string; work: string; agent: string; pricing: string; learn: string;
+  paths: { title: string; body: string; detail: string }[];
+  exampleLabel: string; exampleTitle: string; exampleBody: string; exampleNote: string;
+  exampleSteps: string[]; stepsTitle: string; steps: { title: string; body: string }[];
+  trustTitle: string; trustBody: string; terms: string; docs: string;
+  clientTitle: string; clientIntro: string; workerTitle: string; workerIntro: string;
 }
 
-export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
+export const COPY: Record<Locale, JourneyCopy> = {
   en: {
-    nav: {
-      howItWorks: "How it works",
-      pricing: "Pricing",
-      forClients: "For clients",
-      forDevelopers: "For developers",
-      signIn: "Sign in",
-      cta: "Post a task",
-    },
-    hero: {
-      eyebrow: "TaskMatch 2 · AI + human execution",
-      titleLead: "The Human Execution Layer",
-      titleAccent: "for AI agents.",
-      subtitle:
-        "Bring a detailed need and attach your specs, data, and documents. TaskMatch ingests all of it, decomposes it into skill-specific tasks, and routes each to the single best-qualified executor — an AI agent or a human expert — competing on an explainable score. Pay the quote through Stripe, then review delivery before developer transfers.",
-      ctaPrimary: "Post a task",
-      ctaSecondary: "Register as an executor",
-      cardLabel: "example workflow",
-      cardBrief: "Build a React dashboard with real-time analytics",
-      cardStageDone: "done",
-      cardStageActive: "running",
-      cardMatched: "19 executors matched",
-      cardScore: "top bid 0.94",
-      cardAgent: "fullstack-react-v4",
-      cardEscrow: "payment recorded",
-    },
-    marqueeLabel: "Built on",
-    demo: { eyebrow: "Live demo", title: "Watch it run, end to end.", body: "A real walkthrough — from a complex brief to a structured plan, the best-matched executor (AI agent or human expert), a validated deliverable, and a verified Stripe payment and developer transfer." },
-    tryit: {
-      eyebrow: "Try it live",
-      title: "Describe a complex task. Watch the AI structure it.",
-      body: "Type a real, messy request — the platform formats it, breaks it into skill-specific tasks, and matches the best executors, live. No signup.",
-      placeholder: "e.g. Migrate our 12TB analytics warehouse to the cloud with zero downtime, rebuild 40 ETL pipelines, and keep everything SOC2 compliant…",
-      examples: ["Build a churn-prediction dashboard from our subscription data", "Audit our authentication flow and write remediation steps", "Launch announcement blog post + a matching tweet thread"],
-      button: "Structure it",
-      loading: "Structuring, decomposing, and matching…",
-      specTitle: "How the platform understood it",
-      deliverablesLabel: "Deliverables",
-      criteriaLabel: "Success criteria",
-      breakdownTitle: "Decomposed into skill-specific tasks",
-      matchedLabel: "Best-matched executors",
-      errorMsg: "Could not reach the demo engine. Please try again.",
-    },
-    stats: [
-      { label: "Validation pass rate" },
-      { label: "Lifecycle stages" },
-      { label: "Median match time" },
-      { label: "Decisions auditable" },
+    eyebrow: "TaskMatch · Human Execution Layer",
+    titleLead: "The Human Execution Layer", titleAccent: "for AI agents.",
+    intro: "When a task needs a person, bring them into the workflow. Describe the work, agree the price, and review the result in one place.",
+    mission: "Delegate a mission", work: "Find work", agent: "Connect an agent", pricing: "Pricing", learn: "How it works",
+    paths: [
+      { title: "Get something done", body: "A document to check, a local visit, a result to verify. Define the outcome and the evidence you need.", detail: "Describe → review → fund" },
+      { title: "Put your skills to work", body: "Set your skills and availability, browse suitable missions, and submit your work for review.", detail: "Profile → mission → delivery" },
+      { title: "Extend your agent’s reach", body: "Let an agent request human help within an explicit mandate. Keep permissions and spending limits under your control.", detail: "Connect → authorize → follow" },
     ],
-    how: {
-      eyebrow: "The pipeline",
-      title: "From your need to accepted delivery.",
-      subtitle:
-        "Follow the plan, assignment and review in one place. Stripe payment and developer transfer states remain visible.",
-      steps: [
-        { title: "Format", desc: "Your detailed need — and every document you attach — becomes a structured, machine-readable spec." },
-        { title: "Decompose", desc: "The spec is broken into discrete, skill-specific tasks with clear criteria." },
-        { title: "Match & bid", desc: "AI agents and human experts are matched and compete for each task." },
-        { title: "Rank", desc: "Bids are ranked by deterministic, explainable scoring — no black box." },
-        { title: "Assign", desc: "The winning executor — agent or human — is assigned and starts work instantly." },
-        { title: "Validate", desc: "Output is submitted and checked against your acceptance criteria." },
-        { title: "Pay", desc: "Pay the quote before execution. Developer transfers follow acceptance; bank payouts are managed by Stripe." },
-      ],
-      cta: "See the full flow",
-    },
-    features: {
-      eyebrow: "Why it holds up",
-      title: "Explainable, auditable, reviewable.",
-      subtitle: "The infrastructure investors ask about — built in from the start.",
-      items: [
-        { title: "Explainable scoring", desc: "Deterministic ranking you can read line by line. Every bid score is reproducible." },
-        { title: "Full audit trail", desc: "Every decision — format, match, rank, validate — is logged and inspectable." },
-        { title: "Tracked Stripe payments", desc: "Pay through hosted Checkout. Track confirmed funding and developer transfers separately from bank payouts." },
-        { title: "Three clear roles", desc: "Clients post work, executors — AI or human — compete, admins govern. One coherent platform." },
-      ],
-    },
-    trust: {
-      eyebrow: "Built for scale",
-      title: "Execution you can trust with real budgets.",
-      subtitle:
-        "TaskMatch replaces coordination overhead with an intelligent, accountable execution layer — from the first detailed need to the accepted delivery.",
-      points: [
-        "Deterministic scoring, not opaque model calls",
-        "Every decision logged and replayable",
-        "Review and acceptance before developer transfers",
-        "AI agents and human experts, competing side by side",
-      ],
-      cta: "Get started",
-    },
-    testimonial: {
-      eyebrow: "Signal",
-      quote:
-        "We stopped sourcing and started shipping. A need that used to take a week of coordination now decomposes, matches, and validates in an afternoon — with a clean audit trail for every decision.",
-      name: "Sarah Chen",
-      role: "CTO, Streamline AI",
-    },
-    cta: {
-      eyebrow: "Start today",
-      title: "Stop coordinating. Start executing.",
-      subtitle:
-        "Describe your need in detail — attach specs, data, and documents. We structure it, match executors and track delivery and review.",
-      primary: "Post your first task",
-      secondary: "Register as an executor",
-      note: "Prepaid mission quotes in EUR. 10% platform fee added to the subtotal.",
-    },
-    footer: {
-      tagline: "AI + human execution marketplace. From your need to validated delivery.",
-      productTitle: "Product",
-      resourcesTitle: "Resources",
-      companyTitle: "Company",
-      links: {
-        howItWorks: "How it works",
-        pricing: "Pricing",
-        forClients: "For clients",
-        forDevelopers: "For developers",
-        documentation: "Documentation",
-        apiReference: "API reference",
-        sdk: "SDK",
-        changelog: "Changelog",
-        about: "About",
-        careers: "Careers",
-        security: "Security",
-        privacy: "Privacy",
-      },
-      rights: "All rights reserved.",
-      terms: "Terms",
-      privacy: "Privacy",
-      compliance: "Compliance",
-    },
+    exampleLabel: "An example, not a live mission", exampleTitle: "Check a document before it goes out.",
+    exampleBody: "Your agent prepares the text. A person checks the translation and returns corrections with a short explanation.",
+    exampleNote: "Scope, price and acceptance criteria are agreed before execution. Availability depends on the mission and the worker’s qualifications.",
+    exampleSteps: ["Request", "Human review", "Evidence", "Acceptance"],
+    stepsTitle: "A clear path from request to result.",
+    steps: [
+      { title: "Describe the need", body: "Set the outcome, deadline and any location or authorization requirements." },
+      { title: "Agree and fund", body: "Review the scope and price. Execution starts after payment is confirmed." },
+      { title: "Follow the work", body: "Track progress and the evidence submitted for your mission." },
+      { title: "Review the result", body: "Accept the delivery or request a correction. Worker transfers follow acceptance." },
+    ],
+    trustTitle: "Your decision at every important step.", trustBody: "A quote is not a payment. A submitted result is not an acceptance. A transfer is not a bank payout. Each step has its own recorded status.",
+    terms: "Read the terms", docs: "Integration documentation", clientTitle: "Turn a need into a clear mission.",
+    clientIntro: "Ask for human help, remote or on site. Define the expected result and review the price before work starts.",
+    workerTitle: "Bring your skills. Deliver useful work.", workerIntro: "Build your worker profile, find suitable missions and provide evidence of your work. You can also connect an AI agent from the same account.",
   },
   fr: {
-    nav: {
-      howItWorks: "Fonctionnement",
-      pricing: "Tarifs",
-      forClients: "Pour les clients",
-      forDevelopers: "Pour les développeurs",
-      signIn: "Se connecter",
-      cta: "Publier une tâche",
-    },
-    hero: {
-      eyebrow: "TaskMatch 2 · Exécution IA et humaine",
-      titleLead: "L’exécution humaine",
-      titleAccent: "pour vos agents IA.",
-      subtitle:
-        "Exprimez un besoin détaillé et joignez vos spécifications, données et documents. TaskMatch ingère l’ensemble, le décompose en tâches par compétence et confie chacune au meilleur exécutant qualifié — un agent IA ou un expert humain — en compétition sur un score explicable. Réglez le devis via Stripe, puis vérifiez la livraison avant les transferts aux développeurs.",
-      ctaPrimary: "Publier une tâche",
-      ctaSecondary: "Devenir exécutant",
-      cardLabel: "exemple de flux",
-      cardBrief: "Créer un tableau de bord React avec analytique en temps réel",
-      cardStageDone: "fait",
-      cardStageActive: "en cours",
-      cardMatched: "19 exécutants associés",
-      cardScore: "meilleure offre 0,94",
-      cardAgent: "fullstack-react-v4",
-      cardEscrow: "paiement enregistré",
-    },
-    marqueeLabel: "Propulsé par",
-    demo: { eyebrow: "Démo en direct", title: "Regardez-la tourner, de bout en bout.", body: "Un parcours réel — d’un besoin complexe au plan structuré, au meilleur exécutant (agent IA ou expert humain), à un livrable validé et au suivi du paiement Stripe et des transferts." },
-    tryit: {
-      eyebrow: "Essayez en direct",
-      title: "Décrivez une tâche complexe. Regardez l’IA la structurer.",
-      body: "Saisissez une vraie demande — la plateforme la met en forme, la découpe en tâches par compétence et matche les meilleurs exécutants, en direct. Sans inscription.",
-      placeholder: "ex. Migrer notre entrepôt analytique de 12 To vers le cloud sans interruption, reconstruire 40 pipelines ETL, en restant conforme SOC2…",
-      examples: ["Créer un tableau de bord de prédiction du churn à partir de nos données d’abonnement", "Auditer notre flux d’authentification et rédiger les correctifs", "Article d’annonce de lancement + un thread Twitter assorti"],
-      button: "Structurer",
-      loading: "Mise en forme, découpage et matching…",
-      specTitle: "Comment la plateforme l’a compris",
-      deliverablesLabel: "Livrables",
-      criteriaLabel: "Critères de succès",
-      breakdownTitle: "Découpé en tâches par compétence",
-      matchedLabel: "Meilleurs exécutants proposés",
-      errorMsg: "Impossible de joindre le moteur de démo. Réessayez.",
-    },
-    stats: [
-      { label: "Taux de validation" },
-      { label: "Étapes du cycle" },
-      { label: "Temps d’association médian" },
-      { label: "Décisions auditables" },
+    eyebrow: "TaskMatch · Human Execution Layer",
+    titleLead: "L’exécution humaine", titleAccent: "pour vos agents IA.",
+    intro: "Quand une tâche demande une personne, intégrez-la à votre parcours. Décrivez le travail, convenez du prix et vérifiez le résultat au même endroit.",
+    mission: "Confier une mission", work: "Trouver une mission", agent: "Connecter un agent", pricing: "Tarifs", learn: "Comment ça marche",
+    paths: [
+      { title: "Faire avancer un besoin", body: "Un document à relire, une visite sur place, un résultat à vérifier. Précisez le résultat et les preuves attendues.", detail: "Décrire → vérifier → financer" },
+      { title: "Proposer vos compétences", body: "Renseignez vos compétences et disponibilités, consultez les missions adaptées et soumettez votre travail.", detail: "Profil → mission → livraison" },
+      { title: "Donner du relais à votre agent", body: "Votre agent peut demander une aide humaine dans un mandat explicite. Vous gardez la main sur ses droits et son budget.", detail: "Connecter → autoriser → suivre" },
     ],
-    how: {
-      eyebrow: "Le pipeline",
-      title: "Du besoin à la livraison acceptée.",
-      subtitle:
-        "Suivez le plan, l’attribution et la validation au même endroit. Les états du paiement Stripe et des transferts restent visibles.",
-      steps: [
-        { title: "Formaliser", desc: "Votre besoin détaillé — et chaque document joint — devient une spécification structurée et lisible par machine." },
-        { title: "Décomposer", desc: "La spécification est découpée en tâches par compétence, aux critères clairs." },
-        { title: "Associer & enchérir", desc: "Les agents IA et les experts humains sont associés et entrent en compétition pour chaque tâche." },
-        { title: "Classer", desc: "Les offres sont classées par un score déterministe et explicable — sans boîte noire." },
-        { title: "Assigner", desc: "L’exécutant retenu — agent ou humain — est assigné et démarre le travail instantanément." },
-        { title: "Valider", desc: "Le livrable est soumis et vérifié selon vos critères d’acceptation." },
-        { title: "Payer", desc: "Réglez le devis avant exécution. Les transferts suivent l’acceptation ; Stripe gère les versements bancaires." },
-      ],
-      cta: "Voir tout le parcours",
-    },
-    features: {
-      eyebrow: "Ce qui tient la route",
-      title: "Explicable, auditable, vérifiable.",
-      subtitle: "L’infrastructure que réclament les investisseurs — intégrée dès le départ.",
-      items: [
-        { title: "Score explicable", desc: "Un classement déterministe lisible ligne par ligne. Chaque score d’offre est reproductible." },
-        { title: "Traçabilité complète", desc: "Chaque décision — formalisation, association, classement, validation — est journalisée et inspectable." },
-        { title: "Suivi des paiements Stripe", desc: "Payez sur la page Checkout. Suivez le financement confirmé et les transferts séparément des versements bancaires." },
-        { title: "Trois rôles clairs", desc: "Les clients publient, les exécutants — IA ou humains — sont en compétition, les admins gouvernent. Une plateforme cohérente." },
-      ],
-    },
-    trust: {
-      eyebrow: "Conçu pour l’échelle",
-      title: "Une exécution digne de vrais budgets.",
-      subtitle:
-        "TaskMatch remplace la coordination par une couche d’exécution intelligente et responsable — du premier besoin détaillé à la livraison acceptée.",
-      points: [
-        "Score déterministe, pas d’appels de modèle opaques",
-        "Chaque décision journalisée et rejouable",
-        "Vérification et acceptation avant les transferts",
-        "Agents IA et experts humains, en compétition côte à côte",
-      ],
-      cta: "Commencer",
-    },
-    testimonial: {
-      eyebrow: "Signal",
-      quote:
-        "Nous avons arrêté de sourcer pour livrer. Un besoin qui prenait une semaine de coordination se décompose, s’associe et se valide en une après-midi — avec une traçabilité nette pour chaque décision.",
-      name: "Sarah Chen",
-      role: "CTO, Streamline AI",
-    },
-    cta: {
-      eyebrow: "Commencez aujourd’hui",
-      title: "Arrêtez de coordonner. Exécutez.",
-      subtitle:
-        "Décrivez votre besoin en détail — joignez spécifications, données et documents. Nous structurons la demande, trouvons les exécutants et suivons la livraison et la validation.",
-      primary: "Publier ma première tâche",
-      secondary: "Devenir exécutant",
-      note: "Devis prépayés par mission en EUR. Frais de plateforme de 10 % ajoutés au sous-total.",
-    },
-    footer: {
-      tagline: "Place de marché d’exécution IA et humaine. Du besoin à la livraison validée.",
-      productTitle: "Produit",
-      resourcesTitle: "Ressources",
-      companyTitle: "Entreprise",
-      links: {
-        howItWorks: "Fonctionnement",
-        pricing: "Tarifs",
-        forClients: "Pour les clients",
-        forDevelopers: "Pour les développeurs",
-        documentation: "Documentation",
-        apiReference: "Référence API",
-        sdk: "SDK",
-        changelog: "Journal des versions",
-        about: "À propos",
-        careers: "Carrières",
-        security: "Sécurité",
-        privacy: "Confidentialité",
-      },
-      rights: "Tous droits réservés.",
-      terms: "Conditions",
-      privacy: "Confidentialité",
-      compliance: "Conformité",
-    },
+    exampleLabel: "Un exemple, pas une mission en cours", exampleTitle: "Relire un document avant son envoi.",
+    exampleBody: "Votre agent prépare le texte. Une personne vérifie la traduction et retourne ses corrections accompagnées d’une courte explication.",
+    exampleNote: "Le périmètre, le prix et les critères d’acceptation sont définis avant l’exécution. La disponibilité dépend de la mission et des qualifications de l’intervenant.",
+    exampleSteps: ["Demande", "Relecture humaine", "Preuves", "Acceptation"],
+    stepsTitle: "Un chemin clair du besoin au résultat.",
+    steps: [
+      { title: "Décrire le besoin", body: "Précisez le résultat, l’échéance, le lieu et les autorisations nécessaires." },
+      { title: "Valider et financer", body: "Vérifiez le périmètre et le prix. L’exécution commence après confirmation du paiement." },
+      { title: "Suivre le travail", body: "Consultez l’avancement et les preuves remises pour votre mission." },
+      { title: "Vérifier le résultat", body: "Acceptez la livraison ou demandez une correction. Les transferts suivent l’acceptation." },
+    ],
+    trustTitle: "Votre décision à chaque étape importante.", trustBody: "Un devis n’est pas un paiement. Un résultat soumis n’est pas une acceptation. Un transfert n’est pas un versement bancaire. Chaque étape possède son état enregistré.",
+    terms: "Lire les conditions", docs: "Documentation d’intégration", clientTitle: "Transformez un besoin en mission claire.",
+    clientIntro: "Demandez une aide humaine, à distance ou sur place. Définissez le résultat attendu et vérifiez le prix avant le début du travail.",
+    workerTitle: "Vos compétences. Un travail utile.", workerIntro: "Créez votre profil d’intervenant, trouvez des missions adaptées et apportez les preuves de votre travail. Vous pouvez aussi connecter un agent IA avec le même compte.",
   },
   es: {
-    nav: {
-      howItWorks: "Cómo funciona",
-      pricing: "Precios",
-      forClients: "Para clientes",
-      forDevelopers: "Para desarrolladores",
-      signIn: "Iniciar sesión",
-      cta: "Publicar tarea",
-    },
-    hero: {
-      eyebrow: "TaskMatch 2 · Ejecución humana e IA",
-      titleLead: "La ejecución humana",
-      titleAccent: "para tus agentes de IA.",
-      subtitle:
-        "Trae una necesidad detallada y adjunta tus especificaciones, datos y documentos. TaskMatch lo ingiere todo, lo descompone en tareas por habilidad y enruta cada una al mejor ejecutor cualificado — un agente de IA o un experto humano — compitiendo por una puntuación explicable. Paga el presupuesto con Stripe y revisa la entrega antes de las transferencias a desarrolladores.",
-      ctaPrimary: "Publicar tarea",
-      ctaSecondary: "Regístrate como ejecutor",
-      cardLabel: "flujo de ejemplo",
-      cardBrief: "Crear un panel de React con analítica en tiempo real",
-      cardStageDone: "hecho",
-      cardStageActive: "en curso",
-      cardMatched: "19 ejecutores emparejados",
-      cardScore: "mejor oferta 0,94",
-      cardAgent: "fullstack-react-v4",
-      cardEscrow: "pago registrado",
-    },
-    marqueeLabel: "Construido sobre",
-    demo: { eyebrow: "Demo en vivo", title: "Míralo funcionar, de principio a fin.", body: "Un recorrido real: de una necesidad compleja al plan estructurado, al mejor ejecutor (agente IA o experto humano), a un entregable validado y un registro del pago Stripe y las transferencias." },
-    tryit: {
-      eyebrow: "Pruébalo en vivo",
-      title: "Describe una tarea compleja. Mira cómo la IA la estructura.",
-      body: "Escribe una solicitud real — la plataforma la formatea, la divide en tareas por habilidad y empareja a los mejores ejecutores, en vivo. Sin registro.",
-      placeholder: "p. ej. Migrar nuestro almacén analítico de 12 TB a la nube sin interrupciones, reconstruir 40 pipelines ETL y mantener el cumplimiento SOC2…",
-      examples: ["Crear un panel de predicción de abandono con nuestros datos de suscripción", "Auditar nuestro flujo de autenticación y redactar las correcciones", "Post de anuncio de lanzamiento + un hilo de tuits a juego"],
-      button: "Estructurar",
-      loading: "Formateando, descomponiendo y emparejando…",
-      specTitle: "Cómo lo entendió la plataforma",
-      deliverablesLabel: "Entregables",
-      criteriaLabel: "Criterios de éxito",
-      breakdownTitle: "Descompuesto en tareas por habilidad",
-      matchedLabel: "Mejores ejecutores emparejados",
-      errorMsg: "No se pudo conectar con el motor de demostración. Inténtalo de nuevo.",
-    },
-    stats: [
-      { label: "Tasa de validación" },
-      { label: "Etapas del ciclo" },
-      { label: "Tiempo medio de emparejamiento" },
-      { label: "Decisiones auditables" },
+    eyebrow: "TaskMatch · Human Execution Layer", titleLead: "La ejecución humana", titleAccent: "para tus agentes de IA.",
+    intro: "Cuando una tarea necesita a una persona, intégrala en tu flujo. Describe el trabajo, acuerda el precio y revisa el resultado en un solo lugar.",
+    mission: "Delegar una misión", work: "Encontrar trabajo", agent: "Conectar un agente", pricing: "Precios", learn: "Cómo funciona",
+    paths: [
+      { title: "Resuelve una necesidad", body: "Un documento que revisar, una visita local o un resultado que verificar. Define el resultado y las pruebas necesarias.", detail: "Describir → revisar → financiar" },
+      { title: "Ofrece tus habilidades", body: "Indica tus habilidades y disponibilidad, consulta misiones adecuadas y envía tu trabajo para revisión.", detail: "Perfil → misión → entrega" },
+      { title: "Amplía el alcance de tu agente", body: "Tu agente puede pedir ayuda humana dentro de un mandato explícito. Controlas los permisos y el límite de gasto.", detail: "Conectar → autorizar → seguir" },
     ],
-    how: {
-      eyebrow: "El pipeline",
-      title: "De la necesidad a la entrega aceptada.",
-      subtitle:
-        "Sigue el plan, la asignación y la revisión en un solo lugar. Los estados del pago Stripe y las transferencias permanecen visibles.",
-      steps: [
-        { title: "Formatear", desc: "Tu necesidad detallada — y cada documento que adjuntas — se convierte en una especificación estructurada y legible por máquina." },
-        { title: "Descomponer", desc: "La especificación se divide en tareas por habilidad con criterios claros." },
-        { title: "Emparejar y ofertar", desc: "Los agentes de IA y los expertos humanos se emparejan y compiten por cada tarea." },
-        { title: "Clasificar", desc: "Las ofertas se ordenan con una puntuación determinista y explicable — sin caja negra." },
-        { title: "Asignar", desc: "El ejecutor ganador — agente o humano — se asigna y empieza a trabajar al instante." },
-        { title: "Validar", desc: "El resultado se envía y se verifica según tus criterios de aceptación." },
-        { title: "Pagar", desc: "Paga el presupuesto antes de ejecutar. Las transferencias siguen la aceptación; Stripe gestiona los pagos bancarios." },
-      ],
-      cta: "Ver el flujo completo",
-    },
-    features: {
-      eyebrow: "Por qué se sostiene",
-      title: "Explicable, auditable y verificable.",
-      subtitle: "La infraestructura que preguntan los inversores — integrada desde el inicio.",
-      items: [
-        { title: "Puntuación explicable", desc: "Un ranking determinista legible línea por línea. Cada puntuación de oferta es reproducible." },
-        { title: "Registro de auditoría", desc: "Cada decisión — formato, emparejamiento, clasificación, validación — queda registrada e inspeccionable." },
-        { title: "Seguimiento de pagos Stripe", desc: "Paga en Checkout. Consulta la financiación confirmada y las transferencias por separado de los pagos bancarios." },
-        { title: "Tres roles claros", desc: "Los clientes publican, los ejecutores — IA o humanos — compiten, los admins gobiernan. Una plataforma coherente." },
-      ],
-    },
-    trust: {
-      eyebrow: "Diseñado para escalar",
-      title: "Ejecución en la que confiar con presupuestos reales.",
-      subtitle:
-        "TaskMatch sustituye la coordinación por una capa de ejecución inteligente y responsable — desde la primera necesidad detallada hasta la entrega aceptada.",
-      points: [
-        "Puntuación determinista, no llamadas de modelo opacas",
-        "Cada decisión registrada y reproducible",
-        "Revisión y aceptación antes de las transferencias",
-        "Agentes de IA y expertos humanos, compitiendo lado a lado",
-      ],
-      cta: "Empezar",
-    },
-    testimonial: {
-      eyebrow: "Señal",
-      quote:
-        "Dejamos de buscar y empezamos a entregar. Una necesidad que costaba una semana de coordinación ahora se descompone, empareja y valida en una tarde — con un registro limpio de cada decisión.",
-      name: "Sarah Chen",
-      role: "CTO, Streamline AI",
-    },
-    cta: {
-      eyebrow: "Empieza hoy",
-      title: "Deja de coordinar. Ejecuta.",
-      subtitle:
-        "Describe tu necesidad en detalle — adjunta especificaciones, datos y documentos. Estructuramos la solicitud, buscamos ejecutores y seguimos la entrega y la revisión.",
-      primary: "Publicar mi primera tarea",
-      secondary: "Regístrate como ejecutor",
-      note: "Presupuestos prepagados en EUR por misión. Comisión del 10 % añadida al subtotal.",
-    },
-    footer: {
-      tagline: "Mercado de ejecución con IA y expertos humanos. De la necesidad a la entrega validada.",
-      productTitle: "Producto",
-      resourcesTitle: "Recursos",
-      companyTitle: "Empresa",
-      links: {
-        howItWorks: "Cómo funciona",
-        pricing: "Precios",
-        forClients: "Para clientes",
-        forDevelopers: "Para desarrolladores",
-        documentation: "Documentación",
-        apiReference: "Referencia de API",
-        sdk: "SDK",
-        changelog: "Novedades",
-        about: "Acerca de",
-        careers: "Empleo",
-        security: "Seguridad",
-        privacy: "Privacidad",
-      },
-      rights: "Todos los derechos reservados.",
-      terms: "Términos",
-      privacy: "Privacidad",
-      compliance: "Cumplimiento",
-    },
+    exampleLabel: "Un ejemplo, no una misión en curso", exampleTitle: "Revisa un documento antes de enviarlo.",
+    exampleBody: "Tu agente prepara el texto. Una persona comprueba la traducción y devuelve las correcciones con una breve explicación.",
+    exampleNote: "El alcance, precio y criterios de aceptación se acuerdan antes de ejecutar. La disponibilidad depende de la misión y de las cualificaciones del trabajador.",
+    exampleSteps: ["Solicitud", "Revisión humana", "Pruebas", "Aceptación"], stepsTitle: "Un camino claro de la solicitud al resultado.",
+    steps: [
+      { title: "Describe la necesidad", body: "Define el resultado, plazo y los requisitos de ubicación o autorización." },
+      { title: "Acuerda y financia", body: "Revisa el alcance y el precio. El trabajo empieza al confirmar el pago." },
+      { title: "Sigue el trabajo", body: "Consulta el avance y las pruebas entregadas para tu misión." },
+      { title: "Revisa el resultado", body: "Acepta la entrega o pide una corrección. Las transferencias siguen la aceptación." },
+    ],
+    trustTitle: "Tú decides en cada paso importante.", trustBody: "Un presupuesto no es un pago. Un resultado enviado no es una aceptación. Una transferencia no es un abono bancario. Cada paso tiene su propio estado registrado.",
+    terms: "Leer las condiciones", docs: "Documentación de integración", clientTitle: "Convierte una necesidad en una misión clara.",
+    clientIntro: "Solicita ayuda humana, a distancia o presencial. Define el resultado y revisa el precio antes del inicio del trabajo.",
+    workerTitle: "Tus habilidades. Un trabajo útil.", workerIntro: "Crea tu perfil, encuentra misiones adecuadas y aporta pruebas de tu trabajo. También puedes conectar un agente de IA con la misma cuenta.",
   },
   zh: {
-    nav: {
-      howItWorks: "运作方式",
-      pricing: "定价",
-      forClients: "面向客户",
-      forDevelopers: "面向开发者",
-      signIn: "登录",
-      cta: "发布任务",
-    },
-    hero: {
-      eyebrow: "TaskMatch 2 · AI 与人工执行",
-      titleLead: "为 AI 智能体提供",
-      titleAccent: "人工执行支持。",
-      subtitle:
-        "提出详细的需求，并附上你的规格、数据与文档。TaskMatch 将其全部纳入，按技能拆解为任务，并把每项任务交给最合格的执行者——AI 智能体或人类专家——在可解释评分上同台竞争。通过 Stripe 支付报价，并在开发者转账前审核交付。",
-      ctaPrimary: "发布任务",
-      ctaSecondary: "注册成为执行者",
-      cardLabel: "示例流程",
-      cardBrief: "构建带实时分析的 React 仪表盘",
-      cardStageDone: "完成",
-      cardStageActive: "进行中",
-      cardMatched: "已匹配 19 个执行者",
-      cardScore: "最高投标 0.94",
-      cardAgent: "fullstack-react-v4",
-      cardEscrow: "付款已记录",
-    },
-    marqueeLabel: "技术栈",
-    demo: { eyebrow: "实时演示", title: "完整流程，一看便知。", body: "真实演示：从一个复杂需求，到结构化方案、最合适的执行者（AI 智能体或人类专家）、经过验证的交付物，再到 Stripe 付款和开发者转账记录。" },
-    tryit: {
-      eyebrow: "在线试用",
-      title: "描述一个复杂任务，看 AI 如何拆解。",
-      body: "输入一个真实需求——平台会将其结构化、按技能拆分为任务，并实时匹配最合适的执行者。无需注册。",
-      placeholder: "例如：将我们 12TB 的分析数仓零停机迁移到云端，重建 40 条 ETL 管道，并保持 SOC2 合规……",
-      examples: ["用我们的订阅数据构建客户流失预测看板", "审计我们的认证流程并给出修复步骤", "撰写发布公告博客 + 配套的推文串"],
-      button: "开始拆解",
-      loading: "正在结构化、拆解与匹配……",
-      specTitle: "平台如何理解它",
-      deliverablesLabel: "交付物",
-      criteriaLabel: "成功标准",
-      breakdownTitle: "按技能拆解为任务",
-      matchedLabel: "最佳匹配执行者",
-      errorMsg: "无法连接演示引擎，请重试。",
-    },
-    stats: [
-      { label: "验证通过率" },
-      { label: "生命周期阶段" },
-      { label: "中位匹配时间" },
-      { label: "决策可审计" },
+    eyebrow: "TaskMatch · Human Execution Layer", titleLead: "为 AI 智能体提供", titleAccent: "可靠的人工执行。",
+    intro: "任务需要真人参与时，将人工协助纳入工作流程。在同一个平台描述工作、确认价格并审核结果。",
+    mission: "委托任务", work: "寻找工作", agent: "连接智能体", pricing: "定价", learn: "运作方式",
+    paths: [
+      { title: "让需求得到落实", body: "审核文档、实地访问或验证结果。明确预期成果和所需证据。", detail: "描述 → 审核 → 付款" },
+      { title: "发挥你的技能", body: "填写技能和可工作时间，查看合适任务，提交成果以供审核。", detail: "资料 → 任务 → 交付" },
+      { title: "拓展智能体的能力", body: "让智能体在明确授权范围内请求人工协助。权限和支出上限由你控制。", detail: "连接 → 授权 → 跟进" },
     ],
-    how: {
-      eyebrow: "编排流水线",
-      title: "从需求到验收交付。",
-      subtitle: "在同一处跟踪计划、分配和审核。Stripe 付款和开发者转账状态均可查看。",
-      steps: [
-        { title: "格式化", desc: "你的详细需求——以及你附上的每一份文档——都转化为结构化、可被机器读取的规格。" },
-        { title: "拆解", desc: "规格被拆分为按技能划分、标准清晰的独立任务。" },
-        { title: "匹配与投标", desc: "AI 智能体与人类专家被匹配，并为每项任务同台竞争。" },
-        { title: "排序", desc: "投标按确定性、可解释的评分排序——绝非黑箱。" },
-        { title: "分配", desc: "中标的执行者——智能体或人类——被分配并立即开始工作。" },
-        { title: "验证", desc: "成果提交后按你的验收标准进行核验。" },
-        { title: "付款", desc: "执行前支付报价。客户验收后安排开发者转账，银行付款由 Stripe 管理。" },
-      ],
-      cta: "查看完整流程",
-    },
-    features: {
-      eyebrow: "为何可靠",
-      title: "可解释、可审计、可审核。",
-      subtitle: "投资人关心的基础设施——从一开始就内建其中。",
-      items: [
-        { title: "可解释评分", desc: "确定性排序，可逐行阅读。每个投标分数都可复现。" },
-        { title: "完整审计记录", desc: "每一次决策——格式化、匹配、排序、验证——都被记录且可检视。" },
-        { title: "Stripe 付款跟踪", desc: "通过 Checkout 付款。分别跟踪已确认的收款、开发者转账和银行付款。" },
-        { title: "三种清晰角色", desc: "客户发布、执行者（AI 或人类）竞争、管理员治理。统一而连贯的平台。" },
-      ],
-    },
-    trust: {
-      eyebrow: "为规模而生",
-      title: "值得托付真实预算的执行。",
-      subtitle:
-        "TaskMatch 以智能、可追责的执行层取代协调开销——从第一份需求到验收交付。",
-      points: [
-        "确定性评分，而非不透明的模型调用",
-        "每个决策都被记录且可回放",
-        "开发者转账前进行审核和验收",
-        "AI 智能体与人类专家，同台竞争",
-      ],
-      cta: "开始使用",
-    },
-    testimonial: {
-      eyebrow: "信号",
-      quote:
-        "我们不再寻源，而是直接交付。过去需要一周协调的需求，如今一个下午就完成拆解、匹配与验证——每个决策都有清晰的审计记录。",
-      name: "Sarah Chen",
-      role: "CTO, Streamline AI",
-    },
-    cta: {
-      eyebrow: "立即开始",
-      title: "别再协调，开始执行。",
-      subtitle:
-        "详细描述你的需求——附上规格、数据与文档。我们整理需求、匹配执行者，并跟踪交付和审核。",
-      primary: "发布首个任务",
-      secondary: "注册成为执行者",
-      note: "每个项目以 EUR 预付报价，小计另加 10% 平台费用。",
-    },
-    footer: {
-      tagline: "AI 与人类专家执行市场。从需求到验证交付。",
-      productTitle: "产品",
-      resourcesTitle: "资源",
-      companyTitle: "公司",
-      links: {
-        howItWorks: "运作方式",
-        pricing: "定价",
-        forClients: "面向客户",
-        forDevelopers: "面向开发者",
-        documentation: "文档",
-        apiReference: "API 参考",
-        sdk: "SDK",
-        changelog: "更新日志",
-        about: "关于我们",
-        careers: "招聘",
-        security: "安全",
-        privacy: "隐私",
-      },
-      rights: "保留所有权利。",
-      terms: "条款",
-      privacy: "隐私",
-      compliance: "合规",
-    },
+    exampleLabel: "流程示例，并非正在执行的任务", exampleTitle: "在发送前审核一份文档。", exampleBody: "智能体准备文本，真人检查翻译，返回修改及简短说明。",
+    exampleNote: "执行前需确定范围、价格和验收标准。能否接单取决于任务要求和工作人员资质。", exampleSteps: ["请求", "人工审核", "证据", "验收"],
+    stepsTitle: "从需求到成果，步骤清晰。",
+    steps: [
+      { title: "描述需求", body: "明确成果、截止时间以及地点和授权要求。" },
+      { title: "确认并付款", body: "审核范围与价格，付款确认后开始执行。" },
+      { title: "跟进工作", body: "查看任务进度和提交的证据。" },
+      { title: "审核结果", body: "验收交付或要求修改。验收后安排工作人员转账。" },
+    ],
+    trustTitle: "重要步骤，由你决定。", trustBody: "报价不代表已付款，提交结果不代表已验收，转账不代表银行到账。各步骤都有独立的记录状态。",
+    terms: "阅读条款", docs: "集成文档", clientTitle: "将需求变成清晰的任务。", clientIntro: "请求远程或现场人工协助。工作开始前，明确成果并确认价格。",
+    workerTitle: "用你的技能完成有价值的工作。", workerIntro: "创建工作人员资料，寻找适合任务并提供工作证据。同一个账户也能连接 AI 智能体。",
   },
 };

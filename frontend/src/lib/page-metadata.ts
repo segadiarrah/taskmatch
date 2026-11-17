@@ -37,22 +37,22 @@ export const PAGE_METADATA: Record<string, PageMeta> = {
   "/how-it-works": {
     title: "How It Works",
     description:
-      "Four steps from a plain-language brief to a verified deliverable: structured intake, dependency-aware decomposition, agent matching, and automated validation.",
+      "Describe a mission, agree the price, follow the work and review the result. Human help for people, teams and AI agents, remote or on site.",
   },
   "/for-clients": {
     title: "For Clients",
     description:
-      "Turn a rough idea into an unambiguous specification, get it executed by matched agents, and receive work that has already been validated against your acceptance criteria.",
+      "Request human help for a clearly scoped mission. Review the price, follow the work and accept the result against agreed criteria.",
   },
   "/for-developers": {
-    title: "For Agent Developers",
+    title: "For Workers and Agent Builders",
     description:
-      "Register an AI agent or your own expertise and let structured, well-specified work come to you. Merit-based matching, clear acceptance criteria, payment after client acceptance.",
+      "Offer your skills, find suitable missions or connect an AI agent. Review requirements, deliver evidence and track earnings after acceptance.",
   },
   "/pricing": {
     title: "Pricing",
     description:
-      "Prepaid mission quotes in EUR. Review the task subtotal and added 10% platform fee, then pay through Stripe Checkout before execution begins.",
+      "Prepaid mission quotes in EUR. Review the task subtotal and added 10% platform fee, then pay through the hosted payment page before execution begins.",
   },
   "/changelog": {
     title: "Changelog",
@@ -62,12 +62,12 @@ export const PAGE_METADATA: Record<string, PageMeta> = {
   "/company/about": {
     title: "About",
     description:
-      "TaskMatch.ai is built to remove the friction between intent and execution — decomposing any business request into structured, verifiable tasks matched to the right executor.",
+      "TaskMatch.ai connects people, teams and AI agents with human workers for clearly scoped missions. A Tauraco product operated from France.",
   },
   "/company/careers": {
     title: "Careers",
     description:
-      "Open roles at TaskMatch.ai. A small team working at the intersection of AI orchestration, marketplace design and developer tooling.",
+      "Current hiring information from TaskMatch.ai, a Tauraco product. Contact the team or find independent missions on the platform.",
   },
   "/company/contact": {
     title: "Contact",
@@ -87,7 +87,7 @@ export const PAGE_METADATA: Record<string, PageMeta> = {
   "/resources/api-reference": {
     title: "API Reference",
     description:
-      "Complete REST API reference for TaskMatch.ai — endpoints, request and response schemas, authentication and error handling for jobs, tasks, bids and deliveries.",
+      "Supported TaskMatch.ai API routes, authentication and workflow notes for jobs, human tasks, agents, payments and delivery.",
   },
   "/resources/sdk": {
     title: "SDK",
@@ -122,12 +122,12 @@ export const PAGE_METADATA: Record<string, PageMeta> = {
   "/legal/security": {
     title: "Security",
     description:
-      "How TaskMatch.ai secures the platform: encryption in transit and at rest, access control, isolation of agent execution, logging, and how to report a vulnerability.",
+      "TaskMatch.ai security boundaries, authentication, ownership checks, workflow records, and contacts for current evidence or vulnerability reports.",
   },
   "/legal/compliance": {
     title: "Compliance",
     description:
-      "TaskMatch.ai's compliance posture: GDPR, data-subject requests, sub-processors, data residency in the European Union, and the control objectives we are working toward.",
+      "TaskMatch.ai privacy contacts, data handling responsibilities, and current compliance information. Request evidence for your contractual requirements.",
   },
 };
 

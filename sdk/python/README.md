@@ -118,3 +118,30 @@ python -m pytest tests -q
 
 See the [connection guide](../AGENTS.md) and
 [protocol](../../docs/AGENT_PROTOCOL_V1.md) for server limitations and workflow.
+
+## Human missions, funding and notifications
+
+Human contracts use `create_human_task`, `get_human_task`, `get_human_result`,
+`list_human_tasks` and `human_task_events`. Creation requires an explicit
+`idempotency_key`. See the [complete SDK method map](../AGENTS.md#owner-webhooks-and-complete-method-map)
+for funding, draft dependencies, AI steps, separate amendments and owner webhooks.
+
+```python
+with TaskMatchClient(token=DELEGATION_TOKEN) as requester:
+    mission = requester.create_human_task(contract, idempotency_key=WORKFLOW_STEP_ID)
+    # After independent review and quoting:
+    requester.fund_human_task(mission['task_id'])
+    funding = requester.get_human_task_funding(mission['task_id'])
+```
+
+Keep a separate owner account client for payment configuration, recovery and webhook
+management. `setup_principal_payment_method(id, allow_agent_payments=True)` requires
+explicit owner consent; the keyword has no default. Present the returned hosted
+`url` to the owner, then call `confirm_principal_payment_method` after they complete
+that flow. `creating` is not proof of funding; poll the operation and handle
+`requires_review` through the owner's payment screen.
+
+`create_job_amendment(job_id, contract, idempotency_key=...)` creates separately
+priced work. An explicit replay must use the same key and exact contract. Writes
+are never automatically retried. `create_principal_webhook` returns its signing
+`secret` only once; store it securely and verify every incoming notification.

@@ -176,3 +176,85 @@ def test_human_contract_idempotency_and_result_paths(client_factory):
     assert seen[0].url.path == "/api/v1/human-tasks"
     client.get_human_result("human")
     assert seen[1].url.path == "/api/v1/human-tasks/human/result"
+
+
+def test_human_workflow_wrappers_preserve_routes_bodies_token_and_operation_keys(client_factory):
+    seen=[]
+    def respond(request):
+        seen.append(request)
+        return httpx.Response(202 if request.method=='POST' else 200,json={'status':'creating'})
+    client=client_factory(respond)
+    contract={'schema_version':'tm.human-task.v1','principal_id':'principal','title':'Additional review'}
+    ai={'title':'Analyse the evidence','instructions':'Summarise the verified findings','task_type':'research','depends_on':['task']}
+    cases=[
+        (lambda:client.get_human_task_funding('task ?'),'GET','/human-tasks/task%20%3F/fund',None),
+        (lambda:client.fund_human_task('task'),'POST','/human-tasks/task/fund',None),
+        (lambda:client.recover_human_task_funding('task',payment_intent_id='pi_confirmed'),'POST','/human-tasks/task/fund/recover',{'payment_intent_id':'pi_confirmed'}),
+        (lambda:client.get_principal_payment_method('principal'),'GET','/principals/principal/payment-method',None),
+        (lambda:client.setup_principal_payment_method('principal',allow_agent_payments=True),'POST','/principals/principal/payment-method/setup',{'allow_agent_payments':True}),
+        (lambda:client.confirm_principal_payment_method('principal'),'POST','/principals/principal/payment-method/confirm',{}),
+        (lambda:client.revoke_principal_payment_method('principal'),'DELETE','/principals/principal/payment-method',None),
+        (lambda:client.get_human_task_dependencies('task'),'GET','/human-tasks/task/dependencies',None),
+        (lambda:client.set_human_task_dependencies('task',['first']),'PUT','/human-tasks/task/dependencies',{'depends_on':['first']}),
+        (lambda:client.create_job_amendment('job',contract,idempotency_key='amendment-1'),'POST','/jobs/job/amendments',contract),
+        (lambda:client.add_job_ai_step('job',ai),'POST','/jobs/job/steps',ai),
+        (lambda:client.list_job_steps('job'),'GET','/jobs/job/steps',None),
+        (lambda:client.create_principal_webhook('principal',url='https://hooks.example.test/events',delegation_id='mandate'),'POST','/principals/principal/webhooks',{'url':'https://hooks.example.test/events','delegation_id':'mandate'}),
+        (lambda:client.list_principal_webhooks('principal'),'GET','/principals/principal/webhooks',None),
+        (lambda:client.revoke_principal_webhook('principal','hook ?'),'DELETE','/principals/principal/webhooks/hook%20%3F',None),
+        (lambda:client.list_principal_webhook_deliveries('principal','hook'),'GET','/principals/principal/webhooks/hook/deliveries',None),
+    ]
+    for invoke,method,path,body in cases:
+        invoke()
+        request=seen[-1]
+        assert request.method==method
+        assert request.url.raw_path.decode()=='/api/v1'+path
+        assert (json.loads(request.content) if request.content else None)==body
+        assert request.headers['authorization']=='Bearer token'
+    assert len(seen)==len(cases)
+    assert seen[9].headers['idempotency-key']=='amendment-1'
+    assert client.token=='token'
+
+
+def test_funding_failure_preserves_scoped_token_and_does_not_retry(client_factory):
+    seen=[]
+    def respond(request):
+        seen.append(request)
+        assert request.headers['authorization']=='Bearer scoped-mandate'
+        return httpx.Response(409,json={'detail':{'status':'requires_review'}})
+    client=client_factory(respond,token='scoped-mandate')
+    with pytest.raises(TaskMatchError) as error:
+        client.fund_human_task('task')
+    assert error.value.status_code==409 and error.value.detail=={'status':'requires_review'}
+    assert len(seen)==1 and client.token=='scoped-mandate'
+
+
+def test_amendment_replay_requires_explicit_call_and_preserves_key_and_contract(client_factory):
+    seen=[]
+    def respond(request):
+        seen.append(request)
+        return httpx.Response(201,json={'task_id':'same-task'})
+    client=client_factory(respond)
+    contract={'title':'Additional review','budget':{'amount_minor':1100,'currency':'EUR'}}
+    assert client.create_job_amendment('job',contract,idempotency_key='stable-amendment')=={'task_id':'same-task'}
+    assert len(seen)==1
+    client.create_job_amendment('job',contract,idempotency_key='stable-amendment')
+    assert len(seen)==2
+    assert seen[0].headers['idempotency-key']==seen[1].headers['idempotency-key']=='stable-amendment'
+    assert seen[0].content==seen[1].content
+
+
+def test_payment_setup_requires_explicit_consent_and_never_elevates_caller(client_factory):
+    seen=[]
+    def respond(request):
+        seen.append(request)
+        assert request.headers['authorization']=='Bearer scoped-mandate'
+        assert json.loads(request.content)=={'allow_agent_payments':True}
+        return httpx.Response(401,json={'detail':'Full owner session required'})
+    client=client_factory(respond,token='scoped-mandate')
+    with pytest.raises(TypeError):
+        client.setup_principal_payment_method('principal')
+    assert seen==[]
+    with pytest.raises(TaskMatchError):
+        client.setup_principal_payment_method('principal',allow_agent_payments=True)
+    assert len(seen)==1 and client.token=='scoped-mandate'

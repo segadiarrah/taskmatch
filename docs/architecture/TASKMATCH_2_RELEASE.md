@@ -1,4 +1,7 @@
-# TaskMatch 2 — livraison progressive du 17 novembre 2026
+# TaskMatch 2 — premier lot du 17 novembre 2026
+
+Ce document archive le premier déploiement. L’état actuel et la suite de livraison
+figurent dans [TASKMATCH_COMPLETION_RELEASE.md](TASKMATCH_COMPLETION_RELEASE.md).
 
 Audit avant code : [TASKMATCH_2_AUDIT.md](TASKMATCH_2_AUDIT.md).
 Exploitation et limites : [HUMAN_EXECUTION_OPERATIONS.md](HUMAN_EXECUTION_OPERATIONS.md).

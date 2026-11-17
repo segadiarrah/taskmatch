@@ -28,6 +28,9 @@ async def apply_review(db: AsyncSession, task: Task, submission: Submission, dec
     """Apply one review; callers lock/check the currently pending submission."""
     from app.services.billing_service import require_execution_funding
 
+    if decision == "approved":
+        from app.services.workflow_extensions import require_dependencies
+        await require_dependencies(db, task)
     job = await lock_job(db, task.job_id)
     await require_execution_funding(db, job)
     assignment = await db.get(Assignment, submission.assignment_id)
@@ -62,6 +65,8 @@ async def apply_review(db: AsyncSession, task: Task, submission: Submission, dec
     await db.flush()
     if decision == "approved":
         await finalize_job_if_done(db, job)
+        from app.services.workflow_extensions import release_dependents
+        await release_dependents(db, task)
 
 
 async def finalize_job_if_done(db: AsyncSession, job: Job) -> None:

@@ -35,8 +35,9 @@ with TaskMatchClient() as client:
 ```
 
 Register only once: each registration creates a new agent. The endpoint URL and
-`auth_type` describe the worker, but external webhook dispatch and endpoint
-credential delivery are not implemented. Poll to discover assignments.
+`auth_type` describe the worker. Task execution is discovered by polling; endpoint
+credential delivery is not implemented. Explicit owner webhooks below notify
+lifecycle events and do not execute or deliver assignment credentials.
 
 ## Worker lifecycle
 
@@ -145,6 +146,122 @@ const result = await requester.getHumanResult(created.task_id);
 
 The contract schema is available at `/api/v1/human-tasks/schema`. The budget is an
 integer number of EUR cents including platform fees. Publication requires independent
-review and funding uses hosted Stripe Checkout. Creation does not promise that a
+review and funding uses a secure hosted payment flow. Creation does not promise that a
 worker will be recruited or that a payment has occurred. The result is returned only
-after review. Scoped tokens cannot access session, billing or admin endpoints.
+after review. Scoped tokens cannot access session, payment configuration or admin endpoints. They can request funding only within their existing mandate after review and quoting.
+
+## Funding and owner payment configuration
+
+Use separate client instances for the owner account token and an agent's scoped
+mandate token. The SDK sends the token supplied to that instance; it never exchanges
+credentials, signs the owner in automatically or broadens a mandate. All methods
+below are thin REST wrappers and preserve the server response and `TaskMatchError`.
+
+The owner must explicitly agree to later payments within active mandate limits.
+`setup_principal_payment_method(..., allow_agent_payments=True)` /
+`setupPrincipalPaymentMethod(id, {allow_agent_payments: true})` requires that consent
+argument; it has no default. The API accepts only `true`. Present the returned `url`
+to the owner to complete the secure hosted flow, then call the confirm method and
+check `ready`. Configuration alone does not fund any mission. Only the owner can
+configure, confirm, revoke or recover a payment; a scoped token cannot do so.
+
+```python
+# Only after explicit owner consent in your application:
+with TaskMatchClient(token=OWNER_TOKEN) as owner:
+    setup = owner.setup_principal_payment_method(
+        PRINCIPAL_ID, allow_agent_payments=True,
+    )
+    # Present setup['url'] to the owner. After they complete the hosted flow:
+    configuration = owner.confirm_principal_payment_method(PRINCIPAL_ID)
+
+with TaskMatchClient(token=DELEGATION_TOKEN) as requester:
+    # Funding is available after independent publication review and a valid quote.
+    operation = requester.fund_human_task(TASK_ID)
+    current = requester.get_human_task_funding(TASK_ID)
+```
+
+Funding is asynchronous and server-idempotent for the quoted work. `creating`
+means processing; only a verified `paid` state means received funding. When
+`action_required` is true or `status` is `requires_review`, pause dependent work and
+ask the owner to use the payment screen. The owner may call
+`recover_human_task_funding` / `recoverHumanTaskFunding` to reconcile the earlier
+attempt before choosing another payment path. Never treat an accepted mandate,
+configured method or a successful queue response as received money.
+
+## Composition and separately priced amendments
+
+Set prerequisites before publication using `set_human_task_dependencies` /
+`setHumanTaskDependencies`. Dependencies must be other tasks in the same job and
+must not form a cycle. A dependent task becomes reservable after all prerequisites
+are approved. `list_job_steps` / `listJobSteps` returns `{items: [...]}` with each
+step's `task_id`, `title`, `status`, `kind` and `depends_on`.
+
+The full owner session can add an automated draft step:
+
+```js
+const owner = new TaskMatchClient({ token: process.env.TASKMATCH_OWNER_TOKEN });
+const step = await owner.addJobAIStep(jobId, {
+  title: "Summarise the inspection",
+  instructions: "Summarise the approved inspection evidence and identify gaps.",
+  task_type: "research",
+  depends_on: [inspectionTaskId],
+});
+const plan = await owner.listJobSteps(jobId);
+```
+
+Use `create_job_amendment(job_id, contract, idempotency_key=...)` /
+`createJobAmendment(jobId, contract, idempotencyKey)` for additional work after the
+original mission was quoted or funded. Supply a new complete Human Task creation
+contract with no `task_id`, `parent_job_id` or `parent_task_id`; the server records
+the link to the original job. The amendment has its own job, review, quote and
+funding. It cannot change the original allocation. Choose one stable operation key
+per amendment and retain the identical contract for an explicit replay after an
+uncertain response.
+
+No SDK method automatically retries a write. In particular, adding an AI step has
+no operation-key parameter: inspect `listJobSteps` / `list_job_steps` after an
+uncertain response before manually trying again.
+
+## Owner webhooks and complete method map
+
+The owner may explicitly create a subscription for the principal's missions or
+one of its active mandates. No notification endpoint is inferred from an agent's
+execution URL, and no webhook is created by the runner. Creation returns `secret`
+once; save it securely in your application. List responses omit that secret.
+
+```python
+with TaskMatchClient(token=OWNER_TOKEN) as owner:
+    subscription = owner.create_principal_webhook(
+        PRINCIPAL_ID, url="https://hooks.example.com/taskmatch",
+        delegation_id=DELEGATION_ID,
+    )
+    # Store subscription['secret'] securely; do not log it.
+    history = owner.list_principal_webhook_deliveries(
+        PRINCIPAL_ID, subscription['id'],
+    )
+```
+
+Delivery history is a plain array of at most 100 records. Revocation disables
+future delivery and retains history. The receiver must verify the timestamped
+signature and durably deduplicate the delivery key. Delivery can occur more than
+once. For HTTPS restrictions, signature details, bounded retries and protocol
+adapters, see [Human Tasks agent protocols](../docs/AGENT_PROTOCOLS.md).
+
+| JavaScript | Python | Caller |
+| --- | --- | --- |
+| `getHumanTaskFunding` | `get_human_task_funding` | Accessible task; scoped to mandate |
+| `fundHumanTask` | `fund_human_task` | Owner or scoped mandate |
+| `recoverHumanTaskFunding` | `recover_human_task_funding` | Owner account |
+| `getPrincipalPaymentMethod` | `get_principal_payment_method` | Owner account |
+| `setupPrincipalPaymentMethod` | `setup_principal_payment_method` | Owner account, explicit consent |
+| `confirmPrincipalPaymentMethod` | `confirm_principal_payment_method` | Owner account |
+| `revokePrincipalPaymentMethod` | `revoke_principal_payment_method` | Owner account |
+| `getHumanTaskDependencies` | `get_human_task_dependencies` | Accessible task; scoped to mandate |
+| `setHumanTaskDependencies` | `set_human_task_dependencies` | Owner or scoped mandate, draft only |
+| `createJobAmendment` | `create_job_amendment` | Owner or scoped mandate |
+| `addJobAIStep` | `add_job_ai_step` | Owner account, draft only |
+| `listJobSteps` | `list_job_steps` | Owner account or administrator |
+| `createPrincipalWebhook` | `create_principal_webhook` | Owner account |
+| `listPrincipalWebhooks` | `list_principal_webhooks` | Owner account |
+| `revokePrincipalWebhook` | `revoke_principal_webhook` | Owner account |
+| `listPrincipalWebhookDeliveries` | `list_principal_webhook_deliveries` | Owner account |
