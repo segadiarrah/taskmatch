@@ -1,10 +1,12 @@
 "use client";
 
+import { useAdminCopy } from "@/lib/admin-copy";
+
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { apiGet } from "@/lib/api";
-import { cn, formatCurrency, timeAgo } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -87,6 +89,7 @@ function KPICard({
   icon: React.ElementType;
   trend?: string;
 }) {
+  const { formatNumber } = useAdminCopy();
   return (
     <Card className="relative overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -96,7 +99,7 @@ function KPICard({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="font-display text-3xl font-medium text-ink-50">{value}</div>
+        <div className="font-display text-3xl font-medium text-ink-50">{typeof value === "number" ? formatNumber(value) : value}</div>
         <div className="mt-1 flex items-center gap-1">
           {trend && (
             <span className="flex items-center text-xs font-medium text-success">
@@ -123,10 +126,11 @@ function StatusBar({
   total: number;
   color: string;
 }) {
+  const { formatStatus, formatNumber } = useAdminCopy();
   const pct = total > 0 ? (count / total) * 100 : 0;
   return (
     <div className="flex items-center gap-3">
-      <span className="w-28 text-sm text-ink-300 capitalize">{label.replace(/_/g, " ")}</span>
+      <span className="w-28 text-sm text-ink-300 capitalize">{formatStatus(label)}</span>
       <div className="flex-1">
         <div className="h-2.5 w-full overflow-hidden rounded-full bg-ink-800">
           <div
@@ -135,12 +139,13 @@ function StatusBar({
           />
         </div>
       </div>
-      <span className="w-10 text-right font-mono text-sm font-medium text-ink-200">{count}</span>
+      <span className="w-10 text-right font-mono text-sm font-medium text-ink-200">{formatNumber(count)}</span>
     </div>
   );
 }
 
 function ActivityItem({ entry }: { entry: AuditEntry }) {
+  const { formatStatus, timeAgo } = useAdminCopy();
   return (
     <div className="flex items-start gap-3 py-3">
       <div className="mt-0.5 rounded-full border border-ink-700 bg-ink-800 p-1.5">
@@ -148,11 +153,11 @@ function ActivityItem({ entry }: { entry: AuditEntry }) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm text-ink-200">
-          <span className="font-medium">{entry.actor_type}</span>
+          <span className="font-medium">{formatStatus(entry.actor_type)}</span>
           {" "}
-          <span className="text-ink-400">{entry.action}</span>
+          <span className="text-ink-400">{formatStatus(entry.action)}</span>
           {" "}
-          <span className="font-medium">{entry.entity_type}</span>
+          <span className="font-medium">{formatStatus(entry.entity_type)}</span>
         </p>
         {entry.details && (
           <p className="mt-0.5 truncate text-xs text-ink-500">{entry.details}</p>
@@ -167,6 +172,7 @@ function ActivityItem({ entry }: { entry: AuditEntry }) {
 }
 
 export default function AdminOverviewPage() {
+  const { a, formatCurrency, formatPercent } = useAdminCopy();
   const router = useRouter();
   const [data, setData] = useState<DashboardOverview | null>(null);
   const [loading, setLoading] = useState(true);
@@ -183,7 +189,7 @@ export default function AdminOverviewPage() {
       <div className="flex h-[60vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
-          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+          <p className="text-sm text-muted-foreground">{a("Loading dashboard...")}</p>
         </div>
       </div>
     );
@@ -198,46 +204,42 @@ export default function AdminOverviewPage() {
     <div className="space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Mission Control</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Real-time overview of your TaskMatch platform operations.
-        </p>
+        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">{a("Mission Control")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{a("Real-time overview of your TaskMatch platform operations.")}</p>
       </div>
 
       {/* Marketplace economics — the numbers investors ask for first */}
       <div>
-        <h2 className="eyebrow mb-3 text-ink-400">
-          Marketplace economics
-        </h2>
+        <h2 className="eyebrow mb-3 text-ink-400">{a("Marketplace economics")}</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <KPICard
-            title="GMV"
+            title={a("GMV")}
             value={formatCurrency(data.gmv ?? 0, data.currency)}
-            description="recorded gross payment volume"
+            description={a("recorded gross payment volume")}
             icon={Wallet}
           />
           <KPICard
-            title="Platform Revenue"
+            title={a("Platform Revenue")}
             value={formatCurrency(data.platform_revenue ?? 0, data.currency)}
-            description="fees on settled work"
+            description={a("fees on settled work")}
             icon={DollarSign}
           />
           <KPICard
-            title="Take Rate"
-            value={`${(data.take_rate ?? 0).toFixed(1)}%`}
-            description="revenue / settled GMV"
+            title={a("Take Rate")}
+            value={formatPercent((data.take_rate ?? 0) / 100, 1)}
+            description={a("revenue / settled GMV")}
             icon={Percent}
           />
           <KPICard
-            title="Completed Jobs"
+            title={a("Completed Jobs")}
             value={data.completed_jobs ?? 0}
-            description="delivered & accepted"
+            description={a("delivered & accepted")}
             icon={CheckCircle2}
           />
           <KPICard
-            title="Avg Job Value"
+            title={a("Avg Job Value")}
             value={formatCurrency(data.avg_job_value ?? 0, data.currency)}
-            description="gross per paid job"
+            description={a("gross per paid job")}
             icon={Gauge}
           />
         </div>
@@ -246,33 +248,33 @@ export default function AdminOverviewPage() {
       {/* KPI cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <KPICard
-          title="Total Jobs"
+          title={a("Total Jobs")}
           value={data.total_jobs}
-          description="across all statuses"
+          description={a("across all statuses")}
           icon={Briefcase}
         />
         <KPICard
-          title="Active Tasks"
+          title={a("Active Tasks")}
           value={data.total_tasks}
-          description="currently in pipeline"
+          description={a("currently in pipeline")}
           icon={ListChecks}
         />
         <KPICard
-          title="Active Agents"
+          title={a("Active Agents")}
           value={data.active_agents}
-          description="ready to work"
+          description={a("ready to work")}
           icon={Bot}
         />
         <KPICard
-          title="Pending Reviews"
+          title={a("Pending Reviews")}
           value={data.pending_validations}
-          description="awaiting validation"
+          description={a("awaiting validation")}
           icon={ClipboardCheck}
         />
         <KPICard
-          title="Revenue Pipeline"
+          title={a("Revenue Pipeline")}
           value={formatCurrency(data.total_payments_pending)}
-          description="total in-flight value"
+          description={a("total in-flight value")}
           icon={DollarSign}
         />
       </div>
@@ -282,8 +284,8 @@ export default function AdminOverviewPage() {
         {/* Jobs by Status */}
         <Card>
           <CardHeader>
-            <CardTitle className="font-display text-base">Jobs by Status</CardTitle>
-            <CardDescription>Distribution across the job lifecycle</CardDescription>
+            <CardTitle className="font-display text-base">{a("Jobs by Status")}</CardTitle>
+            <CardDescription>{a("Distribution across the job lifecycle")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {Object.entries(data.jobs_by_status).map(([status, count]) => (
@@ -301,8 +303,8 @@ export default function AdminOverviewPage() {
         {/* Tasks by Status */}
         <Card>
           <CardHeader>
-            <CardTitle className="font-display text-base">Tasks by Status</CardTitle>
-            <CardDescription>Current task pipeline breakdown</CardDescription>
+            <CardTitle className="font-display text-base">{a("Tasks by Status")}</CardTitle>
+            <CardDescription>{a("Current task pipeline breakdown")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {Object.entries(data.tasks_by_status).map(([status, count]) => (
@@ -323,14 +325,12 @@ export default function AdminOverviewPage() {
         {/* Recent Activity */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="font-display text-base">Recent Activity</CardTitle>
-            <CardDescription>Latest platform events</CardDescription>
+            <CardTitle className="font-display text-base">{a("Recent Activity")}</CardTitle>
+            <CardDescription>{a("Latest platform events")}</CardDescription>
           </CardHeader>
           <CardContent>
             {!data.recent_activity || data.recent_activity.length === 0 ? (
-              <div className="flex h-32 items-center justify-center text-sm text-ink-500">
-                No recent activity
-              </div>
+              <div className="flex h-32 items-center justify-center text-sm text-ink-500">{a("No recent activity")}</div>
             ) : (
               <div className="divide-y divide-ink-800">
                 {data.recent_activity.map((entry) => (
@@ -344,8 +344,8 @@ export default function AdminOverviewPage() {
         {/* Quick Actions */}
         <Card>
           <CardHeader>
-            <CardTitle className="font-display text-base">Quick Actions</CardTitle>
-            <CardDescription>Common operator workflows</CardDescription>
+            <CardTitle className="font-display text-base">{a("Quick Actions")}</CardTitle>
+            <CardDescription>{a("Common operator workflows")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button
@@ -354,9 +354,7 @@ export default function AdminOverviewPage() {
               onClick={() => router.push("/admin/jobs")}
             >
               <span className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-signal-400" />
-                Format Next Job
-              </span>
+                <Sparkles className="h-4 w-4 text-signal-400" />{a("Format Next Job")}</span>
               <ArrowRight className="h-4 w-4" />
             </Button>
             <Button
@@ -365,9 +363,7 @@ export default function AdminOverviewPage() {
               onClick={() => router.push("/admin/validations")}
             >
               <span className="flex items-center gap-2">
-                <FileSearch className="h-4 w-4 text-[#b49aff]" />
-                Review Submissions
-              </span>
+                <FileSearch className="h-4 w-4 text-[#b49aff]" />{a("Review Submissions")}</span>
               <ArrowRight className="h-4 w-4" />
             </Button>
             <Button
@@ -376,9 +372,7 @@ export default function AdminOverviewPage() {
               onClick={() => router.push("/admin/agents")}
             >
               <span className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-info" />
-                Agent Directory
-              </span>
+                <Users className="h-4 w-4 text-info" />{a("Agent Directory")}</span>
               <ArrowRight className="h-4 w-4" />
             </Button>
             <Button
@@ -387,9 +381,7 @@ export default function AdminOverviewPage() {
               onClick={() => router.push("/admin/payments")}
             >
               <span className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-success" />
-                Process Payments
-              </span>
+                <DollarSign className="h-4 w-4 text-success" />{a("Process Payments")}</span>
               <ArrowRight className="h-4 w-4" />
             </Button>
             <Button
@@ -398,9 +390,7 @@ export default function AdminOverviewPage() {
               onClick={() => router.push("/admin/audit")}
             >
               <span className="flex items-center gap-2">
-                <ScrollText className="h-4 w-4 text-warning" />
-                View Audit Log
-              </span>
+                <ScrollText className="h-4 w-4 text-warning" />{a("View Audit Log")}</span>
               <ArrowRight className="h-4 w-4" />
             </Button>
           </CardContent>

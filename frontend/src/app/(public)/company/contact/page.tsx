@@ -25,12 +25,14 @@ type Copy = {
   send: string;
   sending: string;
   errorMsg: string;
+  required: string;
+  invalidEmail: string;
   sentTitle: string;
   sentBody: string;
   another: string;
 };
 
-const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
+const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
   en: {
     eyebrow: "Contact",
     title: "Talk to the",
@@ -56,6 +58,8 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     sentTitle: "Message sent",
     sentBody: "Thanks — it is on its way to the team. We will reply to the email address you provided.",
     another: "Send another message",
+    required: "Complete all fields before sending your message.",
+    invalidEmail: "Enter a valid email address.",
   },
   fr: {
     eyebrow: "Contact",
@@ -82,6 +86,8 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     sentTitle: "Message envoyé",
     sentBody: "Merci — il est en route vers l’équipe. Nous répondrons à l’adresse e-mail indiquée.",
     another: "Envoyer un autre message",
+    required: "Remplissez tous les champs avant d’envoyer votre message.",
+    invalidEmail: "Saisissez une adresse e-mail valide.",
   },
   es: {
     eyebrow: "Contacto",
@@ -108,6 +114,8 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     sentTitle: "Mensaje enviado",
     sentBody: "Gracias — va en camino al equipo. Responderemos al correo que indicaste.",
     another: "Enviar otro mensaje",
+    required: "Completa todos los campos antes de enviar tu mensaje.",
+    invalidEmail: "Introduce un correo electrónico válido.",
   },
   zh: {
     eyebrow: "联系",
@@ -134,6 +142,48 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     sentTitle: "信息已发送",
     sentBody: "谢谢——信息正在发往团队。我们会回复您填写的邮箱。",
     another: "再发一条信息",
+    required: "请填写所有字段后再发送信息。",
+    invalidEmail: "请输入有效的邮箱地址。",
+  },
+  pt: {
+    eyebrow: "Contato",
+    title: "Fale com a equipe",
+    accent: "TaskMatch.",
+    description: "Produto, parcerias, suporte ou empresas — envie uma mensagem diretamente à nossa equipe. Normalmente respondemos no prazo de um dia útil.",
+    cards: [
+      {
+        title: "Geral",
+        body: "Questões sobre a plataforma, os próximos desenvolvimentos ou uma parceria."
+      },
+      {
+        title: "Apoio",
+        body: "Problemas operacionais, ajuda com a conta ou algo que esteja a impedir o seu trabalho."
+      },
+      {
+        title: "Empresas",
+        body: "Fale sobre o âmbito das missões, os requisitos de execução e as questões operacionais."
+      },
+      {
+        title: "Documentação",
+        body: "Prefere encontrar a resposta por conta própria? A documentação e a referência da API cobrem o essencial."
+      }
+    ],
+    asideTitle: "Para onde vai a sua mensagem",
+    asideBody1: "Cada mensagem deste formulário chega diretamente à caixa de entrada da equipe — sem labirintos de pedidos nem ciclos de respostas automáticas.",
+    asideBody2: "Conte-nos o que está criando e como utilizaria uma camada de execução que realiza o trabalho e devolve um resultado validado, em vez de apenas o encaminhar.",
+    formTitle: "Enviar uma mensagem",
+    name: "Nome completo",
+    email: "Endereço de e-mail",
+    subject: "Assunto",
+    message: "Como podemos ajudar?",
+    send: "Enviar mensagem",
+    sending: "Enviando…",
+    errorMsg: "Não foi possível enviar a sua mensagem agora. Também pode escrever diretamente para sega@tauraco.ai.",
+    sentTitle: "Mensagem enviada",
+    sentBody: "Obrigado — a mensagem está a caminho da equipe. Responderemos para o endereço de e-mail que indicou.",
+    another: "Enviar outra mensagem",
+    required: "Preencha todos os campos antes de enviar a mensagem.",
+    invalidEmail: "Digite um endereço de e-mail válido.",
   },
 };
 
@@ -143,7 +193,7 @@ const inputClass =
 
 export default function ContactPage() {
   const { locale } = useTranslation();
-  const c = COPY[locale] ?? COPY.en;
+  const c = COPY[locale];
 
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -188,11 +238,20 @@ export default function ContactPage() {
               </div>
             ) : (
               <form
+                noValidate
                 className="space-y-5"
                 onSubmit={async (e) => {
                   e.preventDefault();
-                  setSubmitting(true);
                   setError(null);
+                  if (Object.values(form).some(value => !value.trim())) {
+                    setError(c.required);
+                    return;
+                  }
+                  if (!e.currentTarget.querySelector<HTMLInputElement>('input[type="email"]')?.validity.valid) {
+                    setError(c.invalidEmail);
+                    return;
+                  }
+                  setSubmitting(true);
                   let ok = false;
                   // Primary: our backend delivers to sega@tauraco.ai via SMTP (Brevo).
                   try {
@@ -235,6 +294,7 @@ export default function ContactPage() {
                 <h2 className="font-display text-3xl font-medium text-ink-50">{c.formTitle}</h2>
                 <Input
                   placeholder={c.name}
+                  aria-label={c.name}
                   className={`${inputClass} h-12`}
                   required
                   value={form.name}
@@ -242,6 +302,7 @@ export default function ContactPage() {
                 />
                 <Input
                   placeholder={c.email}
+                  aria-label={c.email}
                   type="email"
                   className={`${inputClass} h-12`}
                   required
@@ -250,6 +311,7 @@ export default function ContactPage() {
                 />
                 <Input
                   placeholder={c.subject}
+                  aria-label={c.subject}
                   className={`${inputClass} h-12`}
                   required
                   value={form.subject}
@@ -257,13 +319,14 @@ export default function ContactPage() {
                 />
                 <Textarea
                   placeholder={c.message}
+                  aria-label={c.message}
                   rows={7}
                   className={inputClass}
                   required
                   value={form.message}
                   onChange={(e) => setForm((prev) => ({ ...prev, message: e.target.value }))}
                 />
-                {error ? <p className="text-sm text-danger">{error}</p> : null}
+                {error ? <p role="alert" className="text-sm text-danger">{error}</p> : null}
                 <button
                   type="submit"
                   className="inline-flex h-12 items-center justify-center rounded-md bg-signal-500 px-7 text-sm font-semibold text-ink-950 transition-all hover:bg-signal-400 hover:shadow-glow-sm disabled:opacity-50"

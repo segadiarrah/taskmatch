@@ -503,11 +503,11 @@ export default function CreateJobPage() {
                     className="flex items-center gap-3 rounded-lg border p-3"
                   >
                     <Badge variant="outline" className="flex-shrink-0 capitalize">
-                      {req.requirement_type}
+                      {t(`client.new.reqType.${req.requirement_type}`)}
                     </Badge>
                     <span className="text-sm flex-1">{req.description}</span>
                     <Badge variant={priorityVariant[req.priority]} className="flex-shrink-0 capitalize">
-                      {req.priority}
+                      {t(`client.new.priority.${req.priority}`)}
                     </Badge>
                     <button
                       type="button"

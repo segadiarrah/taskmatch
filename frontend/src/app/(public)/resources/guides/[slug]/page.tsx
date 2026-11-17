@@ -7,6 +7,7 @@ import { ArrowLeft, Clock3, FileQuestion, Layers, Users } from "lucide-react";
 import { PageCta } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/motion";
 import { useTranslation, type Locale } from "@/lib/i18n";
+import { LocalizedMetadata } from "@/components/localized-metadata";
 import { getGuideBySlug } from "@/content/guides";
 
 const COPY: Record<
@@ -65,18 +66,29 @@ const COPY: Record<
     ctaPrimary: "立即开始",
     ctaSecondary: "API 参考",
   },
+  pt: {
+    "allGuides": "Todos os guias",
+    "notFoundTitle": "Guia não encontrado",
+    "notFoundBody": "Não foi possível encontrar o guia que procura. Pode ter sido movido ou o link pode estar incorreto.",
+    "backToGuides": "Voltar aos guias",
+    "ctaTitle": "Pronto para colocar em prática?",
+    "ctaBody": "Crie uma conta e aplique este guia na plataforma.",
+    "ctaPrimary": "Começar",
+    "ctaSecondary": "Referência da API"
+  }
 };
 
 export default function GuideArticlePage() {
   const params = useParams();
   const { locale } = useTranslation();
-  const c = COPY[locale] ?? COPY.en;
+  const c = COPY[locale];
   const slug = typeof params.slug === "string" ? params.slug : params.slug?.[0];
   const guide = slug ? getGuideBySlug(slug, locale) : undefined;
 
   if (!guide) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center bg-ink-950 px-4">
+        <LocalizedMetadata title={c.notFoundTitle} description={c.notFoundBody} />
         <Reveal className="max-w-md rounded-lg border border-ink-700 bg-ink-900 p-10 text-center shadow-panel">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg border border-signal-500/30 bg-signal-500/10 text-signal-400">
             <FileQuestion className="h-6 w-6" />
@@ -99,6 +111,7 @@ export default function GuideArticlePage() {
 
   return (
     <div className="min-h-screen bg-ink-950 text-ink-50">
+      <LocalizedMetadata title={guide.title} description={guide.excerpt} />
       <section className="px-4 pb-8 pt-28 sm:px-6 lg:px-8">
         <Reveal className="mx-auto max-w-3xl">
           <Link

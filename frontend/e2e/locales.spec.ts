@@ -1,6 +1,6 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 
-type Locale = "en" | "fr" | "es" | "zh";
+type Locale = "en" | "fr" | "es" | "zh" | "pt";
 type Role = "client" | "agent_developer" | "admin";
 
 const localeCopy = {
@@ -11,7 +11,7 @@ const localeCopy = {
     client: "My Jobs",
     developer: "My Agents",
     admin: "Real-time overview of your TaskMatch platform operations.",
-    privacy: "Privacy Policy", language: "Select language", guide: "Client quickstart", archive: "This article is published in English.",
+    privacy: "Privacy Policy", language: "Select language", guide: "Client quickstart", article: "Why we decompose jobs into tasks before matching",
     loading: "Loading TaskMatch…",
     retry: "Try Again",
   },
@@ -22,7 +22,7 @@ const localeCopy = {
     client: "Mes missions",
     developer: "Mes agents",
     admin: "Vue en temps réel des opérations de votre plateforme TaskMatch.",
-    privacy: "Politique de confidentialité", language: "Choisir la langue", guide: "Démarrage rapide client", archive: "Cet article est publié en anglais.",
+    privacy: "Politique de confidentialité", language: "Choisir la langue", guide: "Démarrage rapide client", article: "Pourquoi nous décomposons les missions en tâches avant le matching",
     loading: "Chargement de TaskMatch…",
     retry: "Réessayer",
   },
@@ -32,8 +32,8 @@ const localeCopy = {
     login: "Bienvenido de nuevo",
     client: "Mis encargos",
     developer: "Mis agentes",
-    admin: "Resumen en tiempo real de las operaciones de tu plataforma TaskMatch.",
-    privacy: "Política de privacidad", language: "Elegir idioma", guide: "Inicio rápido para clientes", archive: "Este artículo está publicado en inglés.",
+    admin: "Vista en tiempo real de las operaciones de tu plataforma TaskMatch.",
+    privacy: "Política de privacidad", language: "Elegir idioma", guide: "Inicio rápido para clientes", article: "Por qué dividimos los trabajos en tareas antes de asignarlos",
     loading: "Cargando TaskMatch…",
     retry: "Reintentar",
   },
@@ -43,10 +43,18 @@ const localeCopy = {
     login: "欢迎回来",
     client: "我的任务",
     developer: "我的智能体",
-    admin: "实时查看 TaskMatch 平台的运行情况。",
-    privacy: "隐私政策", language: "选择语言", guide: "客户快速入门", archive: "本文以英文发布。",
+    admin: "实时概览 TaskMatch 平台的运营情况。",
+    privacy: "隐私政策", language: "选择语言", guide: "客户快速入门", article: "为什么我们先拆解任务，再匹配智能体",
     loading: "正在加载 TaskMatch…",
     retry: "重试",
+  },
+  pt: {
+    home: "A execução humana", docs: "Documentação,", login: "Bem-vindo de volta",
+    client: "Meus trabalhos", developer: "Meus agentes",
+    admin: "Visão em tempo real das operações da sua plataforma TaskMatch.",
+    privacy: "Política de Privacidade", language: "Selecionar idioma", guide: "Guia rápido para clientes",
+    article: "Porque dividimos as missões em tarefas antes da correspondência",
+    loading: "Carregando TaskMatch…", retry: "Tentar novamente",
   },
 } satisfies Record<Locale, Record<string, string>>;
 
@@ -132,17 +140,17 @@ for (const locale of Object.keys(localeCopy) as Locale[]) {
         await seedLocale(page, locale, true);
         await page.route("**/api/**", (route) => fulfillDashboard(route, role));
         await page.goto(path);
-        await expect(page.getByText((path === "/admin" ? localeCopy.en.admin : localeCopy[locale][copyKey]), { exact: false }).first()).toBeVisible();
+        await expect(page.getByText(localeCopy[locale][copyKey], { exact: false }).first()).toBeVisible();
         await expect(page.locator("html")).toHaveAttribute("lang", locale);
-        await expect(page.locator("main")).toHaveAttribute("lang", path === "/admin" ? "en" : locale);
+        await expect(page.locator("main")).toHaveAttribute("lang", locale);
       });
     }
 
-    test("identifies English articles while preserving translated navigation", async ({ page }) => {
+    test("renders translated article content and navigation", async ({ page }) => {
       await seedLocale(page, locale);
       await page.goto("/resources/blog/why-we-decompose-jobs-into-tasks");
-      await expect(page.getByText(localeCopy[locale].archive, { exact: true })).toBeVisible();
-      await expect(page.locator('[lang="en"] h1')).toBeVisible();
+      await expect(page.getByRole("heading", {level:1,name:localeCopy[locale].article})).toBeVisible();
+      await expect(page.locator("html")).toHaveAttribute("lang",locale);
       await expect(page.getByRole("combobox", { name: localeCopy[locale].language })).toHaveValue(locale);
     });
 
@@ -167,10 +175,26 @@ for (const locale of Object.keys(localeCopy) as Locale[]) {
 
 test("changing language persists after reload and updates document language", async ({ page }) => {
   await page.goto("/");
-  const selector = page.getByRole("combobox", { name: /Select language|Choisir la langue|Elegir idioma|选择语言/ });
+  const selector = page.getByRole("combobox", { name: /Select language|Choisir la langue|Elegir idioma|选择语言|Selecionar idioma/ });
   await selector.selectOption("fr");
   await expect(page.locator("html")).toHaveAttribute("lang", "fr");
   await page.reload();
   await expect(page.getByRole("combobox", { name: "Choisir la langue" })).toHaveValue("fr");
   await expect(page.locator("html")).toHaveAttribute("lang", "fr");
 });
+
+
+for (const browserLocale of ["pt-BR", "pt-PT"]) {
+  test.describe(`browser preference ${browserLocale}`, () => {
+    test.use({ locale: browserLocale });
+    test("detects Portuguese and respects an explicit subsequent language choice", async ({ page }) => {
+      await page.goto("/");
+      await expect(page.locator("html")).toHaveAttribute("lang","pt");
+      const selector=page.getByRole("combobox", {name:"Selecionar idioma"});
+      await expect(selector).toHaveValue("pt");
+      await selector.selectOption("es");await page.reload();
+      await expect(page.locator("html")).toHaveAttribute("lang","es");
+      await expect(page.getByRole("combobox",{name:"Elegir idioma"})).toHaveValue("es");
+    });
+  });
+}

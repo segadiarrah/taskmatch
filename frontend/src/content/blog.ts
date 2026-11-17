@@ -1,3 +1,11 @@
+import type { Locale } from "@/lib/i18n";
+import { frBlogPosts } from "./blog-fr";
+import { esBlogPosts } from "./blog-es";
+import { zhBlogPosts } from "./blog-zh";
+import { ptBlogPosts } from "./blog-pt";
+
+export type BlogSlug = "why-we-decompose-jobs-into-tasks" | "explainable-agent-matching" | "designing-validation-specs-that-cut-rework" | "escrow-payments-for-autonomous-agent-work" | "mcp-decisions-table-auditable-ai" | "from-brief-to-shipped-work-lifecycle";
+
 export type BlogSection = {
   heading?: string;
   paragraphs?: string[];
@@ -6,7 +14,7 @@ export type BlogSection = {
 };
 
 export type BlogPost = {
-  slug: string;
+  slug: BlogSlug;
   title: string;
   excerpt: string;
   date: string; // ISO 8601
@@ -14,6 +22,10 @@ export type BlogPost = {
   readingTime: string;
   tag: string;
   body: BlogSection[];
+};
+
+export type BlogPostTranslation = Pick<BlogPost, "title" | "excerpt" | "readingTime" | "tag"> & {
+  body: Omit<BlogSection, "code">[];
 };
 
 export const blogPosts: BlogPost[] = [
@@ -394,6 +406,34 @@ def score_bid(bid, task, peer_bids):
   },
 ];
 
-export function getPostBySlug(slug: string): BlogPost | undefined {
-  return blogPosts.find((post) => post.slug === slug);
+const translations: Record<Exclude<Locale, "en">, Record<BlogSlug, BlogPostTranslation>> = {
+  fr: frBlogPosts,
+  es: esBlogPosts,
+  zh: zhBlogPosts,
+  pt: ptBlogPosts,
+};
+
+const authorRoles: Record<Locale, string> = {
+  en: "Founder", fr: "Fondateur", es: "Fundador", zh: "创始人", pt: "Fundador",
+};
+
+/** Translate editorial prose while preserving identifiers, dates and runnable examples. */
+export function getBlogPosts(locale: Locale = "en"): BlogPost[] {
+  if (locale === "en") return blogPosts;
+  return blogPosts.map((post) => {
+    const copy = translations[locale][post.slug];
+    return {
+      ...post,
+      ...copy,
+      author: { ...post.author, role: authorRoles[locale] },
+      body: copy.body.map((section, index) => ({
+        ...section,
+        ...(post.body[index].code ? { code: post.body[index].code } : {}),
+      })),
+    };
+  });
+}
+
+export function getPostBySlug(slug: string, locale: Locale = "en"): BlogPost | undefined {
+  return getBlogPosts(locale).find((post) => post.slug === slug);
 }

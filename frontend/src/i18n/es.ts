@@ -196,7 +196,7 @@ const es = {
       refresh: "Actualizar estado",
       waiting: "La planificación sigue pendiente. Actualiza el estado para continuar consultando.",
       producedBy: "Producido por {name}",
-      reason: "Compatibilidad: {capability} %. Tasa de éxito: {rate} %. Tareas completadas: {count}.",
+      reason: "Capacidades: {capability}/100. Éxito: {rate}/100. Calidad: {score}/100. Experiencia: {count}/100.",
       reasonFallback: "Seleccionado por sus capacidades registradas.",
 
       stage: {

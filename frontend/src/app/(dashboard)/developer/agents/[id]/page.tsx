@@ -101,7 +101,7 @@ const statusBadgeVariant = (status: string) => {
 };
 
 export default function AgentDetailPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const params = useParams();
   const agentId = params.id as string;
 
@@ -239,7 +239,7 @@ export default function AgentDetailPage() {
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">{agent.name}</h1>
                 <Badge variant={statusBadgeVariant(agent.status)}>
-                  {agent.status}
+                  {formatStatus(agent.status, locale)}
                 </Badge>
                 <Badge variant={agent.kind === "human" ? "outline" : "secondary"}>
                   {agent.kind === "human" ? t("developer.agentDetail.humanExpert") : t("developer.agentDetail.aiAgent")}
@@ -444,9 +444,9 @@ export default function AgentDetailPage() {
                         <p className="text-sm font-medium truncate text-ink-100">{assignment.task_title}</p>
                         <div className="mt-1 flex items-center gap-3 font-mono text-xs text-muted-foreground">
                           <span>{assignment.job_title}</span>
-                          <span>{formatCurrency(assignment.budget, assignment.currency)}</span>
+                          <span>{formatCurrency(assignment.budget, assignment.currency, locale)}</span>
                           {assignment.completed_at && (
-                            <span>{formatDate(assignment.completed_at)}</span>
+                            <span>{formatDate(assignment.completed_at, locale)}</span>
                           )}
                         </div>
                       </div>
@@ -455,7 +455,7 @@ export default function AgentDetailPage() {
                           <span className="font-mono text-xs font-medium text-ink-100">{assignment.score}/100</span>
                         )}
                         <Badge variant={statusBadgeVariant(assignment.status)} className="text-xs">
-                          {formatStatus(assignment.status)}
+                          {formatStatus(assignment.status, locale)}
                         </Badge>
                       </div>
                     </Link>
@@ -486,7 +486,7 @@ export default function AgentDetailPage() {
                       </div>
                     </div>
                     <p className="text-sm text-muted-foreground">{fb.note}</p>
-                    <p className="text-xs text-muted-foreground">{formatDate(fb.created_at)}</p>
+                    <p className="text-xs text-muted-foreground">{formatDate(fb.created_at, locale)}</p>
                   </div>
                 ))}
               </CardContent>
@@ -504,11 +504,11 @@ export default function AgentDetailPage() {
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.agentDetail.status")}</span>
-                <Badge variant={statusBadgeVariant(agent.status)}>{agent.status}</Badge>
+                <Badge variant={statusBadgeVariant(agent.status)}>{formatStatus(agent.status, locale)}</Badge>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.agentDetail.authType")}</span>
-                <span className="font-medium capitalize">{agent.auth_type.replace(/_/g, " ")}</span>
+                <span className="font-medium capitalize">{formatStatus(agent.auth_type, locale)}</span>
               </div>
               <div className="text-sm">
                 <span className="text-muted-foreground">{t("developer.agentDetail.endpoint")}</span>
@@ -516,11 +516,11 @@ export default function AgentDetailPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.agentDetail.registered")}</span>
-                <span className="font-medium">{formatDate(agent.created_at)}</span>
+                <span className="font-medium">{formatDate(agent.created_at, locale)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.agentDetail.lastUpdated")}</span>
-                <span className="font-medium">{formatDate(agent.updated_at)}</span>
+                <span className="font-medium">{formatDate(agent.updated_at, locale)}</span>
               </div>
             </CardContent>
           </Card>
@@ -537,19 +537,19 @@ export default function AgentDetailPage() {
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.agentDetail.totalEarned")}</span>
                 <span className="font-mono font-semibold text-success">
-                  {formatCurrency(agent.earnings?.total ?? 0, agent.earnings?.currency ?? "USD")}
+                  {formatCurrency(agent.earnings?.total ?? 0, agent.earnings?.currency ?? "USD", locale)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.agentDetail.pending")}</span>
                 <span className="font-medium">
-                  {formatCurrency(agent.earnings?.pending ?? 0, agent.earnings?.currency ?? "USD")}
+                  {formatCurrency(agent.earnings?.pending ?? 0, agent.earnings?.currency ?? "USD", locale)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.agentDetail.paid")}</span>
                 <span className="font-medium">
-                  {formatCurrency(agent.earnings?.paid ?? 0, agent.earnings?.currency ?? "USD")}
+                  {formatCurrency(agent.earnings?.paid ?? 0, agent.earnings?.currency ?? "USD", locale)}
                 </span>
               </div>
             </CardContent>

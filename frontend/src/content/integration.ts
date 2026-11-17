@@ -126,6 +126,38 @@ export const integrationCopy = {
     "protocolsBody": "MCP 2026-07-28 使用 bearer、Content-Type application/json 和 Accept application/json,text/event-stream。发送 MCP-Protocol-Version、Mcp-Method 以及 params._meta 中相符的 protocolVersion 和 clientCapabilities。tools/call 还需 Mcp-Name。调用前先发现可用工具。A2A 0.3.0 使用 JSON-RPC，由智能体卡片声明可用方法。权限始终受所有者或委托范围限制。不提供流式响应、A2A 推送通知或任务取消。",
     "webhooks": "签名事件 webhook",
     "webhooksBody": "只有所有者的完整会话可以创建或停用订阅。提供使用 443 端口的公网 HTTPS 地址及可选的 delegation_id。妥善保存仅显示一次的密钥。事件可能重复投递，最多尝试六次，请按 X-TaskMatch-Event-Id 去重。对 X-TaskMatch-Timestamp、一个点和原始请求体拼接结果验证 X-TaskMatch-Signature（v1= 后为 HMAC-SHA256），并检查时间容差。没有明确启用的订阅时不会发送事件。查询投递记录排查错误；完成配置不代表已接收事件。"
+  },
+  "pt": {
+    "title": "Documentação,",
+    "accent": "do pedido à entrega.",
+    "intro": "Crie uma missão, analise o plano de execução e acompanhe o trabalho até a validação. A API usa a mesma conta e as mesmas permissões do painel.",
+    "apiTitle": "A API TaskMatch",
+    "apiIntro": "Rotas disponíveis para contas, missões e execução de agentes. Use os identificadores retornados pela API e analise as respostas de erro antes de repetir uma escrita.",
+    "auth": "Autenticar",
+    "authBody": "Entre com o e-mail e a senha da conta. O login aceita os campos de formulário username e password e retorna um token de acesso bearer. O registro cria uma conta; depois, entre separadamente.",
+    "jobs": "Criar e enviar uma missão",
+    "jobsBody": "Crie um rascunho com title e raw_description e envie o identificador para iniciar o planejamento. Revise o orçamento e pague na página de pagamento hospedada. A execução começa apenas quando o servidor confirma o pagamento; um URL de retorno com sucesso não é uma prova.",
+    "agents": "Registrar e executar um agente",
+    "agentsBody": "Use uma conta de desenvolvedor de agentes para registrar capacidades, descobrir tarefas abertas e apresentar ofertas. Após a atribuição, consulte suas tarefas e envie o resultado da tarefa atribuída.",
+    "limits": "Disponibilidade das integrações",
+    "limitsBody": "Os exemplos de executores dos SDK usam consultas periódicas. As missões humanas também disponibilizam adaptadores MCP e A2A com versões e webhooks de eventos ativados explicitamente pelo titular. A disponibilidade depende da implantação. Uma transferência para a conta de pagamento é distinta de um pagamento para uma conta bancária.",
+    "reference": "Referência da API",
+    "sdk": "Exemplos dos SDK",
+    "guides": "Guias passo a passo",
+    "endpoints": "Pontos de acesso",
+    "sample": "Exemplo de login",
+    "observe": "Verificar antes de repetir",
+    "observeBody": "Um tempo limite de rede não prova que uma escrita falhou. Consulte o recurso antes de repetir a criação ou o envio. As verificações de autorização e de estado da tarefa podem rejeitar um pedido mesmo quando os dados são válidos.",
+    "billing": "Financiar uma missão e verificar o pagamento",
+    "billingBody": "Solicite a página de pagamento sem enviar valores nem URLs de retorno. Abra o URL HTTPS seguro retornado. Ao retornar, chame sync e consulte o estado de financiamento da missão. Um estado não pago ou pendente não deve ser tratado como sucesso.",
+    "connect": "Conectar uma conta de recebimento",
+    "connectBody": "Indique explicitamente o código ISO do país ao criar o processo de cadastro. Siga o link HTTPS seguro retornado e sincronize a conta ao retornar. Requisitos incompletos podem bloquear transferências. Apenas os indicadores de capacidade comunicados pelo servidor confirmam que a conta está habilitada.",
+    "human": "Criar uma missão humana",
+    "humanBody": "Consulte o esquema e a taxonomia e crie um contrato tm.human-task.v1 com Idempotency-Key. A mesma conta permite solicitar trabalho, oferecer competências e gerenciar agentes. Um pedido de agente exige um token de delegação com escopo limitado; nunca herda a sessão completa do proprietário.",
+    "protocols": "MCP e A2A",
+    "protocolsBody": "MCP 2026-07-28 usa autenticação bearer, Content-Type application/json e Accept application/json,text/event-stream. Envie MCP-Protocol-Version, Mcp-Method e os valores correspondentes de protocolVersion e clientCapabilities em params._meta. Inclua Mcp-Name para tools/call. Descubra as ferramentas antes de chamá-las. A2A 0.3.0 usa JSON-RPC; o cartão do agente declara os métodos suportados. Ambos mantêm as permissões do proprietário ou da delegação. Transmissão em fluxo, notificações push A2A e cancelamento de tarefas não estão disponíveis.",
+    "webhooks": "Webhooks de eventos assinados",
+    "webhooksBody": "Só a sessão completa do proprietário pode criar ou desativar uma assinatura. Indique um destino HTTPS público na porta 443 e, opcionalmente, delegation_id. Salve o segredo retornado uma única vez. A entrega pode se repetir, com um máximo de seis tentativas: elimine duplicados usando X-TaskMatch-Event-Id. Verifique X-TaskMatch-Signature (v1= seguido de HMAC-SHA256) sobre X-TaskMatch-Timestamp, um ponto e o corpo original, respeitando uma tolerância temporal. Não são enviados eventos sem uma assinatura ativa explícita. Consulte os registros de entrega; a configuração, por si só, não comprova a recepção."
   }
 };
 

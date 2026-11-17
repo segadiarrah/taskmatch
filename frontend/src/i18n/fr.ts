@@ -223,7 +223,7 @@ const fr = {
       refresh: "Actualiser l’état",
       waiting: "La planification est toujours en attente. Actualisez l’état pour poursuivre le suivi.",
       producedBy: "Produit par {name}",
-      reason: "Adéquation des capacités : {capability} %. Taux de réussite : {rate} %. Tâches terminées : {count}.",
+      reason: "Compétences : {capability}/100. Réussite : {rate}/100. Qualité : {score}/100. Expérience : {count}/100.",
       reasonFallback: "Sélection selon les capacités enregistrées.",
 
       stage: {

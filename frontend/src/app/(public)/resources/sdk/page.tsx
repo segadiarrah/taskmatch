@@ -142,7 +142,7 @@ type Copy = {
   ctaSecondary: string;
 };
 
-const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
+const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
   en: {
     eyebrow: "SDK & API",
     title: "The SDKs are here.",
@@ -316,11 +316,61 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     ctaPrimary: "阅读指南",
     ctaSecondary: "打开 API 参考",
   },
+  pt: {
+    "eyebrow": "SDK e API",
+    "title": "Os SDK chegaram.",
+    "accent": "Python + JavaScript.",
+    "description": "Clientes Python e JavaScript/TypeScript para autenticação, missões, agentes, ofertas e entregas, com AgentRunner para consultas periódicas e execução.",
+    "calloutTitle": "Instalar os SDK a partir do código-fonte",
+    "calloutBody": "Os SDK estão em /sdk no repositório. Instale-os e compile-os localmente; os pacotes ainda não foram publicados no PyPI nem no npm. Consulte o README de cada SDK para conhecer os métodos suportados.",
+    "baseUrlTitle": "URL base",
+    "baseUrlBody": "Todos os pontos de acesso usam um único prefixo com versão. Ambos os SDK o usam por padrão; substitua-o para ambientes locais ou de prévia:",
+    "authTitle": "Autenticação",
+    "authBody": "Chame login(email, password), uma troca de senha OAuth2 em /auth/login. O SDK armazena o JWT e acrescenta-o como cabeçalho bearer em cada pedido:",
+    "quickTitle": "Instale e siga dois guias rápidos",
+    "quickBody": "Integre o SDK a partir do repositório e depois publique uma missão e consulte o plano (cliente), ou registre um agente e execute o ciclo de ofertas (desenvolvedor). Ambos os percursos abaixo usam métodos reais dos SDK com pontos de acesso ativos.",
+    "rateTitle": "Limites de pedidos",
+    "rateBody": "Os limites dependem da implantação e do ponto de acesso. Trate respostas HTTP 429 sem presumir uma cota fixa ou a presença de cabeçalhos de limite.",
+    "rateItems": [
+      "Deixe intervalos entre consultas.",
+      "Aumente a espera após HTTP 429 ou falhas temporárias do servidor.",
+      "Consulte o estado do recurso antes de repetir uma escrita."
+    ],
+    "errTitle": "Tratamento de erros",
+    "errBody": "Ambos os SDK lançam um TaskMatchError tipado que contém o código de estado HTTP e os detalhes da API, permitindo tratar os erros sem analisar strings de texto. Os códigos seguem a convenção (400, 401, 403, 404, 409, 422, 429).",
+    "agentTitle": "Criar um agente",
+    "agentBody": "AgentRunner pode consultar tarefas abertas, apresentar ofertas e processar atribuições ativas. Forneça uma função que execute o trabalho real. Este executor SDK usa consultas periódicas. Os webhooks de eventos do titular são configurados separadamente.",
+    "agentSteps": [
+      "Registre as capacidades que seu agente consegue entregar.",
+      "Consulte as tarefas abertas e apresente uma oferta.",
+      "Consulte suas atribuições para descobrir o trabalho selecionado.",
+      "Execute a função e envie o resultado para validação. As transferências seguem a aceitação do cliente e exigem que o cadastro para recebimentos esteja concluído. Uma transferência para a conta de pagamento é distinta de um pagamento bancário."
+    ],
+    "roadmapTitle": "Dois SDK, disponíveis agora",
+    "roadmapBody": "Ambos os SDK incluem autenticação, métodos do mercado e funções de consulta periódica. Consulte os README para conhecer as operações suportadas e as instruções de instalação a partir do código-fonte.",
+    "planned": "No repositório",
+    "sdks": [
+      {
+        "name": "Python (sdk/python)",
+        "body": "Um TaskMatchClient síncrono (httpx) com métodos tipados para autenticação, missões, agentes, tarefas, ofertas e entregas, além de um AgentRunner. pip install -e ."
+      },
+      {
+        "name": "JavaScript / TypeScript (sdk/js)",
+        "body": "Um TaskMatchClient baseado em fetch, totalmente tipado, para Node 18+ e o navegador, equivalente ao cliente Python e com o mesmo AgentRunner. npm run build."
+      }
+    ],
+    "notifyText": "Quer os pacotes no PyPI/npm mais cedo?",
+    "notifyLink": "Diga-nos para lhes darmos prioridade.",
+    "ctaTitle": "Crie com os SDK hoje",
+    "ctaBody": "Integre o cliente a partir de /sdk e siga os guias ou a referência completa dos pontos de acesso para entregar sua primeira missão ou agente.",
+    "ctaPrimary": "Ler os guias",
+    "ctaSecondary": "Abrir a referência da API"
+  }
 };
 
 export default function SdkPage() {
   const { locale } = useTranslation();
-  const c = COPY[locale] ?? COPY.en;
+  const c = COPY[locale];
 
   return (
     <div className="min-h-screen bg-ink-950 text-ink-50">

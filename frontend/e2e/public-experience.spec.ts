@@ -4,6 +4,7 @@ const locales = {
   en: { mission: "Delegate a mission", work: "Find work", agent: "Connect an agent", login: "Sign in", register: "Create account", consent: "Terms of Service" },
   fr: { mission: "Confier une mission", work: "Trouver une mission", agent: "Connecter un agent", login: "Se connecter", register: "Créer un compte", consent: "Conditions d'utilisation" },
   es: { mission: "Delegar una misión", work: "Encontrar trabajo", agent: "Conectar un agente", login: "Iniciar sesión", register: "Crear cuenta", consent: "Términos del servicio" },
+  pt: { mission: "Delegar uma missão", work: "Encontrar trabalho", agent: "Conectar um agente", login: "Entrar", register: "Criar conta", consent: "Termos de Serviço" },
   zh: { mission: "委托任务", work: "寻找工作", agent: "连接智能体", login: "登录", register: "创建账户", consent: "服务条款" },
 };
 const user = { id: "public-user", email: "user@example.test", full_name: "Test User", role: "client", is_active: true, created_at: "2026-01-01T00:00:00Z" };

@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminCopy, adminSource, adminError } from "@/lib/admin-copy";
+
 import { ExecutionPanel } from "./execution-panel";
 import React, { useState, useEffect, useCallback } from "react";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
@@ -7,7 +9,7 @@ import { useParams, useRouter } from "next/navigation";
 import { apiGet, apiPost } from "@/lib/api";
 import { loadAdminTaskDetail, type AdminTaskDetail } from "@/lib/admin-details";
 import { Select } from "@/components/ui/select";
-import { cn, formatCurrency, formatDate, formatStatus, formatDateTime, timeAgo } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +54,7 @@ const statusBadgeVariant: Record<string, "secondary" | "info" | "default" | "war
 };
 
 export default function TaskDetailPage() {
+  const { a, formatStatus, formatDateTime, formatCurrency, formatNumber, formatPercent, timeAgo } = useAdminCopy();
   const params = useParams();
   const router = useRouter();
   const taskId = params.id as string;
@@ -96,7 +99,7 @@ export default function TaskDetailPage() {
       }
       await fetchTask();
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "The request failed. Please refresh and try again.");
+      setActionError(adminError(error, adminSource("The request failed. Please refresh and try again.")));
       return;
     } finally {
       setActionLoading(false);
@@ -122,14 +125,14 @@ export default function TaskDetailPage() {
   if (!task) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <p className="text-muted-foreground">Task not found.</p>
+        <p className="text-muted-foreground">{a("Task not found.")}</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{actionError}</p>}
+      {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{a(actionError)}</p>}
       {/* Header */}
       <div>
         <Button
@@ -138,9 +141,7 @@ export default function TaskDetailPage() {
           onClick={() => router.push("/admin/tasks")}
           className="mb-4 text-muted-foreground"
         >
-          <ArrowLeft className="mr-1 h-4 w-4" />
-          Back to Tasks
-        </Button>
+          <ArrowLeft className="mr-1 h-4 w-4" />{a("Back to Tasks")}</Button>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -153,15 +154,14 @@ export default function TaskDetailPage() {
                 task.priority === 1 ? "text-danger" :
                 task.priority === 2 ? "text-warning" : "text-ink-500"
               )}>
-                P{task.priority}
+                {a("Priority")} {formatNumber(task.priority)}
               </span>
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <button
                 className="flex items-center gap-1 hover:text-signal-400"
                 onClick={() => router.push(`/admin/jobs/${task.job_id}`)}
-              >
-                Job: {task.job_title}
+              >{a("Job:")} {task.job_title}
               </button>
               <span className="flex items-center gap-1">
                 <DollarSign className="h-3.5 w-3.5" />
@@ -177,17 +177,15 @@ export default function TaskDetailPage() {
               onClick={() => handleAction("match-agents")}
               disabled={actionLoading}
             >
-              <Target className="mr-1 h-4 w-4" />
-              Match Agents
-            </Button>
+              <Target className="mr-1 h-4 w-4" />{a("Match Agents")}</Button>
             <Select
-              aria-label="Agent to assign"
+              aria-label={a("Agent to assign")}
               value={selectedAgentId}
               onChange={(event) => setSelectedAgentId(event.target.value)}
               disabled={actionLoading || !["open_for_bids", "pending", "reassigned"].includes(task.status)}
               className="w-44"
             >
-              <option value="">Select an agent</option>
+              <option value="">{a("Select an agent")}</option>
               {task.matched_agents.filter(agent => agent.capability_score > 0).map(agent => (
                 <option key={agent.agent_id} value={agent.agent_id}>{agent.agent_name}</option>
               ))}
@@ -198,17 +196,13 @@ export default function TaskDetailPage() {
               onClick={() => handleAction("assign")}
               disabled={actionLoading || !selectedAgentId || !["open_for_bids", "pending", "reassigned"].includes(task.status)}
             >
-              <UserCheck className="mr-1 h-4 w-4" />
-              Assign
-            </Button>
+              <UserCheck className="mr-1 h-4 w-4" />{a("Assign")}</Button>
             <Button
               size="sm"
               onClick={() => handleAction("validate")}
               disabled={actionLoading || !task.submissions.some(item => ["submitted", "under_review"].includes(item.status))}
             >
-              <ShieldCheck className="mr-1 h-4 w-4" />
-              Run structural validation
-            </Button>
+              <ShieldCheck className="mr-1 h-4 w-4" />{a("Run structural validation")}</Button>
           </div>
         </div>
       </div>
@@ -216,7 +210,7 @@ export default function TaskDetailPage() {
       {/* Task info */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-display text-base">Description</CardTitle>
+          <CardTitle className="font-display text-base">{a("Description")}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm leading-relaxed text-ink-300">{task.description}</p>
@@ -231,9 +225,7 @@ export default function TaskDetailPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-display text-base">
-              <UserCheck className="h-4 w-4 text-success" />
-              Assignment
-            </CardTitle>
+              <UserCheck className="h-4 w-4 text-success" />{a("Assignment")}</CardTitle>
           </CardHeader>
           <CardContent>
             {task.assigned_agent ? (
@@ -246,20 +238,20 @@ export default function TaskDetailPage() {
                   <div className="mt-2 flex gap-4 text-xs text-ink-400">
                     <span className="flex items-center gap-1">
                       <Star className="h-3 w-3 text-warning" />
-                      {task.assigned_agent.avg_score.toFixed(1)}
+                      {formatNumber(task.assigned_agent.avg_score, 1)}
                     </span>
                     <span className="flex items-center gap-1">
                       <TrendingUp className="h-3 w-3 text-success" />
-                      {(task.assigned_agent.success_rate * 100).toFixed(0)}%
+                      {formatPercent(task.assigned_agent.success_rate)}
                     </span>
-                    <span>{task.assigned_agent.completed_tasks} completed</span>
+                    <span>{formatNumber(task.assigned_agent.completed_tasks)} {a("completed")}</span>
                   </div>
                 </div>
 
               </div>
             ) : (
               <div className="flex h-20 items-center justify-center text-sm text-ink-500">
-                {["assigned", "in_progress", "submitted", "approved", "validation_failed"].includes(task.status) ? "Assignment details are not available." : "No agent assigned yet"}
+                {["assigned", "in_progress", "submitted", "approved", "validation_failed"].includes(task.status) ? a("Assignment details are not available.") : a("No agent assigned yet")}
               </div>
             )}
           </CardContent>
@@ -269,16 +261,12 @@ export default function TaskDetailPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-display text-base">
-              <Target className="h-4 w-4 text-info" />
-              Agent Matching
-            </CardTitle>
-            <CardDescription>Ranked by composite score</CardDescription>
+              <Target className="h-4 w-4 text-info" />{a("Agent Matching")}</CardTitle>
+            <CardDescription>{a("Ranked by composite score")}</CardDescription>
           </CardHeader>
           <CardContent>
             {task.matched_agents.length === 0 ? (
-              <div className="flex h-20 items-center justify-center text-sm text-ink-500">
-                No agents matched. Run matching to find candidates.
-              </div>
+              <div className="flex h-20 items-center justify-center text-sm text-ink-500">{a("No agents matched. Run matching to find candidates.")}</div>
             ) : (
               <div className="space-y-3">
                 {task.matched_agents.map((agent, i) => (
@@ -290,17 +278,17 @@ export default function TaskDetailPage() {
                       i === 2 ? "bg-warning/15 text-warning" :
                       "bg-ink-800 text-ink-500"
                     )}>
-                      {i + 1}
+                      {formatNumber(i + 1)}
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="truncate text-sm font-medium text-foreground">{agent.agent_name}</p>
-                      <p className="text-xs text-ink-500">{agent.reasons.join(" · ")}</p>
+                      <p className="text-xs text-ink-500">{agent.reasons.map(reason => a(reason)).join(" · ")}</p>
                     </div>
                     <div className="w-24">
                       <Progress value={agent.match_score * 100} />
                     </div>
                     <span className="w-12 text-right font-mono text-sm font-semibold text-ink-200">
-                      {(agent.match_score * 100).toFixed(0)}%
+                      {formatPercent(agent.match_score)}
                     </span>
                   </div>
                 ))}
@@ -314,26 +302,23 @@ export default function TaskDetailPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-display text-base">
-            <Gavel className="h-4 w-4 text-warning" />
-            Bids ({task.bids.length})
+            <Gavel className="h-4 w-4 text-warning" />{a("Bids ({count})", { count: task.bids.length })}
           </CardTitle>
-          <CardDescription>Agent proposals, newest first</CardDescription>
+          <CardDescription>{a("Agent proposals, newest first")}</CardDescription>
         </CardHeader>
         <CardContent>
           {task.bids.length === 0 ? (
-            <div className="flex h-24 items-center justify-center text-sm text-ink-500">
-              No bids received yet.
-            </div>
+            <div className="flex h-24 items-center justify-center text-sm text-ink-500">{a("No bids received yet.")}</div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Agent</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="text-right">Est. Hours</TableHead>
-                  <TableHead>Message</TableHead>
-                  <TableHead>Submitted</TableHead>
+                  <TableHead>{a("Status")}</TableHead>
+                  <TableHead>{a("Agent")}</TableHead>
+                  <TableHead className="text-right">{a("Amount")}</TableHead>
+                  <TableHead className="text-right">{a("Est. Hours")}</TableHead>
+                  <TableHead>{a("Message")}</TableHead>
+                  <TableHead>{a("Submitted")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -344,7 +329,7 @@ export default function TaskDetailPage() {
                     <TableCell className="text-right font-mono font-semibold text-foreground">
                       {formatCurrency(bid.amount, task.currency)}
                     </TableCell>
-                    <TableCell className="text-right font-mono text-ink-300">{bid.estimated_hours}h</TableCell>
+                    <TableCell className="text-right font-mono text-ink-300">{a("{count} hours", { count: bid.estimated_hours })}</TableCell>
                     <TableCell className="max-w-xs truncate text-ink-400">{bid.message}</TableCell>
                     <TableCell className="font-mono text-xs text-ink-500">{timeAgo(bid.created_at)}</TableCell>
                   </TableRow>
@@ -359,15 +344,12 @@ export default function TaskDetailPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-display text-base">
-            <FileCheck className="h-4 w-4 text-info" />
-            Submissions ({task.submissions.length})
+            <FileCheck className="h-4 w-4 text-info" />{a("Submissions ({count})", { count: task.submissions.length })}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {task.submissions.length === 0 ? (
-            <div className="flex h-24 items-center justify-center text-sm text-ink-500">
-              No submissions yet.
-            </div>
+            <div className="flex h-24 items-center justify-center text-sm text-ink-500">{a("No submissions yet.")}</div>
           ) : (
             <div className="space-y-4">
               {task.submissions.map((sub) => (
@@ -382,16 +364,14 @@ export default function TaskDetailPage() {
                     <span className="font-mono text-xs text-ink-500">{timeAgo(sub.submitted_at)}</span>
                   </div>
                   <p className="mt-2 text-sm text-ink-300">{sub.summary}</p>
-                  <details className="mt-3 text-sm text-ink-300"><summary className="cursor-pointer text-signal-400">Inspect submitted result</summary><pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-md border border-ink-700 p-4">{JSON.stringify(sub.output_json, null, 2)}</pre></details>
+                  <details className="mt-3 text-sm text-ink-300"><summary className="cursor-pointer text-signal-400">{a("Inspect submitted result")}</summary><pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-md border border-ink-700 p-4">{JSON.stringify(sub.output_json, null, 2)}</pre></details>
                   {sub.deliverable_url && (
                     <a
                       href={sub.deliverable_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-2 inline-block text-xs font-medium text-info hover:text-info/80 hover:underline"
-                    >
-                      View Deliverable &rarr;
-                    </a>
+                    >{a("View Deliverable &rarr;")}</a>
                   )}
                 </div>
               ))}
@@ -404,15 +384,12 @@ export default function TaskDetailPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-display text-base">
-            <ShieldCheck className="h-4 w-4 text-[#b49aff]" />
-            Validation Reviews ({task.validations.length})
+            <ShieldCheck className="h-4 w-4 text-[#b49aff]" />{a("Validation Reviews ({count})", { count: task.validations.length })}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {task.validations.length === 0 ? (
-            <div className="flex h-24 items-center justify-center text-sm text-ink-500">
-              No validations yet.
-            </div>
+            <div className="flex h-24 items-center justify-center text-sm text-ink-500">{a("No validations yet.")}</div>
           ) : (
             <div className="space-y-4">
               {task.validations.map((val) => (
@@ -427,8 +404,7 @@ export default function TaskDetailPage() {
                         <AlertCircle className="h-5 w-5 text-warning" />
                       )}
                       <div>
-                        <p className="text-sm font-medium text-foreground">
-                          Reviewed by {val.reviewer}
+                        <p className="text-sm font-medium text-foreground">{a("Reviewed by")} {val.reviewer}
                         </p>
                         <p className="font-mono text-xs text-ink-500">
                           {formatDateTime(val.created_at)}
@@ -438,14 +414,14 @@ export default function TaskDetailPage() {
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1">
                         <Star className="h-4 w-4 text-warning" />
-                        <span className="font-mono text-sm font-semibold text-ink-200">{val.score === null ? "—" : val.score.toFixed(1)}</span>
+                        <span className="font-mono text-sm font-semibold text-ink-200">{val.score === null ? "—" : formatNumber(val.score, 1)}</span>
                       </div>
                       <Badge variant={val.result === "approved" ? "success" : val.result === "rejected" ? "destructive" : "warning"}>
                         {formatStatus(val.result)}
                       </Badge>
                     </div>
                   </div>
-                  <p className="mt-2 text-sm text-ink-300">{val.notes}</p>
+                  <p className="mt-2 text-sm text-ink-300">{a(val.notes ?? "")}</p>
                 </div>
               ))}
             </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiGet } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
+import { formatStatus } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +42,7 @@ const statusBadgeVariant = (status: string) => {
 };
 
 export default function MyAgentsPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -135,7 +136,7 @@ export default function MyAgentsPage() {
                         <CardTitle className="text-base">{agent.name}</CardTitle>
                         <div className="mt-1 flex flex-wrap items-center gap-1.5">
                           <Badge variant={statusBadgeVariant(agent.status)}>
-                            {agent.status}
+                            {formatStatus(agent.status, locale)}
                           </Badge>
                           <Badge variant={agent.kind === "human" ? "outline" : "secondary"}>
                             {agent.kind === "human" ? t("developer.agents.humanExpert") : t("developer.agents.aiAgent")}

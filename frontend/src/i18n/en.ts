@@ -223,7 +223,7 @@ const en = {
       refresh: "Refresh status",
       waiting: "Planning is still pending. Refresh the status to continue checking.",
       producedBy: "Produced by {name}",
-      reason: "Capability match: {capability}%. Success rate: {rate}%. Completed tasks: {count}.",
+      reason: "Capability match: {capability}/100. Success rate: {rate}/100. Quality score: {score}/100. Experience score: {count}/100.",
       reasonFallback: "Matched on the registered capabilities.",
 
       stage: {

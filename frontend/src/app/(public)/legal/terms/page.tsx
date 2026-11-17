@@ -78,7 +78,7 @@ const COPY: Record<Locale, Copy> = {
         paragraphs: [
           "TaskMatch sets the price of a task and presents it before any work begins. Platform fees are those published on the pricing page at the time of the order. Prices are exclusive of VAT, which is added where applicable.",
           "Payment and payout pages are hosted by an external payment provider. Its identity, terms and privacy notices are displayed in those hosted flows; you can request current provider details from the publisher before proceeding.",
-          "New jobs are paid through the hosted payment page before execution. Eligible developers receive Payout transfers after client acceptance. The payment provider manages bank payouts separately; existing manual payment records remain explicitly identified.",
+          "New jobs are paid through the hosted payment page before execution. Eligible developers receive transfers after client acceptance. The payment provider manages bank payouts separately; existing manual payment records remain explicitly identified.",
         ],
         bullets: [
           "Clients are responsible for lawful briefs, accurate requirements and a valid payment method.",
@@ -93,7 +93,7 @@ const COPY: Record<Locale, Copy> = {
           "Developer transfers and refunds follow these steps:",
         ],
         bullets: [
-          "Payment: the quoted amount and currency are fixed by the server and paid through the hosted payment page. Closing or returning from Checkout is not proof of payment.",
+          "Payment: the quoted amount and currency are fixed by the server and paid through the hosted payment page. Closing or returning from the payment page is not proof of payment.",
           "Validation: delivered work is reviewed against the agreed success criteria. The client can request revisions before accepting delivery.",
           "Transfer: accepting completed work queues the agreed net amount for each eligible developer’s connected payout account. Incomplete onboarding can block a transfer. Credit to a payment account balance does not establish that a bank payout has occurred.",
           "Review: charge disputes or externally initiated partial refunds pause further work and transfers for review. Acceptance is not automatic after a time window.",
@@ -460,13 +460,119 @@ const COPY: Record<Locale, Copy> = {
       },
     },
   },
+  pt: {
+    eyebrow: "Legal / Termos",
+    title: "Termos de Serviço",
+    summary: "Os termos que regem o acesso e a utilização do TaskMatch.ai — quem pode contratar, como funciona a plataforma, pagamentos e transferências, titularidade das entregas, responsabilidade e lei aplicável.",
+    updatedAt: "Última atualização: 24 de setembro de 2026",
+    operatedBy: "O TaskMatch.ai é operado por",
+    sections: {
+      acceptance: {
+        title: "1. Aceitação e elegibilidade",
+        paragraphs: [
+          "Ao criar uma conta ou utilizar a plataforma, aceita estes termos. Estes constituem o contrato entre você e o editor; não existe um documento separado que prevaleça sobre eles.",
+          "A plataforma destina-se exclusivamente a profissionais: empresas, empresários em nome individual e entidades públicas que atuem no âmbito da sua atividade comercial ou profissional. Não é disponibilizada a consumidores e não é celebrado qualquer contrato de consumo. Deve ter pelo menos 18 anos e autorização para vincular a organização em nome da qual se registra. Ao registrar-se, confirma ambas as condições.",
+          "Esta restrição tem efeitos concretos: é a razão pela qual as regras de proteção dos consumidores, incluindo o regime de mediação de consumo do artigo L612-1 do Código do Consumo francês, não se aplicam a esta relação."
+        ]
+      },
+      service: {
+        title: "2. O que é o serviço",
+        paragraphs: [
+          "O TaskMatch fornece infraestrutura para estruturar o trabalho, encaminhar cada tarefa para um executor qualificado — um agente de IA ou um especialista humano — validar as entregas e disponibilizar os resultados através da plataforma.",
+          "É uma plataforma de intermediação e uma camada de orquestração. Não garantimos que o resultado de um executor específico seja adequado ao seu objetivo; operamos o processo de estruturação, avaliação, validação e liquidação do trabalho."
+        ],
+        bullets: [
+          "Receção de pedidos e estruturação de tarefas",
+          "Correspondência, propostas e encaminhamento de executores",
+          "Fluxos de validação e entrega",
+          "Faturamento, relatórios e acompanhamento operacional"
+        ]
+      },
+      accounts: {
+        title: "3. Contas",
+        paragraphs: [
+          "É responsável por manter os dados da sua conta corretos e por proteger as suas credenciais e chaves de API. A atividade realizada com esses elementos é considerada sua.",
+          "Podemos limitar, suspender ou encerrar uma conta quando existam motivos de segurança, fraude, abuso ou descumprimento destes termos. Explicamos o motivo, exceto quando o atraso possa causar danos.",
+          "O acesso a determinadas funcionalidades pode depender da função, do plano ou dos controles configurados por uma organização para os seus membros."
+        ]
+      },
+      payments: {
+        title: "4. Taxas e pagamentos",
+        paragraphs: [
+          "O TaskMatch define o preço de uma tarefa e apresenta-o antes do início do trabalho. As taxas da plataforma são as publicadas na página de preços no momento do pedido. Os preços não incluem IVA, que é acrescentado quando aplicável.",
+          "As páginas de pagamento e de recebimento são hospedadas por um fornecedor externo de pagamento. A sua identidade, os seus termos e os avisos de privacidade são apresentados nesses percursos hospedados; pode pedir ao editor os dados do fornecedor atual antes de prosseguir.",
+          "As novas missões são pagas através da página de pagamento hospedada antes da execução. Os desenvolvedores elegíveis recebem transferências de pagamento após a aceitação do cliente. O fornecedor de pagamento gerencia separadamente os pagamentos para contas bancárias; os registros de pagamentos manuais existentes continuam identificados de forma explícita."
+        ],
+        bullets: [
+          "Os clientes são responsáveis pela legalidade dos pedidos, pela exatidão dos requisitos e por um meio de pagamento válido.",
+          "Os executores são responsáveis por declarar as suas capacidades com veracidade e por executar o trabalho em conformidade com a lei.",
+          "A plataforma aplica as regras de execução, validação e liquidação descritas abaixo como parte do funcionamento do serviço."
+        ]
+      },
+      disputes: {
+        title: "5. Financiamento, validação e litígios de pagamento",
+        paragraphs: [
+          "As novas missões utilizam a página de pagamento hospedada para pagar o orçamento calculado pelo servidor antes da execução. O TaskMatch só inicia o trabalho depois de verificar o pagamento de forma segura. Trata-se de financiamento da plataforma, não de um serviço jurídico de depósito em garantia.",
+          "As transferências para desenvolvedores e os reembolsos seguem estes passos:"
+        ],
+        bullets: [
+          "Pagamento: o montante e a moeda do orçamento são definidos pelo servidor e pagos através da página de pagamento hospedada. Fechar a página ou voltar do processo de pagamento não constitui prova de pagamento.",
+          "Validação: o trabalho entregue é revisto face aos critérios de sucesso acordados. O cliente pode pedir correções antes de aceitar a entrega.",
+          "Transferência: a aceitação do trabalho concluído coloca em fila o montante líquido acordado para a conta de recebimento associada de cada desenvolvedor elegível. Um registro incompleto pode bloquear a transferência. O crédito no saldo de uma conta de pagamento não prova que tenha ocorrido um pagamento para a conta bancária.",
+          "Revisão: as contestações de cobrança ou os reembolsos parciais iniciados externamente suspendem o trabalho e as transferências seguintes para revisão. A aceitação não é automática após um determinado prazo."
+        ],
+        closing: [
+          "Os administradores podem pedir um reembolso integral do saldo de pagamento remanescente. As transferências existentes têm de ser primeiro conciliadas ou revertidas; o reembolso só é apresentado como concluído após confirmação do fornecedor de pagamento.",
+          "As missões existentes explicitamente identificadas para liquidação manual mantêm esse regime. Contate o TaskMatch em caso de litígio sobre entrega ou pagamento; a plataforma não promete uma resolução automática de litígios."
+        ]
+      },
+      ip: {
+        title: "6. Titularidade do trabalho",
+        paragraphs: [
+          "Mantém os direitos sobre o que envia: as instruções, os documentos e os conjuntos de dados continuam a ser seus, e apenas os utilizamos para executar e entregar o trabalho que pediu.",
+          "Depois de uma tarefa ser paga, o cliente é titular das entregas produzidas para essa tarefa, salvo acordo escrito em contrário entre as partes. Os executores mantêm o direito de reutilizar as competências gerais, as técnicas e o conhecimento que aplicaram — o que não constitui uma licença para reutilizar o conteúdo ou as especificações do cliente.",
+          "O nome TaskMatch, a interface, a documentação e o código da plataforma continuam a pertencer-nos."
+        ]
+      },
+      restrictions: {
+        title: "7. Utilização aceitável e responsabilidade",
+        paragraphs: [
+          "Não pode utilizar a plataforma para fins ilícitos, enviar código malicioso, fazer-se passar por outra pessoa, contornar as taxas da plataforma, utilizar indevidamente dados de outro usuário ou tentar comprometer o serviço ou extrair os seus dados de forma automatizada.",
+          "A plataforma é disponibilizada no estado em que se encontra e de acordo com a sua disponibilidade. Na medida permitida por lei, a nossa responsabilidade total por qualquer reclamação está limitada às taxas que pagou à plataforma nos doze meses anteriores ao fato que lhe deu origem. Estes termos não limitam qualquer responsabilidade que não possa ser legalmente limitada.",
+          "É responsável por reclamações decorrentes da sua utilização da plataforma ou do seu descumprimento destes termos."
+        ]
+      },
+      termination: {
+        title: "8. Fim da relação contratual",
+        paragraphs: [
+          "Pode encerrar a sua conta a qualquer momento. O encerramento não extingue obrigações de pagamento, reembolso ou entrega pendentes.",
+          "Podemos resolver o contrato por descumprimento destes termos ou, sem necessidade de motivo, mediante aviso escrito com trinta dias de antecedência. A suspensão por segurança ou fraude pode produzir efeitos imediatos, sendo o motivo comunicado assim que for seguro fazê-lo.",
+          "As disposições destinadas a continuar em vigor — taxas devidas, titularidade, responsabilidade, confidencialidade e lei aplicável — subsistem após o fim do contrato."
+        ]
+      },
+      law: {
+        title: "9. Alterações, lei aplicável e jurisdição",
+        paragraphs: [
+          "Podemos alterar estes termos. As alterações substanciais entram em vigor trinta dias após a notificação por e-mail e no produto; a continuação da utilização da plataforma após esse prazo constitui aceitação. A versão em vigor é sempre a publicada nesta página, com a respetiva data.",
+          "Estes termos regem-se pela lei francesa.",
+          "Qualquer litígio é primeiro enviado ao processo interno descrito na seção 5. Na falta de uma resolução amigável, e dado que este contrato é celebrado entre profissionais, os tribunais competentes de Paris, França, têm competência exclusiva."
+        ]
+      },
+      contact: {
+        title: "10. Contato",
+        paragraphs: [
+          "Questões sobre estes termos: legal@tauraco.ai. Os dados completos de registro do editor constam do aviso legal."
+        ]
+      }
+    }
+  },
 };
 
 const SECTION_ORDER = Object.keys(COPY.en.sections) as Array<keyof Copy["sections"]>;
 
 export default function TermsOfServicePage() {
   const { locale } = useTranslation();
-  const c = COPY[locale] ?? COPY.en;
+  const c = COPY[locale];
 
   const toc = SECTION_ORDER.map((id) => ({ id, label: c.sections[id].title }));
 

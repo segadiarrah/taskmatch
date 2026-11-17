@@ -1,3 +1,4 @@
+import { RouteMetadata } from "@/components/localized-metadata";
 import type { Metadata } from "next";
 
 import { LEGAL_ENTITY } from "@/lib/legal-entity";
@@ -112,6 +113,7 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
             <LanguageProvider>
+              <RouteMetadata />
               {children}
             </LanguageProvider>
           </AuthProvider>

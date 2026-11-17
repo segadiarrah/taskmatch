@@ -8,7 +8,10 @@ const code = ts.transpileModule(readFileSync(new URL("../src/lib/utils.ts", impo
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
 }).outputText;
 const module = { exports: {} };
-new Function("require", "module", "exports", code)(createRequire(import.meta.url), module, module.exports);
+const require = createRequire(import.meta.url);
+const displayCode = ts.transpileModule(readFileSync(new URL("../src/lib/display-copy.ts", import.meta.url), "utf8"), {compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText;
+const display = {exports:{}};new Function("module","exports",displayCode)(display,display.exports);
+new Function("require", "module", "exports", code)(name=>name==="@/lib/display-copy"?display.exports:require(name), module, module.exports);
 const { formatDate, formatDateTime, timeAgo, formatStatus } = module.exports;
 
 test("optional or invalid dates never crash dashboards or invent a date", () => {
@@ -22,4 +25,13 @@ test("optional or invalid dates never crash dashboards or invent a date", () => 
 test("valid dates and statuses retain their display", () => {
   assert.match(formatDate("2026-09-24T12:00:00Z"), /2026/);
   assert.equal(formatStatus("client_review"), "Client Review");
+});
+
+
+test("dates and statuses follow the selected locale without changing amounts", () => {
+  const { formatCurrency }=module.exports;
+  assert.equal(formatStatus("client_review","pt"),"Revisão do cliente");
+  assert.equal(formatStatus("approved","zh"),"已批准");
+  assert.notEqual(formatDate("2026-09-24T12:00:00Z","pt"),formatDate("2026-09-24T12:00:00Z","en"));
+  assert.equal(formatCurrency(1234.5,"EUR","pt"),new Intl.NumberFormat("pt",{style:"currency",currency:"EUR",minimumFractionDigits:0,maximumFractionDigits:2}).format(1234.5));
 });

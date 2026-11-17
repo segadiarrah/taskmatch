@@ -1,4 +1,4 @@
-export const LOCALES = ["en", "fr", "es", "zh"];
+export const LOCALES = ["en", "fr", "es", "zh", "pt"];
 
 const resourcesLegal = [
   "src/app/(public)/resources/documentation/page.tsx",
@@ -78,6 +78,13 @@ const publicAuth = [
 ];
 
 const dashboardShared = [
+  "src/lib/locales.ts",
+  "src/lib/display-copy.ts",
+  "src/lib/admin-copy.ts",
+  "src/i18n/admin/copy.ts",
+  "src/components/localized-metadata.tsx",
+  "src/lib/localized-page-copy.ts",
+  "src/lib/api-error-copy.ts",
   "src/lib/evidence-copy.ts",
   "src/app/(dashboard)/human-tasks/components/evidence-field.tsx",
   "src/lib/workflow-copy.ts",
@@ -125,27 +132,8 @@ const dashboardShared = [
   "src/lib/utils.ts",
 ];
 
-/**
- * Admin console — deliberately English only.
- *
- * Only administrators can use these pages: every endpoint behind them is guarded
- * by require_role("admin") in the backend, and robots.txt keeps crawlers out of
- * /admin/. A non-admin can still reach the URL — the dashboard sidebar even
- * links some of them there — but the data never loads, so what they actually
- * see is the error panel, which is translated.
- *
- * Translating an internal console into four languages costs about 430 strings
- * for an audience of one team that already works in English, and every one of
- * those strings then has to be kept in step with the others forever.
- *
- * So they stay in the manifest — they are still checked for design commentary
- * leaking into the UI, and adding a new admin page without listing it here is
- * still an error — but the untranslated-copy rules do not apply to them.
- *
- * If the console is ever opened to customers, move these paths back into
- * dashboardShared and the contract will tell you exactly what needs translating.
- */
-const adminEnglishOnly = [
+// Every administration screen follows the selected interface language.
+const adminLocalized = [
   "src/app/(dashboard)/admin/page.tsx",
   "src/app/(dashboard)/admin/providers/page.tsx",
   "src/app/(dashboard)/admin/audit/page.tsx",
@@ -161,15 +149,23 @@ const adminEnglishOnly = [
   "src/app/(dashboard)/admin/agents/[id]/page.tsx",
 ];
 
-// Historical authored content remains English; rendered archives explicitly declare lang="en"
-// and show a translated availability notice. New product UI remains locale-backed.
+// Editorial archives are translated in full, with stable slugs and publication dates.
+const editorialCatalogues = [
+  { path: "src/content/blog.ts", scope: "resources-legal", catalogue: "blog", locales: ["en"] },
+  { path: "src/content/blog-fr.ts", scope: "resources-legal", catalogue: "blog", locales: ["fr"] },
+  { path: "src/content/blog-es.ts", scope: "resources-legal", catalogue: "blog", locales: ["es"] },
+  { path: "src/content/blog-zh.ts", scope: "resources-legal", catalogue: "blog", locales: ["zh"] },
+  { path: "src/content/blog-pt.ts", scope: "resources-legal", catalogue: "blog", locales: ["pt"] },
+  { path: "src/content/changelog.ts", scope: "public-auth", catalogue: "changelog", locales: ["en"] },
+  { path: "src/content/changelog-translations.ts", scope: "public-auth", catalogue: "changelog", locales: ["fr", "es", "zh", "pt"] },
+];
+
 export const localizationManifest = [
-  { path: "src/content/blog.ts", scope: "resources-legal", localization: "english-only" },
-  { path: "src/content/changelog.ts", scope: "public-auth", localization: "english-only" },
+  ...editorialCatalogues.map(entry => ({ ...entry, localization: "catalogue" })),
   ...resourcesLegal.map((path) => ({ path, scope: "resources-legal", localization: "inline" })),
   ...publicAuth.map((path) => ({ path, scope: "public-auth", localization: "inline" })),
   ...dashboardShared.map((path) => ({ path, scope: "dashboard-shared", localization: "central" })),
-  ...adminEnglishOnly.map((path) => ({ path, scope: "dashboard-shared", localization: "english-only" })),
+  ...adminLocalized.map((path) => ({ path, scope: "dashboard-shared", localization: "central" })),
   ...LOCALES.map((locale) => ({
     path: `src/i18n/${locale}.ts`,
     scope: "dashboard-shared",
@@ -217,7 +213,7 @@ export const reviewedLiteralAllowlist = {
   // that translated them would show "Chinese" to someone who cannot read
   // English — the one string on the page that must not follow the current
   // locale is the name of the locale you are trying to switch to.
-  languageEndonyms: new Set(["English", "Fran\u00e7ais", "Espa\u00f1ol", "\u4e2d\u6587"]),
+  languageEndonyms: new Set(["English", "Fran\u00e7ais", "Espa\u00f1ol", "Português", "\u4e2d\u6587"]),
   // CSS selectors, e.g. the focus-trap query in the dialog. They look like prose
   // to a scanner and are read by querySelectorAll — translating "button" there
   // would stop the dialog trapping focus, which is an accessibility regression
@@ -226,6 +222,7 @@ export const reviewedLiteralAllowlist = {
   httpMethods: new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]),
   // Code, URLs, identifiers, status codes, and dynamic-data selectors are structural, not prose.
   patterns: [
+    /^\$\{title\} — TaskMatch\.ai$/, // Localized title plus invariant brand suffix.
     /^image\/(?:jpeg|png|webp)$/, // Wire MIME types are never translated.
     /^(?:https?:\/\/|mailto:|tel:)/,
     /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,

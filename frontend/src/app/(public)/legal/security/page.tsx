@@ -96,13 +96,27 @@ const COPY: Record<
     ctaBody: "查阅文档了解架构细节，或联系我们进行安全评审、填写问卷或了解我们的控制措施。",
     ctaButton: "打开文档",
   },
+  pt: {
+    back: "Voltar ao TaskMatch",
+    print: "Imprimir",
+    eyebrow: "Segurança",
+    titleLead: "Como o TaskMatch protege",
+    titleAccent: "os seus dados e o seu trabalho.",
+    summary: "Como protegemos a infraestrutura, a criptografia, as identidades, as APIs e o ciclo de vida dos dados — com controles documentados que as equipes técnicas e de compras podem avaliar diretamente.",
+    updatedAt: "Última atualização: 1 de março de 2026",
+    archTitle: "Visão geral da arquitetura de segurança",
+    checklistTitle: "Lista de verificação de segurança",
+    ctaTitle: "Está a avaliar a segurança do TaskMatch?",
+    ctaBody: "Consulte a documentação para conhecer a arquitetura em detalhe ou contate-nos para uma avaliação de segurança, respostas a questionários ou uma apresentação dos nossos controles.",
+    ctaButton: "Abrir a documentação"
+  },
 };
 
 const icons = [Server, Lock, KeyRound, Network, Database, BadgeCheck, ShieldCheck];
 
 export default function SecurityPage() {
   const { locale } = useTranslation();
-  const c = COPY[locale] ?? COPY.en;
+  const c = COPY[locale];
   const detail = securityCopy[locale];
   const items = detail.items.map(([title, body], index) => ({ title, body, icon: icons[index] }));
 

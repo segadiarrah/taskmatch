@@ -1,11 +1,15 @@
 "use client";
 
+import { statusTimeline } from "@/lib/admin-vocabulary";
+
+import { useAdminCopy, adminSource, adminError } from "@/lib/admin-copy";
+
 import React, { useState, useEffect, useCallback } from "react";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { useParams, useRouter } from "next/navigation";
 import { apiGet, apiPost } from "@/lib/api";
 import { loadAdminJobDetail, type AdminJobDetail } from "@/lib/admin-details";
-import { cn, formatCurrency, formatDate, formatStatus, formatDateTime } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -49,9 +53,10 @@ const statusBadgeVariant: Record<string, "secondary" | "info" | "default" | "war
   rejected: "destructive",
 };
 
-const statusTimeline = ["draft", "submitted", "formatted", "decomposed", "quoted", "bidding", "in_progress", "under_review", "client_review", "completed"];
+
 
 function StatusTimeline({ currentStatus }: { currentStatus: string }) {
+  const { formatStatus } = useAdminCopy();
   const currentIndex = statusTimeline.indexOf(currentStatus);
   const isCancelled = currentStatus === "cancelled";
 
@@ -87,7 +92,7 @@ function StatusTimeline({ currentStatus }: { currentStatus: string }) {
                   isCurrent ? "text-ink-50" : "text-ink-500"
                 )}
               >
-                {status.replace(/_/g, " ")}
+                {formatStatus(status)}
               </span>
             </div>
             {index < statusTimeline.length - 1 && (
@@ -108,6 +113,7 @@ function StatusTimeline({ currentStatus }: { currentStatus: string }) {
 }
 
 export default function JobDetailPage() {
+  const { a, formatStatus, formatDate, formatDateTime, formatCurrency, formatNumber, formatPercent } = useAdminCopy();
   const params = useParams();
   const router = useRouter();
   const jobId = params.id as string;
@@ -144,7 +150,7 @@ export default function JobDetailPage() {
       await apiPost(`/v1/mcp/format-job/${jobId}`);
       await fetchJob();
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "The request failed. Please refresh and try again.");
+      setActionError(adminError(error, adminSource("The request failed. Please refresh and try again.")));
       return;
     } finally {
       setActionLoading(false);
@@ -159,7 +165,7 @@ export default function JobDetailPage() {
       await apiPost(`/v1/mcp/decompose-job/${jobId}`);
       await fetchJob();
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "The request failed. Please refresh and try again.");
+      setActionError(adminError(error, adminSource("The request failed. Please refresh and try again.")));
       return;
     } finally {
       setActionLoading(false);
@@ -185,14 +191,14 @@ export default function JobDetailPage() {
   if (!job) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <p className="text-muted-foreground">Job not found.</p>
+        <p className="text-muted-foreground">{a("Job not found.")}</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{actionError}</p>}
+      {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{a(actionError)}</p>}
       {/* Back + Header */}
       <div>
         <Button
@@ -201,9 +207,7 @@ export default function JobDetailPage() {
           onClick={() => router.push("/admin/jobs")}
           className="mb-4 text-muted-foreground"
         >
-          <ArrowLeft className="mr-1 h-4 w-4" />
-          Back to Jobs
-        </Button>
+          <ArrowLeft className="mr-1 h-4 w-4" />{a("Back to Jobs")}</Button>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -222,27 +226,21 @@ export default function JobDetailPage() {
                 {formatCurrency(job.budget_min, job.currency)} - {formatCurrency(job.budget_max, job.currency)}
               </span>
               <span className="flex items-center gap-1">
-                <CalendarDays className="h-3.5 w-3.5" />
-                Due {formatDate(job.deadline)}
+                <CalendarDays className="h-3.5 w-3.5" />{a("Due")} {formatDate(job.deadline)}
               </span>
               <span className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
-                Created {formatDate(job.created_at)}
+                <Clock className="h-3.5 w-3.5" />{a("Created")} {formatDate(job.created_at)}
               </span>
             </div>
           </div>
           <div className="flex gap-2">
             {job.status === "submitted" && (
               <Button onClick={handleFormat} disabled={actionLoading}>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Format Job
-              </Button>
+                <Sparkles className="mr-2 h-4 w-4" />{a("Format Job")}</Button>
             )}
             {job.status === "formatted" && (
               <Button onClick={handleDecompose} disabled={actionLoading}>
-                <Network className="mr-2 h-4 w-4" />
-                Decompose Job
-              </Button>
+                <Network className="mr-2 h-4 w-4" />{a("Decompose Job")}</Button>
             )}
 
           </div>
@@ -252,7 +250,7 @@ export default function JobDetailPage() {
       {/* Status Timeline */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-display text-base">Status Timeline</CardTitle>
+          <CardTitle className="font-display text-base">{a("Status Timeline")}</CardTitle>
         </CardHeader>
         <CardContent>
           <StatusTimeline currentStatus={job.status} />
@@ -264,28 +262,24 @@ export default function JobDetailPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-display text-base">
-              <FileText className="h-4 w-4 text-ink-500" />
-              Raw Description
-            </CardTitle>
-            <CardDescription>Original client submission</CardDescription>
+              <FileText className="h-4 w-4 text-ink-500" />{a("Raw Description")}</CardTitle>
+            <CardDescription>{a("Original client submission")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="rounded-md border border-ink-800 bg-ink-900 p-4 text-sm leading-relaxed text-ink-200 whitespace-pre-wrap">
-              {job.description_raw || "No raw description available."}
+              {job.description_raw || a("No raw description available.")}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-display text-base">
-              <Sparkles className="h-4 w-4 text-signal-400" />
-              Formatted Summary
-            </CardTitle>
-            <CardDescription>AI-structured version</CardDescription>
+              <Sparkles className="h-4 w-4 text-signal-400" />{a("Formatted Summary")}</CardTitle>
+            <CardDescription>{a("AI-structured version")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="rounded-md border border-signal-500/20 bg-signal-500/5 p-4 text-sm leading-relaxed text-ink-200 whitespace-pre-wrap">
-              {job.description_formatted || "Not yet formatted. Click 'Format Job' to process."}
+              {job.description_formatted || a("Not yet formatted. Click 'Format Job' to process.")}
             </div>
           </CardContent>
         </Card>
@@ -297,10 +291,9 @@ export default function JobDetailPage() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2 font-display text-base">
-                <ListChecks className="h-4 w-4 text-ink-500" />
-                Tasks ({job.tasks.length})
+                <ListChecks className="h-4 w-4 text-ink-500" />{a("Tasks ({count})", { count: job.tasks.length })}
               </CardTitle>
-              <CardDescription>Decomposed work items for this job</CardDescription>
+              <CardDescription>{a("Decomposed work items for this job")}</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -308,20 +301,18 @@ export default function JobDetailPage() {
           {job.tasks.length === 0 ? (
             <div className="flex h-32 flex-col items-center justify-center text-center">
               <ListChecks className="h-8 w-8 text-ink-600" />
-              <p className="mt-2 text-sm text-ink-500">
-                No tasks yet. Decompose this job to create tasks.
-              </p>
+              <p className="mt-2 text-sm text-ink-500">{a("No tasks yet. Decompose this job to create tasks.")}</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Budget</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Assigned</TableHead>
+                  <TableHead>{a("Title")}</TableHead>
+                  <TableHead>{a("Type")}</TableHead>
+                  <TableHead>{a("Status")}</TableHead>
+                  <TableHead className="text-right">{a("Budget")}</TableHead>
+                  <TableHead>{a("Priority")}</TableHead>
+                  <TableHead>{a("Assigned")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -349,11 +340,11 @@ export default function JobDetailPage() {
                         task.priority === 1 ? "text-danger" :
                         task.priority === 2 ? "text-warning" : "text-ink-500"
                       )}>
-                        P{task.priority}
+                        {a("Priority")} {formatNumber(task.priority)}
                       </span>
                     </TableCell>
                     <TableCell className="text-ink-400">
-                      {task.assigned_agent || "Unassigned"}
+                      {task.assigned_agent || a("Unassigned")}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -367,16 +358,12 @@ export default function JobDetailPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-display text-base">
-            <Brain className="h-4 w-4 text-[#b49aff]" />
-            MCP Decisions
-          </CardTitle>
-          <CardDescription>AI reasoning and decisions for this job</CardDescription>
+            <Brain className="h-4 w-4 text-[#b49aff]" />{a("MCP Decisions")}</CardTitle>
+          <CardDescription>{a("AI reasoning and decisions for this job")}</CardDescription>
         </CardHeader>
         <CardContent>
           {job.mcp_decisions.length === 0 ? (
-            <div className="flex h-24 items-center justify-center text-sm text-ink-500">
-              No MCP decisions recorded yet.
-            </div>
+            <div className="flex h-24 items-center justify-center text-sm text-ink-500">{a("No MCP decisions recorded yet.")}</div>
           ) : (
             <div className="space-y-4">
               {job.mcp_decisions.map((decision) => (
@@ -391,8 +378,7 @@ export default function JobDetailPage() {
                         {formatDateTime(decision.created_at)}
                       </span>
                     </div>
-                    <span className="font-mono text-xs font-medium text-ink-400">
-                      Confidence: {decision.confidence === null ? "—" : `${(decision.confidence * 100).toFixed(0)}%`}
+                    <span className="font-mono text-xs font-medium text-ink-400">{a("Confidence:")} {decision.confidence === null ? "—" : formatPercent(decision.confidence)}
                     </span>
                   </div>
                   <p className="mt-2 text-sm leading-relaxed text-ink-300">

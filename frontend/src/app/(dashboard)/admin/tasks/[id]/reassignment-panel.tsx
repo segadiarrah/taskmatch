@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminCopy, adminSource, adminError } from "@/lib/admin-copy";
+
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { apiGet, apiPost } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -9,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 interface Executor { id: string; name: string; status: string }
 
 export function ReassignmentPanel({ taskId, onChanged }: { taskId: string; onChanged: () => Promise<void> }) {
+  const { a } = useAdminCopy();
   const [executors, setExecutors] = useState<Executor[]>([]);
   const [agentId, setAgentId] = useState("");
   const [reason, setReason] = useState("");
@@ -29,7 +32,7 @@ export function ReassignmentPanel({ taskId, onChanged }: { taskId: string; onCha
       setExecutors(all.filter(agent => agent.status === "active"));
     } catch (cause) {
       setLoadFailed(true);
-      setError(cause instanceof Error ? cause.message : "Executors could not be loaded.");
+      setError(adminError(cause, adminSource("Executors could not be loaded.")));
     } finally { setLoading(false); }
   }, []);
   useEffect(() => { void loadExecutors(); }, [loadExecutors]);
@@ -43,19 +46,19 @@ export function ReassignmentPanel({ taskId, onChanged }: { taskId: string; onCha
       setAgentId(""); setReason("");
       await onChanged();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Reassignment failed. Your reason and selection have been kept.");
+      setError(adminError(cause, adminSource("Reassignment failed. Your reason and selection have been kept.")));
     } finally { setBusy(false); }
   }
 
   return (
     <section className="space-y-4 border-t border-ink-700 pt-5" aria-labelledby="reassignment-title">
-      <h3 id="reassignment-title" className="font-semibold text-ink-50">Reassign blocked work</h3>
-      <p className="text-sm text-ink-300">Choose an active executor and record why the assignment must change. The server checks funding, the accepted route and remaining budget; listing an executor does not guarantee eligibility. Recorded costs and the client’s quote are preserved.</p>
-      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-      {loading ? <p className="text-sm text-ink-400">Loading active executors…</p> : loadFailed ? <Button variant="outline" onClick={loadExecutors}>Reload executors</Button> : executors.length === 0 ? <p className="text-sm text-ink-400">No active executors are available.</p> : <form onSubmit={reassign} className="space-y-4">
-        <div className="space-y-2"><label htmlFor="replacement-executor" className="text-sm font-medium">Replacement executor</label><Select id="replacement-executor" value={agentId} onChange={event => setAgentId(event.target.value)} disabled={busy} required><option value="">Select an executor</option>{executors.map(agent => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</Select></div>
-        <div className="space-y-2"><label htmlFor="reassignment-reason" className="text-sm font-medium">Reason for reassignment</label><Textarea id="reassignment-reason" value={reason} onChange={event => setReason(event.target.value)} rows={3} required maxLength={2000} disabled={busy} /></div>
-        <Button type="submit" disabled={busy || !agentId || !reason.trim()}>Reassign task</Button>
+      <h3 id="reassignment-title" className="font-semibold text-ink-50">{a("Reassign blocked work")}</h3>
+      <p className="text-sm text-ink-300">{a("Choose an active executor and record why the assignment must change. The server checks funding, the accepted route and remaining budget; listing an executor does not guarantee eligibility. Recorded costs and the client’s quote are preserved.")}</p>
+      {error && <p role="alert" className="text-sm text-danger">{a(error)}</p>}
+      {loading ? <p className="text-sm text-ink-400">{a("Loading active executors…")}</p> : loadFailed ? <Button variant="outline" onClick={loadExecutors}>{a("Reload executors")}</Button> : executors.length === 0 ? <p className="text-sm text-ink-400">{a("No active executors are available.")}</p> : <form onSubmit={reassign} className="space-y-4">
+        <div className="space-y-2"><label htmlFor="replacement-executor" className="text-sm font-medium">{a("Replacement executor")}</label><Select id="replacement-executor" value={agentId} onChange={event => setAgentId(event.target.value)} disabled={busy} required><option value="">{a("Select an executor")}</option>{executors.map(agent => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</Select></div>
+        <div className="space-y-2"><label htmlFor="reassignment-reason" className="text-sm font-medium">{a("Reason for reassignment")}</label><Textarea id="reassignment-reason" value={reason} onChange={event => setReason(event.target.value)} rows={3} required maxLength={2000} disabled={busy} /></div>
+        <Button type="submit" disabled={busy || !agentId || !reason.trim()}>{a("Reassign task")}</Button>
       </form>}
     </section>
   );

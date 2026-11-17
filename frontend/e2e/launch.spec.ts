@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-for (const locale of ["en", "fr", "es", "zh"]) {
+for (const locale of ["en", "fr", "es", "zh", "pt"]) {
   test(`pricing shows prepaid EUR missions without subscription promises (${locale})`, async ({ page }) => {
     await page.addInitScript(value => localStorage.setItem("taskmatch_locale", value), locale);
     await page.emulateMedia({ reducedMotion: "reduce" });

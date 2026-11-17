@@ -8,6 +8,7 @@ const copy = {
   en: { photo: "Photos", summary: "Delivery summary", submit: "Send delivery", download: "Download private photo", tooLarge: "Choose a photo under 10 MB.", failed: "Could not add this photo." },
   fr: { photo: "Photos", summary: "Résumé du livrable", submit: "Envoyer le livrable", download: "Télécharger la photo privée", tooLarge: "Choisissez une photo de moins de 10 Mo.", failed: "Impossible d’ajouter cette photo." },
   es: { photo: "Fotos", summary: "Resumen de entrega", submit: "Enviar entrega", download: "Descargar foto privada", tooLarge: "Elige una foto de menos de 10 MB.", failed: "No se pudo añadir esta foto." },
+  pt: { photo: "Fotos", summary: "Resumo da entrega", submit: "Enviar entrega", download: "Baixar foto privada", tooLarge: "Escolha uma foto com menos de 10 MB.", failed: "Não foi possível adicionar a foto." },
   zh: { photo: "照片", summary: "成果摘要", submit: "提交成果", download: "下载私密照片", tooLarge: "请选择小于 10 MB 的照片。", failed: "无法添加照片" },
 };
 

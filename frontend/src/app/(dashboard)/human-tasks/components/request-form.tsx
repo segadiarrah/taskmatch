@@ -228,6 +228,7 @@ export function RequestForm({
                 ["fr", c.languageFr],
                 ["es", c.languageEs],
                 ["zh", c.languageZh],
+    ["pt", c.languagePt],
               ].map(([v, label]) => (
                 <option key={v} value={v}>
                   {label}
