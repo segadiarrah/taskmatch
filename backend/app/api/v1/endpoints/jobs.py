@@ -333,6 +333,9 @@ async def submit_job(
             detail="You can only submit your own jobs",
         )
 
+    if await db.scalar(select(Task.id).where(Task.job_id == job.id, Task.human_contract_json.is_not(None)).limit(1)):
+        raise HTTPException(409, 'Human Tasks use the publication review workflow')
+
     if job.status != JobStatus.draft:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

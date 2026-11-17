@@ -210,7 +210,7 @@ export class TaskMatchClient {
   private async request<T>(
     method: string,
     path: string,
-    opts: { body?: unknown; query?: Record<string, unknown>; form?: Record<string, string> } = {},
+    opts: { body?: unknown; query?: Record<string, unknown>; form?: Record<string, string>; headers?: Record<string,string> } = {},
   ): Promise<T> {
     let url = `${this.apiRoot}${path}`;
     if (opts.query) {
@@ -231,6 +231,7 @@ export class TaskMatchClient {
       init.body = JSON.stringify(opts.body);
     }
 
+    init.headers = {...init.headers as Record<string,string>, ...opts.headers};
     const resp = await fetch(url, init);
     const text = await resp.text();
     if (!resp.ok) {
@@ -269,6 +270,22 @@ export class TaskMatchClient {
   }
 
   /** Current user profile. */
+  createHumanTask(contract: Record<string,unknown>, idempotencyKey: string): Promise<Record<string,unknown>> {
+    return this.request("POST", "/human-tasks", {body:contract, headers:{"Idempotency-Key":idempotencyKey}});
+  }
+  getHumanTask(taskId: string): Promise<Record<string,unknown>> {
+    return this.request("GET", `/human-tasks/${encodeURIComponent(taskId)}`);
+  }
+  getHumanResult(taskId: string): Promise<{task_id:string; status:string; ready:boolean; result:unknown}> {
+    return this.request("GET", `/human-tasks/${encodeURIComponent(taskId)}/result`);
+  }
+  listHumanTasks(skip=0, limit=30): Promise<{items:Record<string,unknown>[]}> {
+    return this.request("GET", "/human-tasks", {query:{skip,limit}});
+  }
+  humanTaskEvents(taskId: string, skip=0, limit=30): Promise<{items:Record<string,unknown>[]}> {
+    return this.request("GET", `/human-tasks/${encodeURIComponent(taskId)}/events`, {query:{skip,limit}});
+  }
+
   me(): Promise<User> {
     return this.request<User>("GET", "/auth/me");
   }

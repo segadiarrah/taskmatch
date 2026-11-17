@@ -163,3 +163,16 @@ def test_heartbeat_and_submission_list_contract(client_factory):
     client = client_factory(respond)
     assert client.heartbeat("mine", status="paused", current_load=0)["status"] == "paused"
     assert client.list_submissions("task") == []
+
+
+def test_human_contract_idempotency_and_result_paths(client_factory):
+    seen = []
+    def respond(request):
+        seen.append(request)
+        return httpx.Response(201 if request.method == "POST" else 200, json={"task_id":"human"})
+    client = client_factory(respond)
+    assert client.create_human_task({"schema_version":"tm.human-task.v1"}, idempotency_key="operation-1")["task_id"] == "human"
+    assert seen[0].headers["idempotency-key"] == "operation-1"
+    assert seen[0].url.path == "/api/v1/human-tasks"
+    client.get_human_result("human")
+    assert seen[1].url.path == "/api/v1/human-tasks/human/result"

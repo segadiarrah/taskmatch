@@ -136,6 +136,9 @@ async def create_quote_for_job(
         .scalars()
         .all()
     )
+    if any(t.human_contract_json for t in tasks):
+        from app.services.human_tasks import create_human_quote
+        return await create_human_quote(db, job)
     if not tasks:
         raise ValueError(f"Job {job_id} has no tasks to price")
 
@@ -352,6 +355,9 @@ async def accept_quote(
 ) -> None:
     """Record the client's acceptance and open the job for execution."""
     now = now or datetime.now(timezone.utc)
+    from app.services.human_tasks import require_approved_job
+    owned_job = await db.get(Job, quote.job_id, options=[lazyload('*')])
+    await require_approved_job(db, owned_job)
     quote.status = QuoteStatus.accepted
     quote.decided_at = now
 

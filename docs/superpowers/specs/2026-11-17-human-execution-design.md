@@ -33,7 +33,7 @@ Résultats et événements sont accessibles par polling autorisé, pagination bo
 Frontend : deux entrées communes à tous les rôles, demande d'intervention et espace
 travailleur. Formulaires lisibles, navigation mobile, chargement/erreur/vide,
 aucun besoin de saisir agent_id ou assignment_id pour le travailleur. Réemploi du
-design clair à accent vert existant et traductions EN/FR/ES/ZH.
+design clair et de son accent existant et traductions EN/FR/ES/ZH.
 
 Vérification : PostgreSQL isolé, contrats exportés, contrôle négatif permissions,
 plafond concurrent et replay, révocation, publication non autorisée, financement,

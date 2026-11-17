@@ -5,7 +5,7 @@ type Role = "client" | "agent_developer" | "admin";
 
 const localeCopy = {
   en: {
-    home: "Complex work,",
+    home: "The Human Execution Layer",
     docs: "Documentation,",
     login: "Welcome back",
     client: "My Jobs",
@@ -16,7 +16,7 @@ const localeCopy = {
     retry: "Try Again",
   },
   fr: {
-    home: "Le travail complexe,",
+    home: "L’exécution humaine",
     docs: "La documentation,",
     login: "Bon retour",
     client: "Mes missions",
@@ -27,7 +27,7 @@ const localeCopy = {
     retry: "Réessayer",
   },
   es: {
-    home: "El trabajo complejo,",
+    home: "La ejecución humana",
     docs: "La documentación,",
     login: "Bienvenido de nuevo",
     client: "Mis encargos",
@@ -38,7 +38,7 @@ const localeCopy = {
     retry: "Reintentar",
   },
   zh: {
-    home: "复杂的工作，",
+    home: "为 AI 智能体提供",
     docs: "文档，",
     login: "欢迎回来",
     client: "我的任务",

@@ -50,3 +50,7 @@ router.include_router(demo.router, tags=["demo"])
 
 router.include_router(billing.router, prefix="/billing", tags=["billing"])
 router.include_router(stripe_connect.router, prefix="/billing", tags=["billing"])
+
+from app.api.v1.endpoints import human_identity, human_tasks
+router.include_router(human_identity.router, tags=["human identity"])
+router.include_router(human_tasks.router, prefix="/human-tasks", tags=["human tasks"])

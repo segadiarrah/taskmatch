@@ -91,6 +91,8 @@ async def enqueue_operation(db, kind, entity_id, key, payload=None):
 
 
 async def require_execution_funding(db, job):
+    from app.services.human_tasks import require_approved_job
+    await require_approved_job(db, job)
     if job.billing_mode == "legacy_manual":
         return None
     funding = await db.scalar(
@@ -237,6 +239,8 @@ def metadata(funding):
 
 
 async def create_checkout(db, job, user):
+    from app.services.human_tasks import require_approved_job
+    await require_approved_job(db, job)
     ensure_configured()
     job = await locked_job(db, job.id)
     if job.client_user_id != user.id:

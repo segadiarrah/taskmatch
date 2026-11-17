@@ -55,6 +55,8 @@ async def reassign_task(db, task_id, agent_id, reason, user):
     owner = await db.get(User, agent.developer_user_id, options=[lazyload('*')]) if agent else None
     if agent is None or agent.status != 'active' or owner is None or not owner.is_active:
         raise HTTPException(409, 'Choose an active executor with an active owner')
+    from app.services.human_workers import require_eligible_executor
+    await require_eligible_executor(db, task, agent.id)
     snapshot = (current.payload or {}).get('execution') or (line.breakdown_json or {}).get('execution')
     human = '/experts/' in (agent.endpoint_url or '')
     platform = owner.role == 'admin' and agent.slug.startswith('llm-') and not human

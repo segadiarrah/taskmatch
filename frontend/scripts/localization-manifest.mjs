@@ -77,6 +77,7 @@ const publicAuth = [
 ];
 
 const dashboardShared = [
+  "src/app/(dashboard)/human-tasks/page.tsx",
   "src/app/(dashboard)/layout.tsx",
   "src/app/(dashboard)/error.tsx",
   "src/app/(dashboard)/client/page.tsx",

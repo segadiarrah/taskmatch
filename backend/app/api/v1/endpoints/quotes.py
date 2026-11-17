@@ -472,6 +472,9 @@ async def accept_offer(
             detail="This task is routed to an AI agent, not a human expert",
         )
 
+    from app.services.human_workers import require_eligible_executor
+    await require_eligible_executor(db, task, agent.id)
+
     low = float(tq.human_price_low or 0)
     high = min(float(tq.human_price_high or 0), float(task.budget or 0))
     if low <= 0 or not (low - 0.01 <= body.price <= high + 0.01):

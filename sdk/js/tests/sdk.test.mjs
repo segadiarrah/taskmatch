@@ -139,3 +139,15 @@ test("heartbeat and submission lists preserve backend request and response shape
   assert.equal((await api.heartbeat("mine", { status: "paused", current_load: 0 })).status, "paused");
   assert.deepEqual(await api.listSubmissions("task"), []);
 });
+
+
+test("human contracts preserve idempotency key and use the result endpoint", async () => {
+  const seen=[];
+  globalThis.fetch=async (url,init)=>{ seen.push({url,init}); return json({task_id:"human"}); };
+  const api=client();
+  await api.createHumanTask({schema_version:"tm.human-task.v1"},"operation-1");
+  assert.equal(seen[0].init.headers["Idempotency-Key"],"operation-1");
+  assert.equal(seen[0].url,"https://example.test/api/v1/human-tasks");
+  await api.getHumanResult("human");
+  assert.equal(seen[1].url,"https://example.test/api/v1/human-tasks/human/result");
+});

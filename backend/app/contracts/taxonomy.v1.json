@@ -1,0 +1,432 @@
+{
+  "version": "tm.taxonomy.v1",
+  "prohibited": [
+    "illegal_activity",
+    "deception",
+    "dangerous_activity",
+    "privacy_intrusion",
+    "non_consensual_surveillance"
+  ],
+  "publication_requires_independent_review": true,
+  "categories": [
+    {
+      "id": "address_verification",
+      "execution_mode": "physical",
+      "evidence": [
+        "photo",
+        "report"
+      ],
+      "authorizations": [
+        "site_access_consent"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "elevated",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "address_verification"
+      ],
+      "labels": {
+        "en": "Address verification",
+        "fr": "Vérification d’adresse",
+        "es": "Verificar dirección",
+        "zh": "地址核实"
+      }
+    },
+    {
+      "id": "visual_inspection",
+      "execution_mode": "physical",
+      "evidence": [
+        "photo",
+        "report"
+      ],
+      "authorizations": [
+        "owner_consent"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "elevated",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "visual_inspection"
+      ],
+      "labels": {
+        "en": "Visual inspection",
+        "fr": "Inspection visuelle",
+        "es": "Inspección visual",
+        "zh": "目视检查"
+      }
+    },
+    {
+      "id": "public_place_photo",
+      "execution_mode": "physical",
+      "evidence": [
+        "photo"
+      ],
+      "authorizations": [
+        "lawful_public_access"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "elevated",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "public_place_photo"
+      ],
+      "labels": {
+        "en": "Public place photo",
+        "fr": "Photo d’un lieu public",
+        "es": "Foto de lugar público",
+        "zh": "公共场所摄影"
+      }
+    },
+    {
+      "id": "commercial_display",
+      "execution_mode": "physical",
+      "evidence": [
+        "photo",
+        "report"
+      ],
+      "authorizations": [
+        "site_access_consent"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "elevated",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "commercial_display"
+      ],
+      "labels": {
+        "en": "Commercial display",
+        "fr": "Affichage commercial",
+        "es": "Publicidad comercial",
+        "zh": "商业展示核实"
+      }
+    },
+    {
+      "id": "inventory_check",
+      "execution_mode": "physical",
+      "evidence": [
+        "report"
+      ],
+      "authorizations": [
+        "owner_consent"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "elevated",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "inventory_check"
+      ],
+      "labels": {
+        "en": "Inventory check",
+        "fr": "Contrôle de stocks",
+        "es": "Control de inventario",
+        "zh": "库存检查"
+      }
+    },
+    {
+      "id": "authorized_delivery",
+      "execution_mode": "physical",
+      "evidence": [
+        "receipt"
+      ],
+      "authorizations": [
+        "owner_consent"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "elevated",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "authorized_delivery"
+      ],
+      "labels": {
+        "en": "Authorized delivery",
+        "fr": "Collecte ou dépôt autorisé",
+        "es": "Recogida o entrega autorizada",
+        "zh": "授权取件或投递"
+      }
+    },
+    {
+      "id": "user_testing",
+      "execution_mode": "remote",
+      "evidence": [
+        "report"
+      ],
+      "authorizations": [
+        "participant_consent"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "review",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "user_testing"
+      ],
+      "labels": {
+        "en": "User testing",
+        "fr": "Test utilisateur",
+        "es": "Prueba de usuario",
+        "zh": "用户测试"
+      }
+    },
+    {
+      "id": "translation_review",
+      "execution_mode": "remote",
+      "evidence": [
+        "report"
+      ],
+      "authorizations": [
+        "data_owner_consent"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "review",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "translation"
+      ],
+      "labels": {
+        "en": "Translation review",
+        "fr": "Traduction et relecture",
+        "es": "Traducción y revisión",
+        "zh": "翻译和校对"
+      }
+    },
+    {
+      "id": "data_annotation",
+      "execution_mode": "remote",
+      "evidence": [
+        "annotations"
+      ],
+      "authorizations": [
+        "data_owner_consent"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "review",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "annotation"
+      ],
+      "labels": {
+        "en": "Data annotation",
+        "fr": "Annotation de données",
+        "es": "Anotación de datos",
+        "zh": "数据标注"
+      }
+    },
+    {
+      "id": "ai_verification",
+      "execution_mode": "remote",
+      "evidence": [
+        "report"
+      ],
+      "authorizations": [
+        "data_owner_consent"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "review",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "ai_verification"
+      ],
+      "labels": {
+        "en": "Ai verification",
+        "fr": "Vérification de résultats IA",
+        "es": "Verificar resultados de IA",
+        "zh": "AI 结果核验"
+      }
+    },
+    {
+      "id": "document_research",
+      "execution_mode": "remote",
+      "evidence": [
+        "report",
+        "sources"
+      ],
+      "authorizations": [
+        "lawful_sources"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "review",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "research"
+      ],
+      "labels": {
+        "en": "Document research",
+        "fr": "Recherche documentaire",
+        "es": "Investigación documental",
+        "zh": "文献研究"
+      }
+    },
+    {
+      "id": "qualitative_evaluation",
+      "execution_mode": "remote",
+      "evidence": [
+        "report"
+      ],
+      "authorizations": [
+        "data_owner_consent"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "review",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "qualitative_evaluation"
+      ],
+      "labels": {
+        "en": "Qualitative evaluation",
+        "fr": "Évaluation qualitative",
+        "es": "Evaluación cualitativa",
+        "zh": "定性评估"
+      }
+    },
+    {
+      "id": "consented_feedback",
+      "execution_mode": "remote",
+      "evidence": [
+        "report"
+      ],
+      "authorizations": [
+        "participant_consent"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "review",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "consented_feedback"
+      ],
+      "labels": {
+        "en": "Consented feedback",
+        "fr": "Retours utilisateurs consentis",
+        "es": "Opiniones con consentimiento",
+        "zh": "经同意的用户反馈"
+      }
+    },
+    {
+      "id": "document_verification",
+      "execution_mode": "remote",
+      "evidence": [
+        "report"
+      ],
+      "authorizations": [
+        "non_sensitive_documents",
+        "data_owner_consent"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "review",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "document_verification"
+      ],
+      "labels": {
+        "en": "Document verification",
+        "fr": "Vérification de documents",
+        "es": "Verificar documentos",
+        "zh": "文件核验"
+      }
+    },
+    {
+      "id": "multi_city_verification",
+      "execution_mode": "hybrid",
+      "evidence": [
+        "report"
+      ],
+      "authorizations": [
+        "owner_consent"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "elevated",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "multi_city_verification"
+      ],
+      "labels": {
+        "en": "Multi city verification",
+        "fr": "Vérification dans plusieurs villes",
+        "es": "Verificación en varias ciudades",
+        "zh": "多城市核验"
+      }
+    },
+    {
+      "id": "contradictory_review",
+      "execution_mode": "remote",
+      "evidence": [
+        "report"
+      ],
+      "authorizations": [
+        "data_owner_consent"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "review",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "contradictory_review"
+      ],
+      "labels": {
+        "en": "Contradictory review",
+        "fr": "Contrôle contradictoire",
+        "es": "Revisión contradictoria",
+        "zh": "对照审核"
+      }
+    },
+    {
+      "id": "field_collection_analysis",
+      "execution_mode": "hybrid",
+      "evidence": [
+        "report"
+      ],
+      "authorizations": [
+        "owner_consent"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "elevated",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "field_collection_analysis"
+      ],
+      "labels": {
+        "en": "Field collection analysis",
+        "fr": "Collecte terrain et analyse",
+        "es": "Recogida de campo y análisis",
+        "zh": "实地采集与分析"
+      }
+    },
+    {
+      "id": "workflow_approval",
+      "execution_mode": "remote",
+      "evidence": [
+        "report"
+      ],
+      "authorizations": [
+        "data_owner_consent"
+      ],
+      "skills_required": true,
+      "availability_required": true,
+      "risk": "review",
+      "regulated_qualifications_required": false,
+      "required_capabilities": [
+        "workflow_approval"
+      ],
+      "labels": {
+        "en": "Workflow approval",
+        "fr": "Validation d’une étape",
+        "es": "Validación de etapa",
+        "zh": "流程步骤确认"
+      }
+    }
+  ]
+}

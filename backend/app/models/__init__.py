@@ -116,3 +116,5 @@ __all__ = [
     "FeedbackNote",
     "FeedbackCategory",
 ]
+
+from .human import Principal, Delegation, WorkerProfile, HumanTaskRequest

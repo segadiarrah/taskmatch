@@ -287,7 +287,8 @@ async def transfer(operation_id, factory):
         if payment.transfer_id:
             raise BillingBlocked("A transfer was already recorded; retry reconciliation")
         user = await db.get(User, payment.developer_user_id, options=[lazyload("*")])
-        if not user or user.role != "agent_developer":
+        human_task = await db.get(Task, payment.task_id, options=[lazyload('*')]) if payment.task_id else None
+        if not user or not user.is_active or (user.role != 'agent_developer' and not (human_task and human_task.human_contract_json)):
             raise BillingBlocked("Only an external developer can receive a Connect transfer")
         if data != await _transfer_contract(db, funding, payment):
             raise BillingBlocked("The transfer contract changed during reservation")
@@ -305,6 +306,10 @@ async def transfer(operation_id, factory):
             > funding.amount_minor
         ):
             raise BillingBlocked("Payout allocations exceed confirmed funding")
+        if human_task and human_task.human_contract_json:
+            from app.services.human_workers import eligibility
+            if await eligibility(db, payment.developer_user_id, human_task, accepting=False):
+                raise BillingBlocked('Human worker verification, consent or payment eligibility needs review')
         operation.payload = data
         payment.payment_status = "processing"
         payment.payout_error = None

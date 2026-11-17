@@ -11,14 +11,22 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.deps import require_role
+from app.core.deps import require_role, get_current_active_user
 from app.middleware.audit import log_audit
 from app.models.user import User
 from app.services import stripe_connect
 from app.services.stripe_gateway import StripeGatewayError
 
 router = APIRouter()
-Developer = Annotated[User, Depends(require_role("agent_developer"))]
+async def payment_user(user=Depends(get_current_active_user), db=Depends(get_db)):
+    from app.models.human import WorkerProfile
+    if user.role != 'agent_developer' and await db.get(WorkerProfile, user.id) is None:
+        from fastapi import HTTPException
+        raise HTTPException(403, 'Create a worker profile before configuring payments')
+    return user
+
+
+Developer = Annotated[User, Depends(payment_user)]
 Administrator = Annotated[User, Depends(require_role("admin"))]
 Database = Annotated[AsyncSession, Depends(get_db)]
 

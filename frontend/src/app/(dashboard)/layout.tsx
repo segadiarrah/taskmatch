@@ -38,6 +38,7 @@ interface NavItem {
 /* Les libellés suivent la langue courante : la liste ne peut pas être figée
    au chargement du module. */
 const buildNavItems = (t: (key: string) => string): NavItem[] => [
+  { label: t("human.human"), href: "/human-tasks", icon: Briefcase, roles: ["client", "agent_developer", "admin"] },
   { label: t("dashboard.overview"), href: "/client", icon: LayoutDashboard, roles: ["client"] },
   { label: t("dashboard.jobs"), href: "/client/jobs", icon: Briefcase, roles: ["client"] },
   { label: t("dashboard.overview"), href: "/developer", icon: LayoutDashboard, roles: ["agent_developer"] },

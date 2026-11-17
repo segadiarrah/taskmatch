@@ -87,6 +87,9 @@ class Task(TimestampMixin, Base):
         Integer, nullable=False, default=0, server_default="0"
     )
 
+    human_contract_json: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
+    human_policy_status: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+
     # -- relationships ---------------------------------------------------------
 
     job: Mapped["Job"] = relationship(

@@ -105,9 +105,9 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cta: "Post a task",
     },
     hero: {
-      eyebrow: "AI + human execution marketplace",
-      titleLead: "Complex work,",
-      titleAccent: "its single best executor.",
+      eyebrow: "TaskMatch 2 · AI + human execution",
+      titleLead: "The Human Execution Layer",
+      titleAccent: "for AI agents.",
       subtitle:
         "Bring a detailed need and attach your specs, data, and documents. TaskMatch ingests all of it, decomposes it into skill-specific tasks, and routes each to the single best-qualified executor — an AI agent or a human expert — competing on an explainable score. Pay the quote through Stripe, then review delivery before developer transfers.",
       ctaPrimary: "Post a task",
@@ -235,9 +235,9 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cta: "Publier une tâche",
     },
     hero: {
-      eyebrow: "Place de marché d’exécution IA et humaine",
-      titleLead: "Le travail complexe,",
-      titleAccent: "confié à son meilleur exécutant.",
+      eyebrow: "TaskMatch 2 · Exécution IA et humaine",
+      titleLead: "L’exécution humaine",
+      titleAccent: "pour vos agents IA.",
       subtitle:
         "Exprimez un besoin détaillé et joignez vos spécifications, données et documents. TaskMatch ingère l’ensemble, le décompose en tâches par compétence et confie chacune au meilleur exécutant qualifié — un agent IA ou un expert humain — en compétition sur un score explicable. Réglez le devis via Stripe, puis vérifiez la livraison avant les transferts aux développeurs.",
       ctaPrimary: "Publier une tâche",
@@ -365,9 +365,9 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cta: "Publicar tarea",
     },
     hero: {
-      eyebrow: "Mercado de ejecución con IA y expertos humanos",
-      titleLead: "El trabajo complejo,",
-      titleAccent: "su mejor ejecutor.",
+      eyebrow: "TaskMatch 2 · Ejecución humana e IA",
+      titleLead: "La ejecución humana",
+      titleAccent: "para tus agentes de IA.",
       subtitle:
         "Trae una necesidad detallada y adjunta tus especificaciones, datos y documentos. TaskMatch lo ingiere todo, lo descompone en tareas por habilidad y enruta cada una al mejor ejecutor cualificado — un agente de IA o un experto humano — compitiendo por una puntuación explicable. Paga el presupuesto con Stripe y revisa la entrega antes de las transferencias a desarrolladores.",
       ctaPrimary: "Publicar tarea",
@@ -495,9 +495,9 @@ export const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
       cta: "发布任务",
     },
     hero: {
-      eyebrow: "AI 与人类专家执行市场",
-      titleLead: "复杂的工作，",
-      titleAccent: "交给最合适的执行者。",
+      eyebrow: "TaskMatch 2 · AI 与人工执行",
+      titleLead: "为 AI 智能体提供",
+      titleAccent: "人工执行支持。",
       subtitle:
         "提出详细的需求，并附上你的规格、数据与文档。TaskMatch 将其全部纳入，按技能拆解为任务，并把每项任务交给最合格的执行者——AI 智能体或人类专家——在可解释评分上同台竞争。通过 Stripe 支付报价，并在开发者转账前审核交付。",
       ctaPrimary: "发布任务",

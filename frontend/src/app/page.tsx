@@ -28,7 +28,6 @@ const TECH_KEYWORDS = [
   "PostgreSQL",
   "Redis",
   "OpenRouter",
-  "MCP",
 ];
 
 const STAT_VALUES = [4, 3, 2, 1];

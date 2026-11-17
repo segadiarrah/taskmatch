@@ -93,6 +93,8 @@ class Settings(BaseSettings):
     SMTP_FROM: str = "noreply@taskmatch.ai"
     CONTACT_TO: str = "sega@tauraco.ai"
 
+    HUMAN_TASKS_ENABLED: bool = False
+
     # -- CORS -----------------------------------------------------------------
     CORS_ORIGINS: list[str] = Field(default=["http://localhost:3000"])
 

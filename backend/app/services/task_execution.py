@@ -75,6 +75,8 @@ async def human_agent(db):
 async def queue_task(db, job, task, *, revision=False):
     if job.status not in ('bidding', 'in_progress') or task.status not in EXECUTABLE:
         return
+    if task.human_contract_json:
+        return  # Public human work is claimed explicitly by an eligible worker.
     line = await accepted_line(db, task.id)
     if not line:
         return  # Historical unquoted work requires explicit reviewed recovery.
