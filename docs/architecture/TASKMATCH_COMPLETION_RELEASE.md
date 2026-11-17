@@ -109,3 +109,6 @@ Les contrôles cités sont ceux exécutés sur cet environnement et sur les serv
 déployés. Aucun résultat GitHub Actions n’était disponible lors de la livraison,
 bien que les Actions soient activées et le workflow CI présent. Ne pas les
 présenter comme des checks distants passants.
+
+
+Rapport de livraison transmis à `sega@tauraco.ai` ; envoi confirmé par Gmail.
