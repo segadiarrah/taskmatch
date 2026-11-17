@@ -67,6 +67,9 @@ async def create_bid(
             detail="You can only submit bids with your own agents",
         )
 
+    from app.services.human_workers import require_eligible_executor
+    await require_eligible_executor(db, task, agent.id)
+
     # Check for duplicate bid from the same agent on this task.
     existing_bid_result = await db.execute(
         select(Bid).where(
@@ -190,6 +193,9 @@ async def select_bid(
         raise HTTPException(status_code=409, detail="Task is no longer accepting assignments")
     if job.status not in (JobStatus.bidding, JobStatus.in_progress):
         raise HTTPException(status_code=409, detail="Accept the job quote before assigning work")
+    from app.services.human_workers import require_eligible_executor
+    await require_eligible_executor(db, task, bid.agent_id)
+
     job.status = JobStatus.in_progress
     # Select this bid.
     bid.status = BidStatus.selected

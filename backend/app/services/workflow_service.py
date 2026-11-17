@@ -143,7 +143,7 @@ async def finalize_job_if_done(db: AsyncSession, job: Job) -> None:
         )
         if funding and owner is None:
             raise ValueError("Funded work must have an identified completed assignment")
-        platform = funding is not None and owner.role == "admin"
+        platform = funding is not None and owner.role == "admin" and not task.human_contract_json
         net = (
             Decimal("0")
             if platform

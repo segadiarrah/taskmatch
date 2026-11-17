@@ -1,0 +1,279 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://taskmatch.ai/schemas/tm.human-task.v1.json",
+  "$defs": {
+    "Budget": {
+      "additionalProperties": false,
+      "properties": {
+        "amount_minor": {
+          "maximum": 100000000,
+          "minimum": 110,
+          "title": "Amount Minor",
+          "type": "integer"
+        },
+        "currency": {
+          "const": "EUR",
+          "default": "EUR",
+          "title": "Currency",
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount_minor"
+      ],
+      "title": "Budget",
+      "type": "object"
+    },
+    "Location": {
+      "additionalProperties": false,
+      "properties": {
+        "country": {
+          "pattern": "^[A-Z]{2}$",
+          "title": "Country",
+          "type": "string"
+        },
+        "city": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "City",
+          "type": "string"
+        },
+        "address": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address"
+        }
+      },
+      "required": [
+        "country",
+        "city"
+      ],
+      "title": "Location",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "tm.human-task.v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "task_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Task Id"
+    },
+    "parent_job_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Parent Job Id"
+    },
+    "parent_task_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Parent Task Id"
+    },
+    "requester_type": {
+      "enum": [
+        "HUMAN_REQUESTER",
+        "ORGANIZATION_REQUESTER",
+        "AGENT_REQUESTER"
+      ],
+      "title": "Requester Type",
+      "type": "string"
+    },
+    "principal_id": {
+      "format": "uuid",
+      "title": "Principal Id",
+      "type": "string"
+    },
+    "requesting_agent_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Requesting Agent Id"
+    },
+    "delegation_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Delegation Id"
+    },
+    "title": {
+      "maxLength": 512,
+      "minLength": 3,
+      "title": "Title",
+      "type": "string"
+    },
+    "objective": {
+      "maxLength": 4000,
+      "minLength": 5,
+      "title": "Objective",
+      "type": "string"
+    },
+    "instructions": {
+      "maxLength": 16000,
+      "minLength": 5,
+      "title": "Instructions",
+      "type": "string"
+    },
+    "task_category": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Task Category",
+      "type": "string"
+    },
+    "execution_mode": {
+      "enum": [
+        "remote",
+        "physical",
+        "hybrid"
+      ],
+      "title": "Execution Mode",
+      "type": "string"
+    },
+    "required_capabilities": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 30,
+      "minItems": 1,
+      "title": "Required Capabilities",
+      "type": "array"
+    },
+    "language": {
+      "pattern": "^[a-z]{2,3}(-[A-Za-z]{2,8})?$",
+      "title": "Language",
+      "type": "string"
+    },
+    "location": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Location"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "service_area": {
+      "anyOf": [
+        {
+          "maxLength": 500,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Service Area"
+    },
+    "deadline": {
+      "format": "date-time",
+      "title": "Deadline",
+      "type": "string"
+    },
+    "expected_duration": {
+      "description": "Minutes",
+      "maximum": 43200,
+      "minimum": 5,
+      "title": "Expected Duration",
+      "type": "integer"
+    },
+    "budget": {
+      "$ref": "#/$defs/Budget"
+    },
+    "evidence_requirements": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 20,
+      "minItems": 1,
+      "title": "Evidence Requirements",
+      "type": "array"
+    },
+    "authorizations": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 20,
+      "minItems": 1,
+      "title": "Authorizations",
+      "type": "array"
+    },
+    "taxonomy_version": {
+      "const": "tm.taxonomy.v1",
+      "default": "tm.taxonomy.v1",
+      "title": "Taxonomy Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "requester_type",
+    "principal_id",
+    "title",
+    "objective",
+    "instructions",
+    "task_category",
+    "execution_mode",
+    "required_capabilities",
+    "language",
+    "deadline",
+    "expected_duration",
+    "budget",
+    "evidence_requirements",
+    "authorizations"
+  ],
+  "title": "HumanTaskContract",
+  "type": "object"
+}

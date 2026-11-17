@@ -152,6 +152,8 @@ async def update_task(
             detail="Task not found",
         )
 
+    if task.human_contract_json:
+        raise HTTPException(409, 'Human Task contracts are immutable; create a replacement draft')
     from app.services.billing_service import assert_quote_editable
     job = await lock_job(db, task.job_id)
     await assert_quote_editable(db, job)
@@ -222,6 +224,9 @@ async def assign_task(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Agent not found",
         )
+
+    from app.services.human_workers import require_eligible_executor
+    await require_eligible_executor(db, task, agent.id)
 
     assignment = Assignment(
         id=uuid.uuid4(),

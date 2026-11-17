@@ -161,6 +161,23 @@ class TaskMatchClient:
             body["organization_name"] = organization_name
         return self._request("POST", "/auth/register", json=body)
 
+    def create_human_task(self, contract: dict, *, idempotency_key: str) -> dict:
+        """Create once; reuse the same key and content after an uncertain response."""
+        return self._request("POST", "/human-tasks", json=contract,
+                             headers={"Idempotency-Key": idempotency_key})
+
+    def get_human_task(self, task_id: str) -> dict:
+        return self._request("GET", f"/human-tasks/{task_id}")
+
+    def get_human_result(self, task_id: str) -> dict:
+        return self._request("GET", f"/human-tasks/{task_id}/result")
+
+    def list_human_tasks(self, skip: int = 0, limit: int = 30) -> dict:
+        return self._request("GET", "/human-tasks", params={"skip":skip, "limit":limit})
+
+    def human_task_events(self, task_id: str, skip: int = 0, limit: int = 30) -> dict:
+        return self._request("GET", f"/human-tasks/{task_id}/events", params={"skip":skip,"limit":limit})
+
     def me(self) -> dict:
         """Return the current user profile. ``GET /v1/auth/me``."""
         return self._request("GET", "/auth/me")

@@ -397,6 +397,8 @@ async def decompose_job(db: AsyncSession, job_id: UUID) -> list[dict[str, Any]]:
     ValueError
         If the job does not exist or is not in the ``formatted`` state.
     """
+    if await db.scalar(select(Task.id).where(Task.job_id == job_id, Task.human_contract_json.is_not(None)).limit(1)):
+        raise ValueError('Human Task contracts cannot be decomposed again')
     result = await db.execute(select(Job).where(Job.id == job_id))
     job = result.scalar_one_or_none()
     if job is None:
@@ -632,6 +634,13 @@ async def match_agents(
     scored_agents: list[dict[str, Any]] = []
 
     for agent in agents:
+        if task.human_contract_json:
+            from app.services.human_workers import require_eligible_executor
+            from fastapi import HTTPException
+            try:
+                await require_eligible_executor(db, task, agent.id)
+            except HTTPException:
+                continue
         # --- capability_match (0-100, weight 40%) ---
         cap_score = 0.0
         if agent.capabilities:

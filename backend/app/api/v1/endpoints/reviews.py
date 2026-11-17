@@ -32,7 +32,7 @@ router = APIRouter()
 async def create_review(
     submission_id: uuid.UUID,
     body: ReviewCreate,
-    current_user: User = Depends(require_role("admin", "client")),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ) -> ReviewResponse:
     """Create a validation review for a submission.
@@ -54,6 +54,8 @@ async def create_review(
         .with_for_update().execution_options(populate_existing=True)
     )
 
+    if current_user.role != "admin" and job.client_user_id != current_user.id:
+        raise HTTPException(403, "Only the requester or an administrator can review")
     await require_task_access(db, task, current_user)
     if submission.status not in (SubmissionStatus.submitted, SubmissionStatus.under_review):
         raise HTTPException(status_code=409, detail="Submission has already been reviewed")
@@ -109,6 +111,9 @@ async def create_review(
         },
     )
 
+    if task.human_contract_json:
+        await log_audit(db, actor_type='user', actor_id=str(current_user.id), action='human_task.review_decided',
+                        entity_type='task', entity_id=str(task.id), payload={'decision': body.decision})
     return ReviewResponse.model_validate(review)
 
 

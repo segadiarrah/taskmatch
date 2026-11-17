@@ -51,41 +51,25 @@ def task_visibility(user: User, *, include_open: bool = True):
     """SQL predicate: owners, administrators, and participating developers."""
     if user.role == "admin":
         return true()
-    if user.role == "client":
-        return Task.job_id.in_(select(Job.id).where(Job.client_user_id == user.id))
-    if user.role == "agent_developer":
-        assigned = Task.id.in_(
-            select(Assignment.task_id)
-            .join(Agent, Agent.id == Assignment.agent_id)
-            .where(Agent.developer_user_id == user.id)
-        )
-        if include_open:
-            return or_(
-                assigned,
-                and_(
-                    Task.status == TaskStatus.open_for_bids,
-                    Task.job_id.in_(
-                        select(Job.id).where(
-                            Job.status.in_([JobStatus.bidding, JobStatus.in_progress]),
-                            or_(
-                                Job.billing_mode == "legacy_manual",
-                                and_(
-                                    Job.billing_mode == "stripe",
-                                    Job.id.in_(
-                                        select(JobFunding.job_id).where(
-                                            JobFunding.status == "paid",
-                                            JobFunding.refunded_minor == 0,
-                                            JobFunding.livemode == (settings.STRIPE_MODE == "live"),
-                                        )
-                                    ),
-                                ),
-                            ),
-                        )
-                    ),
-                ),
-            )
-        return assigned
-    return false()
+    owned = Task.job_id.in_(select(Job.id).where(Job.client_user_id == user.id))
+    assigned = Task.id.in_(select(Assignment.task_id).join(Agent, Agent.id == Assignment.agent_id)
+                          .where(Agent.developer_user_id == user.id))
+    if not include_open:
+        return or_(owned, assigned)
+    # Clients may also opt in as workers without changing role or account.
+    from app.models.human import WorkerProfile
+    has_worker = select(WorkerProfile.user_id).where(WorkerProfile.user_id == user.id).exists()
+    allowed_open = and_(
+        or_(true() if user.role == 'agent_developer' else false(), has_worker),
+        Task.status == TaskStatus.open_for_bids,
+        or_(Task.human_contract_json.is_(None), Task.human_policy_status == 'approved'),
+        Task.job_id.in_(select(Job.id).where(
+            Job.status.in_([JobStatus.bidding, JobStatus.in_progress]),
+            or_(Job.billing_mode == 'legacy_manual', and_(
+                Job.billing_mode == 'stripe', Job.id.in_(select(JobFunding.job_id).where(
+                    JobFunding.status == 'paid', JobFunding.refunded_minor == 0,
+                    JobFunding.livemode == (settings.STRIPE_MODE == 'live'))))))))
+    return or_(owned, assigned, allowed_open)
 
 
 async def require_task_access(

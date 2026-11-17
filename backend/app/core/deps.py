@@ -39,6 +39,8 @@ async def get_current_user(
 
     try:
         payload = verify_token(token)
+        if payload.get("scope") is not None:
+            raise credentials_exception
         user_id = UUID(payload["sub"])
     except (JWTError, KeyError, ValueError, TypeError, AttributeError):
         raise credentials_exception

@@ -32,7 +32,7 @@ router = APIRouter()
 async def create_submission(
     task_id: uuid.UUID,
     body: SubmissionCreate,
-    current_user: User = Depends(require_role("agent_developer", "admin")),
+    current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ) -> SubmissionResponse:
     """Submit a work result for a task.
@@ -65,6 +65,18 @@ async def create_submission(
 
     if current_user.role == "admin" and "/experts/" not in (agent.endpoint_url or ""):
         raise HTTPException(status_code=403, detail="Administrators may submit only their own human work")
+
+    from app.services.human_workers import require_eligible_executor
+    await require_eligible_executor(db, task, agent.id, accepting=False)
+    if task.human_contract_json:
+        from app.schemas.human import HumanResult
+        from pydantic import ValidationError
+        try:
+            HumanResult(summary=body.summary, evidence=body.output_json)
+        except ValidationError:
+            raise HTTPException(422, 'Human delivery requires a summary and nonempty textual evidence') from None
+    if task.human_contract_json and not set(task.human_contract_json['evidence_requirements']).issubset(body.output_json or {}):
+        raise HTTPException(422, 'Required Human Task evidence is missing')
 
     # Validate assignment exists.
     assignment_result = await db.execute(

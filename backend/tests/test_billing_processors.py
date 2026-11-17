@@ -642,3 +642,35 @@ async def test_reversal_reference_must_belong_to_original_transfer(money):
     with pytest.raises(processors.BillingBlocked):
         await processors.refund(item.id, money.db)
     assert all(method == "GET" for method, *_rest in money.calls)
+
+
+@pytest.mark.parametrize('role', ['client', 'admin'])
+@pytest.mark.parametrize('verified', [True, False])
+async def test_human_transfers_use_verified_worker_identity_across_account_roles(money, role, verified):
+    from app.models import Agent, Task, User
+    from app.models.human import WorkerProfile
+    async with money.db() as db:
+        user = await db.get(User, money.payment.developer_user_id)
+        user.role = role
+        agent = await db.scalar(select(Agent).where(Agent.developer_user_id == user.id))
+        agent.endpoint_url = '/experts/test-worker'
+        task = Task(id=uuid.uuid4(), job_id=money.job.id, title='Human review',
+                    description='Review', task_type='translation_review', status='approved',
+                    human_policy_status='approved', human_contract_json={
+                        'language':'fr', 'required_capabilities':['translation'], 'execution_mode':'remote'})
+        db.add(task)
+        db.add(WorkerProfile(user_id=user.id, agent_id=agent.id, data_consent=True,
+                verification_status='verified' if verified else 'pending', attested_skills=['translation'],
+                profile={'languages':['fr'],'skills':['translation'],'available':False}))
+        await db.flush()
+        payment = await db.get(PaymentRecord, money.payment.id)
+        payment.task_id = task.id
+        await db.commit()
+    item = await operation(money, 'transfer')
+    if verified:
+        await processors.transfer(item.id, money.db)
+        assert len([c for c in money.calls if c[:2] == ('POST','/transfers')]) == 1
+    else:
+        with pytest.raises(processors.BillingBlocked):
+            await processors.transfer(item.id, money.db)
+        assert not [c for c in money.calls if c[:2] == ('POST','/transfers')]
