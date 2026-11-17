@@ -1,7 +1,7 @@
 # TaskMatch — interface complète en cinq langues
 
 Date : 17 novembre 2026. Base : `9466aa3`.
-Branche : `feat/five-languages-20261117`.
+Branche : `feat/five-languages-20261117`. Code livré : `c6dba77`.
 
 ## Périmètre
 
@@ -55,8 +55,44 @@ UI localise les erreurs connues et garde un message générique pour les autres.
 
 ## Mise en production
 
-Les preuves de sauvegarde, bascule et contrôles après livraison seront ajoutées
-après leur exécution. Aucune migration SQL requise : le schéma reste en 008.
+Livraison effectuée sur **https://taskmatch.ai** le **17 novembre 2026 à
+21:42:54 UTC**. Images frontend et backend `five-languages-20261117`.
+Les candidats ont servi les requêtes pendant le remplacement des services
+principaux, puis le proxy a été rechargé vers les instances définitives.
+
+- Sauvegarde PostgreSQL au format archive vérifiée par `pg_restore --list` ;
+  configuration, anciennes images et bundle Git préservés dans un répertoire
+  privé. Aucun secret dans le dépôt ni dans ce rapport.
+- Deux séries de **45 sondes de disponibilité réussies sur 45**, l'une pendant
+  la bascule vers les candidats, l'autre pendant le remplacement et la bascule
+  définitive. Cette observation ne constitue pas une garantie générale de SLA.
+- Contrôle navigateur répété sur les instances définitives : **15 pages publiques**
+  réparties entre les cinq langues, métadonnées, cinq options du sélecteur,
+  persistance au rechargement, absence de débordement horizontal et de nom du
+  prestataire dans les textes publics contrôlés. **Zéro erreur navigateur**.
+- Catalogue public : **18 catégories sur 18** disposent d'un libellé portugais.
+- **10 pages connectées** visitées dans les cinq langues sur un compte actif
+  existant : espace humain et tableau d'administration. Titres, attributs de
+  langue et sélecteur vérifiés ; zéro erreur navigateur, zéro échec d'appel API
+  et **zéro écriture**. La session temporaire de contrôle a été supprimée du disque.
+- Captures mobiles portugais/chinois inspectées. API et worker financier sains ;
+  PostgreSQL, Redis et découverte publique opérationnels. Candidats et conteneur
+  de test arrêtés puis supprimés après la bascule.
+
+Aucune migration SQL requise : le schéma reste en **008**. Après livraison :
+**33 jobs et 135 tâches**, aucun Principal, profil d'intervenant, financement de
+job, autorisation financière ou abonnement webhook créé par les contrôles.
 Seuls les libellés du catalogue changent au backend ; les nouvelles instances
 rechargent ce fichier lu à l'import. Les modifications mobiles et README déjà
 présentes en production sont préservées.
+
+Le site réutilise ses URL existantes et sa sélection de langue côté navigateur.
+Les métadonnées dans le navigateur suivent le choix ; le HTML initial et les URL
+canoniques gardent le fonctionnement anglais existant. Aucune traduction
+automatique du contenu privé des utilisateurs et aucun nouveau routage SEO par
+langue n'ont été introduits.
+
+Les journaux de validation et preuves de déploiement sont archivés hors dépôt,
+sous accès privé. Les résultats ci-dessus proviennent des commandes exécutées et
+des contrôles navigateur ; ils ne sont pas présentés comme un résultat de CI
+hébergée ni comme une validation de transactions bancaires réelles.

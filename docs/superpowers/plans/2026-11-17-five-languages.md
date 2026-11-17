@@ -14,5 +14,6 @@
 - [x] Contracts: remove deliberate English-only exemptions, require five-locale parity, add focused failing tests for pt support/complete content and extend browser coverage.
 - [x] Review: verify coverage against route inventory and independently review translation completeness and implementation quality.
 - [x] Validate: frontend checks, production build, full browser regression on built image, and backend catalog/contract regressions if changed.
-- [ ] Release: back up source/images/config, publish the branch, deploy a candidate frontend, verify all five languages, replace canonical frontend and reload the directory-mounted proxy, drain candidates.
-- [ ] Record final evidence and notify user, with precise remaining operational conditions only.
+- [x] Release: back up source/images/config, publish the branch, deploy a candidate frontend, verify all five languages, replace canonical frontend and reload the directory-mounted proxy, drain candidates.
+- [x] Record final evidence and deployed checks in docs/architecture/FIVE_LANGUAGES_RELEASE.md.
+- [ ] Send the authorized delivery report and notify user.
