@@ -16,4 +16,4 @@
 - [x] Validate: frontend checks, production build, full browser regression on built image, and backend catalog/contract regressions if changed.
 - [x] Release: back up source/images/config, publish the branch, deploy a candidate frontend, verify all five languages, replace canonical frontend and reload the directory-mounted proxy, drain candidates.
 - [x] Record final evidence and deployed checks in docs/architecture/FIVE_LANGUAGES_RELEASE.md.
-- [ ] Send the authorized delivery report and notify user.
+- [x] Send the authorized delivery report to sega@tauraco.ai; confirmed sent on 2026-11-17. Publish PR #3 and notify user.

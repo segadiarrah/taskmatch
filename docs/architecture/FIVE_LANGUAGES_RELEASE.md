@@ -96,3 +96,6 @@ Les journaux de validation et preuves de déploiement sont archivés hors dépô
 sous accès privé. Les résultats ci-dessus proviennent des commandes exécutées et
 des contrôles navigateur ; ils ne sont pas présentés comme un résultat de CI
 hébergée ni comme une validation de transactions bancaires réelles.
+
+Revue du code : https://github.com/segadiarrah/taskmatch/pull/3. Le rapport de
+livraison a été envoyé à **sega@tauraco.ai** le 17 novembre 2026 ; envoi confirmé.
