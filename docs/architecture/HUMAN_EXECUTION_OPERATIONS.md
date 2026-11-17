@@ -172,3 +172,20 @@ Les abonnements révoqués ne reçoivent plus de nouveaux envois. Polling conser
 - Les SDK restent distribués en source ; pas de publication npm/PyPI annoncée.
 - Les noms du prestataire sont conservés dans les intégrations internes et sur ses
   propres pages hébergées ; ils sont absents des textes publics TaskMatch.
+
+## Rechargement du proxy
+
+Monter `./nginx` comme répertoire dans `/etc/nginx/conf.d`, plutôt qu'un fichier
+isolé. Un checkout Git remplace les fichiers atomiquement ; un ancien bind mount
+sur le fichier reste alors attaché à l'inode précédent. Toujours vérifier le
+contenu lu **dans** le conteneur, puis `nginx -t`, reload, et carte de découverte
+publique, en plus de la readiness. Le remplacement atomique a été reproduit et
+le montage du répertoire vérifié dans un proxy candidat réel.
+
+Pour remplacer le conteneur proxy, préparer un second proxy sur un port local
+libre, vérifier son routage, basculer seulement le vhost TaskMatch du frontal
+TLS vers ce port avec rechargement gracieux, drainer les connexions existantes,
+recréer le proxy canonique, puis restaurer le vhost vers le port canonique.
+Sauvegarder préalablement le vhost et conserver le proxy candidat pour un retour
+immédiat. Les autres vhosts ne sont pas modifiés. Ne pas confondre un reload
+Nginx avec une reconstruction du montage Docker.
