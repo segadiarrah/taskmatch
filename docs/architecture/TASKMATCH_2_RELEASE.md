@@ -74,3 +74,5 @@ PR (403) ; la CLI GitHub authentifiée l'a créée avec succès.
 Les paiements réels et la vérification d'identité de nouveaux intervenants restent
 à exécuter dans le cadre des premières missions autorisées, avec les gates actifs.
 
+Rapport de livraison et audit complet expédiés à `sega@tauraco.ai` via Gmail ;
+envoi confirmé par le service.
