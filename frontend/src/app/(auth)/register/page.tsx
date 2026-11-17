@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { authIntentHref, parsePublicIntent, postAuthDestination, type PublicIntent } from "@/lib/public-intent";
+import { COPY as JOURNEY_COPY } from "@/lib/landing-copy";
 import { useAuth } from "@/lib/auth";
 import { useTranslation, type Locale } from "@/lib/i18n";
 import { Reveal } from "@/components/public/motion";
-import { AlertCircle, ArrowRight, Bot, Briefcase, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowRight, Bot, Briefcase, Handshake, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Role = "client" | "agent_developer";
 
 const COPY: Record<
   Locale,
@@ -141,17 +142,23 @@ const COPY: Record<
   },
 };
 
-export default function RegisterPage() {
+function RegisterForm() {
+  const initialIntent = parsePublicIntent(useSearchParams().get("intent")) ?? "mission";
   const router = useRouter();
-  const { register } = useAuth();
+  const { register, user } = useAuth();
   const { locale } = useTranslation();
   const c = COPY[locale] ?? COPY.en;
-  const [role, setRole] = useState<Role>("client");
+  const [intent, setIntent] = useState<PublicIntent>(initialIntent);
+  const journey = JOURNEY_COPY[locale];
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) router.replace(postAuthDestination(user.role, intent));
+  }, [user, router, intent]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,9 +172,8 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      await register({ email, password, full_name: fullName, role });
-      const routes: Record<string, string> = { admin: "/admin", client: "/client", agent_developer: "/developer" };
-      router.push(routes[role] || "/client");
+      await register({ email, password, full_name: fullName, role: "client" });
+      router.push(postAuthDestination("client", intent));
     } catch (err) {
       setError(err instanceof Error ? err.message : c.failed);
     } finally {
@@ -186,46 +192,18 @@ export default function RegisterPage() {
       </div>
 
       {error && (
-        <div className="mb-4 flex items-center gap-2 rounded-md border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
+        <div role="alert" className="mb-4 flex items-center gap-2 rounded-md border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {error}
         </div>
       )}
 
-      {/* Role selection */}
-      <div className="mb-6">
-        <label className="mb-2 block text-sm font-medium text-ink-200">{c.intent}</label>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => setRole("client")}
-            className={cn(
-              "flex flex-col items-center gap-2 rounded-md border p-4 text-center transition-all",
-              role === "client"
-                ? "border-signal-500 bg-signal-500/10 text-ink-50"
-                : "border-ink-700 bg-ink-900 text-ink-400 hover:border-ink-500"
-            )}
-          >
-            <Briefcase className={cn("h-6 w-6", role === "client" ? "text-signal-400" : "text-ink-500")} />
-            <span className="text-sm font-semibold text-ink-50">{c.postTasks}</span>
-            <span className="text-xs text-ink-500">{c.postTasksHint}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setRole("agent_developer")}
-            className={cn(
-              "flex flex-col items-center gap-2 rounded-md border p-4 text-center transition-all",
-              role === "agent_developer"
-                ? "border-signal-500 bg-signal-500/10 text-ink-50"
-                : "border-ink-700 bg-ink-900 text-ink-400 hover:border-ink-500"
-            )}
-          >
-            <Bot className={cn("h-6 w-6", role === "agent_developer" ? "text-signal-400" : "text-ink-500")} />
-            <span className="text-sm font-semibold text-ink-50">{c.runAgents}</span>
-            <span className="text-xs text-ink-500">{c.runAgentsHint}</span>
-          </button>
+      <fieldset className="mb-6">
+        <legend className="mb-2 text-sm font-medium text-ink-200">{c.intent}</legend>
+        <div className="grid gap-2">
+          {([{ value: "mission", label: journey.mission, Icon: Briefcase }, { value: "work", label: journey.work, Icon: Handshake }, { value: "agent", label: journey.agent, Icon: Bot }] as const).map(({ value, label, Icon }) => <label key={value} className={cn("flex cursor-pointer items-center gap-3 rounded-md border p-3 text-sm", intent === value ? "border-signal-500 bg-signal-500/10" : "border-ink-700 hover:border-ink-500")}><input type="radio" name="form_intent" value={value} checked={intent === value} onChange={() => setIntent(value)} className="accent-signal-600" /><Icon aria-hidden="true" className="h-4 w-4 text-signal-600" /><span>{label}</span></label>)}
         </div>
-      </div>
+      </fieldset>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -299,11 +277,11 @@ export default function RegisterPage() {
 
       <p className="mt-4 text-center text-xs leading-6 text-ink-500">
         {c.agreePre}{" "}
-        <a href="#" className="text-ink-300 underline hover:text-ink-50">
+        <a href="/legal/terms" className="text-ink-300 underline hover:text-ink-50">
           {c.terms}
         </a>{" "}
         {c.and}{" "}
-        <a href="#" className="text-ink-300 underline hover:text-ink-50">
+        <a href="/legal/privacy" className="text-ink-300 underline hover:text-ink-50">
           {c.privacy}
         </a>
         .
@@ -311,10 +289,14 @@ export default function RegisterPage() {
 
       <div className="mt-6 text-center text-sm text-ink-400">
         {c.haveAccount}{" "}
-        <Link href="/login" className="font-medium text-signal-400 hover:underline">
+        <Link href={authIntentHref("login", intent)} className="font-medium text-signal-400 hover:underline">
           {c.signIn}
         </Link>
       </div>
     </Reveal>
   );
+}
+
+export default function RegisterPage() {
+  return <Suspense><RegisterForm /></Suspense>;
 }

@@ -19,7 +19,7 @@ test("checkout uses the server URL and sends no client amount", async ({ page })
   await page.route("https://checkout.stripe.com/**", route => route.fulfill({ contentType: "text/html", body: "<h1>Hosted test checkout</h1>" }));
   await page.goto("/client/jobs/job-test");
   await expect(page.getByTestId("billing-amount")).toHaveText(/12[.,]59/);
-  await page.getByRole("button", { name: "Pay securely with Stripe", exact: true }).click();
+  await page.getByRole("button", { name: "Pay securely", exact: true }).click();
   await expect(page).toHaveURL("https://checkout.stripe.com/c/pay/test");
   expect(body).toEqual({});
 });
@@ -47,7 +47,7 @@ test("cancel return preserves unpaid state and explicit cancellation enables ret
   await page.goto("/client/jobs/job-test?checkout=cancel");
   await expect(page.getByText("Checkout was closed. Check the payment status before trying again.")).toBeVisible();
   await page.getByRole("button", { name: "Cancel this checkout", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Pay securely with Stripe", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Pay securely", exact: true })).toBeVisible();
   expect(cancelled).toBe(true);
 });
 
@@ -56,10 +56,10 @@ test("checkout failures and non-Stripe URLs never navigate or claim success", as
   let attempts = 0;
   await page.route("**/api/v1/billing/jobs/job-test/checkout", route => { attempts++; return route.fulfill(attempts === 1 ? { status: 503, json: { detail: "Unavailable" } } : { json: { checkout_url: "https://stripe.com.example.test/pay", status: "checkout_pending" } }); });
   await page.goto("/client/jobs/job-test");
-  await page.getByRole("button", { name: "Pay securely with Stripe", exact: true }).click();
+  await page.getByRole("button", { name: "Pay securely", exact: true }).click();
   await expect(page.getByTestId("billing-error")).toBeVisible();
-  await page.getByRole("button", { name: "Pay securely with Stripe", exact: true }).click();
-  await expect(page.getByTestId("billing-error")).toContainText("secure Stripe link");
+  await page.getByRole("button", { name: "Pay securely", exact: true }).click();
+  await expect(page.getByTestId("billing-error")).toContainText("secure payment provider link");
   await expect(page).toHaveURL(/\/client\/jobs\/job-test$/);
 });
 
@@ -103,9 +103,9 @@ test("Connect errors preserve the account state and offer a retry", async ({ pag
   await earnings(page);
   await page.route("**/api/v1/billing/connect/sync", route => route.fulfill({ status: 503, json: { detail: "Unavailable" } }));
   await page.goto("/developer/earnings");
-  await page.getByRole("button", { name: "Refresh Stripe status", exact: true }).click();
+  await page.getByRole("button", { name: "Refresh payout status", exact: true }).click();
   await expect(page.getByTestId("connect-error")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Refresh Stripe status", exact: true })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Refresh payout status", exact: true })).toBeEnabled();
 });
 
 test("unavailable earnings never appear as zero or empty payment history", async ({ page }) => {
@@ -157,6 +157,6 @@ test("approving a Stripe quote redirects to Checkout without announcing executio
   await page.route("https://checkout.stripe.com/**", route => route.fulfill({ contentType: "text/html", body: "<h1>Hosted test checkout</h1>" }));
   await page.goto("/client/jobs/job-test");
   await expect(page.getByText("Quote approved — execution has started.", { exact: true })).toHaveCount(0);
-  await page.getByRole("button", { name: "Approve & pay with Stripe", exact: true }).click();
+  await page.getByRole("button", { name: "Approve & pay securely", exact: true }).click();
   await expect(page).toHaveURL("https://checkout.stripe.com/c/pay/quote");
 });

@@ -15,7 +15,7 @@ from decimal import Decimal
 from typing import Any, Optional
 
 import structlog
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import lazyload
 
@@ -123,9 +123,12 @@ async def create_quote_for_job(
     """
     now = now or datetime.now(timezone.utc)
 
-    job = (await db.execute(select(Job).where(Job.id == job_id))).scalar_one_or_none()
+    job = (await db.execute(select(Job).options(lazyload("*")).where(Job.id == job_id).with_for_update().execution_options(populate_existing=True))).scalar_one_or_none()
     if job is None:
         raise ValueError(f"Job {job_id} not found")
+
+    from app.services.billing_service import assert_quote_editable
+    await assert_quote_editable(db,job)
 
     tasks = list(
         (
@@ -136,7 +139,7 @@ async def create_quote_for_job(
         .scalars()
         .all()
     )
-    if any(t.human_contract_json for t in tasks):
+    if tasks and all(t.human_contract_json for t in tasks):
         from app.services.human_tasks import create_human_quote
         return await create_human_quote(db, job)
     if not tasks:
@@ -144,12 +147,14 @@ async def create_quote_for_job(
 
     if (job.currency or pricing_service.BASE_CURRENCY) != "EUR":
         raise ValueError("New quotes must use EUR")
+    from app.services.human_tasks import require_approved_job
+    await require_approved_job(db,job)
     spec = _parse_spec(job)
     plan = await ensure_delivery_plan(db, job, spec)
     needs_human_delivery = plan.mode in (DeliveryMode.installation, DeliveryMode.hosted)
     task_specs = [
         {"title": t.title, "description": t.description, "task_type": t.task_type,
-         "requires_human": bool((t.input_spec_json or {}).get("requires_human")) or needs_human_delivery}
+         "requires_human": bool(t.human_contract_json) or bool((t.input_spec_json or {}).get("requires_human")) or (needs_human_delivery and not (t.input_spec_json or {}).get("explicit_ai_step"))}
         for t in tasks
     ]
     needs_llm = any(
@@ -176,6 +181,25 @@ async def create_quote_for_job(
         currency=job.currency or pricing_service.BASE_CURRENCY,
     )
 
+    if any(t.human_contract_json for t in tasks):
+        from app.services.human_tasks import worker_amount
+        for task,line in zip(tasks,quote_result.task_prices):
+            if task.human_contract_json:
+                amount=float(worker_amount(task.human_contract_json['budget']['amount_minor']))
+                line.route=pricing_service.ExecutionRoute.human
+                line.price=line.human_price_low=line.human_price_high=amount
+                line.human_hours=task.human_contract_json['expected_duration']/60
+                line.rationale='Fixed human intervention within the approved task contract'
+        subtotal=sum((Decimal(str(pricing_service.billed_amount(line))) for line in quote_result.task_prices),Decimal(0))
+        fee=(subtotal*Decimal('.10')).quantize(Decimal('.01'))
+        quote_result.subtotal=float(subtotal)
+        quote_result.platform_fee=float(fee)
+        quote_result.total=float(subtotal+fee)
+        quote_result.requires_human=True
+        quote_result.human_equivalent_low=sum(line.human_price_low for line in quote_result.task_prices)
+        quote_result.human_equivalent_high=sum(line.human_price_high for line in quote_result.task_prices)
+        quote_result.savings_vs_human=0
+
     # Retire whatever the client was previously looking at.
     for previous in list(
         (
@@ -191,8 +215,11 @@ async def create_quote_for_job(
     ):
         previous.status = QuoteStatus.superseded
 
+    # Transaction start order can differ from job-lock order. Stamp the insert
+    # itself so a new quote always sorts after the quote it just superseded.
     quote = Quote(
         id=uuid.uuid4(),
+        created_at=func.clock_timestamp(),
         job_id=job_id,
         status=QuoteStatus.pending_client,
         currency=quote_result.currency,
@@ -202,7 +229,7 @@ async def create_quote_for_job(
         human_equivalent_low=Decimal(str(quote_result.human_equivalent_low)),
         human_equivalent_high=Decimal(str(quote_result.human_equivalent_high)),
         savings_vs_human=quote_result.savings_vs_human,
-        valid_until=now + timedelta(days=settings.QUOTE_VALIDITY_DAYS),
+        valid_until=min([now + timedelta(days=settings.QUOTE_VALIDITY_DAYS)] + [datetime.fromisoformat(t.human_contract_json["deadline"]) for t in tasks if t.human_contract_json]),
         pricing_version=quote_result.pricing_version,
         breakdown_json=quote_result.to_dict(),
     )
@@ -213,6 +240,7 @@ async def create_quote_for_job(
         db.add(
             TaskQuote(
                 id=uuid.uuid4(),
+                created_at=func.clock_timestamp(),
                 quote_id=quote.id,
                 task_id=task.id,
                 route=ExecutionRoute(task_price.route.value),
@@ -327,7 +355,7 @@ async def current_quote(db: AsyncSession, job_id: uuid.UUID) -> Optional[Quote]:
             .options(lazyload("*"))
             .execution_options(populate_existing=True)
             .where(Quote.job_id == job_id)
-            .order_by(Quote.created_at.desc())
+            .order_by(Quote.created_at.desc(), Quote.id.desc())
             .limit(1)
         )
     ).scalar_one_or_none()

@@ -56,6 +56,7 @@ const publicAuth = [
   "src/app/(auth)/login/page.tsx",
   "src/app/(auth)/register/page.tsx",
   "src/components/public/site-chrome.tsx",
+  "src/components/public/journey-page.tsx",
   "src/components/public/page-shell.tsx",
   "src/components/public/motion.tsx",
   "src/components/language-switcher.tsx",
@@ -77,7 +78,19 @@ const publicAuth = [
 ];
 
 const dashboardShared = [
+  "src/lib/evidence-copy.ts",
+  "src/app/(dashboard)/human-tasks/components/evidence-field.tsx",
+  "src/lib/workflow-copy.ts",
+  "src/app/(dashboard)/human-tasks/components/workflow-tools.tsx",
   "src/app/(dashboard)/human-tasks/page.tsx",
+  "src/lib/human-copy.ts",
+  "src/app/(dashboard)/human-tasks/components/shared.tsx",
+  "src/app/(dashboard)/human-tasks/components/request-form.tsx",
+  "src/app/(dashboard)/human-tasks/components/worker-profile.tsx",
+  "src/app/(dashboard)/human-tasks/components/worker-views.tsx",
+  "src/app/(dashboard)/human-tasks/components/mission-detail.tsx",
+  "src/app/(dashboard)/human-tasks/components/agents-panel.tsx",
+  "src/app/(dashboard)/human-tasks/components/webhooks-panel.tsx",
   "src/app/(dashboard)/layout.tsx",
   "src/app/(dashboard)/error.tsx",
   "src/app/(dashboard)/client/page.tsx",
@@ -213,6 +226,7 @@ export const reviewedLiteralAllowlist = {
   httpMethods: new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]),
   // Code, URLs, identifiers, status codes, and dynamic-data selectors are structural, not prose.
   patterns: [
+    /^image\/(?:jpeg|png|webp)$/, // Wire MIME types are never translated.
     /^(?:https?:\/\/|mailto:|tel:)/,
     /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
     /^\/?(?:api\/)?v\d+(?:\/|$)/i,

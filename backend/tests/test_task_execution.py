@@ -368,3 +368,30 @@ async def test_admin_input_edit_cannot_reset_historical_execution_budget(market)
         assert task.input_spec_json['_execution_reserved_cost_eur']==0.30
         assert task.input_spec_json['_execution_generation']==2
         assert task.input_spec_json['customer_note']=='new'
+
+
+@pytest.mark.parametrize('oversized',[False,True])
+async def test_ai_receives_approved_prerequisite_evidence_within_frozen_input_budget(market,monkeypatch,oversized):
+    from app.models.workflow_extension import TaskDependency
+    from app.services import task_execution
+    job_id,tasks=await setup_job(market,routes=('llm','llm'))
+    async with market.db() as db:
+        parent=await db.get(Task,tasks[0]);parent.status='approved'
+        agent=await db.scalar(select(Agent).where(Agent.slug=='llm-openai'))
+        assignment=Assignment(id=uuid.uuid4(),task_id=parent.id,agent_id=agent.id,status='completed')
+        db.add(assignment);await db.flush()
+        db.add(Submission(task_id=parent.id,agent_id=agent.id,assignment_id=assignment.id,
+            output_json={'result':'Verified field report 987'*(1000 if oversized else 1)},summary='Validated report',status='approved'))
+        db.add(TaskDependency(task_id=tasks[1],depends_on_task_id=tasks[0]));await db.commit()
+    calls=[]
+    async def output(system,user,**kwargs):calls.append(user);return await good_output()
+    monkeypatch.setattr(llm_service,'execute_task_output',output)
+    await task_execution.schedule_job(job_id,market.db)
+    await billing_worker.run_once(market.db,execution=True)
+    if oversized:
+        assert not calls
+        async with market.db() as db:
+            child=await db.get(Task,tasks[1])
+            assert (child.input_spec_json or {}).get('_execution_calls',0)==0
+    else:
+        assert len(calls)==1 and 'Verified field report 987' in calls[0]

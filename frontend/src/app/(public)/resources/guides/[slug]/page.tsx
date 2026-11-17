@@ -184,7 +184,7 @@ export default function GuideArticlePage() {
       <PageCta
         title={c.ctaTitle}
         body={c.ctaBody}
-        primaryHref="/register"
+        primaryHref="/register?intent=mission"
         primaryLabel={c.ctaPrimary}
         secondaryHref="/resources/api-reference"
         secondaryLabel={c.ctaSecondary}

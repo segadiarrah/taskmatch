@@ -214,7 +214,7 @@ export default function BlogArticlePage() {
       <PageCta
         title={c.ctaTitle}
         body={c.ctaBody}
-        primaryHref="/register"
+        primaryHref="/register?intent=mission"
         primaryLabel={c.ctaPrimary}
         secondaryHref="/how-it-works"
         secondaryLabel={c.ctaSecondary}

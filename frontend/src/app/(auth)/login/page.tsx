@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { authIntentHref, parsePublicIntent, postAuthDestination } from "@/lib/public-intent";
 import { useAuth } from "@/lib/auth";
 import { useTranslation, type Locale } from "@/lib/i18n";
 import { Reveal } from "@/components/public/motion";
@@ -83,15 +84,20 @@ const COPY: Record<
   },
 };
 
-export default function LoginPage() {
+function LoginForm() {
+  const intent = parsePublicIntent(useSearchParams().get("intent"));
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const { locale } = useTranslation();
   const c = COPY[locale] ?? COPY.en;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) router.replace(postAuthDestination(user.role, intent));
+  }, [user, router, intent]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,8 +106,7 @@ export default function LoginPage() {
 
     try {
       const user = await login(email, password);
-      const routes: Record<string, string> = { admin: "/admin", client: "/client", agent_developer: "/developer" };
-      router.push(routes[user.role] || "/client");
+      router.push(postAuthDestination(user.role, intent));
     } catch (err) {
       setError(err instanceof Error ? err.message : c.invalid);
     } finally {
@@ -117,7 +122,7 @@ export default function LoginPage() {
       </div>
 
       {error && (
-        <div className="mb-4 flex items-center gap-2 rounded-md border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
+        <div role="alert" className="mb-4 flex items-center gap-2 rounded-md border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {error}
         </div>
@@ -185,10 +190,14 @@ export default function LoginPage() {
 
       <div className="mt-6 text-center text-sm text-ink-400">
         {c.noAccount}{" "}
-        <Link href="/register" className="font-medium text-signal-400 hover:underline">
+        <Link href={authIntentHref("register", intent)} className="font-medium text-signal-400 hover:underline">
           {c.createOne}
         </Link>
       </div>
     </Reveal>
   );
+}
+
+export default function LoginPage() {
+  return <Suspense><LoginForm /></Suspense>;
 }

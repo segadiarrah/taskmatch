@@ -25,3 +25,5 @@ npm-debug.log*
 # where a secret survives every later deletion.
 .env
 .env.*
+
+.next-*

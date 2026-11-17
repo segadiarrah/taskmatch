@@ -118,3 +118,9 @@ __all__ = [
 ]
 
 from .human import Principal, Delegation, WorkerProfile, HumanTaskRequest
+
+from .payment_authorization import PaymentAuthorization
+
+from .workflow_extension import TaskDependency
+
+from .protocol import ProtocolEvent, WebhookDelivery, WebhookSubscription

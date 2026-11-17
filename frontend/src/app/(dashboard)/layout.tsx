@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useTranslation } from "@/lib/i18n";
+import { humanCopy } from "@/lib/human-copy";
+import { authIntentHref } from "@/lib/public-intent";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -105,9 +107,10 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && !authError) {
-      router.push("/login");
+      const view = new URLSearchParams(window.location.search).get("view");
+      router.push(pathname.startsWith("/human-tasks") ? authIntentHref("login", view === "work" ? "work" : view === "agents" ? "agent" : "mission") : "/login");
     }
-  }, [isLoading, isAuthenticated, authError, router]);
+  }, [isLoading, isAuthenticated, authError, router, pathname]);
 
   if (isLoading) {
     return (
@@ -130,7 +133,7 @@ export default function DashboardLayout({
 
   const filteredNavItems = buildNavItems(t).filter((item) =>
     item.roles.includes(user.role)
-  );
+  ).map(item => item.href === "/human-tasks" ? { ...item, label: humanCopy[locale].workspace } : item);
 
   const isActive = (href: string) => {
     if (href === "/admin" || href === "/client" || href === "/developer") return pathname === href;
@@ -201,7 +204,7 @@ export default function DashboardLayout({
             const Icon = item.icon;
             return (
               <button
-                key={item.label}
+                key={item.href}
                 onClick={() => {
                   router.push(item.href);
                   setSidebarOpen(false);

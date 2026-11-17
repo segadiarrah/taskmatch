@@ -130,13 +130,31 @@ function shapeOf(node, prefix = "", shape = new Set()) {
   return shape;
 }
 
-function localeObject(node) {
+function localeObject(node, sourceFile) {
   if (!ts.isObjectLiteralExpression(node)) return undefined;
+  const declarations = new Map();
+  for (const statement of sourceFile.statements) {
+    if (!ts.isVariableStatement(statement)) continue;
+    for (const declaration of statement.declarationList.declarations) {
+      if (ts.isIdentifier(declaration.name) && declaration.initializer) {
+        declarations.set(declaration.name.text, unwrapExpression(declaration.initializer));
+      }
+    }
+  }
+  const resolve = (expression, seen = new Set()) => {
+    const value = unwrapExpression(expression);
+    if (!value || !ts.isIdentifier(value)) return value;
+    if (seen.has(value.text)) return undefined;
+    seen.add(value.text);
+    return resolve(declarations.get(value.text), seen);
+  };
   const map = new Map();
   for (const property of node.properties) {
-    if (!ts.isPropertyAssignment(property)) continue;
+    if (!ts.isPropertyAssignment(property) && !ts.isShorthandPropertyAssignment(property)) continue;
     const key = propertyName(property.name);
-    if (key && LOCALES.includes(key) && ts.isObjectLiteralExpression(property.initializer)) map.set(key, property.initializer);
+    if (!key || !LOCALES.includes(key)) continue;
+    const value = resolve(ts.isShorthandPropertyAssignment(property) ? property.name : property.initializer);
+    if (value && ts.isObjectLiteralExpression(value)) map.set(key, value);
   }
   return LOCALES.every((locale) => map.has(locale)) ? map : undefined;
 }
@@ -168,6 +186,11 @@ function inCodeContext(ancestors) {
     }
     // Likewise `case "approve":` and `switch (x)` discriminants.
     if (ts.isCaseClause(ancestor)) return true;
+    // FormData/map keys and membership checks are structural values.
+    if (ts.isCallExpression(ancestor) && ts.isPropertyAccessExpression(ancestor.expression)) {
+      if (ancestor.expression.name.text === "get") return true;
+      if (ancestor.expression.name.text === "includes" && ts.isArrayLiteralExpression(ancestor.expression.expression)) return true;
+    }
     if (ts.isPropertyAssignment(ancestor)) return /^(?:code|sample|command|url|href|endpoint|method|status|id|key|value|type|variant|icon|color|className|tone|path|slug|subsets|axes|keywords)$/i.test(propertyName(ancestor.name) ?? "");
     return false;
   });
@@ -225,9 +248,20 @@ function enclosingJsxAttribute(node, ancestors) {
   return [...ancestors].reverse().find(ts.isJsxAttribute);
 }
 
+function attributeIsVisible(attribute) {
+  if (!attribute || !visibleAttributes.has(attribute.name.text)) return false;
+  // Native form names are submitted field identifiers. A custom component's
+  // name prop may be displayed, so it keeps the normal visible-text check.
+  if (attribute.name.text === "name") {
+    const tag = attribute.parent?.parent?.tagName?.getText();
+    if (["input", "textarea", "select", "button", "form", "fieldset", "Input", "Textarea", "Select", "Button"].includes(tag)) return false;
+  }
+  return true;
+}
+
 function visibleAttributeFor(node, ancestors) {
   const attribute = enclosingJsxAttribute(node, ancestors);
-  return attribute && visibleAttributes.has(attribute.name.text) ? attribute : undefined;
+  return attributeIsVisible(attribute) ? attribute : undefined;
 }
 
 function jsxLiteralRule(node, ancestors) {
@@ -235,7 +269,7 @@ function jsxLiteralRule(node, ancestors) {
   // A literal inside any JSX attribute belongs only to that prop. Structural props
   // must not inherit an outer JSX expression's rendered-text context.
   const attribute = enclosingJsxAttribute(node, ancestors);
-  if (attribute) return visibleAttributes.has(attribute.name.text) ? "untranslated-attribute" : undefined;
+  if (attribute) return attributeIsVisible(attribute) ? "untranslated-attribute" : undefined;
   const jsxExpression = enclosingJsxExpression(node, ancestors);
   if (jsxExpression) {
     const container = jsxExpression.parent;
@@ -412,7 +446,7 @@ export function inspectLocalizationSources(files, options = {}) {
   )) {
     const localizedNodes = [];
     const findLocaleObjects = (node) => {
-      const map = localeObject(node);
+      const map = localeObject(node, file.sourceFile);
       if (map) {
         for (const value of map.values()) localizedNodes.push(value);
         const referenceShape = shapeOf(map.get("en"));

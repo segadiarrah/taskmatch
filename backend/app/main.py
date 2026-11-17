@@ -7,7 +7,7 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
@@ -57,13 +57,17 @@ app.add_middleware(
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "Idempotency-Key"],
+    allow_headers=["Content-Type", "Authorization", "Idempotency-Key",
+                  "MCP-Protocol-Version", "Mcp-Method", "Mcp-Name", "A2A-Version"],
+    expose_headers=["MCP-Protocol-Version"],
 )
 
 # ---------------------------------------------------------------------------
 # Routers
 # ---------------------------------------------------------------------------
 app.include_router(api_v1_router, prefix=settings.API_V1_PREFIX)
+from app.api.v1.endpoints.protocol_a2a import public_router as agent_discovery_router
+app.include_router(agent_discovery_router)
 
 
 # ---------------------------------------------------------------------------
@@ -118,4 +122,16 @@ async def stripe_error_handler(request, exc):
             else (409 if exc.status_code == 409 else 502)
         )
     )
-    return JSONResponse(status_code=code, content={"detail": str(exc)})
+    return JSONResponse(status_code=code, content={"detail": public_error_detail(str(exc))})
+
+
+def public_error_detail(value):
+    import re
+    if isinstance(value,str):return re.sub(r"stripe", "payment service", value, flags=re.IGNORECASE)
+    if isinstance(value,list):return [public_error_detail(v) for v in value]
+    if isinstance(value,dict):return {k:public_error_detail(v) for k,v in value.items()}
+    return value
+
+@app.exception_handler(HTTPException)
+async def public_http_error(request, exc):
+    return JSONResponse(status_code=exc.status_code,content={'detail':public_error_detail(exc.detail)},headers=exc.headers)

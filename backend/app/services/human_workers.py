@@ -50,6 +50,9 @@ async def eligibility(db, user_id, task=None, *, accepting=True):
 async def require_eligible_executor(db, task, agent_id, *, accepting=True):
     if not task.human_contract_json:
         return
+    if accepting:
+        from app.services.workflow_extensions import require_dependencies
+        await require_dependencies(db,task)
     if accepting and datetime.fromisoformat(task.human_contract_json['deadline']) <= datetime.now(timezone.utc):
         raise HTTPException(409, 'Human Task deadline has passed')
     from app.services.human_authorization import enabled

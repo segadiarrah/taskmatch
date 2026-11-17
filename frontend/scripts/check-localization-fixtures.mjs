@@ -130,6 +130,11 @@ export function runLocalizationFixtures(inspectLocalizationSources, findLocaliza
   ]).filter((issue) => issue.rule === "untranslated-attribute");
   assert.equal(conditionalAttribute.length, 2, "both branches of a conditional visible attribute must be inspected");
 
+  assert.deepEqual(issuesFor([
+    ...dictionaryFiles,
+    entry("src/app/page.tsx", `const formats = new Set(["image/jpeg", "image/png", "image/webp"]); export default () => null;`),
+  ]), [], "binary MIME values are protocol data");
+
   const structuralJsx = issuesFor([
     ...dictionaryFiles,
     entry(
@@ -269,6 +274,21 @@ export function runLocalizationFixtures(inspectLocalizationSources, findLocaliza
     ),
   ]);
   assert.deepEqual(localized, [], "complete inline locale copy should pass");
+
+  const referenced = issuesFor([
+    ...dictionaryFiles,
+    entry("src/lib/human-copy.ts", `const en = { title: "Hello" }; const fr = { title: "Bonjour" }; const es = { title: "Hola" }; const zh = { title: "你好" }; export const copy = { en, fr, es, zh };`),
+  ]);
+  assert.deepEqual(referenced, [], "local locale object references should preserve localization checks");
+  const nativeFields = issuesFor([
+    ...dictionaryFiles,
+    entry("src/app/page.tsx", `export default () => <><input name="summary" /><Input name="summary" /><Textarea name="notes" /><select name="language" /><Widget name={labels.name} />{["submitted", "review"].includes(status) && <p>{labels.message}</p>}</>; const payload = { title: form.get("title") };`),
+  ]);
+  assert.deepEqual(nativeFields, [], "native form identifiers and state comparisons are not visible prose");
+  expectRule(inspectLocalizationSources, "referenced locale shape parity", [
+    ...dictionaryFiles,
+    entry("src/lib/human-copy.ts", `const en = { title: "Hello", intro: "Welcome" }; const fr = { title: "Bonjour" }; const es = { title: "Hola", intro: "Bienvenido" }; const zh = { title: "你好", intro: "欢迎" }; export const copy = { en, fr, es, zh };`),
+  ], "inline-parity");
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

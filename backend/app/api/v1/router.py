@@ -54,3 +54,20 @@ router.include_router(stripe_connect.router, prefix="/billing", tags=["billing"]
 from app.api.v1.endpoints import human_identity, human_tasks
 router.include_router(human_identity.router, tags=["human identity"])
 router.include_router(human_tasks.router, prefix="/human-tasks", tags=["human tasks"])
+
+from app.api.v1.endpoints import autonomous_payments, worker_portal
+router.include_router(autonomous_payments.router, tags=["authorized payments"])
+router.include_router(worker_portal.router, prefix="/worker-portal", tags=["worker portal"])
+
+from app.api.v1.endpoints import protocol_mcp, protocol_a2a
+router.include_router(protocol_mcp.router, tags=["MCP"])
+router.include_router(protocol_a2a.router, tags=["A2A"])
+
+from app.api.v1.endpoints import workflow_extensions
+router.include_router(workflow_extensions.router, tags=["composed missions"])
+
+from app.api.v1.endpoints import protocol_webhooks
+router.include_router(protocol_webhooks.router, tags=["webhooks"])
+
+from app.api.v1.endpoints import task_evidence
+router.include_router(task_evidence.router, tags=["private evidence"])

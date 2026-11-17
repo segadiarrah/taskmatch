@@ -269,7 +269,7 @@ export class TaskMatchClient {
     return this.request<User>("POST", "/auth/register", { body: input });
   }
 
-  /** Current user profile. */
+  /** Create a human task with an explicit, stable operation key. */
   createHumanTask(contract: Record<string,unknown>, idempotencyKey: string): Promise<Record<string,unknown>> {
     return this.request("POST", "/human-tasks", {body:contract, headers:{"Idempotency-Key":idempotencyKey}});
   }
@@ -286,6 +286,79 @@ export class TaskMatchClient {
     return this.request("GET", `/human-tasks/${encodeURIComponent(taskId)}/events`, {query:{skip,limit}});
   }
 
+  /** Queue funding within the caller's mandate; "creating" is not payment received. */
+  fundHumanTask(taskId: string): Promise<Record<string, unknown>> {
+    return this.request("POST", `/human-tasks/${encodeURIComponent(taskId)}/fund`);
+  }
+
+  getHumanTaskFunding(taskId: string): Promise<Record<string, unknown>> {
+    return this.request("GET", `/human-tasks/${encodeURIComponent(taskId)}/fund`);
+  }
+
+  /** Full owner session only; reconcile a bank challenge before retrying funding. */
+  recoverHumanTaskFunding(taskId: string, input: { payment_intent_id?: string | null } = {}): Promise<Record<string, unknown>> {
+    return this.request("POST", `/human-tasks/${encodeURIComponent(taskId)}/fund/recover`, { body: input });
+  }
+
+  getPrincipalPaymentMethod(principalId: string): Promise<Record<string, unknown>> {
+    return this.request("GET", `/principals/${encodeURIComponent(principalId)}/payment-method`);
+  }
+
+  /** Owner-only hosted configuration. Consent must be supplied explicitly. */
+  setupPrincipalPaymentMethod(principalId: string, consent: { allow_agent_payments: true }): Promise<Record<string, unknown>> {
+    return this.request("POST", `/principals/${encodeURIComponent(principalId)}/payment-method/setup`, { body: consent });
+  }
+
+  confirmPrincipalPaymentMethod(principalId: string): Promise<Record<string, unknown>> {
+    return this.request("POST", `/principals/${encodeURIComponent(principalId)}/payment-method/confirm`, { body: {} });
+  }
+
+  revokePrincipalPaymentMethod(principalId: string): Promise<Record<string, unknown>> {
+    return this.request("DELETE", `/principals/${encodeURIComponent(principalId)}/payment-method`);
+  }
+
+  getHumanTaskDependencies(taskId: string): Promise<{ task_id: string; depends_on: string[] }> {
+    return this.request("GET", `/human-tasks/${encodeURIComponent(taskId)}/dependencies`);
+  }
+
+  /** Configure same-job prerequisites before publication. The API rejects cycles. */
+  setHumanTaskDependencies(taskId: string, dependsOn: string[]): Promise<{ task_id: string; depends_on: string[] }> {
+    return this.request("PUT", `/human-tasks/${encodeURIComponent(taskId)}/dependencies`, { body: { depends_on: dependsOn } });
+  }
+
+  /** Create separately priced work; reuse this exact key and contract after uncertainty. */
+  createJobAmendment(jobId: string, contract: Record<string, unknown>, idempotencyKey: string): Promise<Record<string, unknown>> {
+    return this.request("POST", `/jobs/${encodeURIComponent(jobId)}/amendments`, { body: contract, headers: { "Idempotency-Key": idempotencyKey } });
+  }
+
+  /** Owner-only: add an automated step to an unquoted human-work draft. */
+  addJobAIStep(jobId: string, input: { title: string; instructions: string; task_type?: string; depends_on?: string[] }): Promise<Record<string, unknown>> {
+    return this.request("POST", `/jobs/${encodeURIComponent(jobId)}/steps`, { body: input });
+  }
+
+  listJobSteps(jobId: string): Promise<ItemList<Record<string, unknown>>> {
+    return this.request("GET", `/jobs/${encodeURIComponent(jobId)}/steps`);
+  }
+
+  /** Owner-only opt-in. The response contains a signing secret shown only once. */
+  createPrincipalWebhook(principalId: string, input: { url: string; delegation_id?: string | null }): Promise<Record<string, unknown>> {
+    return this.request("POST", `/principals/${encodeURIComponent(principalId)}/webhooks`, { body: input });
+  }
+
+  listPrincipalWebhooks(principalId: string): Promise<Record<string, unknown>[]> {
+    return this.request("GET", `/principals/${encodeURIComponent(principalId)}/webhooks`);
+  }
+
+  revokePrincipalWebhook(principalId: string, subscriptionId: string): Promise<Record<string, unknown>> {
+    return this.request("DELETE", `/principals/${encodeURIComponent(principalId)}/webhooks/${encodeURIComponent(subscriptionId)}`);
+  }
+
+  /** Return the bounded server history, at most 100 deliveries. */
+  listPrincipalWebhookDeliveries(principalId: string, subscriptionId: string): Promise<Record<string, unknown>[]> {
+    return this.request("GET", `/principals/${encodeURIComponent(principalId)}/webhooks/${encodeURIComponent(subscriptionId)}/deliveries`);
+  }
+
+  /** Current user profile. */
   me(): Promise<User> {
     return this.request<User>("GET", "/auth/me");
   }
@@ -442,7 +515,7 @@ export interface AgentRunnerOptions {
  *
  * Assignment discovery: pollAssignmentsAndSubmit() discovers active assignments
  * owned by this agent. An explicit {taskId: assignmentId} map is also supported.
- * The platform does not currently dispatch external webhooks.
+ * Execution is discovered by polling. Opt-in principal webhooks notify lifecycle events.
  */
 export class AgentRunner {
   private client: TaskMatchClient;

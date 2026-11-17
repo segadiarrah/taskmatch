@@ -17,6 +17,7 @@ Example
 from __future__ import annotations
 
 from typing import Any, Optional
+from urllib.parse import quote
 
 import httpx
 
@@ -177,6 +178,75 @@ class TaskMatchClient:
 
     def human_task_events(self, task_id: str, skip: int = 0, limit: int = 30) -> dict:
         return self._request("GET", f"/human-tasks/{task_id}/events", params={"skip":skip,"limit":limit})
+
+    def fund_human_task(self, task_id: str) -> dict:
+        """Queue bounded funding; a creating operation is not proof of payment."""
+        return self._request("POST", f"/human-tasks/{quote(task_id, safe='')}/fund")
+
+    def get_human_task_funding(self, task_id: str) -> dict:
+        return self._request("GET", f"/human-tasks/{quote(task_id, safe='')}/fund")
+
+    def recover_human_task_funding(
+        self, task_id: str, *, payment_intent_id: Optional[str] = None
+    ) -> dict:
+        """Full owner session only; reconcile a bank challenge before retrying."""
+        body = {} if payment_intent_id is None else {"payment_intent_id": payment_intent_id}
+        return self._request("POST", f"/human-tasks/{quote(task_id, safe='')}/fund/recover", json=body)
+
+    def get_principal_payment_method(self, principal_id: str) -> dict:
+        return self._request("GET", f"/principals/{quote(principal_id, safe='')}/payment-method")
+
+    def setup_principal_payment_method(
+        self, principal_id: str, *, allow_agent_payments: bool
+    ) -> dict:
+        """Owner-only hosted setup; consent has no default and must be explicit."""
+        return self._request("POST", f"/principals/{quote(principal_id, safe='')}/payment-method/setup",
+                             json={"allow_agent_payments": allow_agent_payments})
+
+    def confirm_principal_payment_method(self, principal_id: str) -> dict:
+        return self._request("POST", f"/principals/{quote(principal_id, safe='')}/payment-method/confirm", json={})
+
+    def revoke_principal_payment_method(self, principal_id: str) -> dict:
+        return self._request("DELETE", f"/principals/{quote(principal_id, safe='')}/payment-method")
+
+    def get_human_task_dependencies(self, task_id: str) -> dict:
+        return self._request("GET", f"/human-tasks/{quote(task_id, safe='')}/dependencies")
+
+    def set_human_task_dependencies(self, task_id: str, depends_on: list[str]) -> dict:
+        """Set same-job prerequisites before publication. The API rejects cycles."""
+        return self._request("PUT", f"/human-tasks/{quote(task_id, safe='')}/dependencies",
+                             json={"depends_on": depends_on})
+
+    def create_job_amendment(self, job_id: str, contract: dict, *, idempotency_key: str) -> dict:
+        """Create separately priced work with an explicit, stable operation key."""
+        return self._request("POST", f"/jobs/{quote(job_id, safe='')}/amendments", json=contract,
+                             headers={"Idempotency-Key": idempotency_key})
+
+    def add_job_ai_step(self, job_id: str, step: dict) -> dict:
+        """Owner-only: add an automated step to an unquoted human-work draft."""
+        return self._request("POST", f"/jobs/{quote(job_id, safe='')}/steps", json=step)
+
+    def list_job_steps(self, job_id: str) -> dict:
+        return self._request("GET", f"/jobs/{quote(job_id, safe='')}/steps")
+
+    def create_principal_webhook(
+        self, principal_id: str, *, url: str, delegation_id: Optional[str] = None
+    ) -> dict:
+        """Owner-only opt-in; the response signing secret is returned only once."""
+        body = {"url": url}
+        if delegation_id is not None:
+            body["delegation_id"] = delegation_id
+        return self._request("POST", f"/principals/{quote(principal_id, safe='')}/webhooks", json=body)
+
+    def list_principal_webhooks(self, principal_id: str) -> list[dict]:
+        return self._request("GET", f"/principals/{quote(principal_id, safe='')}/webhooks")
+
+    def revoke_principal_webhook(self, principal_id: str, subscription_id: str) -> dict:
+        return self._request("DELETE", f"/principals/{quote(principal_id, safe='')}/webhooks/{quote(subscription_id, safe='')}")
+
+    def list_principal_webhook_deliveries(self, principal_id: str, subscription_id: str) -> list[dict]:
+        """Return at most 100 delivery records, as bounded by the API."""
+        return self._request("GET", f"/principals/{quote(principal_id, safe='')}/webhooks/{quote(subscription_id, safe='')}/deliveries")
 
     def me(self) -> dict:
         """Return the current user profile. ``GET /v1/auth/me``."""

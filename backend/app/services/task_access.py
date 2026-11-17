@@ -44,6 +44,8 @@ async def load_execution_task(db: AsyncSession, task_id) -> tuple[Job, Task]:
         .with_for_update()
         .execution_options(populate_existing=True)
     )
+    from app.services.workflow_extensions import require_dependencies
+    await require_dependencies(db, task)
     return job, task
 
 
@@ -59,9 +61,14 @@ def task_visibility(user: User, *, include_open: bool = True):
     # Clients may also opt in as workers without changing role or account.
     from app.models.human import WorkerProfile
     has_worker = select(WorkerProfile.user_id).where(WorkerProfile.user_id == user.id).exists()
+    from app.models.workflow_extension import TaskDependency
+    from sqlalchemy.orm import aliased
+    prerequisite=aliased(Task)
+    unmet=select(TaskDependency.task_id).join(prerequisite,prerequisite.id==TaskDependency.depends_on_task_id).where(prerequisite.status!='approved')
     allowed_open = and_(
         or_(true() if user.role == 'agent_developer' else false(), has_worker),
         Task.status == TaskStatus.open_for_bids,
+        Task.id.not_in(unmet),
         or_(Task.human_contract_json.is_(None), Task.human_policy_status == 'approved'),
         Task.job_id.in_(select(Job.id).where(
             Job.status.in_([JobStatus.bidding, JobStatus.in_progress]),

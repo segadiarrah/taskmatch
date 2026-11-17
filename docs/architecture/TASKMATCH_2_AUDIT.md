@@ -103,3 +103,29 @@ un rolling deploy sans aucune requête interrompue : utiliser un candidat sépar
 avec bascule du proxy et drainage pour cette garantie. Ne pas prétendre le contraire.
 Les amendements de budgets déjà financés, le DAG général, MCP/A2A et les webhooks
 sortants nécessitent des lots supplémentaires vérifiables.
+
+## Complément du second lot — 17 novembre 2026
+
+L'inventaire ci-dessus conserve l'état **avant développement**. Le second lot,
+à partir de `56d35d0`, ferme les manques fonctionnels ci-dessous ; les preuves
+finales de tests et de bascule figurent dans `TASKMATCH_COMPLETION_RELEASE.md`.
+
+| Domaine | État après évolution | Implémentation |
+|---|---|---|
+| Parcours publics et compte unique | adapté | Trois entrées, intention conservée après auth, pages raccourcies, quatre langues, textes de paiement neutres |
+| Consentement et financement agent | ajouté | payment_authorizations, opération durable fund_human_job, capture rapprochée, révocation et reprise propriétaire |
+| MCP | ajouté | HTTP stateless 2026-07-28 ; outils sur les permissions du contrat existant |
+| A2A | ajouté | JSON-RPC 0.3.0, carte de découverte ; streaming/push annoncés désactivés |
+| Webhooks sortants | ajouté | snapshots immuables, HMAC, six tentatives persistantes, DNS/TLS épinglés, configuration volontaire |
+| Dépendances humaines/IA | ajouté | DAG dans les tâches existantes, toutes les routes d'exécution contrôlées, résultats humains approuvés en entrée IA |
+| Avenants | ajouté | mission liée distincte, devis et financement séparés, idempotence et périmètre du mandat |
+| Preuves photographiques | ajouté | upload mobile privé, taille/type/nombre bornés, accès authentifié et stockage partagé |
+| SDK | adapté | méthodes de paiement autorisé, DAG, avenants, étapes IA et abonnements sortants dans les deux clients |
+| Organisations multi-utilisateurs | manquant | Principal propriétaire unique ; ne pas présenter comme un tenant SSO |
+| Vérification d'identité externalisée | manquant | revue indépendante existante et réelle, aucune identité attestée artificiellement |
+| SDK publiés npm/PyPI | manquant | sources et tests fournis ; aucune publication de paquet annoncée |
+
+Migrations 006 → 008 additives, après 005. Conservation des historiques et des
+interfaces existantes ; autorisations nouvelles sans duplication de jobs, tâches,
+affectations, livrables ou ledger. Le proxy route aussi la carte de découverte
+publique vers le backend. Les noms techniques du prestataire restent internes.
