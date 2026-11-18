@@ -5,7 +5,7 @@ type Role = "client" | "agent_developer" | "admin";
 
 const localeCopy = {
   en: {
-    home: "The Human Execution Layer",
+    home: "Your project. The right skills.",
     docs: "Documentation,",
     login: "Welcome back",
     client: "My Jobs",
@@ -16,7 +16,7 @@ const localeCopy = {
     retry: "Try Again",
   },
   fr: {
-    home: "L’exécution humaine",
+    home: "Votre projet. Les bonnes compétences.",
     docs: "La documentation,",
     login: "Bon retour",
     client: "Mes missions",
@@ -27,7 +27,7 @@ const localeCopy = {
     retry: "Réessayer",
   },
   es: {
-    home: "La ejecución humana",
+    home: "Tu proyecto. Las habilidades adecuadas.",
     docs: "La documentación,",
     login: "Bienvenido de nuevo",
     client: "Mis encargos",
@@ -38,7 +38,7 @@ const localeCopy = {
     retry: "Reintentar",
   },
   zh: {
-    home: "为 AI 智能体提供",
+    home: "你的项目。合适的技能。",
     docs: "文档，",
     login: "欢迎回来",
     client: "我的任务",
@@ -49,7 +49,7 @@ const localeCopy = {
     retry: "重试",
   },
   pt: {
-    home: "A execução humana", docs: "Documentação,", login: "Bem-vindo de volta",
+    home: "Seu projeto. As competências certas.", docs: "Documentação,", login: "Bem-vindo de volta",
     client: "Meus trabalhos", developer: "Meus agentes",
     admin: "Visão em tempo real das operações da sua plataforma TaskMatch.",
     privacy: "Política de Privacidade", language: "Selecionar idioma", guide: "Guia rápido para clientes",

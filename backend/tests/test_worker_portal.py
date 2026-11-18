@@ -99,3 +99,69 @@ async def test_opportunities_count_excludes_expired_and_private_data_before_pagi
     assert 'instructions' not in result['items'][0]
     assert 'location' not in result['items'][0]
     assert 'principal_id' not in result['items'][0]
+
+
+async def test_admin_human_overview_is_protected_and_counts_only_human_work(market):
+    from app.models import Task
+    from app.models.human import WorkerProfile
+
+    path = '/worker-portal/admin/overview'
+    for role in ('owner', 'developer', 'stranger'):
+        await request(market, 'GET', path, role=role, expected=403)
+    anonymous = await market.http.get(path)
+    assert anonymous.status_code == 401
+    assert await request(market, 'GET', path, role='admin') == {
+        'human_missions': 0, 'pending_publication': 0, 'active_human_missions': 0,
+        'worker_profiles': 0, 'pending_worker_verification': 0,
+    }
+    p = await principal(market)
+    created = [await create(market, contract(p['id'], title=f'Mission {i}')) for i in range(5)]
+    for role in ('owner', 'stranger'):
+        await request(market, 'PUT', '/workers/me', role=role, json={
+            'country': 'FR', 'languages': ['fr'], 'timezone': 'Europe/Paris',
+            'skills': ['translation'], 'available': True, 'data_consent': True,
+        })
+    async with market.db() as db:
+        for mission, status, policy in zip(created,
+                ['pending', 'assigned', 'in_progress', 'approved', 'cancelled'],
+                ['pending', 'approved', 'approved', 'approved', 'pending']):
+            task = await db.get(Task, uuid.UUID(mission['task_id']))
+            task.status, task.human_policy_status = status, policy
+        # A normal AI task with JSON null must never count as human work.
+        ai_job = Job(client_user_id=market.users['owner'].id, title='AI project',
+                     raw_description='Original AI project', currency='EUR', budget_min=0, budget_max=10)
+        db.add(ai_job)
+        await db.flush()
+        db.add(Task(job_id=ai_job.id, title='AI task', description='AI task',
+                    task_type='writing', human_contract_json=None, status='assigned'))
+        worker = await db.get(WorkerProfile, market.users['stranger'].id)
+        worker.verification_status = 'verified'
+        await db.commit()
+    overview = await request(market, 'GET', path, role='admin')
+    assert overview == {
+        'human_missions': 5, 'pending_publication': 1, 'active_human_missions': 2,
+        'worker_profiles': 2, 'pending_worker_verification': 1,
+    }
+    assert 'principal_id' not in str(overview) and 'email' not in str(overview)
+    review = await request(market, 'GET', '/worker-portal/missions?view=review', role='admin')
+    assert review['total'] == overview['pending_publication']
+    assert [row['task_id'] for row in review['items']] == [created[0]['task_id']]
+
+
+async def test_human_mission_list_excludes_ai_tasks_with_json_null(market):
+    from app.models import Task
+    p = await principal(market)
+    mission = await create(market, contract(p['id']))
+    async with market.db() as db:
+        job = Job(client_user_id=market.users['owner'].id, title='AI project',
+                  raw_description='Original AI project', currency='EUR', budget_min=0, budget_max=10)
+        db.add(job)
+        await db.flush()
+        db.add(Task(job_id=job.id, title='AI task', description='AI task',
+                    task_type='writing', human_contract_json=None))
+        await db.commit()
+    contracts = await request(market, 'GET', '/human-tasks')
+    assert [row['task_id'] for row in contracts['items']] == [mission['task_id']]
+    result = await request(market, 'GET', '/worker-portal/missions?view=request')
+    assert result['total'] == 1
+    assert [row['task_id'] for row in result['items']] == [mission['task_id']]

@@ -23,7 +23,7 @@ import { SITE_URL } from "@/lib/site";
  * document serves every locale. Translating it here would only mean shipping a
  * title that contradicts what the crawler reads. English is the site default,
  * and `openGraph.alternateLocale` in the root layout already declares that the
- * content is available in the other three.
+ * content is available in the other four.
  */
 
 export interface PageMeta {
@@ -37,17 +37,17 @@ export const PAGE_METADATA: Record<string, PageMeta> = {
   "/how-it-works": {
     title: "How It Works",
     description:
-      "Describe a mission, agree the price, follow the work and review the result. Human help for people, teams and AI agents, remote or on site.",
+      "Describe a project, review AI decomposition and matching, follow execution and validate deliveries. Add human help remotely or on site when useful.",
   },
   "/for-clients": {
     title: "For Clients",
     description:
-      "Request human help for a clearly scoped mission. Review the price, follow the work and accept the result against agreed criteria.",
+      "Turn your project into an AI task plan, match capable agents and validate deliveries. Request human help for work that needs a person.",
   },
   "/for-developers": {
-    title: "For Workers and Agent Builders",
+    title: "For AI Agent Builders and Human Workers",
     description:
-      "Offer your skills, find suitable missions or connect an AI agent. Review requirements, deliver evidence and track earnings after acceptance.",
+      "Register an AI executor, receive suitable tasks and submit deliverables. Also offer human skills or authorize an agent to request human help.",
   },
   "/pricing": {
     title: "Pricing",
@@ -62,7 +62,7 @@ export const PAGE_METADATA: Record<string, PageMeta> = {
   "/company/about": {
     title: "About",
     description:
-      "TaskMatch.ai connects people, teams and AI agents with human workers for clearly scoped missions. A Tauraco product operated from France.",
+      "TaskMatch.ai is a marketplace for AI agents and human expertise, from project planning to validated delivery. A Tauraco product operated from France.",
   },
   "/company/careers": {
     title: "Careers",
@@ -162,7 +162,7 @@ export function buildPageMetadata(route: string): Metadata {
       description: meta.description,
       url: `${SITE_URL}${route}`,
       locale: "en_US",
-      alternateLocale: ["fr_FR", "es_ES", "zh_CN"],
+      alternateLocale: ["fr_FR", "es_ES", "zh_CN", "pt_PT"],
     },
     twitter: {
       card: "summary_large_image",

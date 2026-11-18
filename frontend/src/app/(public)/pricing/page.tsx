@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useAuth } from "@/lib/auth";
+import { authIntentHref, postAuthDestination } from "@/lib/public-intent";
 import { useTranslation, type Locale } from "@/lib/i18n";
 import { PageHero } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/motion";
@@ -29,7 +31,7 @@ const COPY: Record<Locale, Copy> = {
       { q: "When are developers paid?", a: "Eligible external developer transfers follow client acceptance and require a ready payout account. A transfer is separate from arrival in a bank account." },
       { q: "What happens if a task fails?", a: "Other independent tasks can continue. The team can retry within limits or arrange human intervention. If the mission cannot be delivered, an operator can cancel it and request a full refund. Partial delivery and partial refunds are not offered at launch." },
       { q: "What does validation mean?", a: "Automated checks and any required human review are recorded. A structural check alone does not establish that a real-world task has been completed. You review the delivered work before accepting it." },
-    ], cta: "Describe your mission", contact: "Discuss your requirements",
+    ], cta: "Describe your project", contact: "Discuss your requirements",
   },
   fr: {
     eyebrow: "Tarifs", title: "Une mission.", accent: "Un devis prépayé.",
@@ -47,7 +49,7 @@ const COPY: Record<Locale, Copy> = {
       { q: "Quand les développeurs sont-ils payés ?", a: "Les transferts aux développeurs externes éligibles suivent l’acceptation client et nécessitent un compte de versement opérationnel. Un transfert est distinct de son arrivée en banque." },
       { q: "Que se passe-t-il si une tâche échoue ?", a: "Les autres tâches indépendantes peuvent continuer. L’équipe peut relancer dans les limites prévues ou organiser une intervention humaine. Si la mission ne peut pas être livrée, un opérateur peut l’annuler et demander un remboursement intégral. La livraison et les remboursements partiels ne sont pas proposés au lancement." },
       { q: "Que signifie la validation ?", a: "Les contrôles automatisés et les revues humaines requises sont enregistrés. Un contrôle de structure ne prouve pas à lui seul qu’une tâche réelle a été accomplie. Vous examinez le travail livré avant de l’accepter." },
-    ], cta: "Décrire votre mission", contact: "Discuter de vos besoins",
+    ], cta: "Décrire votre projet", contact: "Discuter de vos besoins",
   },
   es: {
     eyebrow: "Precios", title: "Una misión.", accent: "Un presupuesto prepagado.",
@@ -65,7 +67,7 @@ const COPY: Record<Locale, Copy> = {
       { q: "¿Cuándo cobran los desarrolladores?", a: "Las transferencias a desarrolladores externos elegibles siguen la aceptación del cliente y requieren una cuenta de cobros preparada. Una transferencia es distinta de su llegada al banco." },
       { q: "¿Qué pasa si falla una tarea?", a: "Las otras tareas independientes pueden continuar. El equipo puede reintentar dentro de los límites o disponer intervención humana. Si no se puede entregar la misión, un operador puede cancelarla y solicitar un reembolso completo. No se ofrecen entregas ni reembolsos parciales en el lanzamiento." },
       { q: "¿Qué significa validar?", a: "Se registran las comprobaciones automáticas y las revisiones humanas requeridas. Una comprobación de estructura no demuestra por sí sola que una tarea real esté terminada. Revisas el trabajo antes de aceptarlo." },
-    ], cta: "Describe tu misión", contact: "Habla de tus necesidades",
+    ], cta: "Describe tu proyecto", contact: "Habla de tus necesidades",
   },
   zh: {
     eyebrow: "价格", title: "一项任务。", accent: "一份预付报价。",
@@ -135,13 +137,14 @@ const COPY: Record<Locale, Copy> = {
         a: "As verificações automáticas e as revisões humanas necessárias ficam registradas. Uma verificação de estrutura, por si só, não prova que uma tarefa real foi concluída. Revise o trabalho entregue antes de aceitá-lo."
       }
     ],
-    cta: "Descreva a sua missão",
+    cta: "Descreva seu projeto",
     contact: "Fale sobre as suas necessidades"
   },
 };
 
 export default function PricingPage() {
   const { locale } = useTranslation();
+  const { user } = useAuth();
   const c = COPY[locale];
   return (
     <div className="min-h-screen bg-ink-950 text-ink-50">
@@ -167,7 +170,7 @@ export default function PricingPage() {
         <div>
           <h2 className="font-display text-3xl font-medium">{c.includedTitle}</h2>
           <ul className="mt-8 space-y-4">{c.included.map(item => <li key={item} className="flex gap-3 text-ink-300"><Check className="mt-1 h-4 w-4 shrink-0 text-signal-400" />{item}</li>)}</ul>
-          <Link href="/register?intent=mission" className="mt-8 inline-flex h-12 items-center gap-2 rounded-md bg-signal-500 px-6 font-semibold text-ink-950 hover:bg-signal-400">{c.cta}<ArrowRight className="h-4 w-4" /></Link>
+          <Link href={user ? postAuthDestination(user.role, "project") : authIntentHref("register", "project")} className="mt-8 inline-flex h-12 items-center gap-2 rounded-md bg-signal-500 px-6 font-semibold text-ink-950 hover:bg-signal-400">{c.cta}<ArrowRight className="h-4 w-4" /></Link>
           <Link href="/company/contact" className="mt-5 block text-sm text-signal-400 hover:underline">{c.contact}</Link>
         </div>
         <div id="faq">

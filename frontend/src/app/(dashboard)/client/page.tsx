@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { useTranslation } from "@/lib/i18n";
 import { apiGet } from "@/lib/api";
+import { DashboardActions } from "@/components/dashboard/dashboard-actions";
 import { formatCurrency, formatDate, formatStatus } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -79,26 +80,6 @@ export default function ClientDashboardPage() {
     fetchDashboard();
   }, [t]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <AlertCircle className="h-12 w-12 text-destructive" />
-        <p className="text-lg text-muted-foreground">{error}</p>
-        <Button onClick={() => window.location.reload()} variant="outline">
-          {t("client.tryAgain")}
-        </Button>
-      </div>
-    );
-  }
-
   const kpiCards = [
     { label: t("client.kpi.myJobs"), value: stats?.my_jobs ?? 0, icon: Briefcase, color: "text-info" },
     { label: t("client.kpi.activeTasks"), value: stats?.active_tasks ?? 0, icon: ListChecks, color: "text-signal-400" },
@@ -133,8 +114,21 @@ export default function ClientDashboardPage() {
         </Link>
       </div>
 
+      <DashboardActions role="client" />
+
+      {loading ? (
+        <div className="flex min-h-48 items-center justify-center" role="status">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-label={t("dashboard.loadingApp")} />
+        </div>
+      ) : error ? (
+        <div className="flex min-h-48 flex-col items-center justify-center gap-4" role="alert">
+          <AlertCircle className="h-8 w-8 text-destructive" aria-hidden="true" />
+          <p className="text-muted-foreground">{error}</p>
+          <Button onClick={() => window.location.reload()} variant="outline">{t("client.tryAgain")}</Button>
+        </div>
+      ) : <>
       {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div data-testid="client-original-metrics" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpiCards.map((kpi) => (
           <Card key={kpi.label}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -207,6 +201,7 @@ export default function ClientDashboardPage() {
           )}
         </CardContent>
       </Card>
+      </>}
     </div>
   );
 }

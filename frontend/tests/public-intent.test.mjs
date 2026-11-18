@@ -25,3 +25,16 @@ test("untrusted auth intent cannot redirect to arbitrary paths or external URLs"
     assert.equal(authIntentHref("register", parsePublicIntent(value)), "/register");
   }
 });
+
+test("AI project and executor intents preserve the existing role permissions", () => {
+  assert.equal(parsePublicIntent("project"), "project");
+  assert.equal(parsePublicIntent("executor"), "executor");
+  assert.equal(postAuthDestination("client", "project"), "/client/jobs/new");
+  assert.equal(postAuthDestination("agent_developer", "project"), "/developer");
+  assert.equal(postAuthDestination("admin", "project"), "/admin");
+  assert.equal(postAuthDestination("agent_developer", "executor"), "/developer/agents/new");
+  assert.equal(postAuthDestination("client", "executor"), "/client");
+  assert.equal(postAuthDestination("admin", "executor"), "/admin");
+  assert.equal(module.exports.registrationRole("executor"), "agent_developer");
+  for (const intent of ["project", "mission", "work", "agent", null]) assert.equal(module.exports.registrationRole(intent), "client");
+});

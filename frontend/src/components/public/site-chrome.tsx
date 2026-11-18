@@ -7,7 +7,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { useAuth } from "@/lib/auth";
 import { useTranslation } from "@/lib/i18n";
 import { COPY } from "@/lib/landing-copy";
-import { authIntentHref, intentDestination, PUBLIC_INTENTS } from "@/lib/public-intent";
+import { authIntentHref, postAuthDestination, MARKETPLACE_INTENTS } from "@/lib/public-intent";
 import { cn } from "@/lib/utils";
 
 const LABELS = {
@@ -36,20 +36,20 @@ export function SiteLogo({ className = "" }: { className?: string }) {
 }
 
 export function PublicNavbar() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { locale, t } = useTranslation();
   const c = COPY[locale];
   const L = LABELS[locale];
-  const paths = PUBLIC_INTENTS.map(intent => ({ intent, label: c[intent] }));
+  const paths = MARKETPLACE_INTENTS.map(intent => ({ intent, label: c[intent] }));
   return <header className="fixed top-0 z-50 w-full border-b border-ink-800 bg-ink-950/92 backdrop-blur-xl">
     <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-5 px-4 sm:px-6 lg:px-8">
       <SiteLogo />
-      <nav className="hidden items-center gap-5 lg:flex">{paths.map(path => <Link key={path.intent} href={isAuthenticated ? intentDestination(path.intent) : authIntentHref("register", path.intent)} className="py-3 text-sm font-medium text-ink-300 transition-colors hover:text-signal-600">{path.label}</Link>)}</nav>
+      <nav className="hidden items-center gap-5 lg:flex">{paths.map(path => <Link key={path.intent} href={isAuthenticated && user ? postAuthDestination(user.role, path.intent) : authIntentHref("register", path.intent)} className="py-3 text-sm font-medium text-ink-300 transition-colors hover:text-signal-600">{path.label}</Link>)}</nav>
       <div className="hidden items-center gap-5 lg:flex"><LanguageSwitcher /><Link href="/login" className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-ink-200">{L.signIn}<ArrowRight className="h-4 w-4" /></Link></div>
       <button type="button" className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-ink-700 lg:hidden" onClick={() => setMobileOpen(!mobileOpen)} aria-label={t("publicUi.toggleMenu")} aria-expanded={mobileOpen} aria-controls="public-mobile-nav">{mobileOpen ? <X aria-hidden="true" className="h-5 w-5" /> : <Menu aria-hidden="true" className="h-5 w-5" />}</button>
     </div>
-    {mobileOpen && <div id="public-mobile-nav" className="border-t border-ink-800 bg-white px-4 pb-5 pt-2 lg:hidden"><nav className="flex flex-col">{paths.map(path => <Link key={path.intent} href={isAuthenticated ? intentDestination(path.intent) : authIntentHref("register", path.intent)} onClick={() => setMobileOpen(false)} className="border-b border-ink-800 py-4 text-sm font-medium">{path.label}</Link>)}</nav><div className="mt-4 flex items-center justify-between"><LanguageSwitcher /><Link href="/login" onClick={() => setMobileOpen(false)} className="px-2 py-3 text-sm font-semibold">{L.signIn}</Link></div></div>}
+    {mobileOpen && <div id="public-mobile-nav" className="border-t border-ink-800 bg-white px-4 pb-5 pt-2 lg:hidden"><nav className="flex flex-col">{paths.map(path => <Link key={path.intent} href={isAuthenticated && user ? postAuthDestination(user.role, path.intent) : authIntentHref("register", path.intent)} onClick={() => setMobileOpen(false)} className="border-b border-ink-800 py-4 text-sm font-medium">{path.label}</Link>)}</nav><div className="mt-4 flex items-center justify-between"><LanguageSwitcher /><Link href="/login" onClick={() => setMobileOpen(false)} className="px-2 py-3 text-sm font-semibold">{L.signIn}</Link></div></div>}
   </header>;
 }
 

@@ -30,7 +30,7 @@ for (const status of [401, 403, 503]) {
     expect(await page.evaluate(() => localStorage.getItem("auth_token"))).toBe("new-token");
 
     await Promise.all(pending.map((route) => route.fulfill({ status, json: { detail: "Old session failed" } })));
-    await expect(page.getByRole("button", { name: "Overview", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Overview", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: /try again/i })).toBeVisible();
     await expect(page).toHaveURL(/\/admin$/);
     expect(await page.evaluate(() => localStorage.getItem("auth_token"))).toBe("new-token");

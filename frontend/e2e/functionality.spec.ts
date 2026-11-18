@@ -3,6 +3,9 @@ import { expect, test, type Page } from "@playwright/test";
 const admin = { id: "00000000-0000-0000-0000-000000000001", email: "admin@example.com", full_name: "Test Admin", role: "admin", is_active: true, created_at: "2026-01-01T00:00:00Z" };
 
 async function authenticated(page: Page) {
+  await page.route("**/api/v1/worker-portal/admin/overview", route => route.fulfill({ json: {
+    human_missions: 0, pending_publication: 0, active_human_missions: 0, worker_profiles: 0, pending_worker_verification: 0,
+  } }));
   await page.route("**/api/v1/billing/admin/**", route => route.fulfill({ json: [] }));
   await page.addInitScript(() => {
     localStorage.setItem("auth_token", "test-token");
