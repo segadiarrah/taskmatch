@@ -6,6 +6,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { apiGet } from "@/lib/api";
+import { AdminDashboardActions } from "@/components/dashboard/dashboard-actions";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -184,22 +185,6 @@ export default function AdminOverviewPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex h-[60vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
-          <p className="text-sm text-muted-foreground">{a("Loading dashboard...")}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!data) return <DataLoadError onRetry={() => window.location.reload()} />;
-
-  const jobsTotal = Object.values(data.jobs_by_status).reduce((a, b) => a + b, 0);
-  const tasksTotal = Object.values(data.tasks_by_status).reduce((a, b) => a + b, 0);
-
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -208,8 +193,15 @@ export default function AdminOverviewPage() {
         <p className="mt-1 text-sm text-muted-foreground">{a("Real-time overview of your TaskMatch platform operations.")}</p>
       </div>
 
-      {/* Marketplace economics — the numbers investors ask for first */}
-      <div>
+      <AdminDashboardActions />
+
+      {loading ? (
+        <div className="flex min-h-48 items-center justify-center" role="status">
+          <p className="text-sm text-muted-foreground">{a("Loading dashboard...")}</p>
+        </div>
+      ) : !data ? <DataLoadError onRetry={() => window.location.reload()} /> : <>
+      {/* Marketplace economics */}
+      <div data-testid="admin-original-metrics">
         <h2 className="eyebrow mb-3 text-ink-400">{a("Marketplace economics")}</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <KPICard
@@ -293,7 +285,7 @@ export default function AdminOverviewPage() {
                 key={status}
                 label={status}
                 count={count}
-                total={jobsTotal}
+                total={Object.values(data.jobs_by_status).reduce((a, b) => a + b, 0)}
                 color={statusColors[status] || "bg-ink-500"}
               />
             ))}
@@ -312,7 +304,7 @@ export default function AdminOverviewPage() {
                 key={status}
                 label={status}
                 count={count}
-                total={tasksTotal}
+                total={Object.values(data.tasks_by_status).reduce((a, b) => a + b, 0)}
                 color={statusColors[status] || "bg-ink-500"}
               />
             ))}
@@ -396,6 +388,7 @@ export default function AdminOverviewPage() {
           </CardContent>
         </Card>
       </div>
+      </>}
     </div>
   );
 }

@@ -2,6 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth";
+import { authIntentHref, postAuthDestination } from "@/lib/public-intent";
 import { useParams } from "next/navigation";
 import { ArrowLeft, CalendarDays, Clock3, FileQuestion } from "lucide-react";
 import { PageCta } from "@/components/public/page-shell";
@@ -92,6 +94,7 @@ const COPY: Record<
 export default function BlogArticlePage() {
   const params = useParams();
   const { locale } = useTranslation();
+  const { user } = useAuth();
   const c = COPY[locale];
   const slug = typeof params.slug === "string" ? params.slug : params.slug?.[0];
   const post = slug ? getPostBySlug(slug, locale) : undefined;
@@ -227,7 +230,7 @@ export default function BlogArticlePage() {
       <PageCta
         title={c.ctaTitle}
         body={c.ctaBody}
-        primaryHref="/register?intent=mission"
+        primaryHref={user ? postAuthDestination(user.role, "project") : authIntentHref("register", "project")}
         primaryLabel={c.ctaPrimary}
         secondaryHref="/how-it-works"
         secondaryLabel={c.ctaSecondary}

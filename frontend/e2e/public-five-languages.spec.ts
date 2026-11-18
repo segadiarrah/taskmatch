@@ -39,11 +39,11 @@ test("public bundles explicitly cover all five languages with complete shapes", 
 
 for (const locale of locales) {
   const translated = {
-    en: { home: "The Human Execution Layer", login: "Welcome back", register: "Create your account", legal: "Terms of Service" },
-    fr: { home: "L’exécution humaine", login: "Bon retour", register: "Créez votre compte", legal: "Conditions générales d’utilisation" },
-    es: { home: "La ejecución humana", login: "Bienvenido de nuevo", register: "Crea tu cuenta", legal: "Términos del servicio" },
-    zh: { home: "为 AI 智能体提供", login: "欢迎回来", register: "创建你的账户", legal: "服务条款" },
-    pt: { home: "A execução humana", login: "Bem-vindo de volta", register: "Crie a sua conta", legal: "Termos de Serviço" },
+    en: { home: "Your project. The right skills.", login: "Welcome back", register: "Create your account", legal: "Terms of Service" },
+    fr: { home: "Votre projet. Les bonnes compétences.", login: "Bon retour", register: "Créez votre compte", legal: "Conditions générales d’utilisation" },
+    es: { home: "Tu proyecto. Las habilidades adecuadas.", login: "Bienvenido de nuevo", register: "Crea tu cuenta", legal: "Términos del servicio" },
+    zh: { home: "你的项目。合适的技能。", login: "欢迎回来", register: "创建你的账户", legal: "服务条款" },
+    pt: { home: "Seu projeto. As competências certas.", login: "Bem-vindo de volta", register: "Crie a sua conta", legal: "Termos de Serviço" },
   }[locale];
   test(`public and auth pages render in ${locale}`, async ({ page }) => {
     await page.addInitScript(selected => localStorage.setItem("taskmatch_locale", selected), locale);
@@ -71,7 +71,7 @@ test("public form errors and accessible names use localized copy", () => {
   const notice = readFileSync(resolve(frontend, "src/app/(public)/legal/notice/page.tsx"), "utf8");
   expect(notice).not.toContain("<li>TVA ");
   const landing = readFileSync(resolve(frontend, "src/lib/landing-copy.ts"), "utf8");
-  expect(landing.match(/eyebrow: \"TaskMatch · Human Execution Layer\"/g)).toHaveLength(1);
+  expect(landing.match(/eyebrow: \"TaskMatch · AI agents and human expertise\"/g)).toHaveLength(1);
 });
 
 for (const scenario of [
@@ -127,11 +127,11 @@ test("Portuguese public pages remain readable on a narrow screen", async ({ page
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => localStorage.setItem("taskmatch_locale", "pt"));
   const routes = {
-    "/how-it-works": "Um caminho claro do pedido ao resultado.",
-    "/for-clients": "Transforme uma necessidade em uma missão clara.",
-    "/for-developers": "Suas competências. Um trabalho útil.",
+    "/how-it-works": "Do projeto a um resultado que pode revisar.",
+    "/for-clients": "Descreva seu projeto. Revise o resultado.",
+    "/for-developers": "Crie um agente. Coloque sua experiência para trabalhar.",
     "/pricing": "Uma missão.Um orçamento pré-pago.",
-    "/company/about": "Ajuda humana,no seu fluxo de trabalho.",
+    "/company/about": "Agentes de IA e pessoas,trabalhando no seu projeto.",
     "/company/careers": "Crie fluxos de trabalho úteisentre pessoas e agentes.",
     "/company/contact": "Fale com a equipeTaskMatch.",
     "/company/press-kit": "TaskMatch,em poucas palavras.",

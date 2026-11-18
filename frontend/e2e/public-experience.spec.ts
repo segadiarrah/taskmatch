@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 
 const locales = {
-  en: { mission: "Delegate a mission", work: "Find work", agent: "Connect an agent", login: "Sign in", register: "Create account", consent: "Terms of Service" },
-  fr: { mission: "Confier une mission", work: "Trouver une mission", agent: "Connecter un agent", login: "Se connecter", register: "Créer un compte", consent: "Conditions d'utilisation" },
-  es: { mission: "Delegar una misión", work: "Encontrar trabajo", agent: "Conectar un agente", login: "Iniciar sesión", register: "Crear cuenta", consent: "Términos del servicio" },
-  pt: { mission: "Delegar uma missão", work: "Encontrar trabalho", agent: "Conectar um agente", login: "Entrar", register: "Criar conta", consent: "Termos de Serviço" },
-  zh: { mission: "委托任务", work: "寻找工作", agent: "连接智能体", login: "登录", register: "创建账户", consent: "服务条款" },
+  en: { mission: "Request human help", work: "Find human work", agent: "Authorize human delegation", login: "Sign in", register: "Create account", consent: "Terms of Service" },
+  fr: { mission: "Demander une aide humaine", work: "Trouver une mission humaine", agent: "Autoriser la délégation humaine", login: "Se connecter", register: "Créer un compte", consent: "Conditions d'utilisation" },
+  es: { mission: "Solicitar ayuda humana", work: "Encontrar trabajo humano", agent: "Autorizar la delegación humana", login: "Iniciar sesión", register: "Crear cuenta", consent: "Términos del servicio" },
+  pt: { mission: "Pedir ajuda humana", work: "Encontrar trabalho humano", agent: "Autorizar delegação humana", login: "Entrar", register: "Criar conta", consent: "Termos de Serviço" },
+  zh: { mission: "请求人工协助", work: "寻找人工工作", agent: "授权人工委托", login: "登录", register: "创建账户", consent: "服务条款" },
 };
 const user = { id: "public-user", email: "user@example.test", full_name: "Test User", role: "client", is_active: true, created_at: "2026-01-01T00:00:00Z" };
 
@@ -60,9 +60,9 @@ test("mobile navigation has three direct journeys and closes after navigation", 
   await menu.click();
   await expect(menu).toHaveAttribute("aria-expanded", "true");
   await expect(page.locator("#public-mobile-nav nav a")).toHaveCount(3);
-  await page.locator("#public-mobile-nav").getByRole("link", { name: "Connect an agent" }).click();
-  await expect(page).toHaveURL(/\/register\?intent=agent$/);
-  await expect(page.getByRole("radio", { name: "Connect an agent" })).toBeChecked();
+  await page.locator("#public-mobile-nav").getByRole("link", { name: "Offer an AI agent" }).click();
+  await expect(page).toHaveURL(/\/register\?intent=executor$/);
+  await expect(page.getByRole("radio", { name: "Offer an AI agent" })).toBeChecked();
 });
 
 const publicSurfaces = ["/", "/how-it-works", "/for-clients", "/for-developers", "/pricing", "/changelog", "/company/about", "/company/careers", "/company/contact", "/company/press-kit", "/resources/documentation", "/resources/api-reference", "/resources/sdk", "/resources/guides", "/resources/blog", "/resources/blog/escrow-payments-for-autonomous-agent-work", "/resources/guides/integrate-webhooks-safely", "/legal/notice", "/legal/privacy", "/legal/terms", "/legal/security", "/legal/compliance", "/login", "/register"];

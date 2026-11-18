@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import React, { Suspense, useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useTranslation } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { displayCopy } from "@/lib/display-copy";
 import type { Locale } from "@/lib/locales";
-import { humanCopy } from "@/lib/human-copy";
+import { dashboardActionsCopy } from "@/lib/dashboard-actions-copy";
 import { authIntentHref } from "@/lib/public-intent";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,8 @@ import {
   LogOut,
   ChevronLeft,
   Layers,
+  Handshake,
+  UserRound,
 } from "lucide-react";
 
 interface NavItem {
@@ -38,12 +41,12 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   roles: string[];
+  human?: boolean;
 }
 
 /* Les libellés suivent la langue courante : la liste ne peut pas être figée
    au chargement du module. */
-const buildNavItems = (t: (key: string) => string): NavItem[] => [
-  { label: t("human.human"), href: "/human-tasks", icon: Briefcase, roles: ["client", "agent_developer", "admin"] },
+const buildNavItems = (t: (key: string) => string, locale: Locale): NavItem[] => [
   { label: t("dashboard.overview"), href: "/client", icon: LayoutDashboard, roles: ["client"] },
   { label: t("dashboard.jobs"), href: "/client/jobs", icon: Briefcase, roles: ["client"] },
   { label: t("dashboard.overview"), href: "/developer", icon: LayoutDashboard, roles: ["agent_developer"] },
@@ -59,6 +62,11 @@ const buildNavItems = (t: (key: string) => string): NavItem[] => [
   { label: t("dashboard.learning"), href: "/admin/learning", icon: GraduationCap, roles: ["admin"] },
   { label: t("dashboard.providers"), href: "/admin/providers", icon: Plug, roles: ["admin"] },
   { label: t("dashboard.audit"), href: "/admin/audit", icon: ScrollText, roles: ["admin"] },
+  { label: dashboardActionsCopy[locale].humanTasks, href: "/human-tasks", icon: Handshake, roles: ["client", "agent_developer", "admin"], human: true },
+  { label: dashboardActionsCopy[locale].humanRequest, href: "/human-tasks?view=request", icon: Briefcase, roles: ["client"], human: true },
+  { label: dashboardActionsCopy[locale].delegation, href: "/human-tasks?view=agents", icon: Bot, roles: ["agent_developer"], human: true },
+  { label: dashboardActionsCopy[locale].humanWork, href: "/human-tasks?view=work", icon: UserRound, roles: ["client", "agent_developer"], human: true },
+  { label: dashboardActionsCopy[locale].reviewHumanMissions, href: "/human-tasks?view=review", icon: ShieldCheck, roles: ["admin"], human: true },
 ];
 
 function getInitials(name: string): string {
@@ -96,7 +104,7 @@ function getRoleLabel(role: string, locale: Locale): string {
   }
 }
 
-export default function DashboardLayout({
+function DashboardLayoutContent({
   children,
 }: {
   children: React.ReactNode;
@@ -105,6 +113,7 @@ export default function DashboardLayout({
   const { user, isLoading, isAuthenticated, authError, retrySession, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -134,11 +143,15 @@ export default function DashboardLayout({
     return null;
   }
 
-  const filteredNavItems = buildNavItems(t).filter((item) =>
+  const filteredNavItems = buildNavItems(t, locale).filter((item) =>
     item.roles.includes(user.role)
-  ).map(item => item.href === "/human-tasks" ? { ...item, label: humanCopy[locale].workspace } : item);
+  );
 
   const isActive = (href: string) => {
+    if (href.startsWith("/human-tasks")) {
+      const view = href.split("?view=")[1];
+      return pathname === "/human-tasks" && (view ? searchParams.get("view") === view : !searchParams.get("view"));
+    }
     if (href === "/admin" || href === "/client" || href === "/developer") return pathname === href;
     return pathname.startsWith(href);
   };
@@ -206,24 +219,27 @@ export default function DashboardLayout({
             const active = isActive(item.href);
             const Icon = item.icon;
             return (
-              <button
+              <Link
                 key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
                 onClick={() => {
-                  router.push(item.href);
                   setSidebarOpen(false);
                 }}
                 className={cn(
                   "relative flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+                  item.href === "/human-tasks" && "!mt-4 border-t border-t-ink-800",
                   active
                     ? "border-ink-800 bg-ink-950 text-ink-50 shadow-sm"
                     : "border-transparent text-ink-400 hover:bg-ink-900 hover:text-ink-100",
                   sidebarCollapsed && "justify-center px-2"
                 )}
+                aria-label={sidebarCollapsed ? item.label : undefined}
                 title={sidebarCollapsed ? item.label : undefined}
               >
                 <Icon className={cn("h-4 w-4 shrink-0", active && "text-signal-400")} />
-                {!sidebarCollapsed && <span>{item.label}</span>}
-              </button>
+                {!sidebarCollapsed && <span className={cn("min-w-0 break-words text-left", item.human && item.href !== "/human-tasks" && "text-xs")}>{item.label}</span>}
+              </Link>
             );
           })}
         </nav>
@@ -245,7 +261,7 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main content area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {/* Top bar */}
         <header className="flex h-14 items-center justify-between border-b border-ink-800 bg-white/90 px-4 backdrop-blur-xl lg:px-6">
           <div className="flex items-center gap-3">
@@ -293,4 +309,8 @@ export default function DashboardLayout({
       </div>
     </div>
   );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={null}><DashboardLayoutContent>{children}</DashboardLayoutContent></Suspense>;
 }

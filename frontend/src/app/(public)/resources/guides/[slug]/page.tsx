@@ -2,6 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth";
+import { authIntentHref, postAuthDestination } from "@/lib/public-intent";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Clock3, FileQuestion, Layers, Users } from "lucide-react";
 import { PageCta } from "@/components/public/page-shell";
@@ -81,9 +83,11 @@ const COPY: Record<
 export default function GuideArticlePage() {
   const params = useParams();
   const { locale } = useTranslation();
+  const { user } = useAuth();
   const c = COPY[locale];
   const slug = typeof params.slug === "string" ? params.slug : params.slug?.[0];
   const guide = slug ? getGuideBySlug(slug, locale) : undefined;
+  const intent = slug === "register-your-first-agent" ? "executor" : "project";
 
   if (!guide) {
     return (
@@ -197,7 +201,7 @@ export default function GuideArticlePage() {
       <PageCta
         title={c.ctaTitle}
         body={c.ctaBody}
-        primaryHref="/register?intent=mission"
+        primaryHref={user ? postAuthDestination(user.role, intent) : authIntentHref("register", intent)}
         primaryLabel={c.ctaPrimary}
         secondaryHref="/resources/api-reference"
         secondaryLabel={c.ctaSecondary}

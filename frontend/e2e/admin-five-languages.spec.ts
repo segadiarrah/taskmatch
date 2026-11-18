@@ -24,6 +24,7 @@ async function fixture(page: Page, locale: keyof typeof adminCopy, writes: Write
     }
     const responses: Record<string, unknown> = {
       "/auth/me": user, "/users/user-1": user,
+      "/worker-portal/admin/overview": { human_missions: 0, pending_publication: 0, active_human_missions: 0, worker_profiles: 0, pending_worker_verification: 0 },
       "/dashboard/overview": { total_jobs: 1, total_tasks: 1, active_agents: 1, pending_validations: 1, failed_tasks: 0, total_payments_pending: 25.5, total_payments_completed: 0, jobs_by_status: { quoted: 1 }, tasks_by_status: { open_for_bids: 1 }, recent_activity: [audit], currency: "EUR" },
       "/admin/jobs": [{ ...job, client_name: user.full_name, task_count: 1 }],
       "/admin/tasks": [{ ...task, job_title: job.title, assigned_agent_name: null, bids_count: 0 }],

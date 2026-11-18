@@ -60,7 +60,8 @@ async def accessible(db, task_id, identity):
 async def list_contracts(identity=Depends(caller), db=Depends(get_db),
                          skip: int=Query(0, ge=0), limit: int=Query(30, ge=1, le=100)):
     user, delegation = identity
-    query = select(Task).options(lazyload('*')).where(Task.human_contract_json.is_not(None))
+    query = select(Task).options(lazyload('*')).where(
+        Task.human_contract_json['schema_version'].as_string() == 'tm.human-task.v1')
     if delegation:
         query = query.where(Task.human_contract_json['delegation_id'].as_string() == str(delegation.id))
     elif user.role != 'admin':

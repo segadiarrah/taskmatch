@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { authIntentHref, parsePublicIntent, postAuthDestination, type PublicIntent } from "@/lib/public-intent";
+import { authIntentHref, parsePublicIntent, postAuthDestination, registrationRole, type PublicIntent } from "@/lib/public-intent";
 import { COPY as JOURNEY_COPY } from "@/lib/landing-copy";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -193,7 +193,7 @@ const COPY: Record<
 };
 
 function RegisterForm() {
-  const initialIntent = parsePublicIntent(useSearchParams().get("intent")) ?? "mission";
+  const initialIntent = parsePublicIntent(useSearchParams().get("intent")) ?? "project";
   const router = useRouter();
   const { register, user } = useAuth();
   const { locale } = useTranslation();
@@ -231,8 +231,9 @@ function RegisterForm() {
     setIsLoading(true);
 
     try {
-      await register({ email, password, full_name: fullName, role: "client" });
-      router.push(postAuthDestination("client", intent));
+      const role = registrationRole(intent);
+      await register({ email, password, full_name: fullName, role });
+      router.push(postAuthDestination(role, intent));
     } catch (err) {
       const detail = err instanceof ApiError && err.body && typeof err.body === "object" && "detail" in err.body ? err.body.detail : undefined;
       setError(err instanceof ApiError
@@ -265,7 +266,7 @@ function RegisterForm() {
       <fieldset className="mb-6">
         <legend className="mb-2 text-sm font-medium text-ink-200">{c.intent}</legend>
         <div className="grid gap-2">
-          {([{ value: "mission", label: journey.mission, Icon: Briefcase }, { value: "work", label: journey.work, Icon: Handshake }, { value: "agent", label: journey.agent, Icon: Bot }] as const).map(({ value, label, Icon }) => <label key={value} className={cn("flex cursor-pointer items-center gap-3 rounded-md border p-3 text-sm", intent === value ? "border-signal-500 bg-signal-500/10" : "border-ink-700 hover:border-ink-500")}><input type="radio" name="form_intent" value={value} checked={intent === value} onChange={() => setIntent(value)} className="accent-signal-600" /><Icon aria-hidden="true" className="h-4 w-4 text-signal-600" /><span>{label}</span></label>)}
+          {([{ value: "project", label: journey.project, Icon: Briefcase }, { value: "executor", label: journey.executor, Icon: Bot }, { value: "mission", label: journey.mission, Icon: Handshake }, { value: "work", label: journey.work, Icon: Handshake }, { value: "agent", label: journey.agent, Icon: Bot }] as const).map(({ value, label, Icon }) => <label key={value} className={cn("flex cursor-pointer items-center gap-3 rounded-md border p-3 text-sm", intent === value ? "border-signal-500 bg-signal-500/10" : "border-ink-700 hover:border-ink-500")}><input type="radio" name="form_intent" value={value} checked={intent === value} onChange={() => setIntent(value)} className="accent-signal-600" /><Icon aria-hidden="true" className="h-4 w-4 text-signal-600" /><span>{label}</span></label>)}
         </div>
       </fieldset>
 

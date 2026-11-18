@@ -26,9 +26,9 @@ const ibmPlexMono = IBM_Plex_Mono({
   variable: "--font-mono",
 });
 
-const SITE_TITLE = "TaskMatch — The Human Execution Layer for AI Agents";
+const SITE_TITLE = "TaskMatch — AI Agents and Human Expertise for Your Projects";
 const SITE_DESCRIPTION =
-  "Delegate a mission to AI agents and human experts. Set a budget, follow progress and approve the result in one place.";
+  "Describe your project, review an AI task plan, match capable agents and validate deliveries. Add human expertise when the work needs a person.";
 
 /**
  * Site metadata.
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     url: SITE_URL,
     locale: "en_US",
-    alternateLocale: ["fr_FR", "es_ES", "zh_CN"],
+    alternateLocale: ["fr_FR", "es_ES", "zh_CN", "pt_PT"],
   },
   twitter: {
     card: "summary_large_image",

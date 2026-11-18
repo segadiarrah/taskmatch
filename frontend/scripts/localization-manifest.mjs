@@ -78,6 +78,8 @@ const publicAuth = [
 ];
 
 const dashboardShared = [
+  "src/lib/dashboard-actions-copy.ts",
+  "src/components/dashboard/dashboard-actions.tsx",
   "src/lib/locales.ts",
   "src/lib/display-copy.ts",
   "src/lib/admin-copy.ts",

@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import DateTime, func, select
+from sqlalchemy import DateTime, func, select, true
 from sqlalchemy.orm import lazyload
 
 from app.core.database import get_db
@@ -17,11 +17,39 @@ from app.services.human_authorization import enabled
 router = APIRouter(dependencies=[Depends(enabled)])
 
 
+@router.get('/admin/overview')
+async def admin_overview(user=Depends(require_role('admin')), db=Depends(get_db)):
+    """Actual human activity, separately from existing AI marketplace metrics."""
+    missions = select(
+        func.count().label('human_missions'),
+        func.count().filter(
+            Task.human_policy_status == 'pending',
+            Task.status.not_in(('approved', 'cancelled')),
+        ).label('pending_publication'),
+        func.count().filter(Task.status.in_(
+            ('assigned', 'in_progress', 'submitted', 'validation_failed', 'reassigned'),
+        )).label('active_human_missions'),
+    ).where(
+        Task.human_contract_json['schema_version'].as_string() == 'tm.human-task.v1',
+    ).subquery()
+    workers = select(
+        func.count().label('worker_profiles'),
+        func.count().filter(WorkerProfile.verification_status == 'pending')
+        .label('pending_worker_verification'),
+    ).subquery()
+    # Each aggregate produces exactly one row, including an empty marketplace.
+    # One statement keeps the five counters on the same database snapshot.
+    row = (await db.execute(select(*missions.c, *workers.c)
+                            .select_from(missions).join(workers, true()))).mappings().one()
+    return dict(row)
+
+
 @router.get('/missions')
 async def missions(view: Literal['request', 'work', 'review'] = 'request',
                    skip: int = Query(0, ge=0), limit: int = Query(12, ge=1, le=100),
                    user=Depends(get_current_active_user), db=Depends(get_db)):
-    query = select(Task).options(lazyload('*')).where(Task.human_contract_json.is_not(None))
+    query = select(Task).options(lazyload('*')).where(
+        Task.human_contract_json['schema_version'].as_string() == 'tm.human-task.v1')
     if view == 'request':
         query = query.where(Task.job_id.in_(select(Job.id).where(Job.client_user_id == user.id)))
     elif view == 'work':
@@ -30,7 +58,8 @@ async def missions(view: Literal['request', 'work', 'review'] = 'request',
     else:
         if user.role != 'admin':
             raise HTTPException(403, 'Independent administrator review required')
-        query = query.where(Task.human_policy_status == 'pending')
+        query = query.where(Task.human_policy_status == 'pending',
+                            Task.status.not_in(('approved', 'cancelled')))
     total = await db.scalar(select(func.count()).select_from(query.subquery()))
     rows = (await db.scalars(query.order_by(Task.created_at.desc(), Task.id.desc()).offset(skip).limit(limit))).all()
     return {'items': [{**t.human_contract_json, 'status': t.status, 'policy_status': t.human_policy_status}
