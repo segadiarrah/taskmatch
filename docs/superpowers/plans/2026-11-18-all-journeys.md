@@ -12,4 +12,4 @@
 - [x] Read-only production verification of public and authenticated route families; inspect failures and create regression tests before fixing code.
 - [x] Finish transaction-boundary correction revealed by the real Next proxy: function-scoped database dependencies, commit/serialization rollback regressions, full backend/browser rerun.
 - [x] Review evidence, deploy any necessary fixes with backups and candidate verification, and repeat affected journeys.
-- [ ] Save docs/testing/ALL_JOURNEYS_2026-11-18.md with clear passed/failed/unverified/provider-simulated distinctions, publish and send authorized report; remove fixtures.
+- [x] Save docs/testing/ALL_JOURNEYS_2026-11-18.md with clear passed/failed/unverified/provider-simulated distinctions, publish and send authorized report; remove fixtures.
