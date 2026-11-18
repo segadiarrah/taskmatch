@@ -89,3 +89,5 @@ réussite de CI hébergée ni transaction bancaire réelle n'est revendiquée.
 Revue du code : https://github.com/segadiarrah/taskmatch/pull/4. Aucun changement de schéma, de ledger ou de règles de
 paiement n'est requis. Les tests de navigateur utilisent des données de test ;
 les contrôles en production seront uniquement en lecture.
+
+Rapport de livraison envoyé à **sega@tauraco.ai** le 18 novembre 2026 ; envoi confirmé.
