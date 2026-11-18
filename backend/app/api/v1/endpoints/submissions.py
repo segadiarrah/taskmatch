@@ -33,7 +33,7 @@ async def create_submission(
     task_id: uuid.UUID,
     body: SubmissionCreate,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> SubmissionResponse:
     """Submit a work result for a task.
 
@@ -137,7 +137,7 @@ async def list_submissions(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[SubmissionResponse]:
     """Return a paginated list of submissions for a specific task."""
     # Verify task exists.
@@ -171,7 +171,7 @@ async def list_submissions(
 async def get_submission(
     submission_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> SubmissionResponse:
     """Return full details for a single submission."""
     result = await db.execute(

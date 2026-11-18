@@ -29,7 +29,7 @@ router = APIRouter()
 )
 async def register(
     body: UserCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> UserResponse:
     """Register a new user on the platform.
 
@@ -74,9 +74,6 @@ async def register(
     )
 
     response = UserResponse.model_validate(user)
-    # Request-scoped dependency cleanup may run after the HTTP response is sent.
-    # Signup is immediately followed by login on a separate connection.
-    await db.commit()
     return response
 
 
@@ -87,7 +84,7 @@ async def register(
 )
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> Token:
     """Validate credentials and return a signed JWT access token.
 

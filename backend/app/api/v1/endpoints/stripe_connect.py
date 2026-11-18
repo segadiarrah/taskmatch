@@ -18,7 +18,7 @@ from app.services import stripe_connect
 from app.services.stripe_gateway import StripeGatewayError
 
 router = APIRouter()
-async def payment_user(user=Depends(get_current_active_user), db=Depends(get_db)):
+async def payment_user(user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     from app.models.human import WorkerProfile
     if user.role != 'agent_developer' and await db.get(WorkerProfile, user.id) is None:
         from fastapi import HTTPException
@@ -28,7 +28,7 @@ async def payment_user(user=Depends(get_current_active_user), db=Depends(get_db)
 
 Developer = Annotated[User, Depends(payment_user)]
 Administrator = Annotated[User, Depends(require_role("admin"))]
-Database = Annotated[AsyncSession, Depends(get_db)]
+Database = Annotated[AsyncSession, Depends(get_db, scope="function")]
 
 
 class ConnectStatus(BaseModel):

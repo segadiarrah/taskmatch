@@ -25,7 +25,13 @@ async function fixture(page: Page, locale: typeof locales[number], role: "admin"
       "/tasks/task-mobile/execution": { assignment: { id: assignment.id, agent_id: agent.id, agent_name: agent.name, owner_user_id: "owner-mobile", kind: "agent", status: "active", can_submit: false }, review_required: false, reviewer_name: null, can_review: false, operations: [], can_retry: false, can_reassign: false, recovery: null },
       "/dashboard/agent-matching/task-mobile": [{ agent_id: agent.id, agent_name: agent.name, combined_score: 0.92, capability_score: 1, historical_score: 0.8, reasons: [long] }],
       "/admin/providers": { providers: [{ provider: "openai", label: "OpenAI", base_url: `https://example.test/${long}`, models: [long], selected_model: long, enabled: false, key_set: false, key_hint: null }] },
-      "/admin/payments": [{ id: "payment-mobile", job_id: job.id, job_title: job.title, task_id: task.id, task_title: task.title, client_name: "Fixture Client", developer_name: agent.name, billing_mode: "stripe", funding_id: "funding-mobile", transfer_id: null, provider: "stripe_connect", provider_ref: null, status: "paid", gross_amount: 25, platform_fee: 2.5, net_amount: 22.5, currency: "EUR", payout_error: null, created_at: date }],
+      // Representative historical decimal-string ledger plus funded Stripe rows.
+      // Totals have the same 5/4/5 integer-digit widths as the live gross/fees/net footer.
+      "/admin/payments": [
+        { id: "legacy-paid-mobile", job_id: job.id, job_title: job.title, task_id: task.id, task_title: "Legacy paid ledger row", client_name: "Fixture Client", developer_name: agent.name, billing_mode: "legacy_manual", funding_id: null, transfer_id: null, provider: "stripe", provider_ref: null, status: "paid", gross_amount: "6000.01", platform_fee: "600.00", net_amount: "5400.01", currency: "EUR", payout_error: null, created_at: date },
+        { id: "legacy-pending-mobile", job_id: job.id, job_title: job.title, task_id: task.id, task_title: "Legacy pending ledger row", client_name: "Fixture Client", developer_name: agent.name, billing_mode: "legacy_manual", funding_id: null, transfer_id: null, provider: "manual", provider_ref: null, status: "pending", gross_amount: "5000.02", platform_fee: "500.00", net_amount: "4500.02", currency: "EUR", payout_error: null, created_at: date },
+        { id: "payment-mobile", job_id: job.id, job_title: job.title, task_id: task.id, task_title: task.title, client_name: "Fixture Client", developer_name: agent.name, billing_mode: "stripe", funding_id: "funding-mobile", transfer_id: null, provider: "stripe_connect", provider_ref: null, status: "paid", gross_amount: "1345.64", platform_fee: "134.56", net_amount: "1211.08", currency: "EUR", payout_error: null, created_at: date },
+      ],
       "/billing/admin/fundings": [{ id: "funding-mobile", job_id: job.id, job_title: job.title, payer_name: "Fixture Client", amount_minor: 2500, currency: "EUR", refunded_minor: 0, status: "paid", error: null, can_refund: true }],
       "/billing/admin/operations": [{ id: "operation-mobile", kind: "transfer", entity_id: long, status: "blocked", attempts: 2, available_at: date, last_error: "Account onboarding incomplete" }],
     };
@@ -48,7 +54,21 @@ for (const locale of locales) {
     const state = await fixture(page, locale, "admin");
     for (const path of ["/admin/payments", "/admin/providers", "/admin/tasks/task-mobile"]) {
       await page.goto(path); await expect(page.locator("main h1")).toBeVisible();
-      await expect(page.locator("main .animate-spin")).toHaveCount(0); await healthyMobile(page, locale);
+      await expect(page.locator("main .animate-spin")).toHaveCount(0);
+      if (path === "/admin/payments") {
+        await expect(page.getByRole("row").filter({ hasText: "Legacy paid ledger row" })).toBeVisible();
+        const totals = page.locator("main .flex.items-center.gap-6");
+        await expect(totals.locator(":scope > div")).toHaveCount(3);
+        await healthyMobile(page, locale);
+        expect(await totals.evaluate(group => {
+          const frame = group.parentElement!.getBoundingClientRect();
+          return Array.from(group.querySelectorAll("p")).every(paragraph => {
+            const box = paragraph.getBoundingClientRect();
+            return box.left >= frame.left - 1 && box.right <= frame.right + 1 && paragraph.scrollWidth <= paragraph.clientWidth + 1;
+          });
+        })).toBe(true);
+      }
+      await healthyMobile(page, locale);
     }
     expect(state.errors).toEqual([]); expect(state.unexpected).toEqual([]); expect(state.writes).toEqual([]);
   });

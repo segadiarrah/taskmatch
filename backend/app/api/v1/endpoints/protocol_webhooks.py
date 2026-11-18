@@ -25,13 +25,13 @@ class WebhookCreate(BaseModel):
 
 @router.post('/principals/{principal_id}/webhooks', status_code=201)
 async def create_webhook(principal_id: uuid.UUID, body: WebhookCreate,
-                         user: Annotated[User, Depends(get_current_active_user)], db: Annotated[AsyncSession, Depends(get_db)]):
+                         user: Annotated[User, Depends(get_current_active_user)], db: Annotated[AsyncSession, Depends(get_db, scope="function")]):
     principal = await owned_principal(db, principal_id, user, lock=True)
     return await service.create_subscription(db, principal, user, body.url, body.delegation_id)
 
 
 @router.get('/principals/{principal_id}/webhooks')
-async def list_webhooks(principal_id: uuid.UUID, user: Annotated[User, Depends(get_current_active_user)], db: Annotated[AsyncSession, Depends(get_db)]):
+async def list_webhooks(principal_id: uuid.UUID, user: Annotated[User, Depends(get_current_active_user)], db: Annotated[AsyncSession, Depends(get_db, scope="function")]):
     await owned_principal(db, principal_id, user)
     rows = (await db.scalars(select(WebhookSubscription).where(WebhookSubscription.principal_id == principal_id)
                             .order_by(WebhookSubscription.created_at, WebhookSubscription.id))).all()
@@ -40,7 +40,7 @@ async def list_webhooks(principal_id: uuid.UUID, user: Annotated[User, Depends(g
 
 @router.delete('/principals/{principal_id}/webhooks/{subscription_id}')
 async def delete_webhook(principal_id: uuid.UUID, subscription_id: uuid.UUID,
-                         user: Annotated[User, Depends(get_current_active_user)], db: Annotated[AsyncSession, Depends(get_db)]):
+                         user: Annotated[User, Depends(get_current_active_user)], db: Annotated[AsyncSession, Depends(get_db, scope="function")]):
     await owned_principal(db, principal_id, user, lock=True)
     subscription = await db.scalar(select(WebhookSubscription).where(
         WebhookSubscription.id == subscription_id, WebhookSubscription.principal_id == principal_id).with_for_update())
@@ -52,7 +52,7 @@ async def delete_webhook(principal_id: uuid.UUID, subscription_id: uuid.UUID,
 
 @router.get('/principals/{principal_id}/webhooks/{subscription_id}/deliveries')
 async def list_deliveries(principal_id: uuid.UUID, subscription_id: uuid.UUID,
-                         user: Annotated[User, Depends(get_current_active_user)], db: Annotated[AsyncSession, Depends(get_db)]):
+                         user: Annotated[User, Depends(get_current_active_user)], db: Annotated[AsyncSession, Depends(get_db, scope="function")]):
     await owned_principal(db, principal_id, user)
     subscription = await db.get(WebhookSubscription, subscription_id)
     if not subscription or subscription.principal_id != principal_id:

@@ -47,7 +47,7 @@ async def _capability_agent(agent_id: uuid.UUID, user: User, db: AsyncSession) -
 @router.post("/{agent_id}/capabilities", status_code=201, response_model=CapabilityResponse)
 async def add_capability(agent_id: uuid.UUID, body: CapabilityCreate,
                          current_user: User = Depends(require_role("agent_developer", "admin")),
-                         db: AsyncSession = Depends(get_db)):
+                         db: AsyncSession = Depends(get_db, scope="function")):
     agent = await _capability_agent(agent_id, current_user, db)
     name, version = body.capability_name.strip(), body.version.strip() or "1.0"
     if not name:
@@ -63,14 +63,13 @@ async def add_capability(agent_id: uuid.UUID, body: CapabilityCreate,
                     action="add_agent_capability", entity_type="agent", entity_id=str(agent.id),
                     payload={"capability_id": str(cap.id), "capability_name": name, "version": version})
     response = CapabilityResponse.model_validate(cap)
-    await db.commit()
     return response
 
 
 @router.post("/{agent_id}/capabilities/{capability_id}/remove")
 async def remove_capability(agent_id: uuid.UUID, capability_id: uuid.UUID,
                             current_user: User = Depends(require_role("agent_developer", "admin")),
-                            db: AsyncSession = Depends(get_db)):
+                            db: AsyncSession = Depends(get_db, scope="function")):
     agent = await _capability_agent(agent_id, current_user, db)
     cap = next((c for c in agent.capabilities if c.id == capability_id), None)
     if cap is None:
@@ -80,7 +79,6 @@ async def remove_capability(agent_id: uuid.UUID, capability_id: uuid.UUID,
                     action="remove_agent_capability", entity_type="agent", entity_id=str(agent.id),
                     payload={"capability_id": str(cap.id), "capability_name": cap.capability_name,
                              "version": cap.version})
-    await db.commit()
     return {"removed": True}
 
 
@@ -102,7 +100,7 @@ def _slugify(name: str) -> str:
 async def register_agent(
     body: AgentCreate,
     current_user: User = Depends(require_role("agent_developer")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> AgentResponse:
     """Register a new AI agent on the platform.
 
@@ -174,7 +172,6 @@ async def register_agent(
     )
 
     response = AgentResponse.model_validate(agent)
-    await db.commit()
     return response
 
 
@@ -196,7 +193,7 @@ async def list_agents(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> AgentListResponse:
     """Return a paginated list of agents with optional filters."""
     query = select(Agent).options(lazyload("*"), selectinload(Agent.capabilities))
@@ -238,7 +235,7 @@ async def list_agents(
 async def get_agent(
     agent_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> AgentResponse:
     """Return full details for a single agent, including its capabilities."""
     result = await db.execute(select(Agent).options(lazyload("*"), selectinload(Agent.capabilities)).where(Agent.id == agent_id))
@@ -260,7 +257,7 @@ async def update_agent(
     agent_id: uuid.UUID,
     body: AgentUpdate,
     current_user: User = Depends(require_role("agent_developer", "admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> AgentResponse:
     """Update an existing agent's metadata.
 
@@ -305,7 +302,6 @@ async def update_agent(
     )
 
     response = AgentResponse.model_validate(agent)
-    await db.commit()
     return response
 
 
@@ -318,7 +314,7 @@ async def agent_heartbeat(
     agent_id: uuid.UUID,
     body: AgentHeartbeat,
     current_user: User = Depends(require_role("agent_developer")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> AgentResponse:
     """Record a heartbeat from an agent, updating its status and timestamp."""
     result = await db.execute(select(Agent).where(Agent.id == agent_id))
@@ -342,7 +338,6 @@ async def agent_heartbeat(
     await db.refresh(agent)
 
     response = AgentResponse.model_validate(agent)
-    await db.commit()
     return response
 
 
@@ -353,7 +348,7 @@ async def agent_heartbeat(
 async def get_agent_stats(
     agent_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Return performance statistics for a specific agent."""
     result = await db.execute(select(Agent).options(lazyload("*")).where(Agent.id == agent_id))

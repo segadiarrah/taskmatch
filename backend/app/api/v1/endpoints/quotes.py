@@ -170,7 +170,7 @@ async def _serialise_quote(db: AsyncSession, quote: Quote) -> dict[str, Any]:
 async def get_quote(
     job_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Return the price TaskMatch has set for this job, with the full breakdown.
 
@@ -208,7 +208,7 @@ async def accept_quote(
     job_id: uuid.UUID,
     background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Accept the price. This is what releases the job into execution.
 
@@ -276,7 +276,7 @@ async def reject_quote(
     job_id: uuid.UUID,
     body: QuoteRejectRequest,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Decline the price. Nothing executes and nothing is billed."""
     job = await _load_owned_job(db, job_id, current_user, lock=True)
@@ -312,7 +312,7 @@ async def reject_quote(
 async def refresh_quote(
     job_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Issue a new quote, superseding the current one.
 
@@ -365,7 +365,7 @@ async def refresh_quote(
 async def get_offer(
     task_id: uuid.UUID,
     current_user: User = Depends(require_role("agent_developer", "admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """What a human expert is offered for a task, and on what basis.
 
@@ -431,7 +431,7 @@ async def accept_offer(
     task_id: uuid.UUID,
     body: OfferAcceptRequest,
     current_user: User = Depends(require_role("agent_developer", "admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Accept a human-routed task at a price inside the quoted range.
 

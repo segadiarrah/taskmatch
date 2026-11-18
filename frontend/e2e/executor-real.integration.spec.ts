@@ -1,6 +1,7 @@
 import {expect,test} from '@playwright/test';
 
 const api=process.env.TASKMATCH_E2E_API;
+if(api&&(new URL(api).origin!=='http://127.0.0.1:3171'||process.env.PLAYWRIGHT_BASE_URL!=='http://127.0.0.1:3170'))throw new Error('Use only the isolated journey API and frontend');
 test.skip(!api,'Isolated real API must be explicitly provided');
 
 test('real executor signup, registration, pause, activation and capability editing',async({page,request})=>{
@@ -13,11 +14,6 @@ test('real executor signup, registration, pause, activation and capability editi
   page.on('pageerror',()=>errors.push('Runtime exception'));
   page.on('console',m=>{if(m.type()==='error'&&/TypeError|hydration|Cannot read/.test(m.text()))errors.push('Console render exception')});
   await page.addInitScript(()=>localStorage.setItem('taskmatch_locale','en'));
-  await page.route('**/api/**',async route=>{
-    const u=new URL(route.request().url());
-    const response=await route.fetch({url:api+u.pathname+u.search});
-    await route.fulfill({response});
-  });
   await page.goto('/register?intent=executor');
   await page.locator('#full_name').fill('Isolated executor owner');
   await page.locator('#email').fill(email);

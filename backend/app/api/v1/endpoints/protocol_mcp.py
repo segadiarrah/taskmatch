@@ -71,7 +71,7 @@ def decode_header(value):
 
 
 @router.post('/protocols/mcp')
-async def mcp(request: Request, identity: Annotated[tuple, Depends(caller)], db: Annotated[AsyncSession, Depends(get_db)]):
+async def mcp(request: Request, identity: Annotated[tuple, Depends(caller)], db: Annotated[AsyncSession, Depends(get_db, scope="function")]):
     body, error = await read_rpc(request, allow_notifications=True)
     if error is not None:
         return error

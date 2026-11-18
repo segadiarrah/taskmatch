@@ -135,7 +135,7 @@ def _serialise_plan(plan: DeliveryPlan, now: datetime) -> dict[str, Any]:
 async def get_delivery_plan(
     job_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Return the delivery plan and the state of any credentials exchanged."""
     await _load_owned_job(db, job_id, current_user)
@@ -148,7 +148,7 @@ async def update_delivery_plan(
     job_id: uuid.UUID,
     body: DeliveryPlanUpdate,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Set the delivery mode and target.
 
@@ -225,7 +225,7 @@ async def create_access_grant(
     job_id: uuid.UUID,
     body: AccessGrantCreate,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Store a credential, encrypted, scoped to this job.
 
@@ -303,7 +303,7 @@ async def create_access_grant(
 async def list_access_grants(
     job_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Metadata only — secrets are never returned by a listing."""
     await _load_owned_job(db, job_id, current_user)
@@ -330,7 +330,7 @@ async def reveal_access_grant(
     job_id: uuid.UUID,
     grant_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Decrypt and return a credential, counting the access against its budget.
 
@@ -427,7 +427,7 @@ async def revoke_access_grant(
     job_id: uuid.UUID,
     grant_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Destroy the stored ciphertext. Irreversible."""
     await _load_owned_job(db, job_id, current_user)
@@ -471,7 +471,7 @@ async def sign_off_delivery(
     job_id: uuid.UUID,
     body: HandoverSignOff,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Client confirms receipt, and every credential they shared is revoked.
 

@@ -55,7 +55,7 @@ TASKMATCH_E2E_API=http://127.0.0.1:3171 \
 npx playwright test e2e/workflow.integration.spec.ts --workers=1
 ```
 
-Playwright forwards browser API requests to this isolated backend. The suite
+The browser uses the actual Next.js API proxy to this isolated backend. The suite
 creates the job and approves its quote in the browser, exercises worker
 bid/assignment/submission/review through the actual HTTP API, then accepts the
 delivery in the browser. No real payment, external worker or notification is used.

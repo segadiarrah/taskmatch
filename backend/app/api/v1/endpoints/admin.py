@@ -28,7 +28,7 @@ router = APIRouter()
 @router.get("/agents", summary="All executors (AI agents + human experts) for the admin marketplace view")
 async def admin_list_agents(
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[dict]:
     """Return every executor with the developer name, live workload and derived
     kind. Powers the admin agents grid, which contrasts AI agents against human
@@ -112,7 +112,7 @@ async def update_provider(
     provider: str,
     payload: ProviderUpdate,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     try:
         updated = providers.update_provider(
@@ -171,7 +171,7 @@ async def _user_names(db: AsyncSession, user_ids: set) -> dict:
 @router.get("/jobs", summary="All jobs for the admin jobs view")
 async def admin_list_jobs(
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[dict]:
     jobs = list((await db.execute(select(Job).options(lazyload("*")).order_by(Job.created_at.desc()))).scalars().all())
     names = await _user_names(db, {j.client_user_id for j in jobs})
@@ -204,7 +204,7 @@ async def admin_list_jobs(
 @router.get("/tasks", summary="All tasks for the admin tasks view")
 async def admin_list_tasks(
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[dict]:
     tasks = list((await db.execute(select(Task).order_by(Task.created_at.desc()))).scalars().all())
     job_titles: dict = {}
@@ -252,7 +252,7 @@ async def admin_list_tasks(
 @router.get("/submissions", summary="Submissions for the admin validations view")
 async def admin_list_submissions(
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[dict]:
     subs = list(
         (await db.execute(select(Submission).options(lazyload("*")).order_by(Submission.created_at.desc()))).scalars().all()
@@ -308,7 +308,7 @@ async def admin_list_submissions(
 @router.get("/payments", summary="Payment ledger with job, task and account labels")
 async def admin_list_payments(
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
     skip: int = Query(0, ge=0),
     limit: int = Query(200, ge=1, le=1000),
 ) -> list[dict]:

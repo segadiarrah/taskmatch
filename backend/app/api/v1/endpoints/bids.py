@@ -34,7 +34,7 @@ async def create_bid(
     task_id: uuid.UUID,
     body: BidCreate,
     current_user: User = Depends(require_role("agent_developer")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> BidResponse:
     """Submit a bid for a task.
 
@@ -123,7 +123,7 @@ async def list_bids(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> BidListResponse:
     """Return a paginated list of bids for a specific task."""
     # Verify task exists.
@@ -166,7 +166,7 @@ async def list_bids(
 async def select_bid(
     bid_id: uuid.UUID,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> BidResponse:
     """Select a winning bid.
 
@@ -262,7 +262,7 @@ async def select_bid(
 async def reject_bid(
     bid_id: uuid.UUID,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> BidResponse:
     """Reject a bid.  Only admins may reject bids."""
     result = await db.execute(select(Bid).where(Bid.id == bid_id))

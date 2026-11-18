@@ -1,10 +1,12 @@
 """Test-only provider boundary. Never imported by the application image."""
 import copy
+import uuid
 from urllib.parse import parse_qs
 import httpx
 
 class CheckoutFixture:
     def __init__(self):
+        self.id_namespace = ""
         self.sessions = {}
         self.intents = {}
         self.charges = {}
@@ -21,7 +23,7 @@ class CheckoutFixture:
         if req.method == "POST" and path == "/checkout/sessions":
             if key not in self.keys:
                 idx = len(self.sessions) + 1
-                sid = f"cs_test_{idx}"
+                sid = f"cs_test_{self.id_namespace}{idx}"
                 meta = {k[9:-1]: v for k, v in data.items() if k.startswith("metadata[")}
                 session = {
                     "id": sid,
@@ -90,6 +92,9 @@ class CheckoutFixture:
 class PaymentFixture(CheckoutFixture):
     def __init__(self):
         super().__init__()
+        # These IDs are stored in the preserved test database. A new API process
+        # must not collide with counters from a previous provider instance.
+        self.id_namespace = uuid.uuid4().hex + "_"
         self.accounts = {}
         self.transfers = {}
         self.refunds = {}
@@ -122,14 +127,14 @@ class PaymentFixture(CheckoutFixture):
         if path.endswith('/login_links'):
             return httpx.Response(200,json={'url':'https://connect.stripe.com/express/'+path.split('/')[2]})
         if req.method == 'POST' and path == '/customers':
-            ident='cus_fixture_'+str(len(self.customers)+1)
+            ident='cus_fixture_'+self.id_namespace+str(len(self.customers)+1)
             result={'id':ident,'livemode':False,'metadata':self.meta(data)}
             self.customers[ident]=result
             return httpx.Response(200,json=result)
         if req.method == 'GET' and path.startswith('/customers/'):
             return httpx.Response(200,json=self.customers[path.rsplit('/',1)[-1]])
         if req.method == 'POST' and path == '/checkout/sessions' and data.get('mode')=='setup':
-            ident='cs_setup_'+str(len(self.sessions)+1)
+            ident='cs_setup_'+self.id_namespace+str(len(self.sessions)+1)
             result={'id':ident,'mode':'setup','status':'open','livemode':False,
                 'customer':data['customer'],'url':'https://checkout.stripe.com/c/pay/'+ident,
                 'client_reference_id':data['client_reference_id'],'metadata':self.meta(data)}
@@ -140,7 +145,7 @@ class PaymentFixture(CheckoutFixture):
         if req.method == 'GET' and path.startswith('/payment_methods/'):
             return httpx.Response(200,json=self.methods[path.rsplit('/',1)[-1]])
         if req.method == 'POST' and path == '/payment_intents':
-            ident='pi_saved_'+str(len(self.intents)+1)
+            ident='pi_saved_'+self.id_namespace+str(len(self.intents)+1)
             charge_id='ch_'+ident
             meta=self.meta(data)
             charge={'id':charge_id,'payment_intent':ident,'amount':int(data['amount']),
@@ -153,7 +158,7 @@ class PaymentFixture(CheckoutFixture):
             self.charges[charge_id]=charge;self.intents[ident]=result
             return httpx.Response(200,json=result)
         if req.method == 'POST' and path == '/transfers':
-            ident='tr_fixture_'+str(len(self.transfers)+1)
+            ident='tr_fixture_'+self.id_namespace+str(len(self.transfers)+1)
             result=self.keys.get(key) or {'id':ident,'amount':int(data['amount']),
                 'currency':data['currency'],'destination':data['destination'],
                 'source_transaction':data.get('source_transaction'),'transfer_group':data['transfer_group'],'livemode':False,
@@ -165,7 +170,7 @@ class PaymentFixture(CheckoutFixture):
         if req.method == 'POST' and path == '/refunds':
             charge=self.charges[data['charge']]
             amount=int(data.get('amount',charge['amount']))
-            ident='re_fixture_'+str(len(self.refunds)+1)
+            ident='re_fixture_'+self.id_namespace+str(len(self.refunds)+1)
             result={'id':ident,'amount':amount,'currency':charge['currency'],
                 'charge':charge['id'],'status':'succeeded','livemode':False,
                 'metadata':self.meta(data)}

@@ -54,7 +54,7 @@ def _score_agent(agent: Agent, task_type: str) -> float:
 
 
 @router.post("/demo/plan", summary="Live homepage demo — structure & match a task (no auth, no persistence)")
-async def demo_plan(payload: DemoRequest, db: AsyncSession = Depends(get_db)) -> dict:
+async def demo_plan(payload: DemoRequest, db: AsyncSession = Depends(get_db, scope="function")) -> dict:
     desc = payload.description.strip()[:_MAX_DESC]
 
     # Detached, in-memory job — never added to the session.

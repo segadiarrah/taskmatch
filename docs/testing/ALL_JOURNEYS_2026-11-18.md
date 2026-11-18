@@ -24,8 +24,9 @@ un devis ou synchroniser un paiement exclus explicitement.
   livraison. Les quatre anciens scénarios optionnels sont activés.
 - **19 tests unitaires frontend**, types, lint, traduction, métadonnées, style et
   contraste passants ; deux avertissements lint préexistants de navigation.
-- Builds frontend/backend réussis. Les **160 fichiers produit frontend** de
-  l'image correspondent au worktree par SHA-256.
+- Builds frontend/backend réussis. Les **160 fichiers produit frontend** et les
+  **106 fichiers applicatifs backend** correspondent au worktree par SHA-256.
+  Les répertoires de traces de test sont exclus de l’image frontend.
 - SDK Python : **17 tests passants**. SDK JavaScript : build TypeScript et
   **16 tests passants**.
 - Quatre exécutions SDK via HTTP réel : **182 assertions passantes**
@@ -72,20 +73,36 @@ présentés comme autant d'exécutions externes réelles.
   propose l'approbation adaptée, au lieu d'un paiement hébergé incorrect.
 - SDK et exemples : EUR est la devise par défaut conforme à la création de projets.
 - Persistance : le succès de l'inscription et des commandes d'agents est envoyé
-  après validation de l'écriture et de son audit. Des observateurs ASGI interrogent
+  après validation de l'écriture et de son audit. Les **146 déclarations** de
+  dépendance de session utilisent la portée FastAPI `function` : sérialisation de
+  la réponse, commit et fermeture précèdent l’envoi HTTP. Les commits génériques
+  redondants ont été retirés ; les commits métier restent en place. Cette portée
+  suit la [documentation FastAPI](https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#early-exit-and-scope).
+  Des observateurs ASGI interrogent
   une connexion indépendante au début de la réponse : ils échouaient avant le
-  correctif. Cela corrige notamment l'inscription réussie suivie d'une connexion401.
+  correctif. Cela corrige l'inscription réussie suivie d'une connexion 401, ainsi que la
+  livraison 201 suivie d'une revue 404. Les erreurs de commit et de sérialisation
+  sont également vérifiées avant tout succès HTTP, avec rollback de l’écriture.
 - Mobile : contrôles et contenus longs restent dans les pages paiements,
-  fournisseurs, détails des tâches admin et développeur. Le logo latéral n'est
+  fournisseurs, détails des tâches admin et développeur. Le récapitulatif du ledger
+  est aussi testé avec des largeurs de montants représentatives des données réelles :
+  les libellés et totaux se replient sans être coupés en français, espagnol et portugais.
+  Le logo latéral n'est
   plus un deuxième titre principal de document.
 - Les anciens mocks incomplets et assertions périmées ont été alignés sur les
   véritables contrats ; ils ne peuvent plus invalider une session simulée via
   une requête non couverte adressée par erreur au serveur réel de test.
+- Le relais HTTP redondant des cinq intégrations IA/exécutant a été retiré : le navigateur
+  utilise le vrai proxy Next.js vers l’API isolée. Cela élimine une course de
+  nettoyage Playwright observée après la réussite de toutes les assertions métier.
+  Les erreurs de réponse du navigateur restent contrôlées et les deux origines
+  locales attendues sont imposées avant toute écriture.
 
 ## Contrôles backend et production
 
-**607 tests backend passants**, deux avertissements de dépendances, **code de
-sortie 0** dans le conteneur construit à partir du code livré. Les migrations
+**612 tests backend passants**, deux avertissements de dépendances, **code de
+sortie 0** dans le conteneur construit à partir du code livré. Le run utilise un `BILLING_SITE_URL` HTTPS, avec le feature flag humain désactivé
+par défaut puis activé par les fixtures dédiées. Les migrations
 de conservation des données, paiements, mandats, MCP/A2A, webhooks, concurrence et
 droits sont incluses. Les résultats de livraison et lectures après correction
 seront ajoutés après leur exécution.
@@ -125,6 +142,10 @@ paiement avec passerelle factice. Les contrôles `__journey_fixture` ne modifien
 que la mémoire de cette passerelle : les routes, droits, services, écritures SQL,
 validations et consommateurs de la plateforme sont réels. Les fixtures respectent
 les contraintes du fournisseur (identifiants et groupe de transfert compris).
+Leurs identifiants possèdent un espace UUID propre à chaque instance : un
+redémarrage ne réutilise plus une référence déjà enregistrée dans la base conservée.
+**Neuf tests de fixture** valident l’unicité entre instances et l’idempotence.
+Cette correction concerne le banc de test, hors de l’image backend de production.
 
 ## Limites pratiques
 

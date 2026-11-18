@@ -34,7 +34,7 @@ router = APIRouter()
 @router.get("/developer/dashboard/stats", summary="My developer dashboard KPIs")
 async def dashboard_stats(
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     my_agents = (
         await db.execute(select(func.count(Agent.id)).where(Agent.developer_user_id == current_user.id))
@@ -73,7 +73,7 @@ async def developer_assignments(
     status: Optional[str] = Query(None),
     limit: int = Query(20, ge=1, le=100),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     agent_ids = await _my_agent_ids(db, current_user)
     if not agent_ids:
@@ -120,7 +120,7 @@ async def _my_agent_ids(db: AsyncSession, user: User) -> list[uuid.UUID]:
 @router.get("/developer/agents", summary="My agents")
 async def my_agents(
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     agents = list(
         (await db.execute(select(Agent).options(lazyload("*"), selectinload(Agent.capabilities)).where(Agent.developer_user_id == current_user.id).order_by(Agent.name))).scalars().all()
@@ -151,7 +151,7 @@ async def my_agents(
 async def my_bids(
     task_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     agent_ids = await _my_agent_ids(db, current_user)
     if not agent_ids:
@@ -192,7 +192,7 @@ async def my_bids(
 async def my_assignments(
     task_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     agent_ids = await _my_agent_ids(db, current_user)
     if not agent_ids:
@@ -221,7 +221,7 @@ async def my_assignments(
 async def my_submissions(
     task_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     agent_ids = await _my_agent_ids(db, current_user)
     if not agent_ids:
@@ -270,7 +270,7 @@ async def my_submissions(
 @router.get("/client/dashboard/stats", summary="My client dashboard KPIs")
 async def client_dashboard_stats(
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     my_job_ids = [
         r[0]
@@ -330,7 +330,7 @@ async def client_dashboard_stats(
 @router.get("/developer/earnings/summary", summary="My earnings summary")
 async def developer_earnings_summary(
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     paid = PaymentRecord.payment_status == PaymentStatus.paid
@@ -367,7 +367,7 @@ async def developer_earnings_payments(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     scope = (PaymentRecord.developer_user_id == current_user.id) & (PaymentRecord.provider != "platform")
     total = await db.scalar(select(func.count(PaymentRecord.id)).where(scope))

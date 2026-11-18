@@ -46,7 +46,7 @@ async def list_tasks(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> TaskListResponse:
     """Return a paginated list of tasks with optional filters."""
     query = select(Task).options(lazyload("*"), selectinload(Task.assignments)).where(task_visibility(current_user))
@@ -84,7 +84,7 @@ async def list_open_tasks(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> TaskListResponse:
     """Return tasks currently open for bidding.
 
@@ -117,7 +117,7 @@ async def list_open_tasks(
 async def get_task(
     task_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> TaskResponse:
     """Return full details for a single task."""
     result = await db.execute(select(Task).options(lazyload("*"), selectinload(Task.assignments)).where(Task.id == task_id))
@@ -141,7 +141,7 @@ async def update_task(
     task_id: uuid.UUID,
     body: TaskUpdate,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> TaskResponse:
     """Update an existing task.  Restricted to administrators."""
     result = await db.execute(select(Task).where(Task.id == task_id))
@@ -198,7 +198,7 @@ async def assign_task(
     task_id: uuid.UUID,
     agent_id: uuid.UUID = Query(..., description="Agent to assign the task to"),
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Assign a task to a specific agent.
 
@@ -265,7 +265,7 @@ async def assign_task(
 @router.get('/{task_id}/execution', summary='Task execution, human ownership and recovery preview')
 async def execution_state(task_id: uuid.UUID,
                           current_user: User = Depends(get_current_active_user),
-                          db: AsyncSession = Depends(get_db)) -> dict:
+                          db: AsyncSession = Depends(get_db, scope="function")) -> dict:
     from app.services.execution_state import task_state
     task = await db.get(Task, task_id, options=[lazyload('*')])
     if task is None:
@@ -276,7 +276,7 @@ async def execution_state(task_id: uuid.UUID,
 @router.post('/{task_id}/retry', summary='Retry one task within its existing funding and cost budget')
 async def retry_execution(task_id: uuid.UUID,
                           current_user: User = Depends(require_role('admin')),
-                          db: AsyncSession = Depends(get_db)) -> dict:
+                          db: AsyncSession = Depends(get_db, scope="function")) -> dict:
     from app.services.execution_state import retry_task
     return await retry_task(db, task_id, current_user)
 
@@ -294,7 +294,7 @@ class HistoricalRecoveryRequest(BaseModel):
 @router.get('/{task_id}/recovery-preview', summary='Preview historical task recovery without changing it')
 async def preview_recovery(task_id: uuid.UUID, provider: str, model: str,
                            current_user: User = Depends(require_role('admin')),
-                           db: AsyncSession = Depends(get_db)) -> dict:
+                           db: AsyncSession = Depends(get_db, scope="function")) -> dict:
     from app.services.execution_state import recovery_preview
     task = await db.get(Task, task_id, options=[lazyload('*')])
     if task is None:
@@ -305,7 +305,7 @@ async def preview_recovery(task_id: uuid.UUID, provider: str, model: str,
 @router.post('/{task_id}/recover', summary='Approve the previewed historical execution budget')
 async def approve_recovery(task_id: uuid.UUID, body: HistoricalRecoveryRequest,
                            current_user: User = Depends(require_role('admin')),
-                           db: AsyncSession = Depends(get_db)) -> dict:
+                           db: AsyncSession = Depends(get_db, scope="function")) -> dict:
     from app.services.execution_state import recover_task
     return await recover_task(db, task_id, current_user, body)
 
@@ -318,6 +318,6 @@ class TaskReassignmentRequest(BaseModel):
 @router.post('/{task_id}/reassign', summary='Repair blocked work without resetting its price or spent budget')
 async def reassign_task(task_id: uuid.UUID, body: TaskReassignmentRequest,
                         current_user: User = Depends(require_role('admin')),
-                        db: AsyncSession = Depends(get_db)) -> dict:
+                        db: AsyncSession = Depends(get_db, scope="function")) -> dict:
     from app.services.task_reassignment import reassign_task as repair
     return await repair(db, task_id, body.agent_id, body.reason, current_user)
