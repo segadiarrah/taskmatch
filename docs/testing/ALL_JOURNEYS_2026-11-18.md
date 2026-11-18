@@ -87,8 +87,7 @@ présentés comme autant d'exécutions externes réelles.
   fournisseurs, détails des tâches admin et développeur. Le récapitulatif du ledger
   est aussi testé avec des largeurs de montants représentatives des données réelles :
   les libellés et totaux se replient sans être coupés en français, espagnol et portugais.
-  Le logo latéral n'est
-  plus un deuxième titre principal de document.
+  Le logo latéral n'est plus un deuxième titre principal de document.
 - Les anciens mocks incomplets et assertions périmées ont été alignés sur les
   véritables contrats ; ils ne peuvent plus invalider une session simulée via
   une requête non couverte adressée par erreur au serveur réel de test.
@@ -101,11 +100,28 @@ présentés comme autant d'exécutions externes réelles.
 ## Contrôles backend et production
 
 **612 tests backend passants**, deux avertissements de dépendances, **code de
-sortie 0** dans le conteneur construit à partir du code livré. Le run utilise un `BILLING_SITE_URL` HTTPS, avec le feature flag humain désactivé
+sortie 0** dans le conteneur construit à partir du code livré. Le run utilise un
+`BILLING_SITE_URL` HTTPS, avec le feature flag humain désactivé
 par défaut puis activé par les fixtures dédiées. Les migrations
 de conservation des données, paiements, mandats, MCP/A2A, webhooks, concurrence et
-droits sont incluses. Les résultats de livraison et lectures après correction
-seront ajoutés après leur exécution.
+droits sont incluses. Le code applicatif `5d218ae` a été livré le 18 novembre
+à **17:10 UTC**, après sauvegarde PostgreSQL vérifiée, conservation privée de la
+configuration, du source et des anciennes images, puis bascules par candidats.
+Aucune migration SQL : version **008**, **33 projets et 135 tâches** conservés.
+Les **177 fichiers** de travail préexistants hors de cette tâche sont inchangés.
+
+Les contrôles finaux ont effectué **70 visites sur les candidats**, puis **70 sur
+les services définitifs après suppression des candidats**, dans les cinq langues
+à 390 et 1440 px. Résultat : **zéro plantage, erreur API, titre principal incorrect
+ou débordement**, aucune écriture ni famille manquante. Les **90 sondes de
+readiness des deux bascules finales ont toutes répondu HTTP 200**. Ces sondes
+n'ont observé aucune interruption ; elles ne représentent pas tous les appels
+clients du site.
+
+L'environnement Docker isolé, ses bases et son volume de test ont été supprimés.
+Les sessions temporaires de parcours en production sont effacées. Les journaux,
+sauvegardes et captures expurgées restent privés ; aucun secret ni livrable client
+n'est publié avec le rapport.
 
 L'audit de départ a effectué **855 visites** de pages réelles dans les cinq langues,
 à 390 et 1440 px. Il a trouvé 15 observations de plantage et 19 de débordement ;

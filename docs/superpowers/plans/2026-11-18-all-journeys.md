@@ -10,6 +10,6 @@
 - [x] Execute direct and delegated Human Tasks through real APIs/browser, including verification, funding, delivery/rework/review/acceptance and privacy/permission denials.
 - [x] Execute full backend and browser regression, frontend checks, SDK suites and route coverage in five languages.
 - [x] Read-only production verification of public and authenticated route families; inspect failures and create regression tests before fixing code.
-- [ ] Finish transaction-boundary correction revealed by the real Next proxy: function-scoped database dependencies, commit/serialization rollback regressions, full backend/browser rerun.
-- [ ] Review evidence, deploy any necessary fixes with backups and candidate verification, and repeat affected journeys.
+- [x] Finish transaction-boundary correction revealed by the real Next proxy: function-scoped database dependencies, commit/serialization rollback regressions, full backend/browser rerun.
+- [x] Review evidence, deploy any necessary fixes with backups and candidate verification, and repeat affected journeys.
 - [ ] Save docs/testing/ALL_JOURNEYS_2026-11-18.md with clear passed/failed/unverified/provider-simulated distinctions, publish and send authorized report; remove fixtures.
