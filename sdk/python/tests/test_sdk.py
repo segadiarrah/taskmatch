@@ -50,6 +50,19 @@ def test_auth_paths_form_encoding_and_bearer(client_factory):
     assert client.me() == {"id": "user"}
 
 
+def test_new_job_defaults_to_the_api_supported_eur_currency(client_factory):
+    def respond(request):
+        assert request.method == "POST"
+        assert request.url.path == "/api/v1/jobs"
+        body = json.loads(request.content)
+        assert body["currency"] == "EUR"
+        return httpx.Response(201, json={"id": "job", **body})
+
+    client = client_factory(respond)
+    job = client.create_job("Review report", "Review the supplied report.", 10, 20)
+    assert job["currency"] == "EUR"
+
+
 @pytest.mark.parametrize("status,body", [(302, "redirect"), (502, "bad gateway")])
 def test_non_success_responses_raise_typed_error(client_factory, status, body):
     client = client_factory(lambda request: httpx.Response(status, text=body))

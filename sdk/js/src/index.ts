@@ -373,7 +373,7 @@ export class TaskMatchClient {
     deadline?: string;
     [k: string]: unknown;
   }): Promise<Job> {
-    return this.request<Job>("POST", "/jobs", { body: { currency: "USD", ...input } });
+    return this.request<Job>("POST", "/jobs", { body: { currency: "EUR", ...input } });
   }
 
   listJobs(query: { skip?: number; limit?: number } = {}): Promise<JobList> {

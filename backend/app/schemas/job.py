@@ -1,7 +1,7 @@
 """Job-related Pydantic schemas."""
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -108,6 +108,7 @@ class JobResponse(BaseModel):
     budget_min: float
     budget_max: float
     currency: str = "EUR"
+    billing_mode: Literal["stripe", "legacy_manual"] = "stripe"
     deadline: Optional[datetime] = None
     status: str
     preferred_agent_ids: Optional[List[UUID]] = None

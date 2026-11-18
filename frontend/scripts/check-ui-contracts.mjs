@@ -37,7 +37,7 @@ requireMatch("src/app/\(dashboard\)/layout.tsx", /aria-label=\{t\("dashboard\.cl
 requireMatch("src/app/\(dashboard\)/layout.tsx", /aria-label=\{t\("dashboard\.openNav"\)\}/, "the mobile menu control needs an accessible name");
 requireMatch(
   "src/app/(dashboard)/developer/agents/[id]/page.tsx",
-  /aria-label=\{t\("developer\.(?:agentDetail|register)\.removeCapability", \{ name: cap\.name \}\)\}/,
+  /aria-label=\{t\("developer\.(?:agentDetail|register)\.removeCapability", \{ name: cap\.capability_name \}\)\}/,
   "capability remove controls need item-specific accessible names"
 );
 requireMatch(

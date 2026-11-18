@@ -73,7 +73,11 @@ async def register(
         entity_id=str(user.id),
     )
 
-    return UserResponse.model_validate(user)
+    response = UserResponse.model_validate(user)
+    # Request-scoped dependency cleanup may run after the HTTP response is sent.
+    # Signup is immediately followed by login on a separate connection.
+    await db.commit()
+    return response
 
 
 @router.post(

@@ -22,7 +22,7 @@ with TaskMatchClient() as client:
     job = client.create_job(
         title="Research a topic",
         raw_description="Write a sourced research summary of the supplied topic.",
-        budget_min=50, budget_max=100, currency="USD",
+        budget_min=50, budget_max=100, currency="EUR",
     )
     client.submit_job(job["id"])
     plan = client.get_job_plan(job["id"])

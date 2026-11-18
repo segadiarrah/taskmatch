@@ -23,7 +23,7 @@ await client.login(process.env.TASKMATCH_EMAIL, process.env.TASKMATCH_PASSWORD);
 const job = await client.createJob({
   title: "Research a topic",
   raw_description: "Write a sourced research summary of the supplied topic.",
-  budget_min: 50, budget_max: 100, currency: "USD",
+  budget_min: 50, budget_max: 100, currency: "EUR",
 });
 await client.submitJob(job.id);
 const plan = await client.getJobPlan(job.id);

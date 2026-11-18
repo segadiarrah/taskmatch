@@ -261,12 +261,13 @@ class TaskMatchClient:
         raw_description: str,
         budget_min: float,
         budget_max: float,
-        currency: str = "USD",
+        currency: str = "EUR",
         deadline: Optional[str] = None,
         **extra: Any,
     ) -> dict:
         """Create a draft job. ``POST /v1/jobs``.
 
+        New jobs use EUR, the currency accepted by the API.
         The job starts in ``draft`` status; call :meth:`submit_job` to kick off
         planning. ``deadline`` is an ISO-8601 UTC timestamp. Extra keyword
         arguments (e.g. ``requirements``, ``preferred_agent_ids``,

@@ -24,9 +24,64 @@ from app.schemas.agent import (
     AgentListResponse,
     AgentResponse,
     AgentUpdate,
+    CapabilityCreate,
+    CapabilityResponse,
 )
 
 router = APIRouter()
+
+
+async def _capability_agent(agent_id: uuid.UUID, user: User, db: AsyncSession) -> Agent:
+    result = await db.execute(select(Agent).options(lazyload("*"), selectinload(Agent.capabilities))
+                              .where(Agent.id == agent_id).with_for_update())
+    agent = result.scalar_one_or_none()
+    if agent is None:
+        raise HTTPException(404, "Agent not found")
+    if str(user.role) != "admin" and agent.developer_user_id != user.id:
+        raise HTTPException(403, "You can only update your own agents")
+    if "/experts/" in agent.endpoint_url or agent.slug.startswith("llm-"):
+        raise HTTPException(409, "Capabilities are managed through worker verification or the provider registry")
+    return agent
+
+
+@router.post("/{agent_id}/capabilities", status_code=201, response_model=CapabilityResponse)
+async def add_capability(agent_id: uuid.UUID, body: CapabilityCreate,
+                         current_user: User = Depends(require_role("agent_developer", "admin")),
+                         db: AsyncSession = Depends(get_db)):
+    agent = await _capability_agent(agent_id, current_user, db)
+    name, version = body.capability_name.strip(), body.version.strip() or "1.0"
+    if not name:
+        raise HTTPException(422, "A capability name is required")
+    if any(c.capability_name.casefold() == name.casefold() and c.version == version
+           for c in agent.capabilities):
+        raise HTTPException(409, "This capability version is already registered")
+    cap = AgentCapability(agent_id=agent.id, capability_name=name, version=version,
+                          metadata_json=body.metadata_json)
+    db.add(cap)
+    await db.flush()
+    await log_audit(db, actor_type="user", actor_id=str(current_user.id),
+                    action="add_agent_capability", entity_type="agent", entity_id=str(agent.id),
+                    payload={"capability_id": str(cap.id), "capability_name": name, "version": version})
+    response = CapabilityResponse.model_validate(cap)
+    await db.commit()
+    return response
+
+
+@router.post("/{agent_id}/capabilities/{capability_id}/remove")
+async def remove_capability(agent_id: uuid.UUID, capability_id: uuid.UUID,
+                            current_user: User = Depends(require_role("agent_developer", "admin")),
+                            db: AsyncSession = Depends(get_db)):
+    agent = await _capability_agent(agent_id, current_user, db)
+    cap = next((c for c in agent.capabilities if c.id == capability_id), None)
+    if cap is None:
+        raise HTTPException(404, "Capability not found on this agent")
+    await db.delete(cap)
+    await log_audit(db, actor_type="user", actor_id=str(current_user.id),
+                    action="remove_agent_capability", entity_type="agent", entity_id=str(agent.id),
+                    payload={"capability_id": str(cap.id), "capability_name": cap.capability_name,
+                             "version": cap.version})
+    await db.commit()
+    return {"removed": True}
 
 
 def _slugify(name: str) -> str:
@@ -118,7 +173,9 @@ async def register_agent(
         payload={"name": body.name, "slug": slug},
     )
 
-    return AgentResponse.model_validate(agent)
+    response = AgentResponse.model_validate(agent)
+    await db.commit()
+    return response
 
 
 @router.get(
@@ -247,7 +304,9 @@ async def update_agent(
         payload=update_data,
     )
 
-    return AgentResponse.model_validate(agent)
+    response = AgentResponse.model_validate(agent)
+    await db.commit()
+    return response
 
 
 @router.post(
@@ -282,7 +341,9 @@ async def agent_heartbeat(
     await db.flush()
     await db.refresh(agent)
 
-    return AgentResponse.model_validate(agent)
+    response = AgentResponse.model_validate(agent)
+    await db.commit()
+    return response
 
 
 @router.get(

@@ -3,6 +3,9 @@ import { expect, test } from "@playwright/test";
 // This suite writes fixtures. Point it ONLY at the separately provisioned test
 // API described in docs/OPERATIONS.md, never the public/production deployment.
 const api = process.env.TASKMATCH_E2E_API;
+if (api && new URL(api).origin !== "http://127.0.0.1:3171") {
+  throw new Error("Use only the disposable journey API at 127.0.0.1:3171");
+}
 test.skip(!api, "TASKMATCH_E2E_API must point at the isolated browser-test API");
 const password = "Browser-test-password-2026";
 
@@ -49,7 +52,10 @@ test("real client creation, quote, manual execution, review and acceptance", asy
   await expect(page).toHaveURL(/\/client\/jobs\/[0-9a-f-]+$/, { timeout: 30_000 });
   const jobId = new URL(page.url()).pathname.split("/").pop();
   const savedJob = await call("GET", `/jobs/${jobId}`);
-  expect(savedJob.billing_mode, "This legacy workflow requires the isolated API to use PAYMENT_MODE=legacy_manual").toBe("legacy_manual");
+  expect(savedJob.id).toBe(jobId);
+  expect(savedJob.billing_mode).toBe("legacy_manual");
+  const funding = await call("GET", `/billing/jobs/${jobId}`);
+  expect(funding.billing_mode, "This legacy workflow requires the isolated API to use PAYMENT_MODE=legacy_manual").toBe("legacy_manual");
   let plan: any;
   await expect.poll(async () => {
     plan = await call("GET", `/jobs/${jobId}/plan`);

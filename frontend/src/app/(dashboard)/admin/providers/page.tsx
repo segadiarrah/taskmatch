@@ -254,18 +254,18 @@ export default function ProvidersPage() {
                 <CardContent className="pt-6">
                   {/* Top row: identity + status + toggle */}
                   <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-md border border-ink-700 bg-ink-800 font-display text-lg font-medium text-ink-100">
+                    <div className="flex min-w-0 max-w-full items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-ink-700 bg-ink-800 font-display text-lg font-medium text-ink-100">
                         {p.label.charAt(0)}
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
                           <h3 className="font-semibold text-foreground">{p.label}</h3>
                           <Badge variant={status.variant} className="text-[10px]">
                             {a(status.label)}
                           </Badge>
                         </div>
-                        <p className="font-mono text-xs text-ink-500">{p.base_url}</p>
+                        <p className="break-all font-mono text-xs text-ink-500">{p.base_url}</p>
                       </div>
                     </div>
 

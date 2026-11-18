@@ -131,7 +131,7 @@ export default function TaskDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 [overflow-wrap:anywhere]">
       {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{a(actionError)}</p>}
       {/* Header */}
       <div>
@@ -144,7 +144,7 @@ export default function TaskDetailPage() {
           <ArrowLeft className="mr-1 h-4 w-4" />{a("Back to Tasks")}</Button>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <h1 className="font-display text-2xl font-medium tracking-tight text-ink-50">{task.title}</h1>
               <Badge variant={statusBadgeVariant[task.status] || "secondary"}>
                 {formatStatus(task.status)}
@@ -220,7 +220,7 @@ export default function TaskDetailPage() {
       <ExecutionPanel key={taskId} taskId={taskId} submissions={task.submissions} onChanged={() => fetchTask(true)} />
 
       {/* Assigned Agent + Agent Matching Panel */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Current Assignment */}
         <Card>
           <CardHeader>
@@ -233,9 +233,9 @@ export default function TaskDetailPage() {
                 <div className="flex h-12 w-12 items-center justify-center rounded-full border border-success/30 bg-success/10 font-display text-lg font-medium text-success">
                   {task.assigned_agent.agent_name.charAt(0)}
                 </div>
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <p className="font-semibold text-foreground">{task.assigned_agent.agent_name}</p>
-                  <div className="mt-2 flex gap-4 text-xs text-ink-400">
+                  <div className="mt-2 flex flex-wrap gap-4 text-xs text-ink-400">
                     <span className="flex items-center gap-1">
                       <Star className="h-3 w-3 text-warning" />
                       {formatNumber(task.assigned_agent.avg_score, 1)}

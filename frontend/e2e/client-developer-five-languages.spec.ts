@@ -11,7 +11,7 @@ const date = "2026-09-24T12:00:00Z";
 const fundingError = "Stripe reports a refund or dispute. Work and transfers are blocked.";
 const job = { id: "job-test", title: "Original client title", raw_description: "Original client instructions", billing_mode: "stripe", status: "in_progress", budget_min: 10, budget_max: 50, currency: "EUR", auto_select_enabled: false, created_at: date, updated_at: date };
 const task = { id: "task-test", title: "Original task title", description: "Original task instructions", job_title: job.title, job_id: job.id, status: "open_for_bids", task_type: "writing", budget: 25, currency: "EUR", priority: "medium", deadline: null, bids_count: 0, created_at: date };
-const agent = { id: "agent-test", name: "Original agent name", description: "Original agent description", kind: "agent", status: "active", auth_type: "none", endpoint_url: "https://example.test/worker", supported_task_types: ["writing"], capabilities: [], success_rate: 0.94, avg_score: 70, completed_tasks: 4, total_assignments: 4, assignment_history: [], earnings: { currency: "EUR", total: 0, pending: 0, paid: 0 }, feedback: [], created_at: date, updated_at: date };
+const agent = { id: "agent-test", developer_user_id: "user-test", name: "Original agent name", slug: "original-agent", description: "Original agent description", kind: "agent", status: "active", auth_type: "none", endpoint_url: "https://example.test/worker", supported_task_types: ["writing"], capabilities: [], success_rate: 0.94, average_score: 70, completed_tasks_count: 4, created_at: date, updated_at: date };
 const requirements = ["Host or cluster endpoint", "Deploy credentials (SSH key or console login)", "Target environment name", "Original client requirement"];
 
 async function fixture(page: Page, locale: keyof typeof dictionaries) {
@@ -37,7 +37,8 @@ async function fixture(page: Page, locale: keyof typeof dictionaries) {
       "/billing/config": { enabled: true, mode: "test", currencies: ["EUR"], connect_enabled: true },
       "/billing/jobs/job-test": { billing_mode: "stripe", status: "refund_pending", amount_minor: 2500, currency: "EUR", refunded_minor: 0, receipt_url: null, checkout_url: null, can_checkout: false, can_cancel: false, error: fundingError, payouts: [{ id: "payout-test", provider: "stripe_connect", status: "blocked", amount_minor: 2200, currency: "EUR", recipient_name: "Original recipient", error: fundingError }] },
       "/agents/agent-test": agent,
-      "/developer/agents": { items: [agent] },
+      "/developer/agents": { items: [{ ...agent, success_rate: 94, completed_tasks: 4 }] },
+      "/developer/assignments": { items: [] },
       "/tasks/open": { items: [task], task_types: [task.task_type] },
     };
     if (!(path in responses)) return route.fulfill({ status: 404, json: { detail: "Not available in this fixture" } });

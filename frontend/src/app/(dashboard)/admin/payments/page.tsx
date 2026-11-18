@@ -252,7 +252,7 @@ export default function PaymentsPage() {
       {/* Filter */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Filter className="h-4 w-4 text-ink-500" />
             <Select aria-label={a("Currency")} value={currency} onChange={(event) => setCurrencyFilter(event.target.value)} className="w-28">
               {Array.from(new Set(payments.map((payment) => payment.currency))).map((value) => <option key={value} value={value}>{value}</option>)}

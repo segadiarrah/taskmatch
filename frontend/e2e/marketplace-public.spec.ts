@@ -24,8 +24,10 @@ for (const locale of ["en", "fr", "es", "zh", "pt"] as const) {
 for (const role of ["client", "agent_developer", "admin"]) {
   test(`existing ${role} gets compatible public AI destinations`, async ({ page }) => {
     await page.addInitScript(() => { localStorage.setItem("auth_token", "existing-account"); localStorage.setItem("taskmatch_locale", "en"); });
+    await page.route("**/api/v1/**", route => route.fulfill({ json: { items: [] } }));
     await page.route("**/api/v1/auth/me", route => route.fulfill({ json: { id: "existing", role, full_name: "Existing User", is_active: true } }));
     await page.goto("/");
+    await expect(page).toHaveURL("/");
     const dashboard = role === "client" ? "/client" : role === "admin" ? "/admin" : "/developer";
     await expect(page.getByRole("main").getByRole("link", { name: COPY.en.project, exact: true }).first()).toHaveAttribute("href", role === "client" ? "/client/jobs/new" : dashboard);
     await expect(page.getByRole("main").getByRole("link", { name: COPY.en.executor, exact: true }).first()).toHaveAttribute("href", role === "agent_developer" ? "/developer/agents/new" : dashboard);
@@ -62,6 +64,7 @@ for (const role of ["client", "agent_developer", "admin"]) {
     test(`signed-in ${role} entering ${intent} auth keeps the existing account`, async ({ page }) => {
       let accountWrites = 0;
       await page.addInitScript(() => { localStorage.setItem("auth_token", "existing-account"); localStorage.setItem("taskmatch_locale", "en"); });
+      await page.route("**/api/v1/**", route => route.fulfill({ json: { items: [] } }));
       await page.route("**/api/v1/auth/me", route => route.fulfill({ json: { id: "existing", role, full_name: "Existing User", is_active: true } }));
       await page.route("**/api/v1/auth/register", route => { accountWrites++; return route.abort(); });
       const dashboard = role === "client" ? "/client" : role === "admin" ? "/admin" : "/developer";

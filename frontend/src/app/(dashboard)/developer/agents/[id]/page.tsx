@@ -25,62 +25,41 @@ import {
   CheckCircle2,
   Star,
   TrendingUp,
-  DollarSign,
   Clock,
-  MessageSquare,
 } from "lucide-react";
 
 interface Capability {
   id: string;
-  name: string;
+  capability_name: string;
   version: string;
-  metadata: Record<string, unknown> | null;
+  metadata_json: Record<string, unknown> | null;
 }
 
 interface AssignmentHistory {
   id: string;
   task_id: string;
+  agent_id: string;
   task_title: string;
   job_title: string;
   status: string;
   budget: number;
-  currency: string;
-  completed_at: string | null;
-  score: number | null;
-}
-
-interface Feedback {
-  id: string;
-  task_title: string;
-  score: number;
-  note: string;
-  created_at: string;
-}
-
-interface EarningsBreakdown {
-  total: number;
-  pending: number;
-  paid: number;
   currency: string;
 }
 
 interface AgentDetail {
   id: string;
   name: string;
+  slug: string;
   description: string;
   status: string;
   kind?: "agent" | "human";
   endpoint_url: string;
   auth_type: string;
-  supported_task_types: string[];
+  supported_task_types: string[] | null;
   capabilities: Capability[];
   success_rate: number;
-  avg_score: number;
-  completed_tasks: number;
-  total_assignments: number;
-  assignment_history: AssignmentHistory[];
-  earnings: EarningsBreakdown;
-  feedback: Feedback[];
+  average_score: number;
+  completed_tasks_count: number;
   created_at: string;
   updated_at: string;
 }
@@ -106,8 +85,10 @@ export default function AgentDetailPage() {
   const agentId = params.id as string;
 
   const [agent, setAgent] = useState<AgentDetail | null>(null);
+  const [recentAssignments, setRecentAssignments] = useState<AssignmentHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   // Add capability
@@ -119,8 +100,12 @@ export default function AgentDetailPage() {
     try {
       setLoading(true);
       setError(null);
-      const data = await apiGet<AgentDetail>(`/v1/agents/${agentId}`);
+      const [data, history] = await Promise.all([
+        apiGet<AgentDetail>(`/v1/agents/${agentId}`),
+        apiGet<{ items: AssignmentHistory[] }>("/v1/developer/assignments?limit=100"),
+      ]);
       setAgent(data);
+      setRecentAssignments(history.items.filter(item => item.agent_id === agentId));
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
         setError(t("developer.agentDetail.notFound"));
@@ -140,11 +125,12 @@ export default function AgentDetailPage() {
     if (!agent) return;
     try {
       setActionLoading(true);
+      setActionError(null);
       const newStatus = agent.status === "active" ? "paused" : "active";
-      await apiPut(`/v1/agents/${agentId}/status`, { status: newStatus });
+      await apiPut(`/v1/agents/${agentId}`, { status: newStatus });
       await fetchAgent();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update agent status");
+      setActionError(err instanceof Error ? err.message : t("dashboard.error"));
     } finally {
       setActionLoading(false);
     }
@@ -154,8 +140,9 @@ export default function AgentDetailPage() {
     if (!newCapName.trim()) return;
     try {
       setActionLoading(true);
+      setActionError(null);
       await apiPost(`/v1/agents/${agentId}/capabilities`, {
-        name: newCapName.trim(),
+        capability_name: newCapName.trim(),
         version: newCapVersion.trim() || undefined,
       });
       setNewCapName("");
@@ -163,7 +150,7 @@ export default function AgentDetailPage() {
       setShowAddCap(false);
       await fetchAgent();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add capability");
+      setActionError(err instanceof Error ? err.message : t("dashboard.error"));
     } finally {
       setActionLoading(false);
     }
@@ -172,10 +159,11 @@ export default function AgentDetailPage() {
   const handleRemoveCapability = async (capId: string) => {
     try {
       setActionLoading(true);
+      setActionError(null);
       await apiPost(`/v1/agents/${agentId}/capabilities/${capId}/remove`);
       await fetchAgent();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to remove capability");
+      setActionError(err instanceof Error ? err.message : t("dashboard.error"));
     } finally {
       setActionLoading(false);
     }
@@ -204,8 +192,11 @@ export default function AgentDetailPage() {
     );
   }
 
+  const canEditCapabilities = agent.kind !== "human" && !agent.slug.startsWith("llm-");
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 [overflow-wrap:anywhere]">
+      {actionError && <p role="alert" className="rounded-lg border border-danger/40 p-4 text-sm text-danger">{actionError}</p>}
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/developer" className="hover:text-foreground transition-colors">
@@ -221,14 +212,14 @@ export default function AgentDetailPage() {
 
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-start gap-4">
+        <div className="flex min-w-0 items-start gap-4">
           <Link href="/developer/agents">
             <Button variant="ghost" size="icon" className="mt-1">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border border-signal-500/30 bg-signal-500/10">
               {agent.kind === "human" ? (
                 <UserRound className="h-6 w-6 text-signal-400" />
               ) : (
@@ -268,9 +259,9 @@ export default function AgentDetailPage() {
         </Button>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="min-w-0 lg:col-span-2 space-y-6">
           {/* Performance Metrics */}
           <Card>
             <CardHeader>
@@ -283,14 +274,14 @@ export default function AgentDetailPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{t("developer.agentDetail.successRate")}</span>
-                  <span className="font-mono font-semibold">{Math.round(agent.success_rate)}%</span>
+                  <span className="font-mono font-semibold">{Math.round(agent.success_rate * 100)}%</span>
                 </div>
                 <Progress
-                  value={agent.success_rate}
+                  value={agent.success_rate * 100}
                   indicatorClassName={
-                    agent.success_rate >= 80
+                    agent.success_rate >= 0.8
                       ? "bg-success"
-                      : agent.success_rate >= 50
+                      : agent.success_rate >= 0.5
                         ? "bg-warning"
                         : "bg-danger"
                   }
@@ -300,10 +291,10 @@ export default function AgentDetailPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{t("developer.agentDetail.averageScore")}</span>
-                  <span className="font-mono font-semibold">{agent.avg_score.toFixed(1)} / 100</span>
+                  <span className="font-mono font-semibold">{agent.average_score.toFixed(1)} / 100</span>
                 </div>
                 <Progress
-                  value={agent.avg_score}
+                  value={agent.average_score}
                   indicatorClassName="bg-info"
                 />
               </div>
@@ -312,36 +303,32 @@ export default function AgentDetailPage() {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{t("developer.agentDetail.completedTasks")}</span>
                   <span className="font-mono font-semibold">
-                    {agent.completed_tasks} / {agent.total_assignments}
+                    {agent.completed_tasks_count}
                   </span>
                 </div>
-                <Progress
-                  value={agent.total_assignments > 0 ? (agent.completed_tasks / agent.total_assignments) * 100 : 0}
-                  indicatorClassName="bg-signal-500"
-                />
               </div>
             </CardContent>
           </Card>
 
           {/* Capabilities */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
               <div>
                 <CardTitle className="text-lg">{t("developer.agentDetail.capabilities")}</CardTitle>
                 <CardDescription>{t("developer.agentDetail.capabilitiesSubtitle")}</CardDescription>
               </div>
-              <Button
+              {canEditCapabilities && <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowAddCap(!showAddCap)}
               >
                 <Plus className="mr-2 h-4 w-4" />
                 {t("developer.agentDetail.add")}
-              </Button>
+              </Button>}
             </CardHeader>
             <CardContent className="space-y-4">
-              {showAddCap && (
-                <div className="flex items-end gap-3 rounded-lg border border-dashed p-4">
+              {showAddCap && canEditCapabilities && (
+                <div className="flex flex-wrap items-end gap-3 rounded-lg border border-dashed p-4">
                   <div className="flex-1 space-y-1">
                     <label className="text-xs font-medium text-muted-foreground">{t("developer.agentDetail.name")}</label>
                     <Input
@@ -381,22 +368,22 @@ export default function AgentDetailPage() {
                       key={cap.id}
                       className="inline-flex items-center gap-1.5 rounded-sm border px-3 py-1"
                     >
-                      <span className="font-mono text-xs font-medium">{cap.name}</span>
+                      <span className="font-mono text-xs font-medium">{cap.capability_name}</span>
                       {cap.version && (
                         <span className="font-mono text-[11px] text-muted-foreground">
                           {t("developer.agentDetail.versionPrefix")}
                           {cap.version}
                         </span>
                       )}
-                      <button
+                      {canEditCapabilities && <button
                         type="button"
-                        aria-label={t("developer.agentDetail.removeCapability", { name: cap.name })}
+                        aria-label={t("developer.agentDetail.removeCapability", { name: cap.capability_name })}
                         onClick={() => handleRemoveCapability(cap.id)}
                         className="ml-1 text-muted-foreground hover:text-destructive transition-colors"
                         disabled={actionLoading}
                       >
                         <X className="h-3 w-3" />
-                      </button>
+                      </button>}
                     </div>
                   ))}
                 </div>
@@ -428,13 +415,13 @@ export default function AgentDetailPage() {
               <CardDescription>{t("developer.agentDetail.historySubtitle")}</CardDescription>
             </CardHeader>
             <CardContent>
-              {(!agent.assignment_history || agent.assignment_history.length === 0) ? (
+              {recentAssignments.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
                   {t("developer.agentDetail.noAssignments")}
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {agent.assignment_history.map((assignment) => (
+                  {recentAssignments.map((assignment) => (
                     <Link
                       key={assignment.id}
                       href={`/developer/tasks/${assignment.task_id}`}
@@ -442,18 +429,12 @@ export default function AgentDetailPage() {
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate text-ink-100">{assignment.task_title}</p>
-                        <div className="mt-1 flex items-center gap-3 font-mono text-xs text-muted-foreground">
+                        <div className="mt-1 flex flex-wrap items-center gap-3 font-mono text-xs text-muted-foreground">
                           <span>{assignment.job_title}</span>
                           <span>{formatCurrency(assignment.budget, assignment.currency, locale)}</span>
-                          {assignment.completed_at && (
-                            <span>{formatDate(assignment.completed_at, locale)}</span>
-                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2 ml-3">
-                        {assignment.score !== null && (
-                          <span className="font-mono text-xs font-medium text-ink-100">{assignment.score}/100</span>
-                        )}
                         <Badge variant={statusBadgeVariant(assignment.status)} className="text-xs">
                           {formatStatus(assignment.status, locale)}
                         </Badge>
@@ -465,33 +446,6 @@ export default function AgentDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Feedback */}
-          {agent.feedback && agent.feedback.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5 text-muted-foreground" />
-                  {t("developer.agentDetail.feedbackTitle")}
-                </CardTitle>
-                <CardDescription>{t("developer.agentDetail.feedbackSubtitle")}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {agent.feedback.map((fb) => (
-                  <div key={fb.id} className="rounded-lg border p-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium">{fb.task_title}</p>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3.5 w-3.5 fill-warning text-warning" />
-                        <span className="font-mono text-sm font-medium">{fb.score}/100</span>
-                      </div>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{fb.note}</p>
-                    <p className="text-xs text-muted-foreground">{formatDate(fb.created_at, locale)}</p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         {/* Sidebar */}
@@ -525,36 +479,6 @@ export default function AgentDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Earnings Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-success" />
-                {t("developer.agentDetail.earningsTitle")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("developer.agentDetail.totalEarned")}</span>
-                <span className="font-mono font-semibold text-success">
-                  {formatCurrency(agent.earnings?.total ?? 0, agent.earnings?.currency ?? "USD", locale)}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("developer.agentDetail.pending")}</span>
-                <span className="font-medium">
-                  {formatCurrency(agent.earnings?.pending ?? 0, agent.earnings?.currency ?? "USD", locale)}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("developer.agentDetail.paid")}</span>
-                <span className="font-medium">
-                  {formatCurrency(agent.earnings?.paid ?? 0, agent.earnings?.currency ?? "USD", locale)}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Quick Stats */}
           <Card>
             <CardHeader className="pb-3">
@@ -566,18 +490,14 @@ export default function AgentDetailPage() {
                   <CheckCircle2 className="h-3.5 w-3.5" />
                   {t("developer.agentDetail.completed")}
                 </span>
-                <span className="font-medium">{agent.completed_tasks}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("developer.agentDetail.totalAssignments")}</span>
-                <span className="font-medium">{agent.total_assignments}</span>
+                <span className="font-medium">{agent.completed_tasks_count}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1">
                   <Star className="h-3.5 w-3.5" />
                   {t("developer.agentDetail.avgScore")}
                 </span>
-                <span className="font-medium">{agent.avg_score.toFixed(1)}</span>
+                <span className="font-medium">{agent.average_score.toFixed(1)}</span>
               </div>
             </CardContent>
           </Card>

@@ -38,6 +38,21 @@ test("non-JSON errors retain status, text and response headers", async () => {
   });
 });
 
+test("new job defaults to the API-supported EUR currency", async () => {
+  globalThis.fetch = async (url, init) => {
+    assert.equal(url, "https://example.test/api/v1/jobs");
+    assert.equal(init.method, "POST");
+    const body = JSON.parse(init.body);
+    assert.equal(body.currency, "EUR");
+    return json({ id: "job", ...body }, 201);
+  };
+  const job = await client().createJob({
+    title: "Review report", raw_description: "Review the supplied report.",
+    budget_min: 10, budget_max: 20,
+  });
+  assert.equal(job.currency, "EUR");
+});
+
 test("JSON validation details remain structured", async () => {
   const detail = [{ loc: ["body", "email"], msg: "Invalid email" }];
   globalThis.fetch = async () => json({ detail }, 422);

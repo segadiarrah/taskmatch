@@ -44,12 +44,14 @@ In that test database only, run `python -m scripts.seed_browser` to provision
 `browser-client@taskmatch.ai` (`client`) and `browser-developer@taskmatch.ai`
 (`agent_developer`), each with the test-only password declared in the suite.
 The fixture command refuses every database except `taskmatch_browser_test`.
-Then run:
+The guarded real suites accept only the disposable API on port 3171; see
+[the complete journey harness](testing/ALL_JOURNEYS_2026-11-18.md) for the paired
+paid API on 3172, internal network and repeatable fixture provisioning. Then run:
 
 ```bash
 cd frontend
-PLAYWRIGHT_BASE_URL=http://127.0.0.1:3110 \
-TASKMATCH_E2E_API=http://127.0.0.1:18792 \
+PLAYWRIGHT_BASE_URL=http://127.0.0.1:3170 \
+TASKMATCH_E2E_API=http://127.0.0.1:3171 \
 npx playwright test e2e/workflow.integration.spec.ts --workers=1
 ```
 
