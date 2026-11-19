@@ -252,7 +252,7 @@ export default function PaymentsPage() {
       {/* Filter */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Filter className="h-4 w-4 text-ink-500" />
             <Select aria-label={a("Currency")} value={currency} onChange={(event) => setCurrencyFilter(event.target.value)} className="w-28">
               {Array.from(new Set(payments.map((payment) => payment.currency))).map((value) => <option key={value} value={value}>{value}</option>)}
@@ -386,10 +386,10 @@ export default function PaymentsPage() {
       {!loading && filteredPayments.length > 0 && (
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-4 text-sm">
               <span className="text-muted-foreground">{a("Showing {count} of {total} loaded payments ({currency})", { count: filteredPayments.length, total: formatNumber(payments.length), currency })}
               </span>
-              <div className="flex items-center gap-6">
+              <div className="flex max-w-full flex-wrap items-center gap-6">
                 <div className="text-right">
                   <p className="text-xs text-ink-500">{a("Gross Total")}</p>
                   <p className="font-mono font-semibold text-foreground">

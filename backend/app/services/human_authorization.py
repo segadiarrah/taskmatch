@@ -22,7 +22,7 @@ def enabled():
         raise HTTPException(503, 'Human Tasks are not enabled')
 
 
-async def caller(token=Depends(oauth2_scheme), db=Depends(get_db)):
+async def caller(token=Depends(oauth2_scheme), db=Depends(get_db, scope="function")):
     try:
         payload = verify_token(token)
         user_id = UUID(payload['sub'])

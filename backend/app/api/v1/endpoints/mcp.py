@@ -35,7 +35,7 @@ router = APIRouter()
 async def format_job(
     job_id: uuid.UUID,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Structure a job's raw description into a formatted specification."""
     result = await db.execute(select(Job).where(Job.id == job_id))
@@ -74,7 +74,7 @@ async def format_job(
 async def decompose_job(
     job_id: uuid.UUID,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Decompose a formatted job into granular, biddable tasks."""
     result = await db.execute(select(Job).where(Job.id == job_id))
@@ -120,7 +120,7 @@ async def decompose_job(
 async def match_agents(
     task_id: uuid.UUID,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Find and rank active agents suitable for a task (explainable scoring)."""
     _, task = await load_execution_task(db, task_id)
@@ -150,7 +150,7 @@ async def match_agents(
 async def rank_bids(
     task_id: uuid.UUID,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Rank submitted bids for a task and shortlist the top candidate."""
     _, task = await load_execution_task(db, task_id)
@@ -181,7 +181,7 @@ async def rank_bids(
 async def validate_submission(
     submission_id: uuid.UUID,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Validate a submission against its task's output spec and record a review."""
     task_id = await db.scalar(select(Submission.task_id).where(Submission.id == submission_id))

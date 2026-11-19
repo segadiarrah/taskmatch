@@ -185,7 +185,7 @@ function DashboardLayoutContent({
                 <Layers className="h-4 w-4 text-ink-950" />
               </div>
               <div>
-                <h1 className="text-sm font-bold tracking-tight text-ink-50">TaskMatch</h1>
+                <span className="text-sm font-bold tracking-tight text-ink-50">TaskMatch</span>
                 <p className="font-mono text-[9px] uppercase tracking-wider text-ink-500">{t("dashboard.console")}</p>
               </div>
             </div>
@@ -303,7 +303,7 @@ function DashboardLayoutContent({
         </header>
 
         {/* Page content */}
-        <main lang={locale} className="flex-1 overflow-y-auto bg-ink-950 p-4 lg:p-7">
+        <main lang={locale} className="min-w-0 flex-1 overflow-y-auto bg-ink-950 p-4 lg:p-7">
           {children}
         </main>
       </div>

@@ -20,13 +20,13 @@ class Dependencies(BaseModel):
 
 @router.put("/human-tasks/{task_id}/dependencies")
 async def set_dependencies(
-    task_id: uuid.UUID, body: Dependencies, identity=Depends(caller), db=Depends(get_db)
+    task_id: uuid.UUID, body: Dependencies, identity=Depends(caller), db=Depends(get_db, scope="function")
 ):
     return await service.set_dependencies(db, task_id, body.depends_on, *identity)
 
 
 @router.get("/human-tasks/{task_id}/dependencies")
-async def dependencies(task_id: uuid.UUID, identity=Depends(caller), db=Depends(get_db)):
+async def dependencies(task_id: uuid.UUID, identity=Depends(caller), db=Depends(get_db, scope="function")):
     from sqlalchemy import select
 
     from app.models.workflow_extension import TaskDependency
@@ -45,7 +45,7 @@ async def amendment(
     job_id: uuid.UUID,
     body: HumanTaskContract,
     identity=Depends(caller),
-    db=Depends(get_db),
+    db=Depends(get_db, scope="function"),
     idempotency_key: str = Header(min_length=1, max_length=128),
 ):
     return view(await service.amendment(db, job_id, body, *identity, idempotency_key))
@@ -64,7 +64,7 @@ class AIStep(BaseModel):
 
 @router.post("/jobs/{job_id}/steps", status_code=201)
 async def add_ai_step(
-    job_id: uuid.UUID, body: AIStep, user=Depends(get_current_active_user), db=Depends(get_db)
+    job_id: uuid.UUID, body: AIStep, user=Depends(get_current_active_user), db=Depends(get_db, scope="function")
 ):
     from fastapi import HTTPException
     from sqlalchemy import select
@@ -131,7 +131,7 @@ async def add_ai_step(
 
 
 @router.get("/jobs/{job_id}/steps")
-async def steps(job_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db)):
+async def steps(job_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     from fastapi import HTTPException
     from sqlalchemy import select
     from sqlalchemy.orm import lazyload

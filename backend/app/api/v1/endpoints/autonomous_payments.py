@@ -21,7 +21,7 @@ class SetupConsent(BaseModel):
 
 @router.get("/principals/{principal_id}/payment-method")
 async def payment_status(
-    principal_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db)
+    principal_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db, scope="function")
 ):
     return await payment_authorization.status(db, principal_id, user)
 
@@ -31,27 +31,27 @@ async def setup(
     principal_id: uuid.UUID,
     body: SetupConsent,
     user=Depends(get_current_active_user),
-    db=Depends(get_db),
+    db=Depends(get_db, scope="function"),
 ):
     return await payment_authorization.setup(db, principal_id, user)
 
 
 @router.post("/principals/{principal_id}/payment-method/confirm")
 async def confirm(
-    principal_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db)
+    principal_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db, scope="function")
 ):
     return await payment_authorization.confirm(db, principal_id, user)
 
 
 @router.delete("/principals/{principal_id}/payment-method")
 async def revoke(
-    principal_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db)
+    principal_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db, scope="function")
 ):
     return await payment_authorization.revoke(db, principal_id, user)
 
 
 @router.post("/human-tasks/{task_id}/fund", status_code=202)
-async def fund_task(task_id: uuid.UUID, identity=Depends(caller), db=Depends(get_db)):
+async def fund_task(task_id: uuid.UUID, identity=Depends(caller), db=Depends(get_db, scope="function")):
     user, delegation = identity
     return await autonomous_funding.request_funding(db, task_id, user, delegation)
 
@@ -64,12 +64,12 @@ class Recovery(BaseModel):
 
 
 @router.get("/human-tasks/{task_id}/fund")
-async def funding_status(task_id: uuid.UUID, identity=Depends(caller), db=Depends(get_db)):
+async def funding_status(task_id: uuid.UUID, identity=Depends(caller), db=Depends(get_db, scope="function")):
     return await autonomous_funding.funding_status(db, task_id, identity)
 
 
 @router.post("/human-tasks/{task_id}/fund/recover")
 async def recover(
-    task_id: uuid.UUID, body: Recovery, user=Depends(get_current_active_user), db=Depends(get_db)
+    task_id: uuid.UUID, body: Recovery, user=Depends(get_current_active_user), db=Depends(get_db, scope="function")
 ):
     return await autonomous_funding.recover_payment(db, task_id, user, body.payment_intent_id)

@@ -33,7 +33,10 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """FastAPI dependency that yields an async database session.
 
     The session is committed on success and rolled back on exception, then
-    closed automatically when the request is finished.
+    closed automatically before HTTP success. Every FastAPI declaration must
+    use ``Depends(get_db, scope="function")`` so commit failures cannot follow a
+    success response and immediate requests see committed data. Background jobs
+    create their own sessions instead of retaining a request dependency.
     """
     async with async_session_factory() as session:
         try:

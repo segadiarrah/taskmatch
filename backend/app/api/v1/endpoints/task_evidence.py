@@ -18,7 +18,7 @@ router = APIRouter(dependencies=[Depends(enabled)])
 @router.post('/human-tasks/{task_id}/evidence', status_code=201)
 async def upload_evidence(task_id: uuid.UUID, file: Annotated[UploadFile, File()],
                           user: Annotated[User, Depends(get_current_active_user)],
-                          db: Annotated[AsyncSession, Depends(get_db)]):
+                          db: Annotated[AsyncSession, Depends(get_db, scope="function")]):
     try:
         return await service.upload_photo(db, task_id, user, file)
     finally:
@@ -28,7 +28,7 @@ async def upload_evidence(task_id: uuid.UUID, file: Annotated[UploadFile, File()
 @router.get('/human-tasks/{task_id}/evidence/{file_id}')
 async def download_evidence(task_id: uuid.UUID, file_id: uuid.UUID,
                             identity: Annotated[tuple, Depends(caller)],
-                            db: Annotated[AsyncSession, Depends(get_db)]):
+                            db: Annotated[AsyncSession, Depends(get_db, scope="function")]):
     path, media_type = await service.download_photo(db, task_id, file_id, identity)
     return FileResponse(path, media_type=media_type, filename=path.name,
         headers={'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store',

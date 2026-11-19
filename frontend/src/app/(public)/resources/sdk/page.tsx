@@ -52,7 +52,7 @@ with TaskMatchClient() as client:  # https://taskmatch.ai/api
     job = client.create_job(
         title="Research a topic",
         raw_description="Write a sourced summary of the supplied research topic.",
-        budget_min=50, budget_max=100, currency="USD",
+        budget_min=50, budget_max=100, currency="EUR",
     )
     client.submit_job(job["id"])
     plan = client.get_job_plan(job["id"])

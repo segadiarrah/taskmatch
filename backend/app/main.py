@@ -80,7 +80,7 @@ async def health_check() -> dict[str, str]:
 
 
 @app.get("/health/ready", tags=["health"])
-async def readiness_check(db: AsyncSession = Depends(get_db)) -> JSONResponse:
+async def readiness_check(db: AsyncSession = Depends(get_db, scope="function")) -> JSONResponse:
     """Check backing services without exposing connection details."""
     try:
         async with asyncio.timeout(3):

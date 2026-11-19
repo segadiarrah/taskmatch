@@ -37,7 +37,7 @@ async def taxonomy():
 
 
 @router.post('', status_code=201, dependencies=[Depends(enabled)])
-async def create(body: HumanTaskContract, identity=Depends(caller), db=Depends(get_db),
+async def create(body: HumanTaskContract, identity=Depends(caller), db=Depends(get_db, scope="function"),
                   idempotency_key: str = Header(min_length=1, max_length=128)):
     user, delegation = identity
     return view(await service.create_contract(db, body, user, delegation, idempotency_key))
@@ -57,7 +57,7 @@ async def accessible(db, task_id, identity):
 
 
 @router.get('')
-async def list_contracts(identity=Depends(caller), db=Depends(get_db),
+async def list_contracts(identity=Depends(caller), db=Depends(get_db, scope="function"),
                          skip: int=Query(0, ge=0), limit: int=Query(30, ge=1, le=100)):
     user, delegation = identity
     query = select(Task).options(lazyload('*')).where(
@@ -73,7 +73,7 @@ async def list_contracts(identity=Depends(caller), db=Depends(get_db),
 
 
 @router.get('/opportunities', dependencies=[Depends(enabled)])
-async def opportunities(user=Depends(get_current_active_user), db=Depends(get_db),
+async def opportunities(user=Depends(get_current_active_user), db=Depends(get_db, scope="function"),
                          skip: int=Query(0, ge=0), limit: int=Query(30, ge=1, le=100)):
     from app.services.task_access import task_visibility
     tasks = (await db.scalars(select(Task).options(lazyload('*')).where(
@@ -93,7 +93,7 @@ async def opportunities(user=Depends(get_current_active_user), db=Depends(get_db
 
 
 @router.get('/{task_id}')
-async def get_contract(task_id: uuid.UUID, identity=Depends(caller), db=Depends(get_db)):
+async def get_contract(task_id: uuid.UUID, identity=Depends(caller), db=Depends(get_db, scope="function")):
     task = await accessible(db, task_id, identity)
     user, delegation = identity
     job = await db.get(Job, task.job_id, options=[lazyload('*')])
@@ -109,7 +109,7 @@ async def get_contract(task_id: uuid.UUID, identity=Depends(caller), db=Depends(
 
 
 @router.get('/{task_id}/result')
-async def result(task_id: uuid.UUID, identity=Depends(caller), db=Depends(get_db)):
+async def result(task_id: uuid.UUID, identity=Depends(caller), db=Depends(get_db, scope="function")):
     task = await accessible(db, task_id, identity)
     submission = await db.scalar(select(Submission).options(lazyload('*')).where(
         Submission.task_id == task.id, Submission.status == 'approved')
@@ -119,7 +119,7 @@ async def result(task_id: uuid.UUID, identity=Depends(caller), db=Depends(get_db
 
 
 @router.get('/{task_id}/events')
-async def events(task_id: uuid.UUID, identity=Depends(caller), db=Depends(get_db),
+async def events(task_id: uuid.UUID, identity=Depends(caller), db=Depends(get_db, scope="function"),
                   skip: int=Query(0, ge=0), limit: int=Query(30, ge=1, le=100)):
     await accessible(db, task_id, identity)
     rows = (await db.scalars(select(AuditLog).where(AuditLog.entity_type=='task',
@@ -132,12 +132,12 @@ async def events(task_id: uuid.UUID, identity=Depends(caller), db=Depends(get_db
 
 @router.post('/{task_id}/publish', dependencies=[Depends(enabled)])
 async def publish(task_id: uuid.UUID, body: PublicationReview,
-                    user=Depends(require_role('admin')), db=Depends(get_db)):
+                    user=Depends(require_role('admin')), db=Depends(get_db, scope="function")):
     return view(await service.publish(db, task_id, user, body))
 
 
 @router.post('/{task_id}/claim', dependencies=[Depends(enabled)])
-async def claim(task_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db)):
+async def claim(task_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     from app.api.v1.endpoints.quotes import accept_offer
     task = await db.get(Task, task_id, options=[lazyload('*')])
     if not task or not task.human_contract_json:
@@ -151,7 +151,7 @@ async def claim(task_id: uuid.UUID, user=Depends(get_current_active_user), db=De
 
 @router.post('/{task_id}/result', status_code=201, dependencies=[Depends(enabled)])
 async def submit_result(task_id: uuid.UUID, body: HumanResult,
-                          user=Depends(get_current_active_user), db=Depends(get_db)):
+                          user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     from app.api.v1.endpoints.submissions import create_submission
     p = await db.get(WorkerProfile, user.id)
     assignment = await db.scalar(select(Assignment).options(lazyload('*')).where(

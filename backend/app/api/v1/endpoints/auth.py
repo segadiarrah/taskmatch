@@ -29,7 +29,7 @@ router = APIRouter()
 )
 async def register(
     body: UserCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> UserResponse:
     """Register a new user on the platform.
 
@@ -73,7 +73,8 @@ async def register(
         entity_id=str(user.id),
     )
 
-    return UserResponse.model_validate(user)
+    response = UserResponse.model_validate(user)
+    return response
 
 
 @router.post(
@@ -83,7 +84,7 @@ async def register(
 )
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> Token:
     """Validate credentials and return a signed JWT access token.
 

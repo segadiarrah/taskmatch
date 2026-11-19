@@ -3,22 +3,19 @@ import { expect, test } from "@playwright/test";
 // This suite writes fixtures. Point it ONLY at the separately provisioned test
 // API described in docs/OPERATIONS.md, never the public/production deployment.
 const api = process.env.TASKMATCH_E2E_API;
+if (api && new URL(api).origin !== "http://127.0.0.1:3171") {
+  throw new Error("Use only the disposable journey API at 127.0.0.1:3171");
+}
+if (api && process.env.PLAYWRIGHT_BASE_URL !== "http://127.0.0.1:3170") {
+  throw new Error("Use only the disposable journey frontend at 127.0.0.1:3170");
+}
 test.skip(!api, "TASKMATCH_E2E_API must point at the isolated browser-test API");
 const password = "Browser-test-password-2026";
-
-test.afterEach(async ({ page }) => {
-  await page.unrouteAll({ behavior: "wait" });
-});
 
 test("real client creation, quote, manual execution, review and acceptance", async ({ page, request }) => {
   test.setTimeout(120_000);
   if (!api || !["127.0.0.1", "localhost"].includes(new URL(api).hostname)) throw new Error("Use the isolated loopback test API");
   await page.addInitScript(() => localStorage.setItem("taskmatch_locale", "en"));
-  await page.route("**/api/**", async (route) => {
-    const path = new URL(route.request().url()).pathname;
-    const response = await route.fetch({ url: `${api}${path}` });
-    await route.fulfill({ response });
-  });
   const login = async (role: string) => {
     const response = await request.post(`${api}/api/v1/auth/login`, { form: { username: `browser-${role}@taskmatch.ai`, password } });
     expect(response.ok(), await response.text()).toBeTruthy();
@@ -49,7 +46,10 @@ test("real client creation, quote, manual execution, review and acceptance", asy
   await expect(page).toHaveURL(/\/client\/jobs\/[0-9a-f-]+$/, { timeout: 30_000 });
   const jobId = new URL(page.url()).pathname.split("/").pop();
   const savedJob = await call("GET", `/jobs/${jobId}`);
-  expect(savedJob.billing_mode, "This legacy workflow requires the isolated API to use PAYMENT_MODE=legacy_manual").toBe("legacy_manual");
+  expect(savedJob.id).toBe(jobId);
+  expect(savedJob.billing_mode).toBe("legacy_manual");
+  const funding = await call("GET", `/billing/jobs/${jobId}`);
+  expect(funding.billing_mode, "This legacy workflow requires the isolated API to use PAYMENT_MODE=legacy_manual").toBe("legacy_manual");
   let plan: any;
   await expect.poll(async () => {
     plan = await call("GET", `/jobs/${jobId}/plan`);
@@ -98,11 +98,17 @@ for (const [role, paths] of Object.entries({
     await page.addInitScript((token) => { localStorage.setItem("auth_token", token); localStorage.setItem("taskmatch_locale", "en"); }, access_token);
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
-    await page.route("**/api/**", async (route) => {
-      const url = new URL(route.request().url());
-      const response = await route.fetch({ url: `${api}${url.pathname}${url.search}` });
+    page.on("response", response => {
+      const url = new URL(response.url());
+      if (!url.pathname.startsWith("/api/v1/")) return;
       if (response.status() >= 400) errors.push(`${response.status()} ${url.pathname}`);
-      await route.fulfill({ response });
+    });
+    page.on("requestfailed", request => {
+      const url = new URL(request.url());
+      if (!url.pathname.startsWith("/api/v1/")) return;
+      const failure = request.failure()?.errorText;
+      if (failure === "net::ERR_ABORTED") return; // Navigation cancels the previous page's reads.
+      errors.push(`Transport failure ${url.pathname}: ${failure ?? "unknown"}`);
     });
     const routes = [...paths];
     if (role === "admin") {

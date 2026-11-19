@@ -26,7 +26,7 @@ router = APIRouter()
 async def list_users(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[UserResponse]:
     """Return a paginated list of all users on the platform.
 
@@ -47,7 +47,7 @@ async def list_users(
 async def get_user(
     user_id: UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> UserResponse:
     """Return the profile of a specific user.
 
@@ -78,7 +78,7 @@ async def update_user(
     user_id: UUID,
     body: UserUpdate,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> UserResponse:
     """Update a user's profile fields.
 

@@ -20,6 +20,7 @@ for (const status of [401, 403, 503]) {
       return route.fulfill({ json: admin });
     });
     await page.route("**/api/v1/auth/login", (route) => route.fulfill({ json: { access_token: "new-token", token_type: "bearer" } }));
+    await page.route("**/api/v1/worker-portal/admin/overview", route => route.fulfill({ json: { human_missions:0,pending_publication:0,active_human_missions:0,worker_profiles:0,pending_worker_verification:0 } }));
     await page.route("**/api/v1/dashboard/overview", (route) => route.fulfill({ status: 503, json: { detail: "Unavailable" } }));
     await page.goto("/login");
     await expect.poll(() => pending.length).toBeGreaterThan(0);

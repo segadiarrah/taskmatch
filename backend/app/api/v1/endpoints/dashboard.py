@@ -45,7 +45,7 @@ class FeedbackNoteBody(BaseModel):
 )
 async def dashboard_overview(
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> DashboardOverview:
     """Return aggregated platform metrics for the admin dashboard."""
     # Total jobs.
@@ -138,7 +138,7 @@ async def dashboard_overview(
 async def agent_matching(
     task_id: uuid.UUID,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[AgentMatchResult]:
     """Return a ranked list of agents suitable for a given task.
 
@@ -213,7 +213,7 @@ async def list_mcp_decisions(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[dict]:
     """Return a paginated list of MCP (AI orchestration) decisions."""
     query = select(MCPDecision)
@@ -268,7 +268,7 @@ async def list_audit_logs(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[dict]:
     """Return a paginated list of audit log entries with optional filters."""
     query = select(AuditLog)
@@ -310,7 +310,7 @@ async def list_feedback_notes(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[dict]:
     """Return a paginated list of feedback/learning notes."""
     query = select(FeedbackNote)
@@ -350,7 +350,7 @@ async def list_feedback_notes(
 async def create_feedback_note(
     payload: "FeedbackNoteBody" = Body(...),
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Create a new feedback/learning note.  Restricted to administrators."""
     # Accept either "category" or legacy "note_type"; either "note" or "content".

@@ -30,7 +30,7 @@ async def list_payments(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[PaymentResponse]:
     """Return a paginated list of payments filtered by the caller's role.
 
@@ -63,7 +63,7 @@ async def list_payments(
 async def create_payment(
     body: PaymentCreate,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> PaymentResponse:
     """Create a new payment record.
 
@@ -122,7 +122,7 @@ async def create_payment(
 async def release_payment(
     payment_id: uuid.UUID,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> PaymentResponse:
     """Mark a payment as releasable, indicating the work has been approved
     and funds can be released to the developer.
@@ -174,7 +174,7 @@ async def release_payment(
 async def complete_payment(
     payment_id: uuid.UUID,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> PaymentResponse:
     """Mark a payment as completed after funds have been transferred."""
     result = await db.execute(

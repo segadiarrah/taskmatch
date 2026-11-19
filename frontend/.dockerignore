@@ -11,6 +11,7 @@ node_modules
 .next-e2e
 out
 test-results
+test-results-*
 playwright-report
 tsconfig.tsbuildinfo
 

@@ -33,7 +33,7 @@ async def create_review(
     submission_id: uuid.UUID,
     body: ReviewCreate,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> ReviewResponse:
     """Create a validation review for a submission.
 
@@ -127,7 +127,7 @@ async def list_reviews(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[ReviewResponse]:
     """Return a paginated list of reviews for a specific task."""
     # Verify task exists.

@@ -37,7 +37,7 @@ async def agent_card():
 
 
 @router.post('/protocols/a2a')
-async def a2a(request: Request, identity: Annotated[tuple, Depends(caller)], db: Annotated[AsyncSession, Depends(get_db)]):
+async def a2a(request: Request, identity: Annotated[tuple, Depends(caller)], db: Annotated[AsyncSession, Depends(get_db, scope="function")]):
     body, error = await read_rpc(request)
     if error is not None:
         return error

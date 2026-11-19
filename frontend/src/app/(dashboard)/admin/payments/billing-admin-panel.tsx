@@ -100,7 +100,7 @@ export default function BillingAdminPanel() {
             <TableCell>{item.can_refund && <Button variant="outline" size="sm" disabled={busy} onClick={() => { setActionError(null); setRefund(item); }}>{a("Refund in full")}</Button>}</TableCell>
           </TableRow>)}</TableBody>
         </Table>}
-        <div className="flex items-center justify-between"><Button variant="outline" disabled={loading || fundingPage === 0} onClick={() => setFundingPage(fundingPage - 1)}>{a("Previous funding page")}</Button><span className="text-xs text-muted-foreground">{a("Page {page}", { page: formatNumber(fundingPage + 1) })}</span><Button variant="outline" disabled={loading || fundings.length < 50} onClick={() => setFundingPage(fundingPage + 1)}>{a("Next funding page")}</Button></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><Button variant="outline" disabled={loading || fundingPage === 0} onClick={() => setFundingPage(fundingPage - 1)}>{a("Previous funding page")}</Button><span className="text-xs text-muted-foreground">{a("Page {page}", { page: formatNumber(fundingPage + 1) })}</span><Button variant="outline" disabled={loading || fundings.length < 50} onClick={() => setFundingPage(fundingPage + 1)}>{a("Next funding page")}</Button></div>
       </CardContent>
     </Card>
     <Card data-testid="billing-operations">
@@ -115,7 +115,7 @@ export default function BillingAdminPanel() {
             <TableCell>{operation.last_error && <p className="mb-2 max-w-sm text-xs text-danger">{a(operation.last_error)}</p>}{["failed", "blocked"].includes(operation.status) && <Button variant="outline" size="sm" disabled={busy} onClick={() => { setActionError(null); setRetry(operation); }}>{a("Retry operation")}</Button>}</TableCell>
           </TableRow>)}</TableBody>
         </Table>}
-        <div className="flex items-center justify-between"><Button variant="outline" disabled={loading || operationPage === 0} onClick={() => setOperationPage(operationPage - 1)}>{a("Previous operations page")}</Button><span className="text-xs text-muted-foreground">{a("Page {page}", { page: formatNumber(operationPage + 1) })}</span><Button variant="outline" disabled={loading || operations.length < 50} onClick={() => setOperationPage(operationPage + 1)}>{a("Next operations page")}</Button></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><Button variant="outline" disabled={loading || operationPage === 0} onClick={() => setOperationPage(operationPage - 1)}>{a("Previous operations page")}</Button><span className="text-xs text-muted-foreground">{a("Page {page}", { page: formatNumber(operationPage + 1) })}</span><Button variant="outline" disabled={loading || operations.length < 50} onClick={() => setOperationPage(operationPage + 1)}>{a("Next operations page")}</Button></div>
         <Button variant="outline" disabled={loading || busy} onClick={() => void load()}>{a("Refresh billing records")}</Button>
       </CardContent>
     </Card>

@@ -44,23 +44,23 @@ async def config(user=Depends(get_current_active_user)):
 
 @router.get("/jobs/{job_id}")
 async def payment_status(
-    job_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db)
+    job_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db, scope="function")
 ):
     return await billing.funding_view(db, await owner_job(db, job_id, user))
 
 
 @router.post("/jobs/{job_id}/checkout")
-async def checkout(job_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db)):
+async def checkout(job_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     return await billing.create_checkout(db, await owner_job(db, job_id, user), user)
 
 
 @router.post("/jobs/{job_id}/sync")
-async def sync(job_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db)):
+async def sync(job_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     return await billing.sync_funding(db, await owner_job(db, job_id, user))
 
 
 @router.post("/jobs/{job_id}/cancel")
-async def cancel(job_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db)):
+async def cancel(job_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     return await billing.cancel_checkout(db, await owner_job(db, job_id, user))
 
 
@@ -135,17 +135,17 @@ async def webhook(request, db, secret):
 
 
 @router.post("/webhook")
-async def stripe_webhook(request: Request, db=Depends(get_db)):
+async def stripe_webhook(request: Request, db=Depends(get_db, scope="function")):
     return await webhook(request, db, settings.STRIPE_WEBHOOK_SECRET)
 
 
 @router.post("/webhook/connect")
-async def stripe_connect_webhook(request: Request, db=Depends(get_db)):
+async def stripe_connect_webhook(request: Request, db=Depends(get_db, scope="function")):
     return await webhook(request, db, settings.STRIPE_CONNECT_WEBHOOK_SECRET)
 
 
 @router.post("/jobs/{job_id}/refund")
-async def refund(job_id: uuid.UUID, user=Depends(require_role("admin")), db=Depends(get_db)):
+async def refund(job_id: uuid.UUID, user=Depends(require_role("admin")), db=Depends(get_db, scope="function")):
     from app.services.billing_processors import request_refund
 
     job = await owner_job(db, job_id, user)
@@ -155,7 +155,7 @@ async def refund(job_id: uuid.UUID, user=Depends(require_role("admin")), db=Depe
 
 @router.post("/payments/{payment_id}/retry")
 async def retry_transfer(
-    payment_id: uuid.UUID, user=Depends(require_role("admin")), db=Depends(get_db)
+    payment_id: uuid.UUID, user=Depends(require_role("admin")), db=Depends(get_db, scope="function")
 ):
     payment = await db.scalar(
         select(PaymentRecord).options(lazyload("*")).where(PaymentRecord.id == payment_id)
@@ -187,7 +187,7 @@ async def admin_fundings(
     skip: int = Query(0, ge=0),
     limit: int = Query(200, ge=1, le=200),
     user=Depends(require_role("admin")),
-    db=Depends(get_db),
+    db=Depends(get_db, scope="function"),
 ):
     rows = (
         await db.execute(
@@ -222,7 +222,7 @@ async def admin_operations(
     skip: int = Query(0, ge=0),
     limit: int = Query(200, ge=1, le=200),
     user=Depends(require_role("admin")),
-    db=Depends(get_db),
+    db=Depends(get_db, scope="function"),
 ):
     rows = (
         await db.execute(
@@ -262,7 +262,7 @@ async def admin_operations(
 
 @router.post("/admin/operations/{operation_id}/retry")
 async def retry_operation(
-    operation_id: uuid.UUID, user=Depends(require_role("admin")), db=Depends(get_db)
+    operation_id: uuid.UUID, user=Depends(require_role("admin")), db=Depends(get_db, scope="function")
 ):
     existing = await db.get(BillingOperation, operation_id)
     if existing and existing.kind == "execute_task":
@@ -298,7 +298,7 @@ async def reconcile(
     job_id: uuid.UUID,
     body: CheckoutReconciliation,
     user=Depends(require_role("admin")),
-    db=Depends(get_db),
+    db=Depends(get_db, scope="function"),
 ):
     result = await billing.reconcile_checkout(
         db, await owner_job(db, job_id, user), body.session_id

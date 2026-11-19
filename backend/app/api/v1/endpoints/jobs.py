@@ -104,7 +104,7 @@ _finalize_job_if_done = finalize_job_if_done
 async def create_job(
     body: JobCreate,
     current_user: User = Depends(require_role("client")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> JobResponse:
     """Create a new job posting.
 
@@ -171,7 +171,7 @@ async def list_jobs(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> JobListResponse:
     """Return a paginated list of jobs.
 
@@ -214,7 +214,7 @@ async def list_jobs(
 async def get_job(
     job_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> JobResponse:
     """Return full details for a single job, including task count."""
     result = await db.execute(select(Job).options(lazyload("*"), selectinload(Job.tasks).load_only(Task.id)).where(Job.id == job_id))
@@ -250,7 +250,7 @@ async def update_job(
     job_id: uuid.UUID,
     body: JobUpdate,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> JobResponse:
     """Update an existing job.
 
@@ -311,7 +311,7 @@ async def submit_job(
     job_id: uuid.UUID,
     background_tasks: BackgroundTasks,
     current_user: User = Depends(require_role("client")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> JobResponse:
     """Submit a draft job for processing.
 
@@ -372,7 +372,7 @@ async def submit_job(
 async def get_job_plan(
     job_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Return a client-facing execution plan: the structured spec, the task
     breakdown, and — for each task — the AI agents matched to do the work.
@@ -565,7 +565,7 @@ async def get_job_plan(
 async def accept_job(
     job_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Accept delivery and close the job; no financial transfer occurs here."""
     job = (await db.execute(select(Job).where(Job.id == job_id))).scalar_one_or_none()
@@ -632,7 +632,7 @@ async def dispute_job(
     body: DisputeRequest,
     background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Client contests a delivered deliverable. Escrow stays held (unpaid), the
     tasks return to revision, and a fresh execution + validation pass runs before
@@ -736,7 +736,7 @@ async def upload_documents(
     job_id: uuid.UUID,
     files: list[UploadFile] = File(...),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Upload one or more documents (specs, briefs, data, designs) for a job.
 

@@ -18,7 +18,7 @@ router = APIRouter(dependencies=[Depends(enabled)])
 
 
 @router.get('/admin/overview')
-async def admin_overview(user=Depends(require_role('admin')), db=Depends(get_db)):
+async def admin_overview(user=Depends(require_role('admin')), db=Depends(get_db, scope="function")):
     """Actual human activity, separately from existing AI marketplace metrics."""
     missions = select(
         func.count().label('human_missions'),
@@ -47,7 +47,7 @@ async def admin_overview(user=Depends(require_role('admin')), db=Depends(get_db)
 @router.get('/missions')
 async def missions(view: Literal['request', 'work', 'review'] = 'request',
                    skip: int = Query(0, ge=0), limit: int = Query(12, ge=1, le=100),
-                   user=Depends(get_current_active_user), db=Depends(get_db)):
+                   user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     query = select(Task).options(lazyload('*')).where(
         Task.human_contract_json['schema_version'].as_string() == 'tm.human-task.v1')
     if view == 'request':
@@ -68,7 +68,7 @@ async def missions(view: Literal['request', 'work', 'review'] = 'request',
 
 @router.get('/earnings')
 async def earnings(skip: int = Query(0, ge=0), limit: int = Query(12, ge=1, le=100),
-                   user=Depends(get_current_active_user), db=Depends(get_db)):
+                   user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     scope = (PaymentRecord.developer_user_id == user.id) & (PaymentRecord.provider != 'platform')
     total = await db.scalar(select(func.count(PaymentRecord.id)).where(scope))
     rows = (await db.execute(select(PaymentRecord, Task.title, Job.title).options(lazyload('*'))
@@ -95,7 +95,7 @@ async def earnings(skip: int = Query(0, ge=0), limit: int = Query(12, ge=1, le=1
 
 @router.get('/workers')
 async def workers(skip: int = Query(0, ge=0), limit: int = Query(12, ge=1, le=100),
-                  user=Depends(require_role('admin')), db=Depends(get_db)):
+                  user=Depends(require_role('admin')), db=Depends(get_db, scope="function")):
     from app.api.v1.endpoints.human_identity import worker_view
     total = await db.scalar(select(func.count(WorkerProfile.user_id)))
     rows = (await db.execute(select(WorkerProfile, User.full_name).join(User, User.id == WorkerProfile.user_id)
@@ -106,14 +106,14 @@ async def workers(skip: int = Query(0, ge=0), limit: int = Query(12, ge=1, le=10
 
 
 @router.get('/agents')
-async def agents(user=Depends(get_current_active_user), db=Depends(get_db)):
+async def agents(user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     rows = (await db.scalars(select(Agent).options(lazyload('*')).where(Agent.developer_user_id == user.id,
                               ~Agent.endpoint_url.contains('/experts/')).order_by(Agent.created_at, Agent.id))).all()
     return {'items': [{'id': str(a.id), 'name': a.name, 'status': a.status} for a in rows]}
 
 
 @router.post('/agents', status_code=201, response_model=AgentResponse)
-async def create_agent(body: AgentCreate, user=Depends(get_current_active_user), db=Depends(get_db)):
+async def create_agent(body: AgentCreate, user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     # Creating an owned executor never changes the account role or enables platform privileges.
     if body.executor_kind != 'agent' or not body.endpoint_url or '/experts/' in str(body.endpoint_url):
         raise HTTPException(422, 'An AI agent endpoint is required; use the worker profile for human work')
@@ -122,7 +122,7 @@ async def create_agent(body: AgentCreate, user=Depends(get_current_active_user),
 
 
 @router.get('/delegations')
-async def delegations(user=Depends(get_current_active_user), db=Depends(get_db)):
+async def delegations(user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     rows = (await db.execute(select(Delegation, Agent.name).join(Principal, Principal.id == Delegation.principal_id)
                             .join(Agent, Agent.id == Delegation.agent_id)
                             .where(Principal.owner_user_id == user.id)
@@ -138,7 +138,7 @@ async def delegations(user=Depends(get_current_active_user), db=Depends(get_db))
 
 @router.get('/opportunities')
 async def opportunities(skip: int = Query(0, ge=0), limit: int = Query(12, ge=1, le=100),
-                        user=Depends(get_current_active_user), db=Depends(get_db)):
+                        user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     from app.services.task_access import task_visibility
     query = select(Task).options(lazyload('*')).where(
         Task.human_contract_json.is_not(None), Task.human_policy_status == 'approved',

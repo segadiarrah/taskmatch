@@ -21,13 +21,13 @@ router = APIRouter(dependencies=[Depends(enabled)])
 
 
 @router.get('/principals')
-async def list_principals(user=Depends(get_current_active_user), db=Depends(get_db)):
+async def list_principals(user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     return [{'id': str(p.id), 'kind': p.kind, 'display_name': p.display_name} for p in
             (await db.scalars(select(Principal).where(Principal.owner_user_id == user.id))).all()]
 
 
 @router.post('/principals', status_code=201)
-async def create_principal(body: PrincipalCreate, user=Depends(get_current_active_user), db=Depends(get_db)):
+async def create_principal(body: PrincipalCreate, user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     await db.scalar(select(User).options(lazyload('*')).where(User.id == user.id).with_for_update())
     p = await db.scalar(select(Principal).where(Principal.owner_user_id == user.id, Principal.kind == body.kind))
     if not p:
@@ -39,7 +39,7 @@ async def create_principal(body: PrincipalCreate, user=Depends(get_current_activ
 
 @router.post('/principals/{principal_id}/delegations', status_code=201)
 async def create_delegation(principal_id: uuid.UUID, body: DelegationCreate,
-                            user=Depends(get_current_active_user), db=Depends(get_db)):
+                            user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     p = await owned_principal(db, principal_id, user, lock=True)
     agent = await db.get(Agent, body.agent_id, options=[lazyload('*')])
     if not agent or agent.developer_user_id != user.id or agent.status != 'active' or '/experts/' in agent.endpoint_url:
@@ -59,7 +59,7 @@ async def create_delegation(principal_id: uuid.UUID, body: DelegationCreate,
 
 @router.delete('/principals/{principal_id}/delegations/{delegation_id}')
 async def revoke(principal_id: uuid.UUID, delegation_id: uuid.UUID,
-                 user=Depends(get_current_active_user), db=Depends(get_db)):
+                 user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     await owned_principal(db, principal_id, user, lock=True)
     d = await db.scalar(select(Delegation).where(Delegation.id == delegation_id,
                     Delegation.principal_id == principal_id).with_for_update())
@@ -81,12 +81,12 @@ async def worker_view(db, p):
 
 
 @router.get('/workers/me')
-async def get_worker(user=Depends(get_current_active_user), db=Depends(get_db)):
+async def get_worker(user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     return await worker_view(db, await db.get(WorkerProfile, user.id))
 
 
 @router.put('/workers/me')
-async def save_worker(body: WorkerUpdate, user=Depends(get_current_active_user), db=Depends(get_db)):
+async def save_worker(body: WorkerUpdate, user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
     await db.scalar(select(User).options(lazyload('*')).where(User.id == user.id).with_for_update())
     p = await db.get(WorkerProfile, user.id)
     if p is None:
@@ -116,7 +116,7 @@ async def save_worker(body: WorkerUpdate, user=Depends(get_current_active_user),
 
 @router.post('/workers/{user_id}/verify')
 async def verify_worker(user_id: uuid.UUID, body: WorkerVerification,
-                        user=Depends(require_role('admin')), db=Depends(get_db)):
+                        user=Depends(require_role('admin')), db=Depends(get_db, scope="function")):
     if user.id == user_id:
         raise HTTPException(403, 'Independent verification required')
     p = await db.scalar(select(WorkerProfile).where(WorkerProfile.user_id == user_id).with_for_update())
