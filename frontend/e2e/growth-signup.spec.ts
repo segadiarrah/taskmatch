@@ -17,10 +17,10 @@ test("first campaign and delegation survive language selection, login, and signu
   await expect(page.getByRole("radio", { name: COPY.fr.agent, exact: true })).toBeChecked();
   await page.getByRole("link", { name: "Se connecter", exact: true }).click();
   await page.getByRole("link", { name: "Créer un compte", exact: true }).click();
-  await page.locator("#full_name").fill("Sample");
-  await page.locator("#email").fill("sample@example.test");
-  await page.locator("#password").fill("local-test-password");
-  await page.locator("#country").selectOption("ML");
+  await page.locator("#full_name:visible").fill("Sample");
+  await page.locator("#email:visible").fill("sample@example.test");
+  await page.locator("#password:visible").fill("local-test-password");
+  await page.locator("#country:visible").selectOption("ML");
   await page.getByRole("button", { name: "Créer un compte", exact: true }).click();
   await expect.poll(() => submitted?.attribution).toEqual({
     utm_source: "courrier", utm_medium: "email", utm_campaign: "novembre", referral: "partenaire",

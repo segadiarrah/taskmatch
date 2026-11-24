@@ -50,9 +50,9 @@ for (const intent of [null, "project", "executor"] as const) {
     await page.route("**/api/v1/auth/me", route => route.fulfill({ json: { id: "new-user", role, full_name: "New User", is_active: true } }));
     await page.goto(`/register${intent ? `?intent=${intent}` : ""}`);
     await expect(page.getByRole("radio", { name: intent === "executor" ? COPY.en.executor : COPY.en.project, exact: true })).toBeChecked();
-    await page.locator("#full_name").fill("New User");
-    await page.locator("#email").fill("new@example.test");
-    await page.locator("#password").fill("test-password");
+    await page.locator("#full_name:visible").fill("New User");
+    await page.locator("#email:visible").fill("new@example.test");
+    await page.locator("#password:visible").fill("test-password");
     await page.getByRole("button", { name: "Create account", exact: true }).click();
     await expect(page).toHaveURL(intent === "executor" ? "/developer/agents/new" : "/client/jobs/new");
     expect(submitted).toMatchObject({ role });

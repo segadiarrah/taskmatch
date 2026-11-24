@@ -15,9 +15,9 @@ test('real executor signup, registration, pause, activation and capability editi
   page.on('console',m=>{if(m.type()==='error'&&/TypeError|hydration|Cannot read/.test(m.text()))errors.push('Console render exception')});
   await page.addInitScript(()=>localStorage.setItem('taskmatch_locale','en'));
   await page.goto('/register?intent=executor');
-  await page.locator('#full_name').fill('Isolated executor owner');
-  await page.locator('#email').fill(email);
-  await page.locator('#password').fill(password);
+  await page.locator('#full_name:visible').fill('Isolated executor owner');
+  await page.locator('#email:visible').fill(email);
+  await page.locator('#password:visible').fill(password);
   await page.getByRole('button',{name:'Create account',exact:true}).click();
   await expect(page).toHaveURL(/\/developer\/agents\/new$/);
   const auth=await request.post(api+'/api/v1/auth/login',{form:{username:email,password}});

@@ -78,9 +78,9 @@ async function mutation(page: Page, method: string, path: string, action: () => 
 
 async function signup(page: Page, intent: "mission" | "work" | "agent", name: string, email: string) {
   await page.goto(`/register?intent=${intent}`);
-  await page.locator("#full_name").fill(name);
-  await page.locator("#email").fill(email);
-  await page.locator("#password").fill(password);
+  await page.locator("#full_name:visible").fill(name);
+  await page.locator("#email:visible").fill(email);
+  await page.locator("#password:visible").fill(password);
   await page.getByRole("button", { name: "Create account", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/human-tasks\\?view=${{ mission: "request", work: "work", agent: "agents" }[intent]}$`));
   await expect(page.getByRole("heading", { name: "Your workspace", exact: true })).toBeVisible();

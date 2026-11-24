@@ -49,9 +49,9 @@ for (const [intent, view] of [["mission", "request"], ["work", "work"], ["agent"
       return route.fulfill({ json: { items: [], total: 0, skip: 0, limit: 20 } });
     });
     await page.goto(`/register?intent=${intent}`);
-    await page.locator("#full_name").fill("Test User");
-    await page.locator("#email").fill("user@example.test");
-    await page.locator("#password").fill("public-test-password");
+    await page.locator("#full_name:visible").fill("Test User");
+    await page.locator("#email:visible").fill("user@example.test");
+    await page.locator("#password:visible").fill("public-test-password");
     await page.getByRole("button", { name: "Create account", exact: true }).click();
     await expect(page).toHaveURL(`/human-tasks?view=${view}`);
     expect(submittedRole).toBe("client");
