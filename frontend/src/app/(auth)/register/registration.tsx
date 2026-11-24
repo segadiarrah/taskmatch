@@ -214,9 +214,10 @@ function RegisterForm({ initialLocale, initialCountries }: { initialLocale: stri
   const { register, user } = useAuth();
   const { locale } = useTranslation();
   const c = COPY[locale];
-  const [intent, setIntent] = useState<PublicIntent>(urlIntent ?? "project");
+  const [selectedIntent, setIntent] = useState<PublicIntent | null>(urlIntent);
+  const intent = selectedIntent ?? "project";
   useEffect(() => {
-    if (!urlIntent) setIntent(rememberedIntent() ?? "project");
+    setIntent(urlIntent ?? rememberedIntent());
   }, [urlIntent]);
   const journey = JOURNEY_COPY[locale];
   const [country, setCountry] = useState("");
@@ -276,8 +277,8 @@ function RegisterForm({ initialLocale, initialCountries }: { initialLocale: stri
   return (
     <Reveal>
       <div className="mb-6 text-center">
-        <h1 className="font-display text-3xl font-medium text-ink-50">{c.title}</h1>
-        <p className="mt-1.5 text-sm text-ink-400">{c.subtitle}</p>
+        <h1 className="font-display text-3xl font-medium text-ink-50">{selectedIntent ? journey[selectedIntent] : c.title}</h1>
+        <p className="mt-1.5 text-sm text-ink-400">{selectedIntent ? c.title : c.subtitle}</p>
       </div>
 
       {error && (
