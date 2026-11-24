@@ -18,6 +18,9 @@ for (const locale of SUPPORTED_LOCALES) {
     for (const intent of ["project", "work", "executor", "mission", "agent", "delegation"] as const) {
       await page.goto(`/register?intent=${intent}&lang=${locale}&utm_source=email`);
       const label = c[intent === "delegation" ? "agent" : intent];
+      await expect(page.getByRole("heading", { level: 1, name: label, exact: true })).toBeVisible();
+      await expect(page.locator("noscript p")).toBeVisible();
+      await expect(page.locator("noscript p")).toContainText("JavaScript");
       await expect(page).toHaveTitle(`${label} — TaskMatch.ai`);
       await expect(page.locator('head meta[property="og:title"]')).toHaveAttribute("content", `${label} — TaskMatch.ai`);
       await expect(page.locator('head meta[property="og:locale"]')).toHaveAttribute("content", { en: "en_US", fr: "fr_FR", zh: "zh_CN", es: "es_ES", pt: "pt_BR" }[locale]);
