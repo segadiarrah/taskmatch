@@ -63,7 +63,7 @@ const COPY: Record<Locale, Copy> = {
     title: "Privacy Policy",
     summary:
       "Who controls your personal data on TaskMatch.ai, what we process and why, on which legal basis, for how long, who else sees it, and the rights you can exercise — including over decisions the platform makes automatically.",
-    updatedAt: "Last updated: 13 August 2026",
+    updatedAt: "Last updated: 24 November 2026",
     controllerIntro: "The controller for the processing described below is",
     sections: {
       controller: {
@@ -147,8 +147,8 @@ const COPY: Record<Locale, Copy> = {
       cookies: {
         title: "9. Cookies and local storage",
         paragraphs: [
-          "The site sets no cookies at all. Your session token and your language preference are kept in your browser's local storage, which never leaves your device except when you send the token back to authenticate a request. Both are strictly necessary to operate the service, and neither requires consent. There is no analytics, no advertising and no third-party tracker on this site.",
-          "If that changes, consent will be requested before anything is stored, and this section will say what and why.",
+          "Your sign-in token is stored in your browser. A language cookie remembers the language you choose. Usage measurement is off by default. If you allow it in the footer, TaskMatch sets its own random, pseudonymous cookie, tm_usage_consent, which expires after 366 days.",
+          "With your consent, TaskMatch records daily visits and account activity, signup clicks, campaign and invitation tags. When you register, the identifier can be linked to your account so aggregate reports can measure onboarding, confirmed payments and returns. You can withdraw in Usage measurement in the footer to stop collection and delete the measurement history linked to this browser. Expired measurement records are removed daily.",
         ],
       },
       contact: {
@@ -166,7 +166,7 @@ const COPY: Record<Locale, Copy> = {
     title: "Politique de confidentialité",
     summary:
       "Qui est responsable de vos données personnelles sur TaskMatch.ai, ce que nous traitons et pourquoi, sur quelle base légale, combien de temps, qui d’autre y accède, et les droits que vous pouvez exercer — y compris sur les décisions que la plateforme prend automatiquement.",
-    updatedAt: "Dernière mise à jour : 13 août 2026",
+    updatedAt: "Dernière mise à jour : 24 novembre 2026",
     controllerIntro: "Le responsable du traitement décrit ci-dessous est",
     sections: {
       controller: {
@@ -250,8 +250,8 @@ const COPY: Record<Locale, Copy> = {
       cookies: {
         title: "9. Cookies et stockage local",
         paragraphs: [
-          "Le site ne dépose aucun cookie. Votre jeton de session et votre préférence de langue sont conservés dans le stockage local de votre navigateur, qui ne quitte jamais votre appareil, sauf lorsque vous renvoyez le jeton pour authentifier une requête. L’un et l’autre sont strictement nécessaires au fonctionnement du service et ne requièrent donc pas de consentement. Aucune mesure d’audience, aucune publicité, aucun traceur tiers sur ce site.",
-          "Si cela change, le consentement sera recueilli avant tout enregistrement, et cette section dira quoi et pourquoi.",
+          "Votre jeton de connexion est enregistré dans votre navigateur. Un cookie mémorise la langue choisie. La mesure d’audience est désactivée par défaut. Si vous l’autorisez en pied de page, TaskMatch dépose son propre cookie aléatoire et pseudonyme, tm_usage_consent, qui expire au bout de 366 jours.",
+          "Avec votre accord, TaskMatch enregistre les visites et activités quotidiennes du compte, les clics vers l’inscription et les paramètres de campagne et d’invitation. Lors de l’inscription, cet identifiant peut être associé à votre compte pour mesurer le démarrage, les paiements confirmés et les retours dans des rapports agrégés. Vous pouvez retirer votre accord dans « Mesure d’audience » en pied de page pour arrêter la collecte et effacer l’historique de mesure associé à ce navigateur. Les enregistrements expirés sont supprimés chaque jour.",
         ],
       },
       contact: {
@@ -269,7 +269,7 @@ const COPY: Record<Locale, Copy> = {
     title: "Política de privacidad",
     summary:
       "Quién es el responsable de tus datos personales en TaskMatch.ai, qué tratamos y por qué, con qué base jurídica, durante cuánto tiempo, quién más accede y qué derechos puedes ejercer — incluidas las decisiones que la plataforma toma automáticamente.",
-    updatedAt: "Última actualización: 13 de agosto de 2026",
+    updatedAt: "Última actualización: 24 de noviembre de 2026",
     controllerIntro: "El responsable del tratamiento descrito a continuación es",
     sections: {
       controller: {
@@ -353,8 +353,8 @@ const COPY: Record<Locale, Copy> = {
       cookies: {
         title: "9. Cookies y almacenamiento local",
         paragraphs: [
-          "El sitio no instala ninguna cookie. Tu token de sesión y tu preferencia de idioma se guardan en el almacenamiento local del navegador, que nunca sale de tu dispositivo salvo cuando reenvías el token para autenticar una petición. Ambos son estrictamente necesarios para operar el servicio y no requieren consentimiento. No hay analítica, ni publicidad, ni rastreadores de terceros en este sitio.",
-          "Si eso cambia, se pedirá el consentimiento antes de instalar nada, y esta sección dirá qué y por qué.",
+          "El navegador almacena tu token de acceso. Una cookie recuerda el idioma que elijas. La medición de uso está desactivada de forma predeterminada. Si la autorizas en el pie de página, TaskMatch establece su propia cookie aleatoria y seudónima, tm_usage_consent, que vence a los 366 días.",
+          "Con tu permiso, TaskMatch registra las visitas y la actividad diaria de la cuenta, los clics que llevan al registro y las etiquetas de campaña e invitación. Al registrarte, el identificador puede vincularse a tu cuenta para medir en informes agregados la incorporación, los pagos confirmados y el regreso de los usuarios. Puedes retirar el permiso en «Medición de uso» al pie de página para detener la recopilación y borrar el historial de medición asociado a este navegador. Los registros caducados se eliminan a diario.",
         ],
       },
       contact: {
@@ -372,7 +372,7 @@ const COPY: Record<Locale, Copy> = {
     title: "隐私政策",
     summary:
       "谁是 TaskMatch.ai 上你个人数据的控制者，我们处理什么、为何处理、依据哪项合法性基础、保存多久、还有谁能看到，以及你可以行使的权利——包括针对平台自动作出的决定。",
-    updatedAt: "最后更新：2026 年 8 月 13 日",
+    updatedAt: "最后更新：2026 年 11 月 24 日",
     controllerIntro: "以下所述处理活动的数据控制者为",
     sections: {
       controller: {
@@ -454,8 +454,8 @@ const COPY: Record<Locale, Copy> = {
       cookies: {
         title: "9. Cookie 与本地存储",
         paragraphs: [
-          "本站不设置任何 cookie。你的会话令牌与语言偏好保存在浏览器的本地存储中，除非你回传令牌以认证请求，否则它们不会离开你的设备。两者都是运行本服务所必需的，因此无需征得同意。本站没有任何分析、广告或第三方追踪器。",
-          "若情况发生变化，我们会在设置任何 cookie 之前征求同意，并在本节说明内容与原因。",
+          "登录令牌存储在浏览器内。语言 Cookie 会记住您选择的语言。使用情况统计默认关闭。如果您在页脚允许统计，TaskMatch 会设置自有的随机假名 Cookie（tm_usage_consent），该 Cookie 在 366 天后到期。",
+          "经您同意，TaskMatch 会记录每日访问和账户活动、注册链接点击以及推广活动与邀请标签。注册时，此标识符可以关联至您的账户，以便在汇总报告中统计入门流程、确认付款和回访。您可在页脚的“使用情况统计”中撤回同意，以停止收集并删除与本浏览器关联的统计记录。系统每天删除已过期的统计记录。",
         ],
       },
       contact: {
@@ -471,7 +471,7 @@ const COPY: Record<Locale, Copy> = {
     eyebrow: "Legal / Privacidade",
     title: "Política de Privacidade",
     summary: "Quem é responsável pelos seus dados pessoais no TaskMatch.ai, o que tratamos e por quê, com que fundamento jurídico, durante quanto tempo, quem mais lhes acede e os direitos que pode exercer — incluindo sobre decisões tomadas automaticamente pela plataforma.",
-    updatedAt: "Última atualização: 13 de agosto de 2026",
+    updatedAt: "Última atualização: 24 de novembro de 2026",
     controllerIntro: "O responsável pelo tratamento descrito abaixo é",
     sections: {
       controller: {
@@ -555,8 +555,8 @@ const COPY: Record<Locale, Copy> = {
       cookies: {
         title: "9. Cookies e armazenamento local",
         paragraphs: [
-          "O site não utiliza cookies. O token da sua sessão e a preferência de idioma são guardados no armazenamento local do navegador, que permanece no seu dispositivo, exceto quando envia o token para autenticar um pedido. Ambos são estritamente necessários ao funcionamento do serviço e não exigem consentimento. O site não utiliza ferramentas de análise, publicidade nem rastreadores de terceiros.",
-          "Se esta situação mudar, pediremos consentimento antes de guardar qualquer informação e esta seção explicará o que é guardado e por quê."
+          "O navegador guarda o seu token de acesso. Um cookie memoriza o idioma escolhido. A medição de utilização está desativada por predefinição. Se a autorizar no rodapé, a TaskMatch define um cookie próprio, aleatório e pseudónimo, tm_usage_consent, que expira ao fim de 366 dias.",
+          "Com o seu consentimento, a TaskMatch regista visitas e atividade diária da conta, cliques para o registo e etiquetas de campanhas e convites. No registo, o identificador pode ser associado à sua conta para medir, em relatórios agregados, a adesão, os pagamentos confirmados e os regressos. Pode retirar o consentimento em «Medição de utilização» no rodapé para parar a recolha e eliminar o histórico de medição associado a este navegador. Os registos expirados são eliminados diariamente."
         ]
       },
       contact: {

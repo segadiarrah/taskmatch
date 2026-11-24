@@ -1,8 +1,16 @@
 # Commercial launch operations
 
-New missions use a prepaid EUR quote: task subtotal plus 10% platform fee. Provider
+New missions use a prepaid EUR quote with a task subtotal and a standard 10% platform fee. Provider
 cost, orchestration, validation and a bounded retry allowance are included in the
 task price. Accepted quotes and historical currencies are not rewritten.
+
+## First-project offer
+
+The first paid project of up to 20 eligible billing accounts receives a waiver of the separately quoted 10% platform fee. New quotes show the original fee, its waiver and the amount due. This covers AI and human work, including an authorized delegated request. A prior captured Stripe payment in the same mode, including a refunded payment, or a settled manual project uses the account’s first payment. The commercial pool excludes administrators and known seed, demo and test accounts. Historical accounts of unknown signup origin are checked against their financial history.
+
+A quote does not consume a place. Starting payment reserves a place transactionally for the billed account. The confirmed capture uses it permanently. A stale discounted quote requires the customer to review a new quote if the offer has ended. When the remaining places are temporarily held by pending payments, customers can retry after those payments settle. A verified cancellation or unpaid expiry releases a reservation. The billing worker reconciles abandoned Checkout sessions and expired agent mandates. An uncertain provider outcome stays reserved until reconciled.
+
+Offer audit entries record the funding ID, quote, amount, mode, generation and seat for reservation, redemption and release. Test-mode fundings use a separate pool. Existing quotes retain their original terms. Refund amounts follow the original charged amount, and worker remuneration follows the task contract.
 
 ## Provider configuration
 

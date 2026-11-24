@@ -215,7 +215,8 @@ async def test_agent_funding_is_durable_idempotent_and_uses_captured_proof(marke
         )
         assert (
             funding.status == "paid"
-            and funding.amount_minor == 1100
+            and funding.amount_minor == 1000  # first-project fee waived, worker receives EUR 10
+            and funding.first_project_slot == 1
             and funding.charge_id == "ch_saved"
         )
         assert (await db.get(Job, funding.job_id)).status == "bidding"
@@ -447,3 +448,27 @@ async def test_queued_payment_cannot_start_after_its_quote_expires(market, remot
     with pytest.raises(BillingBlocked, match='quote'):
         await fund.process_funding(operation.id, market.db)
     assert not [call for call in remote.calls if call[:2] == ('POST', '/payment_intents')]
+
+
+async def test_first_project_mandate_reconciles_expired_bank_action_and_releases_seat(market, remote, monkeypatch):
+    from app.models import AuditLog
+    from app.models.billing import BillingOperation, JobFunding
+    from app.services import autonomous_funding, billing_processors, billing_service
+
+    _, _, task, headers = await ready(market, remote)
+    remote.status = 'requires_action'
+    r = await market.http.post(f"/human-tasks/{task['task_id']}/fund", headers=headers)
+    assert r.status_code == 202
+    async with market.db() as db:
+        op = await db.scalar(select(BillingOperation).where(BillingOperation.kind == "fund_human_job"))
+        expiry = await db.scalar(select(BillingOperation).where(BillingOperation.kind == "check_offer_expiry"))
+        assert expiry is not None
+    await autonomous_funding.process_funding(op.id, market.db)
+    monkeypatch.setattr(billing_service, "now", lambda: expiry.available_at + timedelta(minutes=1))
+    await billing_processors.check_offer_expiry(expiry.entity_id, expiry.payload["generation"], market.db)
+    async with market.db() as db:
+        funding = await db.get(JobFunding, uuid.UUID(expiry.entity_id))
+        assert funding.status == "cancelled" and funding.first_project_slot is None
+        event = await db.scalar(select(AuditLog).where(AuditLog.action == "human_task.funding_expired"))
+        assert event.actor_type == "system"
+        assert any(method == "POST" and path.endswith("/cancel") for method, path, *_ in remote.calls)

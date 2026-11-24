@@ -19,7 +19,7 @@ async def main() -> None:
             email = f"browser-{name}@taskmatch.ai"
             if await db.scalar(select(User.id).where(User.email == email)):
                 continue
-            db.add(User(email=email, full_name=f"browser-{name}", role=role,
+            db.add(User(registration_origin="seed", email=email, full_name=f"browser-{name}", role=role,
                         hashed_password=hash_password("Browser-test-password-2026")))
         await db.commit()
     print("Isolated browser accounts ready")

@@ -18,6 +18,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    text,
     func,
 )
 from sqlalchemy.dialects.postgresql import JSON, UUID
@@ -46,12 +47,16 @@ class JobFunding(TimestampMixin, Base):
     livemode: Mapped[bool] = mapped_column(Boolean, nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="creating")
     generation: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    # A reserved seat is released only on a verified unpaid outcome. Captured
+    # fundings keep the seat, including after any refund or dispute.
+    first_project_slot: Mapped[int | None] = mapped_column(Integer)
     checkout_session_id: Mapped[str | None] = mapped_column(String(255), unique=True)
     checkout_url: Mapped[str | None] = mapped_column(Text)
     checkout_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     checkout_request: Mapped[dict | None] = mapped_column(JSON)
     checkout_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     payment_intent_id: Mapped[str | None] = mapped_column(String(255), unique=True)
+    captured_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     charge_id: Mapped[str | None] = mapped_column(String(255), unique=True)
     receipt_url: Mapped[str | None] = mapped_column(Text)
     refunded_minor: Mapped[int] = mapped_column(
@@ -60,6 +65,11 @@ class JobFunding(TimestampMixin, Base):
     refund_id: Mapped[str | None] = mapped_column(String(255))
     last_error: Mapped[str | None] = mapped_column(Text)
     __table_args__ = (
+        CheckConstraint("first_project_slot BETWEEN 1 AND 20", name="ck_first_project_slot"),
+        Index("uq_first_project_slot", "livemode", "first_project_slot", unique=True,
+              postgresql_where=text("first_project_slot IS NOT NULL")),
+        Index("uq_first_project_customer", "livemode", "client_user_id", unique=True,
+              postgresql_where=text("first_project_slot IS NOT NULL")),
         CheckConstraint("amount_minor >= 0", name="ck_job_fundings_amount_nonnegative"),
         CheckConstraint(
             "refunded_minor >= 0 AND refunded_minor <= amount_minor",

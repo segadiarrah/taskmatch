@@ -99,10 +99,20 @@ async def get_contract(task_id: uuid.UUID, identity=Depends(caller), db=Depends(
     job = await db.get(Job, task.job_id, options=[lazyload('*')])
     assignment = await db.scalar(select(Assignment).options(lazyload('*')).join(Agent, Agent.id==Assignment.agent_id)
         .where(Assignment.task_id==task.id, Agent.developer_user_id==user.id).limit(1))
-    return {**view(task), 'actions': {
+    can_fund = not delegation and job.client_user_id == user.id and job.status == 'quoted'
+    quote_summary = None
+    if can_fund:
+        from app.services.quote_service import current_quote
+        quote = await current_quote(db, job.id)
+        if quote:
+            quote_summary = {'id': str(quote.id), 'currency': quote.currency,
+                             'subtotal': float(quote.subtotal), 'platform_fee': float(quote.platform_fee),
+                             'platform_fee_waived': (quote.breakdown_json or {}).get('platform_fee_waived', 0),
+                             'total': float(quote.total)}
+    return {**view(task), 'quote': quote_summary, 'actions': {
         'can_submit': not delegation and assignment is not None and assignment.status=='active' and task.status in ('assigned','in_progress','validation_failed'),
         'can_review': not delegation and not assignment and (job.client_user_id==user.id or user.role=='admin'),
-        'can_fund': not delegation and job.client_user_id==user.id and job.status=='quoted',
+        'can_fund': can_fund,
         'can_accept': not delegation and job.client_user_id==user.id and job.status=='client_review',
         'can_edit_plan': not delegation and job.client_user_id==user.id and job.status=='draft',
         'can_amend': not delegation and job.client_user_id==user.id and job.status!='draft'}}

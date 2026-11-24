@@ -1,9 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/public/localized-link";
 import { ArrowRight, Bot, Briefcase, Check, FileCheck2, Handshake } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useTranslation } from "@/lib/i18n";
+import { firstProjectOffer } from "@/content/marketplace-payments";
+import { protocolSummary } from "@/content/protocol-summary";
 import { COPY } from "@/lib/landing-copy";
 import { authIntentHref, postAuthDestination, MARKETPLACE_INTENTS, type PublicIntent } from "@/lib/public-intent";
 
@@ -33,11 +35,12 @@ export function JourneyPage({ mode = "home" }: { mode?: "home" | "client" | "wor
             <Link href={entryHref(mode === "worker" ? "executor" : "project")} className="inline-flex min-h-12 items-center justify-center gap-3 rounded-md bg-signal-500 px-6 py-3 text-sm font-semibold text-white hover:bg-signal-400">{mode === "worker" ? c.executor : c.project}<ArrowRight className="h-4 w-4" /></Link>
             <Link href="/pricing" className="inline-flex min-h-12 items-center gap-2 px-2 text-sm font-medium text-ink-300 underline underline-offset-4 hover:text-ink-50">{c.pricing}</Link>
           </div>
+          {(mode === "home" || mode === "client") && <Link href="/pricing#first-project" className="mt-4 inline-block max-w-lg text-sm leading-6 text-ink-300 underline underline-offset-4">{firstProjectOffer[locale].summary}</Link>}
         </div>
         <aside className="rounded-xl border border-ink-700 bg-white p-6 sm:p-8">
           <p className="font-mono text-xs leading-5 text-ink-400">{c.exampleLabel}</p>
           <FileCheck2 aria-hidden="true" className="mt-8 h-10 w-10 text-signal-600" />
-          <h2 className="mt-5 font-display text-2xl font-semibold leading-tight">{c.exampleTitle}</h2>
+          <h2 id="project-example" className="mt-5 scroll-mt-24 font-display text-2xl font-semibold leading-tight">{c.exampleTitle}</h2>
           <p className="mt-4 text-sm leading-7 text-ink-300">{c.exampleBody}</p>
           <ol className="mt-7 space-y-3 border-t border-ink-800 pt-6">{c.exampleSteps.map((step) => <li key={step} className="flex items-center gap-3 text-sm text-ink-200"><Check aria-hidden="true" className="h-4 w-4 text-signal-600" />{step}</li>)}</ol>
           <p className="mt-7 text-xs leading-6 text-ink-400">{c.exampleNote}</p>
@@ -73,6 +76,6 @@ export function JourneyPage({ mode = "home" }: { mode?: "home" | "client" | "wor
         </div>
       </div>
     </section>
-    <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8"><div className="max-w-3xl"><h2 className="font-display text-3xl font-semibold tracking-tight">{c.trustTitle}</h2><p className="mt-5 text-base leading-8 text-ink-300">{c.trustBody}</p><div className="mt-6 flex flex-wrap gap-x-6 gap-y-3 text-sm text-signal-600 underline underline-offset-4"><Link href="/legal/terms">{c.terms}</Link><Link href="/resources/documentation">{c.docs}</Link></div></div></section>
+    <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8"><div className="max-w-3xl"><h2 className="font-display text-3xl font-semibold tracking-tight">{c.trustTitle}</h2><p className="mt-5 text-base leading-8 text-ink-300">{c.trustBody}</p><p className="mt-4 text-sm leading-7 text-ink-300">{protocolSummary[locale]}</p><div className="mt-6 flex flex-wrap gap-x-6 gap-y-3 text-sm text-signal-600 underline underline-offset-4"><Link href="/legal/terms">{c.terms}</Link><Link href="/resources/documentation">{c.docs}</Link></div></div></section>
   </div>;
 }

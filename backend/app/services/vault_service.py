@@ -65,7 +65,7 @@ def _fernet():
     """Build a Fernet instance, or raise if the primitives are unavailable."""
     try:
         from cryptography.fernet import Fernet  # noqa: WPS433 — lazy, optional dep
-    except ImportError as exc:  # pragma: no cover — cryptography ships with jose
+    except ImportError as exc:  # pragma: no cover — cryptography is installed by the PyJWT crypto extra
         raise VaultUnavailableError(
             "cryptography is not installed; cannot store access credentials"
         ) from exc

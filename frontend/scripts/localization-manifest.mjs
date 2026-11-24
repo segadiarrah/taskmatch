@@ -17,11 +17,11 @@ const resourcesLegal = [
 
   "src/content/guides.ts",
   "src/content/integration.ts",
+  "src/content/marketplace-payments.ts",
+  "src/content/protocol-summary.ts",
   "src/content/security.ts",
   // Route layouts. Each one exists only to attach a server-rendered title,
-  // description and canonical URL to a client-rendered page; the copy itself
-  // lives in src/lib/page-metadata.ts, which is crawler-facing and
-  // single-locale by design.
+  // description and canonical URL to a client-rendered page using localized copy.
   "src/app/(public)/resources/documentation/layout.tsx",
   "src/app/(public)/resources/api-reference/layout.tsx",
   "src/app/(public)/resources/sdk/layout.tsx",
@@ -39,7 +39,7 @@ const resourcesLegal = [
 const publicAuth = [
   "src/app/page.tsx",
   "src/app/layout.tsx",
-  "src/app/loading.tsx",
+  "src/app/(dashboard)/loading.tsx",
   "src/app/not-found.tsx",
   "src/app/(public)/layout.tsx",
   "src/app/(public)/how-it-works/page.tsx",
@@ -53,9 +53,19 @@ const publicAuth = [
   "src/app/(public)/company/contact/page.tsx",
   "src/app/(public)/company/press-kit/page.tsx",
   "src/app/(auth)/layout.tsx",
+  "src/app/(auth)/login/layout.tsx",
+  "src/app/(auth)/account-access/page.tsx",
+  "src/app/(auth)/account-access/layout.tsx",
+  "src/app/(auth)/register/layout.tsx",
+  "src/components/public/localized-link.tsx",
   "src/app/(auth)/login/page.tsx",
   "src/app/(auth)/register/page.tsx",
+  "src/app/(auth)/register/registration.tsx",
   "src/components/public/site-chrome.tsx",
+  "src/app/(public)/directory/page.tsx",
+  "src/app/(public)/directory/layout.tsx",
+  "src/app/(public)/directory/[publicId]/page.tsx",
+  "src/lib/directory-copy.ts",
   "src/components/public/journey-page.tsx",
   "src/components/public/page-shell.tsx",
   "src/components/public/motion.tsx",
@@ -63,9 +73,7 @@ const publicAuth = [
   "src/components/gdpr/data-rights-panel.tsx",
   "src/lib/landing-copy.ts",
   // Route layouts. Each one exists only to attach a server-rendered title,
-  // description and canonical URL to a client-rendered page; the copy itself
-  // lives in src/lib/page-metadata.ts, which is crawler-facing and
-  // single-locale by design.
+  // description and canonical URL to a client-rendered page using localized copy.
   "src/app/(public)/how-it-works/layout.tsx",
   "src/app/(public)/for-clients/layout.tsx",
   "src/app/(public)/for-developers/layout.tsx",
@@ -78,8 +86,13 @@ const publicAuth = [
 ];
 
 const dashboardShared = [
+  "src/components/dashboard/connection-check.tsx",
   "src/lib/dashboard-actions-copy.ts",
   "src/components/dashboard/dashboard-actions.tsx",
+  "src/components/dashboard/weekly-registrations.tsx",
+  "src/components/dashboard/directory-settings.tsx",
+  "src/app/(dashboard)/activity/page.tsx",
+  "src/lib/activity-copy.ts",
   "src/lib/locales.ts",
   "src/lib/display-copy.ts",
   "src/lib/admin-copy.ts",
@@ -105,6 +118,7 @@ const dashboardShared = [
   "src/app/(dashboard)/client/page.tsx",
   "src/app/(dashboard)/client/jobs/page.tsx",
   "src/app/(dashboard)/client/jobs/new/page.tsx",
+  "src/app/(dashboard)/referrals/page.tsx",
   "src/app/(dashboard)/client/jobs/[id]/page.tsx",
   "src/app/(dashboard)/client/jobs/[id]/execution-plan.tsx",
   "src/app/(dashboard)/client/jobs/[id]/quote-panel.tsx",
@@ -137,6 +151,7 @@ const dashboardShared = [
 // Every administration screen follows the selected interface language.
 const adminLocalized = [
   "src/app/(dashboard)/admin/page.tsx",
+  "src/app/(dashboard)/admin/growth/page.tsx",
   "src/app/(dashboard)/admin/providers/page.tsx",
   "src/app/(dashboard)/admin/audit/page.tsx",
   "src/app/(dashboard)/admin/learning/page.tsx",
@@ -178,6 +193,10 @@ export const localizationManifest = [
 // Every exemption is deliberately narrow and records the kind of literal it protects.
 export const reviewedLiteralAllowlist = {
   productAndProtocols: new Set([
+    // Framework names and exact protocol client versions in the compatibility table.
+    "OpenAI Agents SDK", "n8n", "LangChain", "LangGraph", "CrewAI", "Google ADK",
+    "MCP · @modelcontextprotocol/client 2.4.0", "A2A · @a2a-js/sdk 0.3.14",
+    "TaskMatch · Python / JavaScript 0.1.0", "mcp", "a2a", "sdk",
     "LinkedIn",
     "Sega Diarrah",
     "Manrope",

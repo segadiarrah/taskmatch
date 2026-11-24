@@ -6,6 +6,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { apiGet } from "@/lib/api";
+import { WeeklyRegistrations, type WeeklyRegistrationCounts } from "@/components/dashboard/weekly-registrations";
 import { AdminDashboardActions } from "@/components/dashboard/dashboard-actions";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -32,6 +33,7 @@ import {
 } from "lucide-react";
 
 interface DashboardOverview {
+  weekly_registrations?: WeeklyRegistrationCounts;
   total_jobs: number;
   total_tasks: number;
   active_agents: number;
@@ -200,6 +202,7 @@ export default function AdminOverviewPage() {
           <p className="text-sm text-muted-foreground">{a("Loading dashboard...")}</p>
         </div>
       ) : !data ? <DataLoadError onRetry={() => window.location.reload()} /> : <>
+      {data.weekly_registrations && <WeeklyRegistrations data={data.weekly_registrations} />}
       {/* Marketplace economics */}
       <div data-testid="admin-original-metrics">
         <h2 className="eyebrow mb-3 text-ink-400">{a("Marketplace economics")}</h2>

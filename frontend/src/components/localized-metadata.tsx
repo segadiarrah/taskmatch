@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslation } from "@/lib/i18n";
 import type { Locale } from "@/lib/locales";
 import { getLocalizedRouteMetadata } from "@/lib/localized-page-copy";
 
+import { SOCIAL_LOCALES, registerPreview } from "@/lib/share-metadata";
+import { parsePublicIntent } from "@/lib/public-intent";
+
 type PageMetadata = { title: string; description?: string };
-const socialLocale: Record<Locale, string> = { en: "en_US", fr: "fr_FR", zh: "zh_CN", es: "es_ES", pt: "pt_BR" };
+
 
 function useLocalizedMetadata(metadata: PageMetadata | null, locale: Locale) {
   const title = metadata?.title;
@@ -26,7 +29,7 @@ function useLocalizedMetadata(metadata: PageMetadata | null, locale: Locale) {
         ['meta[name="twitter:title"]', finalTitle],
         ['meta[property="og:description"]', description],
         ['meta[name="twitter:description"]', description],
-        ['meta[property="og:locale"]', socialLocale[locale]],
+        ['meta[property="og:locale"]', SOCIAL_LOCALES[locale]],
       ];
       for (const [selector, value] of values) {
         if (value === undefined) continue;
@@ -55,7 +58,8 @@ export function LocalizedMetadata({ title, description }: PageMetadata) {
 export function RouteMetadata() {
   const pathname = usePathname();
   const { locale } = useTranslation();
-  const dynamicArticle = /^\/resources\/(?:blog|guides)\/[^/]+\/?$/.test(pathname);
-  useLocalizedMetadata(dynamicArticle ? null : getLocalizedRouteMetadata(pathname, locale), locale);
+  const params = useSearchParams();
+  const dynamicArticle = /^\/(?:resources\/(?:blog|guides)|directory)\/[^/]+\/?$/.test(pathname);
+  useLocalizedMetadata(dynamicArticle ? null : pathname === "/register" ? registerPreview(locale, parsePublicIntent(params.get("intent"))) : getLocalizedRouteMetadata(pathname, locale), locale);
   return null;
 }

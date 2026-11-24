@@ -2,6 +2,8 @@
 const nextConfig = {
   distDir: process.env.NEXT_DIST_DIR || ".next",
   poweredByHeader: false,
+  // Keep share metadata in <head> for email clients and no-script readers.
+  htmlLimitedBots: /.*/,
   reactStrictMode: true,
   async headers() {
     return [

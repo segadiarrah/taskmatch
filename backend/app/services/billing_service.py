@@ -15,7 +15,7 @@ from app.models.payment import PaymentRecord
 from app.models.quote import Quote, QuoteStatus
 from app.models.user import User
 from app.models.task import Task
-from app.services import quote_service
+from app.services import first_project_offer, quote_service
 from app.services.stripe_gateway import get_gateway, to_minor
 
 ACTIVE_FUNDING = (
@@ -75,7 +75,7 @@ async def latest_funding(db, job_id):
     )
 
 
-async def enqueue_operation(db, kind, entity_id, key, payload=None):
+async def enqueue_operation(db, kind, entity_id, key, payload=None, *, available_at=None):
     await db.execute(
         insert(BillingOperation)
         .values(
@@ -86,6 +86,7 @@ async def enqueue_operation(db, kind, entity_id, key, payload=None):
             status="pending",
             attempts=0,
             payload=payload,
+            **({"available_at": available_at} if available_at else {}),
         )
         .on_conflict_do_nothing(index_elements=["key"])
     )
@@ -239,7 +240,19 @@ def metadata(funding):
     }
 
 
-async def create_checkout(db, job, user):
+def verify_unpaid_expiry(funding, session):
+    if (session.get("status") != "expired" or session.get("payment_status") != "unpaid"
+            or session.get("id") != funding.checkout_session_id
+            or session.get("livemode") is not funding.livemode
+            or session.get("amount_total") != funding.amount_minor
+            or session.get("currency") != funding.currency
+            or session.get("client_reference_id") != f"taskmatch:{funding.id}"
+            or any(str((session.get("metadata") or {}).get(k)) != str(v)
+                   for k, v in metadata(funding).items())):
+        raise HTTPException(409, "The payment service has not confirmed this checkout expired unpaid")
+
+
+async def create_checkout(db, job, user, expected_quote_id=None):
     from app.services.human_tasks import require_approved_job
     from app.services.human_authorization import enabled
     if await db.scalar(select(Task.id).where(Task.job_id==job.id,Task.human_contract_json.is_not(None)).limit(1)):
@@ -252,6 +265,8 @@ async def create_checkout(db, job, user):
     if job.billing_mode != "stripe":
         raise HTTPException(409, "This job uses the legacy settlement process")
     funding = await latest_funding(db, job.id)
+    if funding and funding.livemode != live_mode() and funding.status not in ("cancelled", "expired"):
+        raise HTTPException(409, "This payment was created in a different payment mode")
     if funding and funding.status == "paid":
         return checkout_view(funding)
     if job.status != JobStatus.quoted:
@@ -263,6 +278,14 @@ async def create_checkout(db, job, user):
         .order_by(Quote.created_at.desc())
         .limit(1)
     )
+    if funding and funding.livemode != live_mode():
+        if quote and quote.id == funding.quote_id:
+            raise HTTPException(409, first_project_offer.REQUOTE)
+        # The previous attempt is authoritatively unpaid. A new quote creates a
+        # separate funding row and idempotency key in the current Stripe mode.
+        funding = None
+    if expected_quote_id and (not quote or quote.id != expected_quote_id):
+        raise HTTPException(409, first_project_offer.REQUOTE)
     if (
         funding
         and funding.status in ("creating", "checkout_pending")
@@ -287,8 +310,10 @@ async def create_checkout(db, job, user):
             or session.get("status") != "expired"
         ):
             return checkout_view(funding)
+        verify_unpaid_expiry(funding, session)
         funding.status = "expired"
         funding.checkout_url = None
+        await first_project_offer.release(db, funding)
     if funding and funding.status not in ("creating", "checkout_pending", "cancelled", "expired"):
         raise HTTPException(409, "This payment requires review before another checkout")
     if funding and (funding.checkout_request or {}).get('method') == 'off_session' and funding.status not in ('cancelled', 'expired'):
@@ -332,6 +357,7 @@ async def create_checkout(db, job, user):
             funding.status = "creating"
             funding.checkout_session_id = None
             funding.checkout_url = None
+        await first_project_offer.reserve(db, funding, quote)
         funding.checkout_started_at = now()
         funding.checkout_expires_at = (
             min(quote.valid_until, now() + timedelta(hours=1))
@@ -357,6 +383,13 @@ async def create_checkout(db, job, user):
             data[f"metadata[{key}]"] = value
             data[f"payment_intent_data[metadata][{key}]"] = value
         funding.checkout_request = data
+        if funding.first_project_slot is not None:
+            # The expiry webhook normally arrives first. This read-only provider
+            # check also frees abandoned sessions when webhook delivery is delayed.
+            await enqueue_operation(
+                db, "check_offer_expiry", funding.id, f"offer-expiry:{funding.id}:{funding.generation}",
+                {"generation": funding.generation}, available_at=funding.checkout_expires_at + timedelta(minutes=1),
+            )
     generation, funding_id, job_id = funding.generation, funding.id, job.id
     data = funding.checkout_request
     await db.commit()
@@ -384,8 +417,10 @@ async def create_checkout(db, job, user):
     if remote.get("payment_status") == "paid":
         await confirm_checkout(db, remote)
     elif remote.get("status") == "expired" and current.status == "checkout_pending":
+        verify_unpaid_expiry(current, remote)
         current.status = "expired"
         current.checkout_url = None
+        await first_project_offer.release(db, current)
     return checkout_view(current)
 
 
@@ -463,8 +498,10 @@ async def confirm_checkout(db, session):
     funding.payment_intent_id = intent["id"]
     funding.charge_id = charge["id"] if isinstance(charge, dict) else charge
     funding.receipt_url = charge.get("receipt_url") if isinstance(charge, dict) else None
+    funding.captured_at = now()
     funding.status = "paid"
     funding.last_error = None
+    await first_project_offer.redeem(db, funding)
     if charge["amount_refunded"] or charge.get("disputed"):
         funding.refunded_minor = charge["amount_refunded"]
         funding.status = (
@@ -519,8 +556,10 @@ async def sync_funding(db, job):
                 and funding.checkout_session_id == session_id
                 and funding.status in ("creating", "checkout_pending")
             ):
+                verify_unpaid_expiry(funding, session)
                 funding.status = "expired"
                 funding.checkout_url = None
+                await first_project_offer.release(db, funding)
     return await funding_view(db, job)
 
 
@@ -544,7 +583,7 @@ async def cancel_checkout(db, job):
         await confirm_checkout(db, session)
         return await funding_view(db, job)
     if session.get("status") != "expired":
-        await get_gateway().request(
+        session = await get_gateway().request(
             "POST",
             f"/checkout/sessions/{session_id}/expire",
             data={},
@@ -557,8 +596,10 @@ async def cancel_checkout(db, job):
         and funding.checkout_session_id == session_id
         and funding.status in ("creating", "checkout_pending")
     ):
+        verify_unpaid_expiry(funding, session)
         funding.status = "cancelled"
         funding.checkout_url = None
+        await first_project_offer.release(db, funding)
     return await funding_view(db, job)
 
 
@@ -595,8 +636,10 @@ async def reconcile_checkout(db, job, session_id):
     if remote.get("payment_status") == "paid":
         await confirm_checkout(db, remote)
     elif remote.get("status") == "expired":
+        verify_unpaid_expiry(funding, remote)
         funding.status = "expired"
         funding.checkout_url = None
+        await first_project_offer.release(db, funding)
     elif remote.get("status") == "open":
         funding.status = "checkout_pending"
         funding.checkout_url = remote.get("url")

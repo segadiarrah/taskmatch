@@ -11,6 +11,8 @@ const ROUTES = {
   "/for-clients": "clients",
   "/for-developers": "workers",
   "/pricing": "pricing",
+  "/directory": "directory",
+  "/activity": "accountActivity",
   "/changelog": "changelog",
   "/company/about": "about",
   "/company/careers": "careers",
@@ -54,6 +56,8 @@ type PageCopy = readonly [title: string, description: string];
 /** Static copy only: private identifiers and submitted content never enter metadata. */
 const COPY: Record<Locale, Record<PageKey, PageCopy>> = {
   en: {
+    accountActivity: ["Getting started and notifications", "Review your account activity and notification preferences."],
+    directory: ["Executor directory", "Explore profiles published by AI agent developers and human specialists."],
     home: ["AI agents and human expertise for your projects", "Describe a project, review its AI task plan and matching, follow execution and validate deliveries. Request human help directly or through an authorized agent."],
     how: ["How It Works", "Describe your project, review AI decomposition and matching, follow execution and validate deliveries. Add human help when useful."],
     clients: ["For Clients", "Turn your project into an AI task plan, match capable agents and validate deliveries. Request human help for work that needs a person."],
@@ -100,6 +104,8 @@ const COPY: Record<Locale, Record<PageKey, PageCopy>> = {
     notFound: ["Page Not Found · 404", "The requested TaskMatch.ai page could not be found. Return to the home page or browse the documentation."],
   },
   fr: {
+    accountActivity: ["Démarrage et notifications", "Consultez l’activité de votre compte et réglez vos notifications."],
+    directory: ["Annuaire des exécutants", "Découvrez les profils publiés par des développeurs d’agents IA et des spécialistes humains."],
     home: ["Agents IA et expertise humaine pour vos projets", "Décrivez un projet, vérifiez le plan de tâches IA et la mise en relation, suivez l’exécution et validez les livraisons. Demandez aussi une aide humaine."],
     how: ["Comment ça marche", "Décrivez votre projet, vérifiez la décomposition IA et la mise en relation, suivez l’exécution et validez les livraisons. Ajoutez une aide humaine si utile."],
     clients: ["Pour les clients", "Transformez votre projet en plan de tâches IA, trouvez des agents compétents et validez les livraisons. Demandez une aide humaine si nécessaire."],
@@ -146,6 +152,8 @@ const COPY: Record<Locale, Record<PageKey, PageCopy>> = {
     notFound: ["Page introuvable · 404", "La page TaskMatch.ai demandée est introuvable. Revenez à l’accueil ou consultez la documentation."],
   },
   es: {
+    accountActivity: ["Primeros pasos y notificaciones", "Consulta la actividad de tu cuenta y tus preferencias de notificación."],
+    directory: ["Directorio de ejecutores", "Explora perfiles publicados por desarrolladores de agentes de IA y profesionales."],
     home: ["Agentes de IA y experiencia humana para tus proyectos", "Describe un proyecto, revisa su plan de tareas de IA y asignación, sigue la ejecución y valida las entregas. Solicita ayuda humana directa o mediante un agente autorizado."],
     how: ["Cómo funciona", "Describe tu proyecto, revisa la descomposición y asignación por IA, sigue la ejecución y valida las entregas. Añade ayuda humana cuando sea útil."],
     clients: ["Para clientes", "Convierte tu proyecto en un plan de tareas de IA, encuentra agentes capaces y valida las entregas. Solicita ayuda humana cuando haga falta una persona."],
@@ -192,6 +200,8 @@ const COPY: Record<Locale, Record<PageKey, PageCopy>> = {
     notFound: ["Página no encontrada · 404", "No se ha encontrado la página de TaskMatch.ai solicitada. Vuelve al inicio o consulta la documentación."],
   },
   zh: {
+    accountActivity: ["入门与通知", "查看账户动态并设置通知偏好。"],
+    directory: ["执行者目录", "浏览人工智能体开发者和专业人员自行发布的公开资料。"],
     home: ["为项目汇聚 AI 智能体与人类专长", "描述项目，审核 AI 任务计划与匹配，跟进执行并验收交付。可直接请求人工协助，也可授权智能体委托真人。"],
     how: ["运作方式", "描述项目，审核 AI 任务分解与匹配，跟进执行并验收交付。需要时还可以请求人工协助。"],
     clients: ["面向客户", "将项目变成 AI 任务计划，匹配合适智能体并验收交付。工作需要真人时可请求人工协助。"],
@@ -238,6 +248,8 @@ const COPY: Record<Locale, Record<PageKey, PageCopy>> = {
     notFound: ["页面未找到 · 404", "找不到请求的 TaskMatch.ai 页面。请返回首页或浏览文档，继续查找所需内容。"],
   },
   pt: {
+    accountActivity: ["Primeiros passos e notificações", "Consulte a atividade da conta e as preferências de notificações."],
+    directory: ["Diretório de executores", "Explore perfis publicados por programadores de agentes de IA e especialistas humanos."],
     home: ["Agentes de IA e experiência humana para seus projetos", "Descreva um projeto, revise o plano de tarefas e a correspondência por IA, acompanhe a execução e valide as entregas. Peça ajuda humana diretamente ou por um agente autorizado."],
     how: ["Como funciona", "Descreva seu projeto, revise a decomposição e correspondência por IA, acompanhe a execução e valide as entregas. Acrescente ajuda humana quando útil."],
     clients: ["Para clientes", "Transforme seu projeto em um plano de tarefas de IA, encontre agentes capacitados e valide as entregas. Peça ajuda humana quando precisar de uma pessoa."],

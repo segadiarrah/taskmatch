@@ -20,6 +20,7 @@ from app.models.payment import PaymentRecord, PaymentStatus
 from app.models.submission import Submission, SubmissionStatus
 from app.models.task import Task, TaskStatus
 from app.models.user import User
+from app.services.registration import weekly_registrations
 from app.schemas.dashboard import AgentMatchResult, DashboardOverview
 
 router = APIRouter()
@@ -111,6 +112,7 @@ async def dashboard_overview(
     avg_job_value = round(gmv / totals.jobs, 2) if totals.jobs else 0.0
 
     return DashboardOverview(
+        weekly_registrations=await weekly_registrations(db),
         total_jobs=total_jobs,
         jobs_by_status=jobs_by_status,
         total_tasks=total_tasks,

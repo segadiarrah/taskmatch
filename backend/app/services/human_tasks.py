@@ -13,6 +13,7 @@ from app.middleware.audit import log_audit
 from app.models import Job, Task, Quote, TaskQuote
 from app.models.human import HumanTaskRequest
 from app.schemas.human import HumanTaskContract
+from app.services import first_project_offer
 from app.services.human_authorization import bound_delegation, owned_principal, request_hash
 from app.services.task_access import lock_job
 
@@ -135,6 +136,7 @@ async def create_human_quote(db, job):
               platform_fee=fee, total=total, pricing_version='tm.human-task.v1',
               status='pending_client', valid_until=min(datetime.fromisoformat(t.human_contract_json['deadline']) for t in tasks),
               breakdown_json={'contract_version': 'tm.human-task.v1', 'authorized_total_minor': ceiling})
+    await first_project_offer.price_new_quote(db, job, q)
     db.add(q)
     await db.flush()
     for t in tasks:
@@ -145,7 +147,7 @@ async def create_human_quote(db, job):
                         human_price_high=amount, human_hours=t.human_contract_json['expected_duration']/60,
                         breakdown_json={'contract_version':'tm.human-task.v1'}))
     await ensure_delivery_plan(db, job, {})
-    job.budget_max = total
+    job.budget_max = q.total
     job.status = 'quoted'
     return q
 

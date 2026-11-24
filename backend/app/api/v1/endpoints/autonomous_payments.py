@@ -3,7 +3,7 @@
 import uuid
 from typing import Literal
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.database import get_db
@@ -51,9 +51,9 @@ async def revoke(
 
 
 @router.post("/human-tasks/{task_id}/fund", status_code=202)
-async def fund_task(task_id: uuid.UUID, identity=Depends(caller), db=Depends(get_db, scope="function")):
+async def fund_task(task_id: uuid.UUID, expected_quote_id: uuid.UUID | None = Header(None, alias="X-TaskMatch-Quote-Id"), identity=Depends(caller), db=Depends(get_db, scope="function")):
     user, delegation = identity
-    return await autonomous_funding.request_funding(db, task_id, user, delegation)
+    return await autonomous_funding.request_funding(db, task_id, user, delegation, expected_quote_id)
 
 
 class Recovery(BaseModel):

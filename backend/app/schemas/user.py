@@ -1,10 +1,34 @@
 """User-related Pydantic schemas."""
 
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+
+
+class RegistrationAttribution(BaseModel):
+    """Only allow first-party campaign tags and voluntarily shared signup context."""
+
+    intent: Literal["project", "work", "executor", "mission", "agent"] | None = None
+    language: Literal["en", "fr", "es", "pt", "zh"] | None = None
+    country: str | None = Field(default=None, pattern=r"^[A-Z]{2}$")
+    utm_source: str | None = None
+    utm_medium: str | None = None
+    utm_campaign: str | None = None
+    utm_content: str | None = None
+    utm_term: str | None = None
+    referral: str | None = None
+
+    @field_validator("utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "referral")
+    @classmethod
+    def campaign_label(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        if not value or len(value) > 100 or not all(c.isalnum() or c in " ._-" for c in value):
+            return None
+        return value
 
 
 class UserCreate(BaseModel):
@@ -25,6 +49,8 @@ class UserCreate(BaseModel):
     organization_name: Optional[str] = Field(
         None, max_length=256, description="Optional company or organization"
     )
+
+    attribution: RegistrationAttribution = Field(default_factory=RegistrationAttribution)
 
     @field_validator("email")
     @classmethod

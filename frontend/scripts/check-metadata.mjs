@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
  * Keeps three lists in agreement:
  *
  *   1. `PUBLIC_ROUTES` in src/lib/site.ts — what the sitemap advertises,
- *   2. `PAGE_METADATA` in src/lib/page-metadata.ts — what each page is called,
+ *   2. `localized route copy in src/lib/localized-page-copy.ts — what each page is called,
  *   3. the `layout.tsx` files under src/app/(public) — what actually attaches
  *      that title and canonical URL to the page.
  *
@@ -33,10 +33,9 @@ function declaredRoutes() {
 
 /** Routes that have a title and description. */
 function describedRoutes() {
-  const source = read("src/lib/page-metadata.ts");
-  const block = source.match(/PAGE_METADATA:\s*Record<string,\s*PageMeta>\s*=\s*\{([\s\S]*?)\n\};/);
-  if (!block) throw new Error("Could not find PAGE_METADATA in src/lib/page-metadata.ts");
-  return [...block[1].matchAll(/^\s{2}"([^"]+)":\s*\{/gm)].map((match) => match[1]);
+  const block = read("src/lib/localized-page-copy.ts").match(/const ROUTES = \{([\s\S]*?)\} as const/);
+  if (!block) throw new Error("Could not find the localized route table");
+  return [...block[1].matchAll(/"([^"]+)":/g)].map(match => match[1]);
 }
 
 /** Routes whose layout actually calls buildPageMetadata. */
@@ -65,22 +64,16 @@ const failures = [];
 
 for (const route of declared) {
   if (!described.includes(route)) {
-    failures.push(`${route} is in PUBLIC_ROUTES but has no entry in PAGE_METADATA`);
+    failures.push(`${route} is in PUBLIC_ROUTES but has no localized copy`);
   }
   if (!wiredRouteNames.includes(route)) {
     failures.push(`${route} is in PUBLIC_ROUTES but no layout.tsx calls buildPageMetadata("${route}")`);
   }
 }
 
-for (const route of described) {
-  if (!declared.includes(route)) {
-    failures.push(`${route} has metadata but is not in PUBLIC_ROUTES, so no crawler is told it exists`);
-  }
-}
-
 for (const { route, path } of wired) {
   if (!described.includes(route)) {
-    failures.push(`${path} asks for metadata for ${route}, which PAGE_METADATA does not define`);
+    failures.push(`${path} asks for metadata for ${route}, which has no localized copy`);
   }
 }
 

@@ -45,6 +45,9 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    labels:
+      org.opencontainers.image.revision: "${TASKMATCH_REVISION:-unknown}"
+      ai.taskmatch.deployed-at: "${TASKMATCH_DEPLOYED_AT:-unknown}"
     restart: unless-stopped
     env_file: .env
     environment:
@@ -73,6 +76,9 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    labels:
+      org.opencontainers.image.revision: "${TASKMATCH_REVISION:-unknown}"
+      ai.taskmatch.deployed-at: "${TASKMATCH_DEPLOYED_AT:-unknown}"
     restart: unless-stopped
     env_file: .env
     environment:
@@ -97,6 +103,27 @@ services:
     networks:
       - taskmatch_net
 
+  mail-worker:
+    build: ./backend
+    labels:
+      org.opencontainers.image.revision: "${TASKMATCH_REVISION:-unknown}"
+      ai.taskmatch.deployed-at: "${TASKMATCH_DEPLOYED_AT:-unknown}"
+    restart: unless-stopped
+    env_file: .env
+    command: ["python", "-m", "app.services.mail_worker"]
+    volumes:
+      - ./backend:/app
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import time,pathlib; p=pathlib.Path('/tmp/taskmatch-mail-heartbeat'); assert p.exists() and time.time()-p.stat().st_mtime < 120"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+    networks:
+      - taskmatch_net
+
   # ---------------------------------------------------------------------------
   # Next.js Frontend
   # ---------------------------------------------------------------------------
@@ -108,8 +135,10 @@ services:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api}
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://taskmatch.ai}
         API_INTERNAL_URL: http://backend:8000
+    labels:
+      org.opencontainers.image.revision: "${TASKMATCH_REVISION:-unknown}"
+      ai.taskmatch.deployed-at: "${TASKMATCH_DEPLOYED_AT:-unknown}"
     restart: unless-stopped
-    env_file: .env
     environment:
       - API_INTERNAL_URL=http://backend:8000
       - NODE_ENV=production

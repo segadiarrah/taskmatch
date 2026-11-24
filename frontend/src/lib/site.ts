@@ -17,6 +17,7 @@ export const PUBLIC_ROUTES = [
   "/for-clients",
   "/for-developers",
   "/pricing",
+  "/directory",
   "/changelog",
   "/company/about",
   "/company/careers",

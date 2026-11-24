@@ -4,18 +4,20 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import lazyload
 
+from app.services.mail_worker import contact_transport_available
 from app.core.database import get_db
 from app.core.deps import get_current_active_user
 from app.core.security import create_access_token, hash_password, verify_password
 from app.middleware.audit import log_audit
 from app.models.user import User, UserRole
+from app.services.registration import fixture_access_disabled, public_origin, signup_notification
 from app.schemas.user import Token, UserCreate, UserResponse
 
 router = APIRouter()
@@ -29,6 +31,7 @@ router = APIRouter()
 )
 async def register(
     body: UserCreate,
+    request: Request,
     db: AsyncSession = Depends(get_db, scope="function"),
 ) -> UserResponse:
     """Register a new user on the platform.
@@ -50,6 +53,8 @@ async def register(
         full_name=body.full_name,
         role=UserRole(body.role),
         organization_name=body.organization_name,
+        registration_origin=public_origin(body.email),
+        registration_attribution=body.attribution.model_dump(exclude_none=True),
     )
     db.add(user)
     try:
@@ -63,6 +68,12 @@ async def register(
             detail="A user with this email already exists",
         ) from None
     await db.refresh(user)
+    from app.services import measurement
+    await measurement.register(db, request, user)
+    db.add(signup_notification(user))
+    if contact_transport_available("verify"):
+        from app.services.account_email import queue_account_email
+        await queue_account_email(db, user, "verify")
 
     await log_audit(
         db,
@@ -111,14 +122,14 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    if not user.is_active:
+    if not user.is_active or fixture_access_disabled(user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account is deactivated",
         )
 
     access_token = create_access_token(
-        data={"sub": str(user.id), "role": str(user.role)},
+        data={"sub": str(user.id), "role": str(user.role), "sv": user.session_version},
     )
 
     await log_audit(

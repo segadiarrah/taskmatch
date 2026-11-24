@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-export default function BillingPanel({ jobId, onUpdated }: { jobId: string; onUpdated: () => void }) {
+export default function BillingPanel({ jobId, quoteId, onUpdated }: { jobId: string; quoteId?: string; onUpdated: () => void }) {
   const { t, locale } = useTranslation();
   const [funding, setFunding] = useState<FundingStatus | null>(null);
   const [config, setConfig] = useState<BillingConfig | null>(null);
@@ -80,7 +80,7 @@ export default function BillingPanel({ jobId, onUpdated }: { jobId: string; onUp
   async function checkout() {
     setBusy(true); setError(null);
     try {
-      const result = await apiPost<CheckoutSession>(`/v1/billing/jobs/${jobId}/checkout`, {});
+      const result = await apiPost<CheckoutSession>(`/v1/billing/jobs/${jobId}/checkout`, {}, { headers: quoteId ? { "X-TaskMatch-Quote-Id": quoteId } : undefined });
       const url = stripeUrl(result.checkout_url);
       if (url) { window.location.assign(url); return; }
       if (result.status === "paid") { await refresh(true); return; }

@@ -84,8 +84,8 @@ const LanguageContext = createContext<LanguageContextValue>({
 /*  Provider                                                                  */
 /* -------------------------------------------------------------------------- */
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+export function LanguageProvider({ children, initialLocale, explicit }: { children: React.ReactNode; initialLocale: Locale; explicit: boolean }) {
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
   /* Initialise locale from localStorage or browser detection (client only). */
   useEffect(() => {
@@ -96,10 +96,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       /* localStorage unavailable (SSR or privacy mode) */
     }
     const preferences = navigator.languages?.length ? navigator.languages : [navigator.language];
-    const detected = resolveLocale(stored, preferences);
+    const detected = explicit ? initialLocale : resolveLocale(stored, preferences);
     setLocaleState(detected);
     try { localStorage.setItem(STORAGE_KEY, detected); } catch { /* Storage may be disabled. */ }
-  }, []);
+  }, [initialLocale, explicit]);
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -118,6 +118,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     /* Update the html lang attribute so assistive tech picks up the change. */
     if (typeof document !== "undefined") {
       document.documentElement.lang = valid;
+      document.cookie = `taskmatch_locale=${valid}; Path=/; Max-Age=31536000; SameSite=Lax`;
     }
   }, []);
 
@@ -164,23 +165,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     [locale],
   );
 
-  /*
-   * Render on the server with the default locale rather than withholding the
-   * tree until mount.
-   *
-   * This used to `return null` while `mounted` was false, to avoid a hydration
-   * mismatch. The mismatch it guarded against cannot happen: `locale` starts at
-   * "en" and only changes inside an effect, so the server render and the first
-   * client render agree by construction — the stored or detected locale is
-   * applied afterwards, in a normal re-render.
-   *
-   * What the guard did instead was ship every page with an empty <body>. The
-   * markup existed only after JavaScript ran, which costs nothing for a browser
-   * and everything for anything that reads HTML without executing it: link
-   * previews, non-rendering crawlers, reader modes, and a mandatory legal notice
-   * that has to be readable to be worth publishing. A site whose pages are blank
-   * until hydration is exactly a site that looks like it was never published.
-   */
   return (
     <LanguageContext.Provider value={{ locale, setLocale, t }}>
       {children}

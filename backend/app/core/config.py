@@ -90,7 +90,12 @@ class Settings(BaseSettings):
     SMTP_USER: str | None = None
     SMTP_PASSWORD: str | None = None
     SMTP_STARTTLS: bool = True
-    SMTP_FROM: str = "noreply@taskmatch.ai"
+    SMTP_FROM: str | None = None
+    SMTP_SSL: bool = False
+    SMTP_SENDMAIL_PATH: str | None = None
+    TASKMATCH_MAIL_ENABLED: bool = False
+    TASKMATCH_OPERATOR_FROM: str | None = None  # Internal notices to the monitored operator only.
+    REGISTRATION_TEST_EMAILS: list[str] = Field(default_factory=list)
     CONTACT_TO: str = "sega@tauraco.ai"
 
     HUMAN_TASKS_ENABLED: bool = False

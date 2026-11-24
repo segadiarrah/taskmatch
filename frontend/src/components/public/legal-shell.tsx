@@ -2,7 +2,7 @@
 
 import { useTranslation } from "@/lib/i18n";
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/public/localized-link";
 import { ArrowLeft, Printer } from "lucide-react";
 import { Reveal } from "@/components/public/motion";
 

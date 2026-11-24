@@ -52,7 +52,7 @@ requireMatch(
 );
 // Careers lists no open roles and has no disclosure control.
 requireMatch("src/app/(public)/company/careers/page.tsx", /href="mailto:/, "careers must offer a working contact link");
-requireMatch("src/app/(public)/resources/api-reference/page.tsx", /aria-expanded=\{isOpen\}/, "API disclosures must expose their state");
+requireMatch("src/app/(public)/resources/api-reference/page.tsx", /<details[^>]*[\s\S]*?<summary\b/, "API groups must use keyboard-accessible native disclosures");
 
 if (/focus:outline-none/.test(read("src/components/language-switcher.tsx"))) {
   failures.push("src/components/language-switcher.tsx: do not suppress the shared keyboard focus outline");

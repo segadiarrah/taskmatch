@@ -161,3 +161,17 @@ test("approving a Stripe quote redirects to Checkout without announcing executio
   await page.getByRole("button", { name: "Approve & pay securely", exact: true }).click();
   await expect(page).toHaveURL("https://checkout.stripe.com/c/pay/quote");
 });
+
+test("first-project quote shows the gross fee, waiver and final amount before payment", async ({page})=>{
+  await setup(page);
+  await page.route("**/api/v1/jobs/job-test/quote",route=>route.fulfill({json:{
+    pending:false, job_status:"quoted", quote:{ id:"quote-test",status:"pending_client",currency:"EUR",
+      subtotal:100,platform_fee:0,platform_fee_waived:10,total:100,human_equivalent:{low:null,high:null},savings_vs_human:null,
+      valid_until:null,pricing_version:"test",rejection_reason:null,actionable:true,requires_human:false,tasks:[] }
+  }}));
+  await page.goto("/client/jobs/job-test");
+  const waiver = page.getByText("First-project fee waiver",{exact:true});
+  await expect(waiver).toBeVisible();
+  await expect(waiver.locator("..")).toContainText("-€10.00");
+  await expect(page.getByText("Platform fee due",{exact:true}).locator("..")).toContainText("€0.00");
+});

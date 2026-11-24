@@ -8,7 +8,7 @@ from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError
+from jwt import InvalidTokenError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import lazyload
@@ -16,6 +16,7 @@ from sqlalchemy.orm import lazyload
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import verify_token
+from app.services.registration import fixture_access_disabled
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_PREFIX}/auth/login",
@@ -42,7 +43,7 @@ async def get_current_user(
         if payload.get("scope") is not None:
             raise credentials_exception
         user_id = UUID(payload["sub"])
-    except (JWTError, KeyError, ValueError, TypeError, AttributeError):
+    except (InvalidTokenError, KeyError, ValueError, TypeError, AttributeError):
         raise credentials_exception
 
     # Late import to avoid circular dependency with models package.
@@ -51,7 +52,7 @@ async def get_current_user(
     # Authentication needs only account fields, not the entire marketplace graph.
     result = await db.execute(select(User).options(lazyload("*")).where(User.id == user_id))
     user = result.scalar_one_or_none()
-    if user is None:
+    if user is None or fixture_access_disabled(user) or payload.get("sv", 0) != user.session_version:
         raise credentials_exception
     return user
 

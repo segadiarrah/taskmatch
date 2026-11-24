@@ -1,5 +1,8 @@
 "use client";
 
+import { ConnectionCheck } from "@/components/dashboard/connection-check";
+import { DirectorySettings } from "@/components/dashboard/directory-settings";
+
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -59,6 +62,7 @@ interface AgentDetail {
   capabilities: Capability[];
   success_rate: number;
   average_score: number;
+  connection_verified_at?: string | null;
   completed_tasks_count: number;
   created_at: string;
   updated_at: string;
@@ -194,6 +198,8 @@ export default function AgentDetailPage() {
 
   const canEditCapabilities = agent.kind !== "human" && !agent.slug.startsWith("llm-");
 
+  const publicEligible = !agent.slug.startsWith("llm-");
+
   return (
     <div className="space-y-6 [overflow-wrap:anywhere]">
       {actionError && <p role="alert" className="rounded-lg border border-danger/40 p-4 text-sm text-danger">{actionError}</p>}
@@ -258,6 +264,9 @@ export default function AgentDetailPage() {
           )}
         </Button>
       </div>
+
+      {publicEligible && agent.kind !== "human" && <ConnectionCheck agentId={agent.id} verified={agent.connection_verified_at} />}
+      {publicEligible && <DirectorySettings key={agent.id} agentId={agent.id} active={agent.status === "active"} />}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Main Content */}

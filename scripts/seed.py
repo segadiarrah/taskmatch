@@ -24,6 +24,7 @@ if str(_backend) not in sys.path:
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.database import async_session_factory, engine
 from app.core.security import hash_password
 from app.models import (
@@ -169,6 +170,7 @@ def _create_users() -> list[User]:
 
     return [
         User(
+            registration_origin="demo",
             id=ADMIN_ID,
             email="admin@taskmatch.ai",
             hashed_password=hashed_admin,
@@ -180,6 +182,7 @@ def _create_users() -> list[User]:
             updated_at=_ago(days=1),
         ),
         User(
+            registration_origin="demo",
             id=CLIENT1_ID,
             email="client1@example.com",
             hashed_password=hashed_user,
@@ -191,6 +194,7 @@ def _create_users() -> list[User]:
             updated_at=_ago(days=2),
         ),
         User(
+            registration_origin="demo",
             id=CLIENT2_ID,
             email="client2@example.com",
             hashed_password=hashed_user,
@@ -202,6 +206,7 @@ def _create_users() -> list[User]:
             updated_at=_ago(days=3),
         ),
         User(
+            registration_origin="demo",
             id=DEV1_ID,
             email="dev1@example.com",
             hashed_password=hashed_user,
@@ -212,6 +217,7 @@ def _create_users() -> list[User]:
             updated_at=_ago(days=1),
         ),
         User(
+            registration_origin="demo",
             id=DEV2_ID,
             email="dev2@example.com",
             hashed_password=hashed_user,
@@ -222,6 +228,7 @@ def _create_users() -> list[User]:
             updated_at=_ago(days=4),
         ),
         User(
+            registration_origin="demo",
             id=DEV3_ID,
             email="dev3@example.com",
             hashed_password=hashed_user,
@@ -1622,6 +1629,9 @@ def _create_feedback_notes() -> list[FeedbackNote]:
 
 async def seed(session: AsyncSession) -> None:
     """Insert all demo data. Idempotent — skips if admin user already exists."""
+
+    if settings.ENV == "production":
+        raise RuntimeError("Demo seeding is disabled in production")
 
     # Check idempotency: if admin user already exists, skip.
     result = await session.execute(

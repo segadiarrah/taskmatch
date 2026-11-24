@@ -11,7 +11,7 @@ from decimal import Decimal
 from typing import Any, Optional
 
 import structlog
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, status
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import lazyload
@@ -141,6 +141,7 @@ async def _serialise_quote(db: AsyncSession, quote: Quote) -> dict[str, Any]:
         "currency": quote.currency,
         "subtotal": float(quote.subtotal),
         "platform_fee": float(quote.platform_fee),
+        "platform_fee_waived": (quote.breakdown_json or {}).get("platform_fee_waived", 0),
         "total": float(quote.total),
         "human_equivalent": {
             "low": float(quote.human_equivalent_low)
@@ -207,6 +208,7 @@ async def get_quote(
 async def accept_quote(
     job_id: uuid.UUID,
     background_tasks: BackgroundTasks,
+    expected_quote_id: uuid.UUID | None = Header(None, alias="X-TaskMatch-Quote-Id"),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
@@ -219,7 +221,7 @@ async def accept_quote(
     if job.billing_mode != "legacy_manual":
         from app.services.billing_service import create_checkout
 
-        return await create_checkout(db, job, current_user)
+        return await create_checkout(db, job, current_user, expected_quote_id)
     if job.status != JobStatus.quoted:
         raise HTTPException(status_code=409, detail="Job is no longer awaiting quote acceptance")
     quote = await quote_service.current_quote(db, job_id)

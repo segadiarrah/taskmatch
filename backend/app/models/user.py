@@ -2,10 +2,11 @@
 
 import enum
 import uuid
+from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import Boolean, Index, String
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Boolean, DateTime, Integer, Index, String
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, TimestampMixin
@@ -42,6 +43,8 @@ class User(TimestampMixin, Base):
         unique=True,
         nullable=False,
     )
+    email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    session_version: Mapped[int] = mapped_column(Integer, server_default="0", nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(1024), nullable=False)
     role: Mapped[UserRole] = mapped_column(
         String(32),
@@ -50,6 +53,9 @@ class User(TimestampMixin, Base):
     full_name: Mapped[str] = mapped_column(String(256), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
     organization_name: Mapped[Optional[str]] = mapped_column(String(256), nullable=True)
+
+    registration_origin: Mapped[str] = mapped_column(String(16), server_default="unknown")
+    registration_attribution: Mapped[dict | None] = mapped_column(JSONB)
 
     # -- relationships ---------------------------------------------------------
 

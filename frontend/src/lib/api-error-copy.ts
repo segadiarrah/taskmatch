@@ -2,6 +2,11 @@ import type { Locale } from "@/lib/locales";
 
 const copy = {
   "en": {
+    "payment_mode": "This payment was created in a different payment mode.",
+    "first_quote": "First-project eligibility changed. Refresh the quote and review the total before paying.",
+    "first_pending": "Another payment is pending for this account. Complete or cancel it, then retry.",
+    "first_capacity": "All remaining first-project places are reserved for payments in progress. Try again after they settle.",
+    "expiry": "The payment service has not confirmed this checkout expired unpaid.",
     "request": "The request could not be completed. Please try again.",
     "network": "The connection failed. Check your connection and try again.",
     "auth": "Sign in again to continue.",
@@ -36,6 +41,11 @@ const copy = {
     "identity": "Independent identity verification is required."
   },
   "fr": {
+    "payment_mode": "Ce paiement a été créé dans un autre mode de paiement.",
+    "first_quote": "Les conditions de la remise ont changé. Actualisez le devis et vérifiez le total avant de payer.",
+    "first_pending": "Un autre paiement est en cours sur ce compte. Terminez-le ou annulez-le, puis réessayez.",
+    "first_capacity": "Toutes les places restantes sont réservées pour des paiements en cours. Réessayez une fois ces paiements terminés.",
+    "expiry": "Le service de paiement doit encore confirmer que cette session a expiré sans paiement.",
     "request": "La demande n’a pas pu aboutir. Réessayez.",
     "network": "La connexion a échoué. Vérifiez votre connexion et réessayez.",
     "auth": "Reconnectez-vous pour continuer.",
@@ -70,6 +80,11 @@ const copy = {
     "identity": "Une vérification d’identité indépendante est requise."
   },
   "es": {
+    "payment_mode": "Este pago se creó en un modo de pago diferente.",
+    "first_quote": "Han cambiado las condiciones del descuento. Actualiza el presupuesto y revisa el total antes de pagar.",
+    "first_pending": "Hay otro pago pendiente en esta cuenta. Complétalo o cancélalo y vuelve a intentarlo.",
+    "first_capacity": "Las plazas restantes están reservadas para pagos en curso. Vuelve a intentarlo cuando terminen.",
+    "expiry": "El servicio de pago aún debe confirmar que esta sesión ha caducado sin que se haya realizado el pago.",
     "request": "No se pudo completar la solicitud. Inténtalo de nuevo.",
     "network": "La conexión falló. Revisa tu conexión e inténtalo de nuevo.",
     "auth": "Vuelve a iniciar sesión para continuar.",
@@ -104,6 +119,11 @@ const copy = {
     "identity": "Se necesita una verificación de identidad independiente."
   },
   "zh": {
+    "payment_mode": "此付款是在另一种支付模式下创建的。",
+    "first_quote": "首个项目优惠资格已发生变化。请刷新报价，核对总额后再付款。",
+    "first_pending": "此账户还有一笔付款正在处理。请先完成或取消该笔付款，然后重试。",
+    "first_capacity": "剩余的首个项目优惠名额均已为正在处理的付款预留。请在这些付款处理完毕后重试。",
+    "expiry": "支付服务尚未确认此次结账已到期且未付款。",
     "request": "请求未能完成，请重试。",
     "network": "连接失败，请检查网络后重试。",
     "auth": "请重新登录后继续。",
@@ -138,6 +158,11 @@ const copy = {
     "identity": "需要独立身份验证。"
   },
   "pt": {
+    "payment_mode": "Este pagamento foi criado noutro modo de pagamento.",
+    "first_quote": "As condições do desconto mudaram. Atualize o orçamento e confirme o total antes de pagar.",
+    "first_pending": "Há outro pagamento pendente nesta conta. Conclua-o ou cancele-o e tente novamente.",
+    "first_capacity": "As vagas restantes estão reservadas para pagamentos em curso. Tente novamente quando esses pagamentos terminarem.",
+    "expiry": "O serviço de pagamentos ainda tem de confirmar que esta sessão expirou sem pagamento.",
     "request": "Não foi possível concluir a solicitação. Tente novamente.",
     "network": "A conexão falhou. Verifique sua conexão e tente novamente.",
     "auth": "Entre novamente para continuar.",
@@ -174,6 +199,11 @@ const copy = {
 } satisfies Record<Locale, Record<string, string>>;
 
 const messageCodes: Record<string, keyof typeof copy.en> = {
+  "This payment was created in a different payment mode": "payment_mode",
+  "First-project eligibility changed. Refresh the quote and review the total before paying": "first_quote",
+  "Another payment is pending for this account. Complete or cancel it, then retry": "first_pending",
+  "All remaining first-project places are reserved for payments in progress. Try again after they settle": "first_capacity",
+  "The payment service has not confirmed this checkout expired unpaid": "expiry",
   "Human Task deadline has passed": "deadline",
   "Create and verify a worker profile before claiming paid work": "worker",
   "Required evidence is missing": "evidence",

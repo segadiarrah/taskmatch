@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
@@ -334,3 +336,12 @@ async def admin_list_payments(
         {**dict(row), **{field: float(row[field]) for field in ("gross_amount", "platform_fee", "net_amount")}}
         for row in rows
     ]
+
+
+@router.get("/release", summary="Identify the deployed application revision")
+async def deployed_release(current_user: User = Depends(require_role("admin"))) -> dict:
+    return {
+        "revision": os.environ.get("TASKMATCH_REVISION"),
+        "deployed_at_utc": os.environ.get("TASKMATCH_DEPLOYED_AT"),
+        "version": os.environ.get("TASKMATCH_RELEASE_VERSION"),
+    }

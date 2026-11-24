@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/public/localized-link";
 import { PageHero } from "@/components/public/page-shell";
 import { useTranslation } from "@/lib/i18n";
 const COPY = {

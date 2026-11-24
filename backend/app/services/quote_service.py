@@ -24,7 +24,7 @@ from app.models.delivery import DeliveryMode, DeliveryPlan, DeliveryStatus
 from app.models.job import Job, JobStatus
 from app.models.quote import ExecutionRoute, Quote, QuoteStatus, TaskQuote
 from app.models.task import Task, TaskStatus
-from app.services import pricing_service, providers
+from app.services import first_project_offer, pricing_service, providers
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 
@@ -233,6 +233,7 @@ async def create_quote_for_job(
         pricing_version=quote_result.pricing_version,
         breakdown_json=quote_result.to_dict(),
     )
+    await first_project_offer.price_new_quote(db, job, quote)
     db.add(quote)
     await db.flush()
 

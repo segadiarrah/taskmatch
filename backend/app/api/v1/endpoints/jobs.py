@@ -489,6 +489,7 @@ async def get_job_plan(
             "subtotal": float(quote.subtotal),
             "platform_fee": float(quote.platform_fee),
             "total": float(quote.total),
+            "platform_fee_waived": (quote.breakdown_json or {}).get("platform_fee_waived", 0),
             "savings_vs_human": quote.savings_vs_human,
             "human_equivalent_low": float(quote.human_equivalent_low)
             if quote.human_equivalent_low is not None

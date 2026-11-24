@@ -1,9 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/public/localized-link";
 import { useAuth } from "@/lib/auth";
-import { authIntentHref, postAuthDestination } from "@/lib/public-intent";
+import { authIntentHref, postAuthDestination, MARKETPLACE_INTENTS } from "@/lib/public-intent";
 import { useTranslation, type Locale } from "@/lib/i18n";
+import { COPY as journeyCopy } from "@/lib/landing-copy";
+import { paymentRoles, firstProjectOffer } from "@/content/marketplace-payments";
 import { PageHero } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/motion";
 import { ArrowRight, Banknote, Check } from "lucide-react";
@@ -146,6 +148,9 @@ export default function PricingPage() {
   const { locale } = useTranslation();
   const { user } = useAuth();
   const c = COPY[locale];
+  const labels = journeyCopy[locale];
+  const roles = paymentRoles[locale];
+  const offer = firstProjectOffer[locale];
   return (
     <div className="min-h-screen bg-ink-950 text-ink-50">
       <PageHero eyebrow={c.eyebrow} title={c.title} accent={c.accent} description={c.description} icon={Banknote} />
@@ -166,11 +171,25 @@ export default function PricingPage() {
           <p className="mt-5 max-w-3xl text-lg leading-8">{c.example}</p>
         </div>
       </section>
+      <section id="first-project" className="mx-auto max-w-6xl scroll-mt-24 px-4 pt-16 sm:px-6">
+        <h2 className="font-display text-3xl font-semibold">{offer.title}</h2>
+        <p className="mt-4 max-w-3xl text-lg leading-8">{offer.summary}</p>
+        <p className="mt-3 max-w-3xl leading-7 text-ink-300">{offer.terms}</p>
+      </section>
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 pt-16 sm:px-6 lg:grid-cols-3">
+        {MARKETPLACE_INTENTS.map(intent => <section key={intent} className="flex flex-col border-t border-ink-700 pt-6">
+          <h2 className="font-display text-2xl font-semibold">{roles[intent].title}</h2>
+          <p className="my-4 flex-1 leading-7 text-ink-300">{roles[intent].body}</p>
+          <Link className="inline-flex items-center gap-2 text-sm font-semibold text-signal-600 underline" href={user ? postAuthDestination(user.role, intent) : authIntentHref("register", intent)}>
+            {labels[intent]}<ArrowRight aria-hidden="true" className="h-4 w-4" />
+          </Link>
+        </section>)}
+      </div>
       <section id="enterprise" className="mx-auto grid max-w-6xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2">
         <div>
           <h2 className="font-display text-3xl font-medium">{c.includedTitle}</h2>
           <ul className="mt-8 space-y-4">{c.included.map(item => <li key={item} className="flex gap-3 text-ink-300"><Check className="mt-1 h-4 w-4 shrink-0 text-signal-400" />{item}</li>)}</ul>
-          <Link href={user ? postAuthDestination(user.role, "project") : authIntentHref("register", "project")} className="mt-8 inline-flex h-12 items-center gap-2 rounded-md bg-signal-500 px-6 font-semibold text-ink-950 hover:bg-signal-400">{c.cta}<ArrowRight className="h-4 w-4" /></Link>
+          <Link href="/resources/documentation#billing" className="mt-5 block text-sm text-signal-400 hover:underline">{labels.docs}</Link>
           <Link href="/company/contact" className="mt-5 block text-sm text-signal-400 hover:underline">{c.contact}</Link>
         </div>
         <div id="faq">

@@ -176,7 +176,10 @@ for (const locale of Object.keys(localeCopy) as Locale[]) {
 test("changing language persists after reload and updates document language", async ({ page }) => {
   await page.goto("/");
   const selector = page.getByRole("combobox", { name: /Select language|Choisir la langue|Elegir idioma|选择语言|Selecionar idioma/ });
-  await selector.selectOption("fr");
+  await Promise.all([
+    page.waitForURL(url => url.pathname === "/" && url.searchParams.get("lang") === "fr", { waitUntil: "load" }),
+    selector.selectOption("fr"),
+  ]);
   await expect(page.locator("html")).toHaveAttribute("lang", "fr");
   await page.reload();
   await expect(page.getByRole("combobox", { name: "Choisir la langue" })).toHaveValue("fr");
@@ -192,7 +195,11 @@ for (const browserLocale of ["pt-BR", "pt-PT"]) {
       await expect(page.locator("html")).toHaveAttribute("lang","pt");
       const selector=page.getByRole("combobox", {name:"Selecionar idioma"});
       await expect(selector).toHaveValue("pt");
-      await selector.selectOption("es");await page.reload();
+      await Promise.all([
+        page.waitForURL(url => url.pathname === "/" && url.searchParams.get("lang") === "es", { waitUntil: "load" }),
+        selector.selectOption("es"),
+      ]);
+      await page.reload();
       await expect(page.locator("html")).toHaveAttribute("lang","es");
       await expect(page.getByRole("combobox",{name:"Elegir idioma"})).toHaveValue("es");
     });

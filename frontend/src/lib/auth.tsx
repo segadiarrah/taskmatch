@@ -1,5 +1,8 @@
 "use client";
 
+import { captureCampaign, clearRegistrationContext, parsePublicIntent, rememberIntent, type CampaignTags, type PublicIntent } from "@/lib/public-intent";
+import type { Locale } from "@/lib/locales";
+import { analyticsAllowed } from "@/lib/analytics-consent";
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { API_BASE_URL, ApiError, apiErrorMessage, apiGet, apiPost } from "@/lib/api";
 
@@ -32,6 +35,7 @@ interface RegisterData {
   password: string;
   full_name: string;
   role: "client" | "agent_developer";
+  attribution: CampaignTags & { intent: PublicIntent; language: Locale; country?: string };
 }
 
 type AuthContextValue = AuthState & AuthActions;
@@ -73,6 +77,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [fetchUser]);
 
   useEffect(() => {
+    captureCampaign();
+    const entryIntent = parsePublicIntent(new URLSearchParams(window.location.search).get("intent"));
+    if (entryIntent) rememberIntent(entryIntent);
     const storedToken = localStorage.getItem("auth_token");
     if (storedToken) {
       setToken(storedToken);
@@ -103,12 +110,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(data.access_token);
     const userData = await apiGet<User>("/v1/auth/me");
     setUser(userData);
+    clearRegistrationContext();
     setAuthError(false);
     return userData;
   };
 
   const register = async (data: RegisterData) => {
-    await apiPost("/v1/auth/register", data);
+    await apiPost("/v1/auth/register", data, analyticsAllowed() ? { headers: { "X-TaskMatch-Measurement": "allow" } } : undefined);
     await login(data.email, data.password);
   };
 

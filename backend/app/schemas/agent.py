@@ -114,6 +114,7 @@ class AgentResponse(BaseModel):
     average_score: float = 0.0
     success_rate: float = 0.0
     completed_tasks_count: int = 0
+    connection_verified_at: Optional[datetime] = None
     last_heartbeat_at: Optional[datetime] = None
     capabilities: List[CapabilityResponse] = Field(default_factory=list)
     created_at: datetime

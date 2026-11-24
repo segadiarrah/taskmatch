@@ -13,6 +13,7 @@ from app.models.billing import BillingOperation, JobFunding, StripeConnectAccoun
 from app.models.payment import PaymentRecord
 from app.models.task import Task
 from app.models.user import User
+from app.services import first_project_offer
 from app.services import billing_service as billing
 from app.services.stripe_gateway import get_gateway, to_minor
 
@@ -609,6 +610,43 @@ def _validate_dispute(dispute, funding, expected_id):
         raise BillingBlocked("Stripe dispute does not match its funding contract")
 
 
+async def check_offer_expiry(funding_id, generation, factory):
+    async with factory() as db:
+        funding = await db.get(JobFunding, uuid.UUID(funding_id))
+        if (not funding or funding.generation != generation or funding.first_project_slot is None
+                or funding.charge_id):
+            return
+        if funding.livemode != billing.live_mode():
+            raise BillingBlocked("This payment was created in a different payment mode")
+        if (funding.checkout_request or {}).get("method") == "off_session":
+            if funding.status not in ("creating", "requires_review"):
+                return
+            from app.services.autonomous_funding import recover_payment
+            from app.services.stripe_gateway import StripeGatewayError
+            task_id = await db.scalar(select(Task.id).where(Task.job_id == funding.job_id,
+                                      Task.human_contract_json.is_not(None)).limit(1))
+            owner = await db.get(User, funding.client_user_id, options=[lazyload("*")])
+            try:
+                await recover_payment(db, task_id, owner, expired_attempt=(funding.id, generation))
+            except HTTPException as exc:
+                if exc.status_code == 409:
+                    raise StripeGatewayError("The expired mandate still needs payment reconciliation", retryable=True) from exc
+                raise
+            await db.commit()
+            return
+        if funding.status not in ("checkout_pending", "creating"):
+            return
+        if not funding.checkout_session_id:
+            raise BillingBlocked("Unknown checkout outcome. Reconcile the provider session before releasing its offer place.")
+        job = await billing.locked_job(db, funding.job_id)
+        await billing.sync_funding(db, job)
+        await db.refresh(funding)
+        if (funding.generation == generation and funding.status in ("creating", "checkout_pending")):
+            from app.services.stripe_gateway import StripeGatewayError
+            raise StripeGatewayError("The provider session has not expired yet", retryable=True)
+        await db.commit()
+
+
 async def process_event(operation_id, factory):
     async with factory() as db:
         operation = await db.get(BillingOperation, operation_id)
@@ -636,17 +674,30 @@ async def process_event(operation_id, factory):
                 funding = await db.scalar(
                     select(JobFunding).where(JobFunding.checkout_session_id == remote["id"])
                 )
+                if not funding:
+                    # Checkout creation can succeed even when its response is lost.
+                    # Match current generation, metadata and amounts before binding.
+                    try:
+                        bound_id = uuid.UUID((remote.get("metadata") or {})["taskmatch_funding_id"])
+                    except (KeyError, ValueError, TypeError):
+                        bound_id = None
+                    if bound_id:
+                        funding = await db.get(JobFunding, bound_id)
                 if funding:
                     await billing.locked_job(db, funding.job_id)
                     funding = await db.get(JobFunding, funding.id, populate_existing=True)
                     if (
-                        funding.checkout_session_id == remote["id"]
+                        funding.checkout_session_id in (None, remote["id"])
+                        and (funding.checkout_request or {}).get("method") != "off_session"
                         and _metadata_matches(remote, billing.metadata(funding))
                         and remote.get("livemode") is funding.livemode
                         and funding.status in ("creating", "checkout_pending")
                     ):
+                        funding.checkout_session_id = remote["id"]
+                        billing.verify_unpaid_expiry(funding, remote)
                         funding.status = "expired"
                         funding.checkout_url = None
+                        await first_project_offer.release(db, funding)
         elif kind == "payment_intent.succeeded":
             from app.services.autonomous_funding import reconcile_intent
             handled = await reconcile_intent(db, obj['id'], obj.get('metadata'))

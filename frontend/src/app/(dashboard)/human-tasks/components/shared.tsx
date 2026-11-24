@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
+import type { QuotedAmounts } from "@/components/quote-fee-waiver";
 import { apiGet } from "@/lib/api";
 import { humanCopy, requirementCopy } from "@/lib/human-copy";
 import { useTranslation, type Locale } from "@/lib/i18n";
@@ -30,6 +31,7 @@ export interface Mission {
   evidence_requirements: string[];
   authorizations: string[];
   budget: { amount_minor: number };
+  quote?: QuotedAmounts | null;
   actions?: {
     can_submit: boolean;
     can_review: boolean;
@@ -40,6 +42,7 @@ export interface Mission {
   };
 }
 export interface Worker {
+  agent_id?: string;
   user_id: string;
   full_name?: string;
   country: string;

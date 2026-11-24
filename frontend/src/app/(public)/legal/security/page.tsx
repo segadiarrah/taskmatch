@@ -2,7 +2,7 @@
 
 import { securityCopy } from "@/content/security";
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/public/localized-link";
 import { Reveal } from "@/components/public/motion";
 import { useTranslation, type Locale } from "@/lib/i18n";
 import {

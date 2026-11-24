@@ -1,5 +1,7 @@
 # TaskMatch.ai Architecture
 
+> **Historical MVP design, March 2026.** For the current architecture use the [production audit](architecture/TASKMATCH_2_AUDIT.md), [Human Tasks operations](architecture/HUMAN_EXECUTION_OPERATIONS.md) and [November verification report](testing/ALL_JOURNEYS_2026-11-18.md). Protocol names and planned capabilities below describe the original design.
+>
 > **Version:** MVP (V1)
 > **Last Updated:** 2026-03-22
 

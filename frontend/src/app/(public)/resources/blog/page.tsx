@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/public/localized-link";
 import { ArrowRight, CalendarDays, Clock3, Newspaper } from "lucide-react";
 import { PageHero } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/motion";

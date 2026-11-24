@@ -102,7 +102,9 @@ async def run_once(factory=async_session_factory, *, execution=None):
     error = None
     status = "done"
     try:
-        if kind == "fund_human_job":
+        if kind == "check_offer_expiry":
+            await processors.check_offer_expiry(entity_id, payload["generation"], factory)
+        elif kind == "fund_human_job":
             from app.services.autonomous_funding import process_funding
             await process_funding(operation_id, factory)
         elif kind == "stripe_event":
@@ -231,11 +233,23 @@ async def consume_webhooks():
         await asyncio.sleep(settings.BILLING_WORKER_POLL_SECONDS)
 
 
+async def prune_measurement():
+    from app.services.measurement import remove_expired
+    while True:
+        try:
+            async with async_session_factory() as db:
+                await remove_expired(db)
+                await db.commit()
+        except Exception:
+            logger.exception("Usage-measurement retention cleanup failed")
+        await asyncio.sleep(86400)
+
+
 async def main():
     logging.basicConfig(level=logging.INFO)
     # Provider execution can await many slow model calls. Financial events and
     # refunds retain a dedicated consumer while bounded task attempts execute.
-    await asyncio.gather(consume(execution=False), consume(execution=True), consume_webhooks())
+    await asyncio.gather(consume(execution=False), consume(execution=True), consume_webhooks(), prune_measurement())
 
 
 if __name__ == "__main__":

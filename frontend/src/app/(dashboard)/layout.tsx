@@ -1,5 +1,7 @@
 "use client";
+import { activityCopy } from "@/lib/activity-copy";
 
+import { growthCopy } from "@/lib/growth-copy";
 import React, { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -61,6 +63,9 @@ const buildNavItems = (t: (key: string) => string, locale: Locale): NavItem[] =>
   { label: t("dashboard.payments"), href: "/admin/payments", icon: CreditCard, roles: ["admin"] },
   { label: t("dashboard.learning"), href: "/admin/learning", icon: GraduationCap, roles: ["admin"] },
   { label: t("dashboard.providers"), href: "/admin/providers", icon: Plug, roles: ["admin"] },
+  { label: growthCopy[locale].title, href:"/admin/growth", icon:Layers, roles:["admin"] },
+  { label: growthCopy[locale].invite, href:"/referrals", icon:Handshake, roles:["client","agent_developer"] },
+  { label: activityCopy[locale].title, href: "/activity", icon: ListChecks, roles: ["client", "agent_developer", "admin"] },
   { label: t("dashboard.audit"), href: "/admin/audit", icon: ScrollText, roles: ["admin"] },
   { label: dashboardActionsCopy[locale].humanTasks, href: "/human-tasks", icon: Handshake, roles: ["client", "agent_developer", "admin"], human: true },
   { label: dashboardActionsCopy[locale].humanRequest, href: "/human-tasks?view=request", icon: Briefcase, roles: ["client"], human: true },

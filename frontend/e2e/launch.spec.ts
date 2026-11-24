@@ -8,6 +8,10 @@ for (const locale of ["en", "fr", "es", "zh", "pt"]) {
     await page.goto("/pricing");
     await expect(page.getByRole("main")).toContainText("10 %");
     await expect(page.getByRole("main")).toContainText("EUR");
+    const waiver = page.locator("#first-project");
+    await expect(waiver).toContainText("20");
+    await expect(waiver).toContainText(/10\s*%/);
+    await expect(page.getByRole("main")).toContainText(/100 EUR.*10 EUR.*110 EUR/);
     await expect(page.getByRole("main")).not.toContainText(/€9|€19|9 €|19 €|Starter|SSO|SLA/);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await page.screenshot({ path: test.info().outputPath(`pricing-${locale}.png`), fullPage: true });

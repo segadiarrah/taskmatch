@@ -41,7 +41,7 @@ Mcp-Method: tools/list
 ```
 
 Supported methods are `server/discover`, `ping`, `tools/list` and `tools/call`.
-Discovery advertises only the implemented tools capability. Each successful result
+Discovery advertises only the implemented tools capability. The tool listing declares private cache scope and a zero-millisecond TTL. Each successful result
 includes `resultType: "complete"`. `tools/call` also requires the `Mcp-Name` header
 to match `params.name`. Tool names with Base64 sentinel header encoding are decoded
 before comparison. Invalid or missing mirrored headers return HTTP 400 with
@@ -199,6 +199,25 @@ The existing billing worker runs an independent notification loop through
 committed before outbound requests. A crash after receipt and before the local
 delivery commit may cause another attempt, which is why receiver deduplication is
 required.
+
+## Reproduce the independent client check
+
+Run the paid journey fixture with the candidate backend and its seeded accounts.
+The standalone test in [tools/journey-tests/protocol-clients/check.mjs](../tools/journey-tests/protocol-clients/check.mjs)
+uses the official MCP JS client 2.4.0 and A2A JS SDK 0.3.14. Install the
+locked dependencies with Node.js 20 or later from the repository root.
+
+```sh
+npm ci --ignore-scripts --prefix tools/journey-tests/protocol-clients
+npm test --prefix tools/journey-tests/protocol-clients -- http://127.0.0.1:3172
+```
+
+The test checks the fixture control endpoint before account login. It discovers
+the MCP tools, creates and reads an unfunded human task, reads that task via
+A2A, and sends and polls a second task via A2A. It also checks that the new
+principal starts with no webhook subscriptions. It creates no charge and sends
+no webhook delivery. The A2A card's reserved example hostname is mapped to the
+same loopback API for transport.
 
 ## Protocol references
 

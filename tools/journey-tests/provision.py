@@ -1,4 +1,5 @@
 """Create disposable local journey stacks. Never reads production configuration."""
+import os
 import json
 import pathlib
 import subprocess
@@ -6,9 +7,11 @@ import time
 import urllib.request
 
 ROOT=pathlib.Path(__file__).resolve().parents[2]
-PRIVATE=pathlib.Path('/home/almalinux/taskmatch-private/all-journeys-20261118')
+PRIVATE=pathlib.Path(os.environ.get('TASKMATCH_JOURNEY_STATE_DIR', str(pathlib.Path.home()/'.local/state/taskmatch/journeys')))
 NETWORK='taskmatch_journeys_20261118'
-IMAGE='taskmatch-backend:journeys-20261118'
+TAG=os.environ.get("TASKMATCH_JOURNEY_IMAGE_TAG", "journeys-20261118")
+IMAGE="taskmatch-backend:"+TAG
+WEB_IMAGE="taskmatch-frontend:"+TAG
 ENV={'ENV':'development','SECRET_KEY':'journey-test-only-secret-never-production-20261118',
      'REDIS_URL':'redis://journey-redis:6379/0','HUMAN_TASKS_ENABLED':'true',
      'STRIPE_MODE':'test','STRIPE_SECRET_KEY':'sk_test_fixture_only',
@@ -24,7 +27,7 @@ def start(args,**kw):
   info=json.loads(found.stdout)[0]
   if NETWORK not in info['NetworkSettings']['Networks'] or not info['State']['Running']:
    raise RuntimeError('Existing journey container needs explicit cleanup: '+name)
-  for image in [IMAGE,'taskmatch-frontend:journeys-20261118','postgres:16-alpine','redis:7-alpine']:
+  for image in [IMAGE,WEB_IMAGE,'postgres:16-alpine','redis:7-alpine']:
    if image in args:
     expected=subprocess.check_output(['docker','image','inspect',image,'--format','{{.Id}}'],text=True).strip()
     if info['Image']!=expected:raise RuntimeError('Outdated journey container needs explicit cleanup: '+name)
@@ -61,7 +64,7 @@ def prepare():
   if db=='taskmatch_paid_test':args+=['python','-m','uvicorn','serve_fixture_api:app','--host','0.0.0.0','--port','8000']
   start(args,stdout=subprocess.DEVNULL)
  start(['docker','run','-d','--name','tm-journey-web','--network',NETWORK,
-      '-e','API_INTERNAL_URL=http://backend:8000','taskmatch-frontend:journeys-20261118'],stdout=subprocess.DEVNULL)
+      '-e','API_INTERNAL_URL=http://backend:8000',WEB_IMAGE],stdout=subprocess.DEVNULL)
  proxy='tm-journey-proxy'
  if subprocess.run(['docker','inspect',proxy],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode:
   run(['docker','create','--name',proxy,'-p','127.0.0.1:3170:3170','-p','127.0.0.1:3171:3171','-p','127.0.0.1:3172:3172','-v',str(ROOT/'tools/journey-tests/nginx.conf')+':/etc/nginx/conf.d/default.conf:ro','nginx:1.27-alpine'],stdout=subprocess.DEVNULL)

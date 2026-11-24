@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/public/localized-link";
 import { useAuth } from "@/lib/auth";
 import { authIntentHref, postAuthDestination } from "@/lib/public-intent";
 import { useParams } from "next/navigation";

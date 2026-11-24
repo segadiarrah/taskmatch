@@ -1,0 +1,12 @@
+[Unit]
+Description=Check TaskMatch public HTTPS and application readiness
+After=network-online.target
+
+[Service]
+Type=oneshot
+DynamicUser=yes
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ExecStart=/usr/bin/python3 /opt/taskmatch/scripts/check_public_readiness.py

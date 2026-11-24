@@ -129,3 +129,20 @@ Migrations 006 → 008 additives, après 005. Conservation des historiques et de
 interfaces existantes ; autorisations nouvelles sans duplication de jobs, tâches,
 affectations, livrables ou ledger. Le proxy route aussi la carte de découverte
 publique vers le backend. Les noms techniques du prestataire restent internes.
+
+## Réexamen du 24 novembre 2026
+
+La base de comparaison était le checkout `3209f7b` et le code applicatif livré le 18 novembre. Le schéma de départ était à la révision 008. Le checkout de production, le dépôt `segadiarrah/taskmatch` et les PR empilées de novembre ont été rapprochés. La branche principale visible en septembre n'incluait pas ces livraisons. La CI valide les changements, la bascule en production reste une opération distincte.
+
+| Domaine | État lors du réexamen | Correction ou preuve |
+|---|---|---|
+| Marketplace, découpage, devis, mandats, validation, ledger | Réutilisable | Parcours API, navigateur et SDK sur deux configurations isolées. Les contrats de dépenses et de remboursement existants sont conservés. |
+| Inscription, attribution, activité | À adapter | Cinq intentions et destinations vérifiées. Attribution persistée selon les préférences, boîte d’envoi transactionnelle, compteurs par semaine UTC, activité et préférences privées. |
+| Site international | À adapter | Cinq locales, liens partageables, formulaire de langue natif, titres et descriptions SSR, sitemap et URL canoniques. Le contrôle `tools/journey-tests/public_previews.py` teste le HTML brut. |
+| Human Tasks MCP, A2A et webhooks | À adapter | Contrôles des clients officiels MCP et A2A sur tâches de recette. Signature, reprise et déduplication testées. Réception d’un événement chez un tiers en production encore à établir. |
+| Premier projet et tableau Growth | Manquant au départ | Offre sur devis et réservation transactionnelle, suivi de cohortes avec consentement, export et accès commerciaux révocables. |
+| Annuaire et intégration des développeurs | À adapter | Publication volontaire, champs publics indépendants du profil privé, connexion entrante confirmée par défi à usage unique. |
+| Identité mail TaskMatch | À adapter | Le formulaire historique aboutit à la boîte de l’opérateur. L’identité commerciale du domaine doit encore être validée. Les chemins opérateur et externes sont distincts. |
+| Exploitation | À adapter | Sauvegarde restaurée en isolation, migrations additives, identification du déploiement pour l’administration, sonde HTTP vérifiant la réponse métier. |
+
+Les frontières métier, le schéma `tm.human-task.v1` et le détail des intégrations du rapport d'origine restent la référence pour la livraison du 17 novembre. Les conditions d’accès des outils commerciaux figurent dans [le guide Growth](../GROWTH_AGENT_ACCESS.md). Les critères restant à satisfaire figurent dans [le backlog](../../GROWTH_BACKLOG.md).

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/public/localized-link";
 import { AlertTriangle, Check, Copy, Gauge, KeyRound, Link2, Package, Workflow } from "lucide-react";
 import { PageHero, PageCta } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/motion";

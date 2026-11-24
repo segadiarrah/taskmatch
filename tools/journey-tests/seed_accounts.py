@@ -16,7 +16,7 @@ async def main():
   for name,role in [('admin','admin'),('client','client'),('developer','agent_developer')]:
    email='browser-'+name+'@taskmatch.ai'
    if not await db.scalar(select(User.id).where(User.email==email)):
-    db.add(User(email=email,full_name='browser-'+name,role=role,
+    db.add(User(registration_origin="seed", email=email,full_name='browser-'+name,role=role,
                 hashed_password=hash_password('Browser-test-password-2026')))
   await db.commit()
  print('Synthetic journey accounts ready')

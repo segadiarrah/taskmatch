@@ -71,3 +71,20 @@ router.include_router(protocol_webhooks.router, tags=["webhooks"])
 
 from app.api.v1.endpoints import task_evidence
 router.include_router(task_evidence.router, tags=["private evidence"])
+
+from app.api.v1.endpoints import growth
+router.include_router(growth.router, tags=["commercial reporting"])
+
+from app.api.v1.endpoints import account_email
+router.include_router(account_email.router, prefix="/auth", tags=["account email"])
+from app.api.v1.endpoints import outreach
+router.include_router(outreach.router, tags=["authorized individual communications"])
+
+from app.api.v1.endpoints import directory
+router.include_router(directory.router, prefix="/directory", tags=["public directory"])
+
+from app.api.v1.endpoints import measurement
+router.include_router(measurement.router, tags=["consented measurement"])
+
+from app.api.v1.endpoints import account_activity
+router.include_router(account_activity.router, prefix="/account/activity", tags=["account activity"])

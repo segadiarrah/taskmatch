@@ -1,4 +1,5 @@
 "use client";
+import { DirectorySettings } from "@/components/dashboard/directory-settings";
 import { useState, type FormEvent } from "react";
 import { apiGet, apiPost, apiPut } from "@/lib/api";
 import { humanCopy } from "@/lib/human-copy";
@@ -257,6 +258,7 @@ export function WorkerProfile({
           </div>
         </div>
       </details>
+      {worker?.agent_id && <DirectorySettings key={worker.agent_id} agentId={worker.agent_id} />}
     </section>
   );
 }

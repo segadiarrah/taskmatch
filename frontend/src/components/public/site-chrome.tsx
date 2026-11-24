@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/public/localized-link";
 import { ArrowRight, Layers, Menu, X } from "lucide-react";
+import { MeasurementPreferences } from "@/components/measurement-preferences";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useAuth } from "@/lib/auth";
 import { useTranslation } from "@/lib/i18n";
+import { directoryCopy } from "@/lib/directory-copy";
+import { integrationCopy } from "@/content/integration";
 import { COPY } from "@/lib/landing-copy";
 import { authIntentHref, postAuthDestination, MARKETPLACE_INTENTS } from "@/lib/public-intent";
 import { cn } from "@/lib/utils";
@@ -46,10 +49,10 @@ export function PublicNavbar() {
     <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-5 px-4 sm:px-6 lg:px-8">
       <SiteLogo />
       <nav className="hidden items-center gap-5 lg:flex">{paths.map(path => <Link key={path.intent} href={isAuthenticated && user ? postAuthDestination(user.role, path.intent) : authIntentHref("register", path.intent)} className="py-3 text-sm font-medium text-ink-300 transition-colors hover:text-signal-600">{path.label}</Link>)}</nav>
-      <div className="hidden items-center gap-5 lg:flex"><LanguageSwitcher /><Link href="/login" className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-ink-200">{L.signIn}<ArrowRight className="h-4 w-4" /></Link></div>
+      <div className="ml-auto flex items-center gap-5"><LanguageSwitcher publicPage /><Link href="/login" className="hidden lg:inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-ink-200">{L.signIn}<ArrowRight className="h-4 w-4" /></Link></div>
       <button type="button" className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-ink-700 lg:hidden" onClick={() => setMobileOpen(!mobileOpen)} aria-label={t("publicUi.toggleMenu")} aria-expanded={mobileOpen} aria-controls="public-mobile-nav">{mobileOpen ? <X aria-hidden="true" className="h-5 w-5" /> : <Menu aria-hidden="true" className="h-5 w-5" />}</button>
     </div>
-    {mobileOpen && <div id="public-mobile-nav" className="border-t border-ink-800 bg-white px-4 pb-5 pt-2 lg:hidden"><nav className="flex flex-col">{paths.map(path => <Link key={path.intent} href={isAuthenticated && user ? postAuthDestination(user.role, path.intent) : authIntentHref("register", path.intent)} onClick={() => setMobileOpen(false)} className="border-b border-ink-800 py-4 text-sm font-medium">{path.label}</Link>)}</nav><div className="mt-4 flex items-center justify-between"><LanguageSwitcher /><Link href="/login" onClick={() => setMobileOpen(false)} className="px-2 py-3 text-sm font-semibold">{L.signIn}</Link></div></div>}
+    {mobileOpen && <div id="public-mobile-nav" className="border-t border-ink-800 bg-white px-4 pb-5 pt-2 lg:hidden"><nav className="flex flex-col">{paths.map(path => <Link key={path.intent} href={isAuthenticated && user ? postAuthDestination(user.role, path.intent) : authIntentHref("register", path.intent)} onClick={() => setMobileOpen(false)} className="border-b border-ink-800 py-4 text-sm font-medium">{path.label}</Link>)}</nav><div className="mt-4 flex items-center justify-between"><Link href="/login" onClick={() => setMobileOpen(false)} className="px-2 py-3 text-sm font-semibold">{L.signIn}</Link></div></div>}
   </header>;
 }
 
@@ -57,9 +60,9 @@ export function PublicFooter() {
   const { locale, t } = useTranslation();
   const c = COPY[locale]; const L = LABELS[locale];
   const columns = [
-    { title: "TaskMatch", links: [{ label: c.learn, href: "/how-it-works" }, { label: c.pricing, href: "/pricing" }, { label: L.about, href: "/company/about" }, { label: L.contact, href: "/company/contact" }] },
-    { title: L.resources, links: [{ label: L.docs, href: "/resources/documentation" }, { label: "API", href: "/resources/api-reference" }, { label: "SDK", href: "/resources/sdk" }, { label: L.guides, href: "/resources/guides" }] },
+    { title: "TaskMatch", links: [{ label: c.learn, href: "/how-it-works" }, { label: c.pricing, href: "/pricing" }, { label: directoryCopy[locale].title, href: "/directory" }, { label: L.about, href: "/company/about" }, { label: L.contact, href: "/company/contact" }] },
+    { title: L.resources, links: [{ label: L.docs, href: "/resources/documentation" }, { label: "API", href: "/resources/api-reference" }, { label: "SDK", href: "/resources/sdk" }, { label: L.guides, href: "/resources/guides" }, { label: integrationCopy[locale].protocols, href: "/resources/documentation#protocols" }, { label: integrationCopy[locale].webhooks, href: "/resources/api-reference#webhooks" }] },
     { title: L.legal, links: [{ label: L.notice, href: "/legal/notice" }, { label: L.privacy, href: "/legal/privacy" }, { label: L.terms, href: "/legal/terms" }, { label: L.security, href: "/legal/security" }] },
   ];
-  return <footer className="border-t border-ink-800 bg-ink-950"><div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8"><div className="grid gap-9 sm:grid-cols-[1.2fr_1fr_1fr_1fr]"><div><SiteLogo /><p className="mt-5 max-w-48 text-xs leading-6 text-ink-400">{c.eyebrow}</p></div>{columns.map(column => <div key={column.title}><h2 className="text-sm font-semibold text-ink-200">{column.title}</h2><ul className="mt-4 space-y-3">{column.links.map(link => <li key={link.href}><Link href={link.href} className="text-sm text-ink-400 hover:text-ink-50">{link.label}</Link></li>)}</ul></div>)}</div><p className="mt-10 border-t border-ink-800 pt-6 text-xs leading-6 text-ink-400">© {new Date().getFullYear()} {t("publicUi.operatedBy")} {L.rights}</p></div></footer>;
+  return <footer className="border-t border-ink-800 bg-ink-950"><div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8"><div className="grid gap-9 sm:grid-cols-[1.2fr_1fr_1fr_1fr]"><div><SiteLogo /><p className="mt-5 max-w-48 text-xs leading-6 text-ink-400">{c.eyebrow}</p></div>{columns.map(column => <div key={column.title}><h2 className="text-sm font-semibold text-ink-200">{column.title}</h2><ul className="mt-4 space-y-3">{column.links.map(link => <li key={link.href}><Link href={link.href} className="text-sm text-ink-400 hover:text-ink-50">{link.label}</Link></li>)}</ul></div>)}</div><p className="mt-10 border-t border-ink-800 pt-6 text-xs leading-6 text-ink-400">© {new Date().getFullYear()} {t("publicUi.operatedBy")} {L.rights}</p><MeasurementPreferences /></div></footer>;
 }

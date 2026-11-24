@@ -66,15 +66,11 @@ export const LEGAL_ENTITY: LegalEntity = {
   // Identifiers below are taken from the public registry (Annuaire des
   // Entreprises / INSEE Sirene, SIREN 879 829 646, dirigeant Sega Diarrah).
   //
-  // `legalForm` and `shareCapital` are the two values that the registry had not
-  // yet reflected when this was written: it still showed "SARL" at a capital of
-  // 100 €, last updated 12/08/2026, while the company has converted to a SAS
-  // with a capital of 100 000 €. They are recorded here from the Kbis.
-  // Re-check them against the registry once the change has propagated — a
-  // legal notice that contradicts the public register is the first thing a
-  // counterparty's diligence flags.
-  legalForm: "SAS",
-  shareCapital: 100_000,
+  // Sirene returned legal category 5499 on 2026-11-24. The last
+  // available registry extract (2025-05-14) gives capital of EUR 100.
+  // Capital is displayed with its documentary date on the notice.
+  legalForm: "SARL",
+  shareCapital: 100,
   siren: "879829646",
   siret: "87982964600014",
   // Corbeil-Essonnes falls under the Tribunal de commerce d'Évry.
@@ -153,13 +149,6 @@ export function isHostPublished(entity: LegalEntity = LEGAL_ENTITY): boolean {
  */
 export function publisherLine(entity: LegalEntity = LEGAL_ENTITY): string {
   const parts: string[] = [entity.name];
-  if (entity.legalForm) {
-    parts.push(
-      entity.shareCapital != null
-        ? `${entity.legalForm} au capital de ${formatCapital(entity.shareCapital)}`
-        : entity.legalForm,
-    );
-  }
   if (entity.rcsCity && entity.siren) {
     parts.push(`RCS ${entity.rcsCity} ${formatSiren(entity.siren)}`);
   }
@@ -181,8 +170,4 @@ export function formatSiret(siret: string): string {
   return digits.length === 14
     ? digits.replace(/(\d{3})(\d{3})(\d{3})(\d{5})/, "$1 $2 $3 $4")
     : siret;
-}
-
-function formatCapital(amount: number): string {
-  return `${new Intl.NumberFormat("fr-FR").format(amount)} €`;
 }

@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import secrets
 import re
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import lazyload, selectinload
@@ -42,6 +46,38 @@ async def _capability_agent(agent_id: uuid.UUID, user: User, db: AsyncSession) -
     if "/experts/" in agent.endpoint_url or agent.slug.startswith("llm-"):
         raise HTTPException(409, "Capabilities are managed through worker verification or the provider registry")
     return agent
+
+
+class ConnectionProof(BaseModel):
+    challenge: str = Field(min_length=40, max_length=64)
+
+
+@router.post("/{agent_id}/connection/challenge")
+async def issue_challenge(agent_id: uuid.UUID, response: Response,
+                          user: User = Depends(require_role("agent_developer")),
+                          db: AsyncSession = Depends(get_db, scope="function")):
+    agent = await _capability_agent(agent_id, user, db)
+    value = secrets.token_urlsafe(32)
+    agent.connection_challenge_hash = hashlib.sha256(value.encode()).hexdigest()
+    agent.connection_challenge_until = datetime.now(timezone.utc) + timedelta(minutes=10)
+    response.headers["Cache-Control"] = "no-store"
+    return {"challenge": value, "expires_at": agent.connection_challenge_until}
+
+
+@router.post("/{agent_id}/connection/confirm")
+async def confirm_connection(agent_id: uuid.UUID, body: ConnectionProof,
+                             db: AsyncSession = Depends(get_db, scope="function")):
+    agent = await db.scalar(select(Agent).options(lazyload("*")).where(Agent.id == agent_id).with_for_update())
+    now = datetime.now(timezone.utc)
+    digest = hashlib.sha256(body.challenge.encode()).hexdigest()
+    if (not agent or not agent.connection_challenge_until or agent.connection_challenge_until <= now
+            or not hmac.compare_digest(agent.connection_challenge_hash or "", digest)):
+        raise HTTPException(400, "Invalid or expired connection challenge")
+    agent.connection_challenge_hash = agent.connection_challenge_until = None
+    agent.connection_verified_at = now
+    await log_audit(db, actor_type="agent", actor_id=str(agent.id), entity_type="agent", entity_id=str(agent.id),
+                    action="agent_connection_verified", payload={})
+    return {"connection_verified_at": now}
 
 
 @router.post("/{agent_id}/capabilities", status_code=201, response_model=CapabilityResponse)
@@ -285,6 +321,8 @@ async def update_agent(
     if "endpoint_url" in update_data and update_data["endpoint_url"] is not None:
         update_data["endpoint_url"] = str(update_data["endpoint_url"])
 
+    if set(update_data) & {"endpoint_url", "auth_type", "auth_credentials"}:
+        agent.connection_verified_at = agent.connection_challenge_hash = agent.connection_challenge_until = None
     for field, value in update_data.items():
         setattr(agent, field, value)
 

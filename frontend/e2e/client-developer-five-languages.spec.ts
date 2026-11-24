@@ -74,6 +74,8 @@ for (const locale of Object.keys(dictionaries) as Array<keyof typeof dictionarie
       await page.locator("select").filter({ has: page.locator('option[value="pt"]') }).selectOption("en");
       await expect(page.getByRole("alert").filter({ hasText: "payment service reports a refund or dispute" })).toBeVisible();
       await expect(page.getByRole("main").getByText(/stripe/i)).toHaveCount(0);
+      await page.locator('select[name="lang"]').selectOption(locale);
+      await expect(page.locator("html")).toHaveAttribute("lang", locale);
     }
     await page.goto("/client/jobs/new");
     await page.getByPlaceholder(copy.client.new.requirementPlaceholder).fill("Original requirement description");

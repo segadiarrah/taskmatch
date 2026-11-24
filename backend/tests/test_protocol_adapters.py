@@ -36,7 +36,9 @@ async def test_modern_mcp_discovery_tools_create_poll_and_content_bound_replay(m
     assert discovery.status_code == 200, discovery.text
     assert discovery.json()['result']['resultType'] == 'complete'
     assert discovery.json()['result']['supportedVersions'] == ['2026-07-28']
-    tools = (await mcp(market, 'tools/list')).json()['result']['tools']
+    listing = (await mcp(market, 'tools/list')).json()['result']
+    assert listing['ttlMs'] == 0 and listing['cacheScope'] == 'private'
+    tools = listing['tools']
     assert {t['name'] for t in tools} == {
         'human_task_create', 'human_task_get', 'human_task_result',
         'human_task_events', 'human_task_fund'}
@@ -133,7 +135,7 @@ async def test_mcp_and_a2a_funding_share_one_durable_authorized_payment(market, 
         'arguments': {'task_id': task['task_id']}}, headers=headers)
     assert response.status_code == 200, response.text
     funding = response.json()['result']['structuredContent']
-    assert funding['status'] == 'creating' and funding['amount_minor'] == 1100
+    assert funding['status'] == 'creating' and funding['amount_minor'] == 1000
     # Enqueuing payment must not claim receipt or make an external charge.
     assert not [call for call in remote.calls if call[:2] == ('POST', '/payment_intents')]
     response = await market.http.post('/protocols/a2a', headers=headers, json={

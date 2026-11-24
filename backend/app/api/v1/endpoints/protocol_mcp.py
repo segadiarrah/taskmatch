@@ -115,7 +115,7 @@ async def mcp(request: Request, identity: Annotated[tuple, Depends(caller)], db:
     elif method == 'tools/list':
         if params.get('cursor'):
             return rpc_error(request_id, -32602, 'Invalid cursor')
-        result = {'tools': adapter.tools()}
+        result = {'tools': adapter.tools(), 'ttlMs': 0, 'cacheScope': 'private'}
     elif method == 'tools/call':
         name, arguments = params.get('name'), params.get('arguments', {})
         if not isinstance(name, str) or name not in adapter.OPERATIONS or not isinstance(arguments, dict):

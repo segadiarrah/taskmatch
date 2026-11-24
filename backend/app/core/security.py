@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from jose import JWTError, jwt
+import jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
@@ -58,18 +58,10 @@ def verify_token(token: str) -> dict:
 
     Raises
     ------
-    JWTError
+    jwt.InvalidTokenError
         If the token is expired, tampered with, or otherwise invalid.
     """
-    try:
-        payload: dict = jwt.decode(
-            token,
-            settings.SECRET_KEY,
-            algorithms=[settings.ALGORITHM],
-        )
-        return payload
-    except JWTError:
-        raise
+    return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
 
 
 # ---------------------------------------------------------------------------

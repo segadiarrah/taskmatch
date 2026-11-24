@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/public/localized-link";
 import { ArrowRight, BookOpen, Clock3, Layers, Users } from "lucide-react";
 import { PageHero, PageCta } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/motion";

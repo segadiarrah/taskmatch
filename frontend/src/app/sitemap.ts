@@ -3,6 +3,8 @@ import type { MetadataRoute } from "next";
 import { blogPosts } from "@/content/blog";
 import { guides } from "@/content/guides";
 import { PUBLIC_ROUTES, SITE_URL } from "@/lib/site";
+import { languageUrls } from "@/lib/share-metadata";
+import { SUPPORTED_LOCALES } from "@/lib/locales";
 
 /**
  * Sitemap for the public marketing and legal pages.
@@ -51,5 +53,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...pages, ...posts, ...guidePages];
+  return [...pages, ...posts, ...guidePages].flatMap(page => {
+    const languages = languageUrls(new URL(page.url).pathname);
+    return SUPPORTED_LOCALES.map(locale => ({ ...page, url: languages[locale], alternates: { languages } }));
+  });
 }

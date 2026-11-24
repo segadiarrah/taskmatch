@@ -16,6 +16,8 @@ async function authenticated(page: Page) {
 
 test("short admin identifier can be submitted and routes to admin", async ({ page }) => {
   let identifier = "";
+  await page.route("**/api/v1/worker-portal/admin/overview", route => route.fulfill({ json: {} }));
+  await page.route("**/api/v1/billing/admin/**", route => route.fulfill({ json: [] }));
   await page.route("**/api/v1/auth/login", (route) => {
     identifier = new URLSearchParams(route.request().postData() || "").get("username") || "";
     return route.fulfill({ json: { access_token: "test-token", token_type: "bearer" } });
@@ -32,9 +34,11 @@ test("short admin identifier can be submitted and routes to admin", async ({ pag
 
 test("login help leads to a working contact page", async ({ page }) => {
   await page.goto("/login");
-  await page.getByRole("link", { name: "Need help signing in?" }).click();
+  await page.getByRole("link", { name: "Forgot password?" }).click();
+  await expect(page.getByRole("heading", { name: "Reset your password" })).toBeVisible();
+  await page.getByRole("link", { name: "Contact support" }).click();
   await expect(page).toHaveURL(/\/company\/contact$/);
-  await expect(page.locator("form")).toBeVisible();
+  await expect(page.getByRole("textbox", { name: /email/i })).toBeVisible();
 });
 
 test("admin overview failures show recovery instead of fabricated metrics", async ({ page }) => {

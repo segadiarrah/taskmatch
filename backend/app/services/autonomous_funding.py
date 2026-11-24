@@ -12,7 +12,7 @@ from app.models.billing import BillingOperation, JobFunding
 from app.models.human import Delegation, Principal
 from app.models.payment_authorization import PaymentAuthorization
 from app.services import billing_service as billing
-from app.services import quote_service
+from app.services import first_project_offer, quote_service
 from app.services.billing_processors import BillingBlocked
 from app.services.human_authorization import enabled, owned_principal
 from app.services.human_tasks import require_approved_job
@@ -33,7 +33,7 @@ def matched(remote, expected):
     return all(str((remote.get("metadata") or {}).get(k)) == str(v) for k, v in expected.items())
 
 
-async def request_funding(db, task_id, user, delegation):
+async def request_funding(db, task_id, user, delegation, expected_quote_id=None):
     enabled()
     billing.ensure_configured()
     task = await db.get(Task, task_id, options=[lazyload("*")])
@@ -85,6 +85,8 @@ async def request_funding(db, task_id, user, delegation):
         or quote.valid_until <= billing.now()
     ):
         raise HTTPException(409, "A current approved quote is required before payment")
+    if expected_quote_id and quote.id != expected_quote_id:
+        raise HTTPException(409, first_project_offer.REQUOTE)
     amount = to_minor(quote.total, quote.currency)
     ceiling = sum(t.human_contract_json["budget"]["amount_minor"] for t in tasks)
     if amount > ceiling or (d and amount > d.reserved_amount_minor):
@@ -111,6 +113,7 @@ async def request_funding(db, task_id, user, delegation):
         checkout_request={"method": "off_session", "authorization_id": str(auth.id)},
     )
     db.add(funding)
+    await first_project_offer.reserve(db, funding, quote)
     await db.flush()
     await billing.enqueue_operation(
         db,
@@ -125,6 +128,11 @@ async def request_funding(db, task_id, user, delegation):
             "quote_id": str(quote.id),
         },
     )
+    if funding.first_project_slot is not None:
+        await billing.enqueue_operation(
+            db, "check_offer_expiry", funding.id, f"offer-expiry:{funding.id}:{funding.generation}",
+            {"generation": funding.generation}, available_at=quote.valid_until,
+        )
     await log_audit(
         db,
         actor_type="user",
@@ -210,7 +218,12 @@ async def verify_intent(db, funding, intent):
         raise BillingBlocked("Invalid refunded amount")
     if funding.status in ("paid", "refund_pending", "refunded", "partially_refunded", "disputed"):
         return funding.status == "paid"
-    funding.charge_id = charge_id
+    if funding.charge_id is None:
+        funding.charge_id = charge_id
+        funding.captured_at = billing.now()
+        await first_project_offer.redeem(db, funding)
+    elif funding.charge_id != charge_id:
+        raise BillingBlocked("Captured charge changed during payment reconciliation")
     funding.receipt_url = charge.get("receipt_url")
     if charge["amount_refunded"] or charge.get("disputed"):
         funding.refunded_minor = charge["amount_refunded"]
@@ -253,6 +266,8 @@ async def process_funding(operation_id, factory):
     async with factory() as db:
         op = await db.get(BillingOperation, operation_id)
         funding = await db.get(JobFunding, uuid.UUID(op.entity_id))
+        if funding.livemode != billing.live_mode():
+            raise BillingBlocked("This payment was created in a different payment mode")
         if funding.status in (
             "paid",
             "cancelled",
@@ -491,7 +506,7 @@ async def find_intent(db, funding):
     return matches[0].get("id")
 
 
-async def recover_payment(db, task_id, user, payment_intent_id=None):
+async def recover_payment(db, task_id, user, payment_intent_id=None, *, expired_attempt=None):
     """Cancel a proven unpaid attempt before permitting the human payment flow."""
     task = await db.get(Task, task_id, options=[lazyload("*")])
     if not task or not task.human_contract_json:
@@ -501,6 +516,14 @@ async def recover_payment(db, task_id, user, payment_intent_id=None):
     if job.client_user_id != user.id:
         raise HTTPException(403, "Only the responsible account may recover this payment")
     funding = await billing.latest_funding(db, job.id)
+    if expired_attempt:
+        if not funding or (funding.id, funding.generation) != expired_attempt:
+            return
+        if funding.charge_id or funding.first_project_slot is None:
+            return
+        deadline = await db.scalar(select(Quote.valid_until).where(Quote.id == funding.quote_id))
+        if not deadline or deadline > billing.now():
+            return
     if not funding or (funding.checkout_request or {}).get("method") != "off_session":
         raise HTTPException(409, "No agent payment is waiting for attention")
     if funding.status == "paid":
@@ -574,14 +597,15 @@ async def recover_payment(db, task_id, user, payment_intent_id=None):
     op.status = "cancelled"
     op.locked_until = None
     funding.status = "cancelled"
+    await first_project_offer.release(db, funding)
     funding.payment_intent_id = None
     funding.checkout_url = None
     funding.last_error = None
     await log_audit(
         db,
-        actor_type="user",
-        actor_id=str(user.id),
-        action="human_task.funding_recovered",
+        actor_type="system" if expired_attempt else "user",
+        actor_id="billing-worker" if expired_attempt else str(user.id),
+        action="human_task.funding_expired" if expired_attempt else "human_task.funding_recovered",
         entity_type="task",
         entity_id=str(task.id),
         payload={"funding_id": str(funding.id), "generation": generation},

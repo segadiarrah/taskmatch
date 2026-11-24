@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/public/localized-link";
 import { ArrowRight } from "lucide-react";
 import { Reveal } from "@/components/public/motion";
 

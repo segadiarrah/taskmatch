@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import Depends, HTTPException
-from jose import JWTError
+from jwt import InvalidTokenError
 from sqlalchemy import select
 from sqlalchemy.orm import lazyload
 
@@ -13,6 +13,7 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.core.deps import oauth2_scheme
 from app.core.security import verify_token
+from app.services.registration import fixture_access_disabled
 from app.models import Agent, User
 from app.models.human import Delegation, Principal
 
@@ -26,11 +27,13 @@ async def caller(token=Depends(oauth2_scheme), db=Depends(get_db, scope="functio
     try:
         payload = verify_token(token)
         user_id = UUID(payload['sub'])
-    except (JWTError, KeyError, ValueError, TypeError):
+    except (InvalidTokenError, KeyError, ValueError, TypeError):
         raise HTTPException(401, 'Invalid token') from None
     user = await db.get(User, user_id, options=[lazyload('*')])
-    if not user or not user.is_active:
+    if not user or not user.is_active or fixture_access_disabled(user):
         raise HTTPException(403, 'Inactive account')
+    if payload.get('scope') is None and payload.get('sv', 0) != user.session_version:
+        raise HTTPException(401, 'Session expired')
     if payload.get('scope') not in (None, 'human_tasks'):
         raise HTTPException(403, 'Unsupported token scope')
     if payload.get('scope') == 'human_tasks':

@@ -23,6 +23,14 @@ import {
  * outcome than an acknowledged gap.
  */
 
+const REGISTRY = {
+  en: { register: "French business register", capital: "Share capital recorded on 14 May 2025" },
+  fr: { register: "Annuaire des entreprises", capital: "Capital social inscrit au 14 mai 2025" },
+  es: { register: "Registro francés de empresas", capital: "Capital social inscrito el 14 de mayo de 2025" },
+  pt: { register: "Registro francês de empresas", capital: "Capital social registrado em 14 de maio de 2025" },
+  zh: { register: "法国企业名录", capital: "2025 年 5 月 14 日登记的注册资本" },
+};
+
 type Copy = {
   eyebrow: string;
   title: string;
@@ -58,7 +66,7 @@ const COPY: Record<Locale, Copy> = {
     title: "Legal notice",
     summary:
       "Who publishes TaskMatch.ai, under which registration, where it is hosted, and how to reach the people responsible.",
-    updatedAt: "Last updated: August 2026",
+    updatedAt: "Last updated: 24 November 2026",
     s: {
       publisher: "1. Publisher",
       registration: "2. Registration",
@@ -96,7 +104,7 @@ const COPY: Record<Locale, Copy> = {
     title: "Mentions légales",
     summary:
       "Qui édite TaskMatch.ai, sous quelle immatriculation, où le service est hébergé, et comment joindre les responsables.",
-    updatedAt: "Dernière mise à jour : août 2026",
+    updatedAt: "Dernière mise à jour : 24 novembre 2026",
     s: {
       publisher: "1. Éditeur",
       registration: "2. Immatriculation",
@@ -134,7 +142,7 @@ const COPY: Record<Locale, Copy> = {
     title: "Aviso legal",
     summary:
       "Quién publica TaskMatch.ai, bajo qué registro, dónde está alojado y cómo contactar con los responsables.",
-    updatedAt: "Última actualización: agosto de 2026",
+    updatedAt: "Última actualización: 24 de noviembre de 2026",
     s: {
       publisher: "1. Editor",
       registration: "2. Registro",
@@ -171,7 +179,7 @@ const COPY: Record<Locale, Copy> = {
     eyebrow: "法律 / 声明",
     title: "法律声明",
     summary: "TaskMatch.ai 由谁发布、注册信息、托管地点，以及如何联系责任人。",
-    updatedAt: "最后更新：2026 年 8 月",
+    updatedAt: "最后更新：2026 年 11 月 24 日",
     s: {
       publisher: "1. 发布方",
       registration: "2. 注册信息",
@@ -207,7 +215,7 @@ const COPY: Record<Locale, Copy> = {
     eyebrow: "Legal / Aviso",
     title: "Aviso legal",
     summary: "Quem publica o TaskMatch.ai, com que registro, onde está hospedado e como contatar os responsáveis.",
-    updatedAt: "Última atualização: agosto de 2026",
+    updatedAt: "Última atualização: 24 de novembro de 2026",
     s: {
       publisher: "1. Editor",
       registration: "2. Registro",
@@ -238,6 +246,7 @@ const COPY: Record<Locale, Copy> = {
 
 export default function LegalNoticePage() {
   const { locale } = useTranslation();
+  const capital = new Intl.NumberFormat(locale, { style: "currency", currency: "EUR" }).format(LEGAL_ENTITY.shareCapital ?? 0);
   const c = COPY[locale];
   const entity = LEGAL_ENTITY;
   const registered = isRegistrationPublished(entity);
@@ -282,7 +291,8 @@ export default function LegalNoticePage() {
       <LegalSection id="registration" title={c.s.registration}>
         {registered ? (
           <ul className="list-disc space-y-1 pl-5">
-            {entity.legalForm && <li>{entity.legalForm}</li>}
+            {entity.legalForm && <li>{entity.legalForm} · <a href="https://annuaire-entreprises.data.gouv.fr/entreprise/tauraco-879829646">{REGISTRY[locale].register}</a></li>}
+            {entity.shareCapital !== null && <li>{REGISTRY[locale].capital} · {capital}</li>}
             {entity.siren && <li>SIREN {formatSiren(entity.siren)}</li>}
             {entity.siret && <li>SIRET {formatSiret(entity.siret)}</li>}
             {entity.rcsCity && entity.siren && (

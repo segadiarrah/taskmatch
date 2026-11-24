@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiGet, apiPost, apiPut } from "@/lib/api";
+import { QuoteFeeWaiver } from "@/components/quote-fee-waiver";
 import { stripeUrl } from "@/lib/billing";
 import { useAuth } from "@/lib/auth";
 import { useTranslation } from "@/lib/i18n";
@@ -45,15 +46,24 @@ export function WorkflowTools({task,busy,act,onChanged}:{task:Mission;busy:boole
 }
 
 export function FundingActions({task,busy,act,onChanged}:{task:Mission;busy:boolean;act:Action;onChanged:()=>void}) {
-  const {locale}=useTranslation();const c=workflowCopy[locale];const [status,setStatus]=useState("not_started");const [error,setError]=useState("");
+  const {locale, t}=useTranslation();const c=workflowCopy[locale];const [status,setStatus]=useState("not_started");const [error,setError]=useState("");
   useEffect(()=>{let live=true;let timer:ReturnType<typeof setTimeout>|undefined;
     const poll=async()=>{try{const result=await apiGet<{status:string}>(`/v1/human-tasks/${task.task_id}/fund`);if(!live)return;setStatus(result.status);setError("");if(result.status==="paid")onChanged();else if(result.status==="creating")timer=setTimeout(poll,4000);}catch{if(live)setError(c.unavailable);}};
     void poll();return()=>{live=false;if(timer)clearTimeout(timer);};
   },[task.task_id,c.unavailable,onChanged]);
-  async function checkout(){const result=await apiPost<{checkout_url:string;status:string}>(`/v1/billing/jobs/${task.parent_job_id}/checkout`);if(result.status==="paid"){onChanged();return;}const url=stripeUrl(result.checkout_url);if(!url)throw new Error(c.unavailable);window.location.assign(url);}
+  const quoteOptions = task.quote ? { headers: { "X-TaskMatch-Quote-Id": task.quote.id } } : undefined;
+  async function checkout(){const result=await apiPost<{checkout_url:string;status:string}>(`/v1/billing/jobs/${task.parent_job_id}/checkout`, undefined, quoteOptions);if(result.status==="paid"){onChanged();return;}const url=stripeUrl(result.checkout_url);if(!url)throw new Error(c.unavailable);window.location.assign(url);}
+  const quoteTotal = task.quote && new Intl.NumberFormat(locale, {style:"currency", currency:task.quote.currency}).format(task.quote.total);
   return <section className="space-y-4 border-t border-ink-800 pt-5">
     {error&&<p role="alert" className="text-sm text-red-700">{error}</p>}
-    {status==="creating"?<p className="text-sm text-ink-400">{c.processing}</p>:status==="requires_review"?<div className="space-y-3"><p className="text-sm text-ink-400">{c.attention}</p><Button disabled={busy} onClick={()=>void act(async()=>{const r=await apiPost<{status:string}>(`/v1/human-tasks/${task.task_id}/fund/recover`,{});if(r.status!=="paid")await checkout();else onChanged();})}>{c.recover}</Button></div>:<div className="flex flex-wrap gap-3"><Button disabled={busy} onClick={()=>void act(checkout)}>{c.manualPay}</Button><Button variant="outline" disabled={busy} onClick={()=>void act(async()=>{const r=await apiPost<{status:string}>(`/v1/human-tasks/${task.task_id}/fund`);setStatus(r.status);onChanged();})}>{c.autoPay}</Button></div>}
+    {task.quote && <div>
+      <p className="font-medium">{t("quote.totalLabel")} · {quoteTotal}</p>
+      <QuoteFeeWaiver quote={task.quote} pending={status === "not_started"} />
+      {task.quote.platform_fee_waived && status === "not_started" ? <Button variant="outline" disabled={busy} onClick={()=>void act(async()=>{
+        await apiPost(`/v1/jobs/${task.parent_job_id}/quote/refresh`, {}); onChanged();
+      })}>{t("quote.reviewUpdatedQuote")}</Button> : null}
+    </div>}
+    {status==="creating"?<p className="text-sm text-ink-400">{c.processing}</p>:status==="requires_review"?<div className="space-y-3"><p className="text-sm text-ink-400">{c.attention}</p><Button disabled={busy} onClick={()=>void act(async()=>{const r=await apiPost<{status:string}>(`/v1/human-tasks/${task.task_id}/fund/recover`,{});if(r.status!=="paid")await checkout();else onChanged();})}>{c.recover}</Button></div>:<div className="flex flex-wrap gap-3"><Button disabled={busy} onClick={()=>void act(checkout)}>{c.manualPay}</Button><Button variant="outline" disabled={busy} onClick={()=>void act(async()=>{const r=await apiPost<{status:string}>(`/v1/human-tasks/${task.task_id}/fund`, undefined, quoteOptions);setStatus(r.status);onChanged();})}>{c.autoPay}</Button></div>}
     <Link className="inline-block text-xs text-signal-700 underline underline-offset-4" href="/human-tasks?view=agents">{c.agentSettings}</Link>
   </section>;
 }

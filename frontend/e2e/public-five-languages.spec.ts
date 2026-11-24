@@ -9,7 +9,7 @@ const frontend = process.cwd();
 function walk(path: string): string[] {
   return readdirSync(resolve(frontend, path), { withFileTypes: true }).flatMap(entry => entry.isDirectory() ? walk(`${path}/${entry.name}`) : [`${path}/${entry.name}`]);
 }
-const files = ["src/lib/landing-copy.ts", "src/app/loading.tsx", "src/app/not-found.tsx", ...walk("src/app/(auth)"), ...walk("src/app/(public)"), ...walk("src/components/public")].filter(path => /\.tsx?$/.test(path) && !/\/(resources|changelog)\//.test(path));
+const files = ["src/lib/landing-copy.ts", "src/app/(dashboard)/loading.tsx", "src/app/not-found.tsx", ...walk("src/app/(auth)"), ...walk("src/app/(public)"), ...walk("src/components/public")].filter(path => /\.tsx?$/.test(path) && !/\/(resources|changelog)\//.test(path));
 function shape(node: ts.Expression): unknown {
   if (ts.isObjectLiteralExpression(node)) return Object.fromEntries(node.properties.filter(ts.isPropertyAssignment).map(property => [property.name.getText().replace(/^['"]|['"]$/g, ""), shape(property.initializer)]));
   if (ts.isArrayLiteralExpression(node)) return node.elements.map(element => shape(element as ts.Expression));
@@ -61,11 +61,11 @@ for (const locale of locales) {
 
 
 test("public form errors and accessible names use localized copy", () => {
-  for (const path of ["src/app/(auth)/login/page.tsx", "src/app/(auth)/register/page.tsx"]) {
+  for (const path of ["src/app/(auth)/login/page.tsx", "src/app/(auth)/register/registration.tsx"]) {
     const source = readFileSync(resolve(frontend, path), "utf8");
     expect(source, path).not.toMatch(/setError\(err instanceof Error \? err\.message/);
   }
-  for (const path of ["src/app/(auth)/login/page.tsx", "src/app/(auth)/register/page.tsx", "src/app/(public)/company/contact/page.tsx"]) expect(readFileSync(resolve(frontend, path), "utf8"), path).toContain("noValidate");
+  for (const path of ["src/app/(auth)/login/page.tsx", "src/app/(auth)/register/registration.tsx", "src/app/(public)/company/contact/page.tsx"]) expect(readFileSync(resolve(frontend, path), "utf8"), path).toContain("noValidate");
   const contact = readFileSync(resolve(frontend, "src/app/(public)/company/contact/page.tsx"), "utf8");
   for (const field of ["name", "email", "subject", "message"]) expect(contact).toContain(`aria-label={c.${field}}`);
   const notice = readFileSync(resolve(frontend, "src/app/(public)/legal/notice/page.tsx"), "utf8");
@@ -151,8 +151,7 @@ test("Portuguese public pages remain readable on a narrow screen", async ({ page
 for (const successful of [false, true]) {
   test(`Portuguese contact form shows the localized ${successful ? "success" : "error"} state`, async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem("taskmatch_locale", "pt"));
-    await page.route("**/api/v1/contact", route => route.fulfill({ status: successful ? 200 : 500, json: {} }));
-    await page.route("https://formsubmit.co/**", route => route.fulfill({ status: 500, json: {} }));
+    await page.route("**/api/v1/contact", route => route.fulfill({ status: successful ? 202 : 500, json: successful ? { status: "queued" } : {} }));
     await page.goto("/company/contact");
     await page.getByRole("textbox", { name: "Nome completo", exact: true }).fill("Ana Teste");
     await page.getByRole("textbox", { name: "Endereço de e-mail", exact: true }).fill("ana@example.test");
@@ -160,10 +159,10 @@ for (const successful of [false, true]) {
     await page.getByRole("textbox", { name: "Como podemos ajudar?", exact: true }).fill("Mensagem de teste local.");
     await page.getByRole("button", { name: "Enviar mensagem", exact: true }).click();
     if (successful) {
-      await expect(page.getByRole("heading", { name: "Mensagem enviada", exact: true })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Mensagem em fila", exact: true })).toBeVisible();
       await expect(page.getByRole("button", { name: "Enviar outra mensagem", exact: true })).toBeVisible();
     } else {
-      await expect(page.locator('[role="alert"]:not(#__next-route-announcer__)')).toHaveText("Não foi possível enviar a sua mensagem agora. Também pode escrever diretamente para sega@tauraco.ai.");
+      await expect(page.locator('[role="alert"]:not(#__next-route-announcer__)')).toHaveText("Não foi possível registar a mensagem. Tente novamente mais tarde.");
     }
   });
 }

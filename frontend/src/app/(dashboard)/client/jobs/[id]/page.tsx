@@ -80,6 +80,7 @@ export default function JobDetailPage() {
   const params = useParams();
   const jobId = params.id as string;
 
+  const [quoteId, setQuoteId] = useState<string>();
   const [job, setJob] = useState<JobDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -202,8 +203,8 @@ export default function JobDetailPage() {
 
       {/* Quote — the gate. Shown from the moment the job is priced until the
           client decides; execution only begins once they approve. */}
-      <QuotePanel jobId={job.id} billingMode={job.billing_mode} onAccepted={fetchJob} />
-      {job.billing_mode !== "legacy_manual" && <BillingPanel jobId={job.id} onUpdated={fetchJob} />}
+      <QuotePanel jobId={job.id} onQuote={setQuoteId} billingMode={job.billing_mode} onAccepted={fetchJob} />
+      {job.billing_mode !== "legacy_manual" && <BillingPanel jobId={job.id} quoteId={quoteId} onUpdated={fetchJob} />}
 
       {/* Execution Plan */}
       <ExecutionPlan

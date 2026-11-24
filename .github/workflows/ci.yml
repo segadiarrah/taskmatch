@@ -59,7 +59,30 @@ jobs:
         working-directory: frontend
       - run: npx playwright install --with-deps chromium
         working-directory: frontend
+      - name: Build and provision isolated browser APIs
+        env:
+          TASKMATCH_JOURNEY_IMAGE_TAG: ci
+        run: |
+          docker build -t taskmatch-backend:ci backend
+          docker build -t taskmatch-frontend:ci frontend
+          python3 tools/journey-tests/provision.py
       - run: npm run test:e2e
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:3170
+          TASKMATCH_E2E_API: http://127.0.0.1:3171
+          TASKMATCH_E2E_PAID_API: http://127.0.0.1:3172
         working-directory: frontend
+      - run: node tools/journey-tests/registration_matrix.cjs
+      - run: npm ci --ignore-scripts --prefix tools/journey-tests/protocol-clients && npm test --prefix tools/journey-tests/protocol-clients -- http://127.0.0.1:3172
       - run: npm ci && npm test
         working-directory: sdk/js
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install ./sdk/python
+      - name: SDK journeys through both isolated APIs
+        run: |
+          python tools/journey-tests/sdk_python.py --api http://127.0.0.1:3171
+          python tools/journey-tests/sdk_python.py --api http://127.0.0.1:3172 --human
+          node tools/journey-tests/sdk_js.mjs --api http://127.0.0.1:3171
+          node tools/journey-tests/sdk_js.mjs --api http://127.0.0.1:3172 --human

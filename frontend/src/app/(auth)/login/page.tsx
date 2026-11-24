@@ -1,9 +1,9 @@
 "use client";
 
 import React, { Suspense, useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/public/localized-link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { authIntentHref, parsePublicIntent, postAuthDestination } from "@/lib/public-intent";
+import { authIntentHref, parsePublicIntent, rememberedIntent, postAuthDestination } from "@/lib/public-intent";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useTranslation, type Locale } from "@/lib/i18n";
@@ -38,7 +38,7 @@ const COPY: Record<
     emailPlaceholder: "you@company.com",
     password: "Password",
     passwordPlaceholder: "Enter your password",
-    forgot: "Need help signing in?",
+    forgot: "Forgot password?",
     signIn: "Sign in",
     signingIn: "Signing in...",
     invalid: "Invalid email or password. Please try again.",
@@ -56,7 +56,7 @@ const COPY: Record<
     emailPlaceholder: "vous@entreprise.com",
     password: "Mot de passe",
     passwordPlaceholder: "Saisissez votre mot de passe",
-    forgot: "Besoin d’aide pour vous connecter ?",
+    forgot: "Mot de passe oublié ?",
     signIn: "Se connecter",
     signingIn: "Connexion...",
     invalid: "E-mail ou mot de passe invalide. Veuillez réessayer.",
@@ -74,7 +74,7 @@ const COPY: Record<
     emailPlaceholder: "tu@empresa.com",
     password: "Contraseña",
     passwordPlaceholder: "Introduce tu contraseña",
-    forgot: "¿Necesitas ayuda para entrar?",
+    forgot: "¿Olvidaste la contraseña?",
     signIn: "Iniciar sesión",
     signingIn: "Iniciando sesión...",
     invalid: "Correo o contraseña no válidos. Inténtalo de nuevo.",
@@ -92,7 +92,7 @@ const COPY: Record<
     emailPlaceholder: "you@company.com",
     password: "密码",
     passwordPlaceholder: "请输入密码",
-    forgot: "需要登录帮助？",
+    forgot: "忘记密码？",
     signIn: "登录",
     signingIn: "登录中…",
     invalid: "邮箱或密码错误，请重试。",
@@ -110,7 +110,7 @@ const COPY: Record<
     emailPlaceholder: "voce@empresa.com",
     password: "Senha",
     passwordPlaceholder: "Digite a sua senha",
-    forgot: "Precisa de ajuda para entrar?",
+    forgot: "Esqueceu a senha?",
     signIn: "Entrar",
     signingIn: "Entrando…",
     invalid: "E-mail ou senha inválidos. Tente novamente.",
@@ -124,7 +124,9 @@ const COPY: Record<
 };
 
 function LoginForm() {
-  const intent = parsePublicIntent(useSearchParams().get("intent"));
+  const urlIntent = parsePublicIntent(useSearchParams().get("intent"));
+  const [savedIntent] = useState(rememberedIntent);
+  const intent = urlIntent ?? savedIntent;
   const router = useRouter();
   const { login, user } = useAuth();
   const { locale } = useTranslation();
@@ -202,7 +204,7 @@ function LoginForm() {
             <label htmlFor="password" className="text-sm font-medium text-ink-200">
               {c.password}
             </label>
-            <Link href="/company/contact" className="font-mono text-xs text-signal-400 hover:underline">
+            <Link href="/account-access" className="font-mono text-xs text-signal-400 hover:underline">
               {c.forgot}
             </Link>
           </div>

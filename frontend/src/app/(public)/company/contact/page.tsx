@@ -25,6 +25,7 @@ type Copy = {
   send: string;
   sending: string;
   errorMsg: string;
+  rateLimited: string;
   required: string;
   invalidEmail: string;
   sentTitle: string;
@@ -37,7 +38,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
     eyebrow: "Contact",
     title: "Talk to the",
     accent: "TaskMatch team.",
-    description: "Product, partnership, support, or enterprise — send a message and it reaches us directly. We usually reply within one business day.",
+    description: "Ask the team about TaskMatch, partnerships, support or enterprise projects.",
     cards: [
       { title: "General", body: "Questions about the platform, the roadmap, or a partnership." },
       { title: "Support", body: "Operational issues, account help, or anything that is blocking you." },
@@ -45,7 +46,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
       { title: "Documentation", body: "Prefer to self-serve? The docs and API reference cover the essentials." },
     ],
     asideTitle: "Where your message goes",
-    asideBody1: "Every message from this form lands straight in the team inbox — no ticket maze, no autoresponder loop.",
+    asideBody1: "This form queues your message for the TaskMatch team.",
     asideBody2: "Tell us what you are building and how you would put an execution layer to work — one that runs the job and returns a validated result, not one that only routes it.",
     formTitle: "Send a message",
     name: "Full name",
@@ -54,9 +55,10 @@ const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
     message: "How can we help?",
     send: "Send message",
     sending: "Sending…",
-    errorMsg: "Could not send your message right now. You can also email sega@tauraco.ai directly.",
-    sentTitle: "Message sent",
-    sentBody: "Thanks — it is on its way to the team. We will reply to the email address you provided.",
+    errorMsg: "We could not save your message. Please try again later.",
+    rateLimited: "Too many messages. Please try again later.",
+    sentTitle: "Message queued",
+    sentBody: "Your message is saved for delivery to the team. Replies will go to the email address you entered.",
     another: "Send another message",
     required: "Complete all fields before sending your message.",
     invalidEmail: "Enter a valid email address.",
@@ -65,7 +67,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
     eyebrow: "Contact",
     title: "Parlez à l’équipe",
     accent: "TaskMatch.",
-    description: "Produit, partenariat, support ou entreprise — envoyez un message, il nous parvient directement. Nous répondons généralement sous un jour ouvré.",
+    description: "Contactez l’équipe au sujet de TaskMatch, d’un partenariat, d’une demande d’assistance ou d’un projet d’entreprise.",
     cards: [
       { title: "Général", body: "Questions sur la plateforme, la feuille de route ou un partenariat." },
       { title: "Support", body: "Problèmes opérationnels, aide sur votre compte, ou tout ce qui vous bloque." },
@@ -73,7 +75,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
       { title: "Documentation", body: "Vous préférez l’autonomie ? La doc et la référence API couvrent l’essentiel." },
     ],
     asideTitle: "Où va votre message",
-    asideBody1: "Chaque message de ce formulaire arrive directement dans la boîte de l’équipe — pas de labyrinthe de tickets, pas de réponse automatique.",
+    asideBody1: "Ce formulaire met votre message en file pour l’équipe TaskMatch.",
     asideBody2: "Dites-nous ce que vous construisez et comment vous mettriez à profit une couche d’exécution : celle qui réalise le travail et renvoie un résultat validé, pas celle qui se contente de l’aiguiller.",
     formTitle: "Envoyer un message",
     name: "Nom complet",
@@ -82,9 +84,10 @@ const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
     message: "Comment pouvons-nous aider ?",
     send: "Envoyer le message",
     sending: "Envoi…",
-    errorMsg: "Impossible d’envoyer votre message pour le moment. Vous pouvez aussi écrire directement à sega@tauraco.ai.",
-    sentTitle: "Message envoyé",
-    sentBody: "Merci — il est en route vers l’équipe. Nous répondrons à l’adresse e-mail indiquée.",
+    errorMsg: "Votre message n’a pas pu être enregistré. Réessayez plus tard.",
+    rateLimited: "Trop de messages. Réessayez plus tard.",
+    sentTitle: "Message en file d’envoi",
+    sentBody: "Votre message est enregistré pour transmission à l’équipe. La réponse sera adressée à l’e-mail que vous avez indiqué.",
     another: "Envoyer un autre message",
     required: "Remplissez tous les champs avant d’envoyer votre message.",
     invalidEmail: "Saisissez une adresse e-mail valide.",
@@ -93,7 +96,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
     eyebrow: "Contacto",
     title: "Habla con el equipo",
     accent: "de TaskMatch.",
-    description: "Producto, alianzas, soporte o empresa — envía un mensaje y nos llega directamente. Solemos responder en un día hábil.",
+    description: "Contacta con el equipo sobre TaskMatch, alianzas, soporte o proyectos empresariales.",
     cards: [
       { title: "General", body: "Preguntas sobre la plataforma, la hoja de ruta o una alianza." },
       { title: "Soporte", body: "Problemas operativos, ayuda con tu cuenta o cualquier cosa que te bloquee." },
@@ -101,7 +104,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
       { title: "Documentación", body: "¿Prefieres el autoservicio? La documentación y la referencia de la API cubren lo esencial." },
     ],
     asideTitle: "A dónde va tu mensaje",
-    asideBody1: "Cada mensaje de este formulario llega directo al buzón del equipo — sin laberinto de tickets ni respuestas automáticas.",
+    asideBody1: "Este formulario pone tu mensaje en cola para el equipo de TaskMatch.",
     asideBody2: "Cuéntanos qué estás construyendo y cómo aprovecharías una capa de ejecución: la que realiza el trabajo y devuelve un resultado validado, no la que solo lo enruta.",
     formTitle: "Enviar un mensaje",
     name: "Nombre completo",
@@ -110,9 +113,10 @@ const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
     message: "¿Cómo podemos ayudar?",
     send: "Enviar mensaje",
     sending: "Enviando…",
-    errorMsg: "No se pudo enviar tu mensaje ahora mismo. También puedes escribir directamente a sega@tauraco.ai.",
-    sentTitle: "Mensaje enviado",
-    sentBody: "Gracias — va en camino al equipo. Responderemos al correo que indicaste.",
+    errorMsg: "No pudimos guardar tu mensaje. Inténtalo de nuevo más tarde.",
+    rateLimited: "Demasiados mensajes. Inténtalo más tarde.",
+    sentTitle: "Mensaje en cola",
+    sentBody: "Tu mensaje está guardado para su envío al equipo. Las respuestas llegarán a la dirección indicada.",
     another: "Enviar otro mensaje",
     required: "Completa todos los campos antes de enviar tu mensaje.",
     invalidEmail: "Introduce un correo electrónico válido.",
@@ -121,7 +125,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
     eyebrow: "联系",
     title: "联系",
     accent: "TaskMatch 团队。",
-    description: "产品、合作、支持或企业需求——发送信息，直达我们。我们通常在一个工作日内回复。",
+    description: "就 TaskMatch、合作、支持或企业项目联系团队。",
     cards: [
       { title: "综合", body: "关于平台、路线图或合作的问题。" },
       { title: "支持", body: "运营问题、账户帮助，或任何阻碍你的事情。" },
@@ -129,7 +133,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
       { title: "文档", body: "更想自助？文档与 API 参考涵盖要点。" },
     ],
     asideTitle: "你的信息去向何处",
-    asideBody1: "本表单的每一条信息都直达团队邮箱——没有工单迷宫，没有自动回复循环。",
+    asideBody1: "此表单会将您的消息加入 TaskMatch 团队的发送队列。",
     asideBody2: "告诉我们你在构建什么，以及你会如何运用一个执行层：它真正完成任务并返回经过验证的结果，而不仅仅是转发任务。",
     formTitle: "发送信息",
     name: "全名",
@@ -138,9 +142,10 @@ const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
     message: "我们能为您做些什么？",
     send: "发送信息",
     sending: "发送中…",
-    errorMsg: "暂时无法发送您的信息。您也可以直接发送邮件至 sega@tauraco.ai。",
-    sentTitle: "信息已发送",
-    sentBody: "谢谢——信息正在发往团队。我们会回复您填写的邮箱。",
+    errorMsg: "暂时无法保存消息，请稍后重试。",
+    rateLimited: "消息过多，请稍后重试。",
+    sentTitle: "消息已加入发送队列",
+    sentBody: "您的消息已保存并等待发送给团队。回复将发送至您填写的邮箱。",
     another: "再发一条信息",
     required: "请填写所有字段后再发送信息。",
     invalidEmail: "请输入有效的邮箱地址。",
@@ -149,7 +154,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
     eyebrow: "Contato",
     title: "Fale com a equipe",
     accent: "TaskMatch.",
-    description: "Produto, parcerias, suporte ou empresas — envie uma mensagem diretamente à nossa equipe. Normalmente respondemos no prazo de um dia útil.",
+    description: "Contacte a equipa sobre o TaskMatch, parcerias, apoio ou projetos empresariais.",
     cards: [
       {
         title: "Geral",
@@ -169,7 +174,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
       }
     ],
     asideTitle: "Para onde vai a sua mensagem",
-    asideBody1: "Cada mensagem deste formulário chega diretamente à caixa de entrada da equipe — sem labirintos de pedidos nem ciclos de respostas automáticas.",
+    asideBody1: "Este formulário coloca a sua mensagem na fila para a equipa TaskMatch.",
     asideBody2: "Conte-nos o que está criando e como utilizaria uma camada de execução que realiza o trabalho e devolve um resultado validado, em vez de apenas o encaminhar.",
     formTitle: "Enviar uma mensagem",
     name: "Nome completo",
@@ -178,9 +183,10 @@ const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
     message: "Como podemos ajudar?",
     send: "Enviar mensagem",
     sending: "Enviando…",
-    errorMsg: "Não foi possível enviar a sua mensagem agora. Também pode escrever diretamente para sega@tauraco.ai.",
-    sentTitle: "Mensagem enviada",
-    sentBody: "Obrigado — a mensagem está a caminho da equipe. Responderemos para o endereço de e-mail que indicou.",
+    errorMsg: "Não foi possível registar a mensagem. Tente novamente mais tarde.",
+    rateLimited: "Demasiadas mensagens. Tente novamente mais tarde.",
+    sentTitle: "Mensagem em fila",
+    sentBody: "A sua mensagem foi guardada para envio à equipa. As respostas serão enviadas para o e-mail que indicou.",
     another: "Enviar outra mensagem",
     required: "Preencha todos os campos antes de enviar a mensagem.",
     invalidEmail: "Digite um endereço de e-mail válido.",
@@ -195,6 +201,7 @@ export default function ContactPage() {
   const { locale } = useTranslation();
   const c = COPY[locale];
 
+  const [website, setWebsite] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -217,13 +224,14 @@ export default function ContactPage() {
             <Reveal delay={120} className="mt-6 rounded-lg border border-ink-700 bg-ink-900 p-6">
               <h2 className="text-xl font-semibold text-ink-50">{c.asideTitle}</h2>
               <p className="mt-3 text-sm leading-7 text-ink-300">{c.asideBody1}</p>
+              <a className="text-sm text-signal-400 underline" href="mailto:sega@tauraco.ai">sega@tauraco.ai</a>
               <p className="mt-3 text-sm leading-7 text-ink-300">{c.asideBody2}</p>
             </Reveal>
           </div>
 
           <Reveal delay={80} className="rounded-lg border border-ink-700 bg-ink-900 p-8 shadow-panel">
             {submitted ? (
-              <div className="flex flex-col items-center py-10 text-center">
+              <div role="status" className="flex flex-col items-center py-10 text-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full border border-success/40 bg-success/10">
                   <CheckCircle2 className="h-8 w-8 text-success" />
                 </div>
@@ -252,49 +260,30 @@ export default function ContactPage() {
                     return;
                   }
                   setSubmitting(true);
-                  let ok = false;
-                  // Primary: our backend delivers to sega@tauraco.ai via SMTP (Brevo).
                   try {
                     const response = await fetch("/api/v1/contact", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(form),
+                      body: JSON.stringify({ ...form, website }),
                     });
-                    ok = response.ok;
-                  } catch {
-                    ok = false;
-                  }
-                  // Fallback: FormSubmit (also delivers to sega@tauraco.ai).
-                  if (!ok) {
-                    try {
-                      const fallback = await fetch("https://formsubmit.co/ajax/sega@tauraco.ai", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json", Accept: "application/json" },
-                        body: JSON.stringify({
-                          ...form,
-                          _subject: `[TaskMatch Contact] ${form.subject}`,
-                          _template: "table",
-                          _captcha: "false",
-                        }),
-                      });
-                      ok = fallback.ok;
-                    } catch {
-                      ok = false;
+                    if (response.status === 202 && (await response.json()).status === "queued") {
+                      setSubmitted(true);
+                      setForm({ name: "", email: "", subject: "", message: "" });
+                    } else {
+                      setError(response.status === 429 ? c.rateLimited : c.errorMsg);
                     }
-                  }
-                  if (ok) {
-                    setSubmitted(true);
-                    setForm({ name: "", email: "", subject: "", message: "" });
-                  } else {
+                  } catch {
                     setError(c.errorMsg);
+                  } finally {
+                    setSubmitting(false);
                   }
-                  setSubmitting(false);
                 }}
               >
                 <h2 className="font-display text-3xl font-medium text-ink-50">{c.formTitle}</h2>
                 <Input
                   placeholder={c.name}
                   aria-label={c.name}
+                  maxLength={200}
                   className={`${inputClass} h-12`}
                   required
                   value={form.name}
@@ -303,6 +292,7 @@ export default function ContactPage() {
                 <Input
                   placeholder={c.email}
                   aria-label={c.email}
+                  maxLength={320}
                   type="email"
                   className={`${inputClass} h-12`}
                   required
@@ -312,6 +302,7 @@ export default function ContactPage() {
                 <Input
                   placeholder={c.subject}
                   aria-label={c.subject}
+                  maxLength={300}
                   className={`${inputClass} h-12`}
                   required
                   value={form.subject}
@@ -320,12 +311,15 @@ export default function ContactPage() {
                 <Textarea
                   placeholder={c.message}
                   aria-label={c.message}
+                  maxLength={8000}
                   rows={7}
                   className={inputClass}
                   required
                   value={form.message}
                   onChange={(e) => setForm((prev) => ({ ...prev, message: e.target.value }))}
                 />
+                <input name="website" type="text" hidden tabIndex={-1} autoComplete="off" aria-hidden="true"
+                  value={website} onChange={event => setWebsite(event.target.value)} />
                 {error ? <p role="alert" className="text-sm text-danger">{error}</p> : null}
                 <button
                   type="submit"

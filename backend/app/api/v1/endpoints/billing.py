@@ -2,7 +2,7 @@
 
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 from sqlalchemy import or_, select
 from sqlalchemy.dialects.postgresql import insert
@@ -50,8 +50,8 @@ async def payment_status(
 
 
 @router.post("/jobs/{job_id}/checkout")
-async def checkout(job_id: uuid.UUID, user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
-    return await billing.create_checkout(db, await owner_job(db, job_id, user), user)
+async def checkout(job_id: uuid.UUID, expected_quote_id: uuid.UUID | None = Header(None, alias="X-TaskMatch-Quote-Id"), user=Depends(get_current_active_user), db=Depends(get_db, scope="function")):
+    return await billing.create_checkout(db, await owner_job(db, job_id, user), user, expected_quote_id)
 
 
 @router.post("/jobs/{job_id}/sync")

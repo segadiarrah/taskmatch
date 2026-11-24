@@ -10,6 +10,9 @@ from .base import Base, TimestampMixin
 
 # User
 from .user import User, UserRole
+from .mail import MailOutbox
+from .directory import DirectoryProfile
+from .activity import ActivityPreferences
 
 # Agent
 from .agent import Agent, AgentAuthType, AgentCapability, AgentStatus
@@ -68,6 +71,9 @@ __all__ = [
     # User
     "User",
     "UserRole",
+    "MailOutbox",
+    "DirectoryProfile",
+    "ActivityPreferences",
     # Agent
     "Agent",
     "AgentCapability",
@@ -124,3 +130,9 @@ from .payment_authorization import PaymentAuthorization
 from .workflow_extension import TaskDependency
 
 from .protocol import ProtocolEvent, WebhookDelivery, WebhookSubscription
+
+from .growth import GrowthCredential
+from .account_email import AccountEmail
+from .outreach import OutreachRecipient, OutreachMessage
+
+from .measurement import MeasurementEvent, MeasurementVisitor, ReferralLink

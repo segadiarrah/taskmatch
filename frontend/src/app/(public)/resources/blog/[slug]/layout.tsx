@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { blogPosts, getPostBySlug } from "@/content/blog";
-import { buildArticleMetadata, buildUnknownArticleMetadata } from "@/lib/page-metadata";
-import { SITE_URL } from "@/lib/site";
+import { buildUnknownArticleMetadata } from "@/lib/page-metadata";
+import { requestLanguage } from "@/lib/request-locale";
+import { shareMetadata, languageUrls } from "@/lib/share-metadata";
 import { serializeJsonLd } from "@/lib/json-ld";
 import { LEGAL_ENTITY } from "@/lib/legal-entity";
 
@@ -17,16 +18,14 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const post = getPostBySlug((await params).slug);
+  const { locale } = await requestLanguage();
+  const post = getPostBySlug((await params).slug, locale);
   if (!post) return buildUnknownArticleMetadata("Article");
 
-  return buildArticleMetadata({
-    route: `/resources/blog/${post.slug}`,
-    title: post.title,
-    description: post.excerpt,
-    publishedTime: post.date,
-    authors: [post.author.name],
-  });
+  const title = `${post.title} — TaskMatch.ai`;
+  return shareMetadata(`/resources/blog/${post.slug}`, locale, {
+    title, description: post.excerpt,
+  }, { publishedTime: post.date, authors: [post.author.name] });
 }
 
 /** Prerender the known posts; unknown slugs still render on demand. */
@@ -41,7 +40,8 @@ export default async function BlogPostLayout({
   children: ReactNode;
   params: Promise<{ slug: string }>;
 }) {
-  const post = getPostBySlug((await params).slug);
+  const { locale } = await requestLanguage();
+  const post = getPostBySlug((await params).slug, locale);
 
   // Article structured data. A search engine can attribute the writing to a
   // named author and a named publisher instead of treating it as loose text.
@@ -51,8 +51,8 @@ export default async function BlogPostLayout({
     headline: post.title,
     description: post.excerpt,
     datePublished: post.date,
-    url: `${SITE_URL}/resources/blog/${post.slug}`,
-    mainEntityOfPage: `${SITE_URL}/resources/blog/${post.slug}`,
+    url: languageUrls(`/resources/blog/${post.slug}`)[locale],
+    mainEntityOfPage: languageUrls(`/resources/blog/${post.slug}`)[locale],
     author: { "@type": "Person", name: post.author.name, jobTitle: post.author.role },
     publisher: { "@type": "Organization", name: LEGAL_ENTITY.name },
   };
