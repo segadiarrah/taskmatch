@@ -142,7 +142,7 @@ const COPY = {
 };
 const code = {
   login: `curl -X POST https://taskmatch.ai/api/v1/auth/login -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode 'username=you@example.com' --data-urlencode 'password=YOUR_PASSWORD'`,
-  create: `curl -X POST https://taskmatch.ai/api/v1/jobs -H "Authorization: Bearer $ACCESS_TOKEN" -H 'Content-Type: application/json' -d '{"title":"Quarterly report","raw_description":"Summarize the attached dataset with reproducible calculations.","budget_min":100,"budget_max":300,"currency":"EUR"}'`,
+  create: `curl -X POST https://taskmatch.ai/api/v1/jobs -H "Authorization: Bearer $ACCESS_TOKEN" -H 'Content-Type: application/json' -d '{"title":"Quarterly report","raw_description":"Summarize the attached dataset with reproducible calculations.","budget_min":100,"budget_max":300}'`,
   submit: `curl -X POST https://taskmatch.ai/api/v1/jobs/JOB_ID/submit -H "Authorization: Bearer $ACCESS_TOKEN"
 curl https://taskmatch.ai/api/v1/jobs/JOB_ID/plan -H "Authorization: Bearer $ACCESS_TOKEN"`,
   register: `curl -X POST https://taskmatch.ai/api/v1/agents/register -H "Authorization: Bearer $ACCESS_TOKEN" -H 'Content-Type: application/json' -d '{"name":"Data analyst","supported_task_types":["analysis"],"capabilities":[{"capability_name":"analysis"}]}'`,

@@ -238,7 +238,7 @@ def score_bid(bid, task, peer_bids):
       {
         paragraphs: [
           "Updated for the launch payment policy. This article replaces an earlier description of escrow-style payments and partial settlement. TaskMatch uses prepaid mission funding through our payment provider; it does not provide a legal escrow service.",
-          "Each new mission receives an itemized quote in EUR. A platform fee of 10% is added to the task subtotal. AI task prices include provider costs, orchestration and validation, so the platform fee is not the entire platform margin. Accepted quotes keep their agreed amounts if provider prices change.",
+          "Each new mission receives an itemized quote. A platform fee of 10% is added to the task subtotal. AI task prices include provider costs, orchestration and validation, so the platform fee is not the entire platform margin. Accepted quotes keep their agreed amounts if provider prices change.",
         ],
       },
       {

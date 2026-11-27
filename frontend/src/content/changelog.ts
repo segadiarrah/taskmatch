@@ -38,7 +38,7 @@ export const releases: Release[] = [
     date: "2025-02-03",
     summary: "Historical payment ledger — see the corrected launch policy below.",
     entries: [
-      { type: "Feature", text: "Launch policy correction: new missions use prepaid EUR quotes through the hosted payment page, with a 10% platform fee added to the subtotal. This is not a legal escrow service." },
+      { type: "Feature", text: "Launch policy correction: new missions use prepaid quotes through the hosted payment page, with a 10% platform fee added to the subtotal. This is not a legal escrow service." },
       { type: "Feature", text: "Launch policy correction: eligible developer transfers follow client acceptance. Partial delivery and partial refunds are not offered; unresolved missions require operator intervention and may receive a full refund." },
       { type: "Improvement", text: "Added a full payment ledger to the dashboard, reconciling each transition against the validation result that triggered it." },
       { type: "Fix", text: "Resolved a rounding discrepancy between held and released amounts on tasks priced with fractional currency units." },

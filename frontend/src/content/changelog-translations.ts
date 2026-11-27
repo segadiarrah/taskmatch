@@ -26,7 +26,7 @@ export const releaseTranslations: Record<Exclude<Locale, "en">, Record<ReleaseVe
     "v1.2.0": {
       summary: "Historique du registre de paiement : voir la politique de lancement corrigée ci-dessous.",
       entries: [
-        "Correction de la politique de lancement : les nouvelles missions utilisent des devis prépayés en EUR via la page de paiement hébergée, avec des frais de plateforme de 10 % ajoutés au sous-total. Il ne s’agit pas d’un service juridique de séquestre.",
+        "Correction de la politique de lancement : les nouvelles missions utilisent des devis prépayés via la page de paiement hébergée, avec des frais de plateforme de 10 % ajoutés au sous-total. Il ne s’agit pas d’un service juridique de séquestre.",
         "Correction de la politique de lancement : les transferts admissibles aux développeurs suivent l’acceptation du client. Ni livraison partielle ni remboursement partiel ne sont proposés ; une mission non résolue nécessite un opérateur et peut faire l’objet d’un remboursement intégral.",
         "Ajout d’un registre complet des paiements au tableau de bord, rapprochant chaque transition du résultat de validation qui l’a déclenchée.",
         "Correction d’un écart d’arrondi entre les montants retenus et libérés sur les tâches tarifées avec des unités monétaires fractionnaires.",
@@ -81,7 +81,7 @@ export const releaseTranslations: Record<Exclude<Locale, "en">, Record<ReleaseVe
     "v1.2.0": {
       summary: "Historial del registro de pagos: consulta la política de lanzamiento corregida a continuación.",
       entries: [
-        "Corrección de la política de lanzamiento: las nuevas misiones usan presupuestos prepagados en EUR mediante la página de pago alojada, con una comisión del 10 % añadida al subtotal. No es un servicio legal de depósito en garantía.",
+        "Corrección de la política de lanzamiento: las nuevas misiones usan presupuestos prepagados mediante la página de pago alojada, con una comisión del 10 % añadida al subtotal. No es un servicio legal de depósito en garantía.",
         "Corrección de la política de lanzamiento: las transferencias elegibles siguen la aceptación del cliente. No se ofrecen entregas ni reembolsos parciales; las misiones sin resolver requieren intervención operativa y pueden recibir un reembolso total.",
         "Se añadió un registro completo de pagos al panel que concilia cada transición con el resultado de validación que la provocó.",
         "Se resolvió una diferencia de redondeo entre importes retenidos y liberados en tareas con unidades monetarias fraccionarias.",
@@ -136,7 +136,7 @@ export const releaseTranslations: Record<Exclude<Locale, "en">, Record<ReleaseVe
     "v1.2.0": {
       summary: "历史付款账本：请参阅下方修正后的上线政策。",
       entries: [
-        "上线政策修正：新项目通过托管付款页面预付 EUR 报价，并在任务小计之上加收 10% 平台费用。这不是法律意义上的资金托管服务。",
+        "上线政策修正：新项目通过托管付款页面预付报价，并在任务小计之上加收 10% 平台费用。这不是法律意义上的资金托管服务。",
         "上线政策修正：符合条件的开发者转账在客户验收后进行。不提供部分交付或部分退款；未解决的项目需要运营介入，并可能获得全额退款。",
         "控制台新增完整付款账本，将每次状态转换与触发它的验证结果进行核对。",
         "修复使用小数货币单位定价时，冻结金额与释放金额之间的舍入差异。",
@@ -191,7 +191,7 @@ export const releaseTranslations: Record<Exclude<Locale, "en">, Record<ReleaseVe
     "v1.2.0": {
       summary: "Histórico do registro de pagamentos: consulte abaixo a política de lançamento corrigida.",
       entries: [
-        "Correção da política de lançamento: novas missões usam orçamentos pré-pagos em EUR na página de pagamento hospedada, com uma taxa de 10 % acrescentada ao subtotal. Não é um serviço jurídico de depósito em garantia.",
+        "Correção da política de lançamento: novas missões usam orçamentos pré-pagos na página de pagamento hospedada, com uma taxa de 10 % acrescentada ao subtotal. Não é um serviço jurídico de depósito em garantia.",
         "Correção da política de lançamento: as transferências elegíveis seguem a aceitação do cliente. Não há entregas nem reembolsos parciais; missões por resolver exigem intervenção operacional e podem receber um reembolso total.",
         "Adicionado ao painel um registro completo de pagamentos que concilia cada transição com o resultado de validação que a desencadeou.",
         "Resolvida uma diferença de arredondamento entre valores retidos e liberados em tarefas com unidades monetárias fracionárias.",

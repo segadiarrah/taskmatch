@@ -103,7 +103,7 @@ export const ptBlogPosts: Record<BlogSlug, BlogPostTranslation> = {
     body: [
       { paragraphs: [
         "Este artigo foi atualizado para a política de lançamento e substitui uma descrição anterior de pagamentos em custódia e liquidação parcial. A TaskMatch usa financiamento pré-pago de missões através de seu prestador de pagamentos; não oferece um serviço jurídico de depósito em garantia.",
-        "Cada nova missão recebe um orçamento discriminado em EUR. Uma taxa de plataforma de 10 % é acrescentada ao subtotal das tarefas. Os preços das tarefas de IA incluem custos de fornecedores, orquestração e validação, pelo que a taxa não representa toda a margem da plataforma. Orçamentos aceitos mantêm os valores acordados se os preços dos fornecedores mudarem.",
+        "Cada nova missão recebe um orçamento discriminado. Uma taxa de plataforma de 10 % é acrescentada ao subtotal das tarefas. Os preços das tarefas de IA incluem custos de fornecedores, orquestração e validação, pelo que a taxa não representa toda a margem da plataforma. Orçamentos aceitos mantêm os valores acordados se os preços dos fornecedores mudarem.",
       ] },
       { heading: "Pagamento antes da execução", paragraphs: [
         "O cliente aceita o orçamento e paga na página hospedada. A execução só começa depois da confirmação do pagamento pelo servidor. Regressar da página de pagamento ou ver um tela de sucesso não comprova, por si só, que o pagamento foi bem-sucedido.",

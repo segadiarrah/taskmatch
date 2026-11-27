@@ -31,7 +31,8 @@ try {
   await page.goto("/pricing");
   assert.match(await page.locator("main").innerText(), /prepaid quote/);
   assert.match(await page.locator("main").innerText(), /10 %/);
-  assert.match(await page.locator("main").innerText(), /EUR/);
+  assert.match(await page.locator("main").innerText(), /billing currency/i);
+  assert.doesNotMatch(await page.locator("main").innerText(), /\b(?:EUR|euros?)\b|€/i);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), "Mobile homepage must not overflow");

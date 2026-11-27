@@ -1,17 +1,22 @@
 import { expect, test } from "@playwright/test";
 
 for (const locale of ["en", "fr", "es", "zh", "pt"]) {
-  test(`pricing shows prepaid EUR missions without subscription promises (${locale})`, async ({ page }) => {
+  test(`pricing explains the quote currency without assuming the client’s currency (${locale})`, async ({ page }) => {
     await page.addInitScript(value => localStorage.setItem("taskmatch_locale", value), locale);
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize({ width: locale === "en" ? 390 : 1280, height: 900 });
-    await page.goto("/pricing");
+    await page.goto(`/pricing?lang=${locale}`);
     await expect(page.getByRole("main")).toContainText("10 %");
-    await expect(page.getByRole("main")).toContainText("EUR");
+    const fixedCurrency = /\b(?:euros?|EUR|USD)\b|欧元|美元|[€$]/i;
+    await expect(page.getByRole("main")).not.toContainText(fixedCurrency);
+    for (const selector of ['meta[name="description"]', 'meta[property="og:description"]', 'meta[name="twitter:description"]']) {
+      await expect(page.locator(selector)).toHaveAttribute("content", /.+/);
+      await expect(page.locator(selector)).not.toHaveAttribute("content", fixedCurrency);
+    }
     const waiver = page.locator("#first-project");
     await expect(waiver).toContainText("20");
     await expect(waiver).toContainText(/10\s*%/);
-    await expect(page.getByRole("main")).toContainText(/100 EUR.*10 EUR.*110 EUR/);
+    await expect(page.getByRole("main")).toContainText(/100.*10.*110/);
     await expect(page.getByRole("main")).not.toContainText(/€9|€19|9 €|19 €|Starter|SSO|SLA/);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await page.screenshot({ path: test.info().outputPath(`pricing-${locale}.png`), fullPage: true });

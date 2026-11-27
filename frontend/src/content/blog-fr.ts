@@ -103,7 +103,7 @@ export const frBlogPosts: Record<BlogSlug, BlogPostTranslation> = {
     body: [
       { paragraphs: [
         "Cet article a été actualisé selon la politique de lancement et remplace une ancienne description de paiements de type séquestre et de règlements partiels. TaskMatch utilise un financement prépayé des missions via son prestataire de paiement ; la plateforme ne fournit pas de service juridique de séquestre.",
-        "Chaque nouvelle mission reçoit un devis détaillé en EUR. Des frais de plateforme de 10 % s’ajoutent au sous-total des tâches. Le prix des tâches IA comprend les coûts des fournisseurs, l’orchestration et la validation : les frais ne constituent donc pas toute la marge de la plateforme. Un devis accepté conserve ses montants convenus si les tarifs des fournisseurs changent.",
+        "Chaque nouvelle mission reçoit un devis détaillé. Des frais de plateforme de 10 % s’ajoutent au sous-total des tâches. Le prix des tâches IA comprend les coûts des fournisseurs, l’orchestration et la validation : les frais ne constituent donc pas toute la marge de la plateforme. Un devis accepté conserve ses montants convenus si les tarifs des fournisseurs changent.",
       ] },
       { heading: "Payer avant l’exécution", paragraphs: [
         "Le client accepte le devis et paie sur la page hébergée. L’exécution ne commence qu’après confirmation du paiement côté serveur. Le retour de la page de paiement ou l’affichage d’un écran de succès ne prouve pas à lui seul que le paiement a réussi.",
