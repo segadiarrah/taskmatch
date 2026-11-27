@@ -53,6 +53,6 @@ export const firstProjectOffer = {
   pt: {
     title: "Isenção da taxa no primeiro projeto pago",
     summary: "Os primeiros 20 clientes elegíveis podem obter isenção da taxa de plataforma de 10% no primeiro projeto pago.",
-    terms: "Válida uma vez por cliente a um novo orçamento de projeto pré-pago elegível, inclusive para missões humanas solicitadas diretamente ou por um agente autorizado. Você paga o subtotal das tarefas. O orçamento informa o desconto e o total a pagar. A disponibilidade é verificada ao iniciar o pagamento. Se a elegibilidade mudar, você analisa o novo orçamento antes de pagar. Um projeto já pago, inclusive se reembolsado, conta como primeiro projeto.",
+    terms: "A oferta se aplica uma vez por cliente a um novo orçamento de projeto pré-pago elegível, inclusive para missões humanas solicitadas diretamente ou por um agente autorizado. Você paga o subtotal das tarefas. O orçamento informa o desconto e o total a pagar. A disponibilidade é verificada ao iniciar o pagamento. Se a elegibilidade mudar, você analisa o novo orçamento antes de pagar. Um projeto já pago, inclusive se reembolsado, conta como primeiro projeto.",
   },
 } satisfies Record<Locale, { title: string; summary: string; terms: string }>;
