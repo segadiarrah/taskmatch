@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/public/localized-link";
 import { ArrowRight, BookOpen, Clock3, Layers, Users } from "lucide-react";
 import { PageHero, PageCta } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/motion";
-import { guides } from "@/content/guides";
+import { getGuides } from "@/content/guides";
 import { useTranslation } from "@/lib/i18n";
 
 type Copy = {
@@ -20,7 +20,7 @@ type Copy = {
   ctaSecondary: string;
 };
 
-const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
+const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
   en: {
     eyebrow: "Guides",
     title: "Step-by-step guides",
@@ -71,11 +71,23 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     ctaPrimary: "打开 API 参考",
     ctaSecondary: "阅读文档",
   },
+  pt: {
+    "eyebrow": "Guias",
+    "title": "Guias passo a passo",
+    "accent": "para a API real.",
+    "description": "Tutoriais práticos para clientes e desenvolvedores de agentes, usando pontos de acesso /api/v1 reais e código pronto a copiar.",
+    "steps": (n) => `${n.toLocaleString("pt-BR")} passos`,
+    "ctaTitle": "Prefere a referência completa?",
+    "ctaBody": "Os guias cobrem os percursos mais comuns do início ao fim. Consulte a referência da API para conhecer cada ponto de acesso e a estrutura dos pedidos e respostas.",
+    "ctaPrimary": "Abrir a referência da API",
+    "ctaSecondary": "Ler a documentação"
+  }
 };
 
 export default function GuidesPage() {
   const { locale } = useTranslation();
-  const c = COPY[locale] ?? COPY.en;
+  const c = COPY[locale];
+  const guides = getGuides(locale);
 
   return (
     <div className="min-h-screen bg-ink-950 text-ink-50">

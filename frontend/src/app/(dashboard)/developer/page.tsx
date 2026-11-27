@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { useTranslation } from "@/lib/i18n";
 import { apiGet } from "@/lib/api";
+import { DashboardActions } from "@/components/dashboard/dashboard-actions";
 import { formatCurrency, formatDate, formatStatus } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,11 +22,14 @@ import {
   Search,
 } from "lucide-react";
 
+const EARNINGS_TEST_ID = "dashboard-earnings";
+
 interface DashboardStats {
   my_agents: number;
   active_assignments: number;
   completed_tasks: number;
-  total_earnings: number;
+  total_earnings: number | null;
+  earnings_by_currency: { currency: string; amount: number }[];
 }
 
 interface ActiveAssignment {
@@ -55,7 +59,7 @@ const statusBadgeVariant = (status: string) => {
 
 export default function DeveloperDashboardPage() {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [assignments, setAssignments] = useState<ActiveAssignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,33 +85,14 @@ export default function DeveloperDashboardPage() {
     fetchDashboard();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <AlertCircle className="h-12 w-12 text-destructive" />
-        <p className="text-lg text-muted-foreground">{error}</p>
-        <Button onClick={() => window.location.reload()} variant="outline">
-          {t("developer.tryAgain")}
-        </Button>
-      </div>
-    );
-  }
-
   const kpiCards = [
     { label: t("developer.kpi.myAgents"), value: stats?.my_agents ?? 0, icon: Bot, color: "text-info" },
     { label: t("developer.kpi.activeAssignments"), value: stats?.active_assignments ?? 0, icon: ListChecks, color: "text-signal-400" },
     { label: t("developer.kpi.completedTasks"), value: stats?.completed_tasks ?? 0, icon: CheckCircle2, color: "text-success" },
     {
       label: t("developer.kpi.totalEarnings"),
-      value: formatCurrency(stats?.total_earnings ?? 0),
+      value: stats?.earnings_by_currency?.length ? stats.earnings_by_currency.map(item => formatCurrency(item.amount, item.currency, locale)).join(" / ") : t("developer.earnings.emptyTitle"),
+      testId: EARNINGS_TEST_ID,
       icon: DollarSign,
       color: "text-warning",
     },
@@ -127,7 +112,7 @@ export default function DeveloperDashboardPage() {
             {t("developer.overview")}
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Link href="/developer/agents/new">
             <Button>
               <Plus className="mr-2 h-4 w-4" />
@@ -143,8 +128,21 @@ export default function DeveloperDashboardPage() {
         </div>
       </div>
 
+      <DashboardActions role="agent_developer" />
+
+      {loading ? (
+        <div className="flex min-h-48 items-center justify-center" role="status">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-label={t("dashboard.loadingApp")} />
+        </div>
+      ) : error ? (
+        <div className="flex min-h-48 flex-col items-center justify-center gap-4" role="alert">
+          <AlertCircle className="h-8 w-8 text-destructive" aria-hidden="true" />
+          <p className="text-muted-foreground">{error}</p>
+          <Button onClick={() => window.location.reload()} variant="outline">{t("developer.tryAgain")}</Button>
+        </div>
+      ) : <>
       {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div data-testid="developer-original-metrics" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpiCards.map((kpi) => (
           <Card key={kpi.label}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -152,7 +150,7 @@ export default function DeveloperDashboardPage() {
               <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
             </CardHeader>
             <CardContent>
-              <div className="font-display text-3xl font-medium text-ink-50">{kpi.value}</div>
+              <div data-testid={"testId" in kpi ? kpi.testId : undefined} className="font-display text-2xl font-medium text-ink-50">{kpi.value}</div>
             </CardContent>
           </Card>
         ))}
@@ -199,7 +197,7 @@ export default function DeveloperDashboardPage() {
                     <div className="flex items-center gap-3">
                       <p className="font-medium truncate text-ink-100">{assignment.task_title}</p>
                       <Badge variant={statusBadgeVariant(assignment.status)}>
-                        {formatStatus(assignment.status)}
+                        {formatStatus(assignment.status, locale)}
                       </Badge>
                       {!!assignment.revision_count && assignment.revision_count > 0 && (
                         <Badge variant="warning">
@@ -210,8 +208,8 @@ export default function DeveloperDashboardPage() {
                     <div className="mt-1 flex items-center gap-4 font-mono text-xs text-muted-foreground">
                       <span>{t("developer.assignments.job")} {assignment.job_title}</span>
                       <span>{t("developer.assignments.agent")} {assignment.agent_name}</span>
-                      <span>{formatCurrency(assignment.budget, assignment.currency)}</span>
-                      {assignment.deadline && <span>{t("developer.assignments.due")} {formatDate(assignment.deadline)}</span>}
+                      <span>{formatCurrency(assignment.budget, assignment.currency, locale)}</span>
+                      {assignment.deadline && <span>{t("developer.assignments.due")} {formatDate(assignment.deadline, locale)}</span>}
                     </div>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0 ml-4" />
@@ -258,6 +256,7 @@ export default function DeveloperDashboardPage() {
           </Card>
         </Link>
       </div>
+      </>}
     </div>
   );
 }

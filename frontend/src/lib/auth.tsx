@@ -1,7 +1,10 @@
 "use client";
 
+import { captureCampaign, clearRegistrationContext, parsePublicIntent, rememberIntent, type CampaignTags, type PublicIntent } from "@/lib/public-intent";
+import type { Locale } from "@/lib/locales";
+import { analyticsAllowed } from "@/lib/analytics-consent";
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { apiGet, apiPost } from "@/lib/api";
+import { API_BASE_URL, ApiError, apiErrorMessage, apiGet, apiPost } from "@/lib/api";
 
 export interface User {
   id: string;
@@ -17,12 +20,14 @@ interface AuthState {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  authError: boolean;
 }
 
 interface AuthActions {
   login: (email: string, password: string) => Promise<User>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
+  retrySession: () => Promise<void>;
 }
 
 interface RegisterData {
@@ -30,6 +35,7 @@ interface RegisterData {
   password: string;
   full_name: string;
   role: "client" | "agent_developer";
+  attribution: CampaignTags & { intent: PublicIntent; language: Locale; country?: string };
 }
 
 type AuthContextValue = AuthState & AuthActions;
@@ -40,19 +46,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [authError, setAuthError] = useState(false);
 
   const fetchUser = useCallback(async () => {
+    const expectedToken = localStorage.getItem("auth_token");
+    setAuthError(false);
     try {
       const userData = await apiGet<User>("/v1/auth/me");
-      setUser(userData);
-    } catch {
+      if (localStorage.getItem("auth_token") === expectedToken) setUser(userData);
+    } catch (error) {
+      const currentToken = localStorage.getItem("auth_token");
+      const sessionExpired = error instanceof ApiError && (error.status === 401 || error.status === 403);
+      // The API helper may already have removed this expired token. Every
+      // other mismatch belongs to a different session and must be ignored.
+      if (currentToken !== expectedToken && !(sessionExpired && currentToken === null)) return;
       setUser(null);
-      setToken(null);
-      localStorage.removeItem("auth_token");
+      if (sessionExpired) {
+        setToken(null);
+        localStorage.removeItem("auth_token");
+      } else if (localStorage.getItem("auth_token") === expectedToken) {
+        setAuthError(true);
+      }
     }
   }, []);
 
+  const retrySession = useCallback(async () => {
+    setIsLoading(true);
+    await fetchUser();
+    setIsLoading(false);
+  }, [fetchUser]);
+
   useEffect(() => {
+    captureCampaign();
+    const entryIntent = parsePublicIntent(new URLSearchParams(window.location.search).get("intent"));
+    if (entryIntent) rememberIntent(entryIntent);
     const storedToken = localStorage.getItem("auth_token");
     if (storedToken) {
       setToken(storedToken);
@@ -63,12 +90,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [fetchUser]);
 
   const login = async (email: string, password: string) => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "/api";
     const formData = new URLSearchParams();
-    formData.append("username", email);
+    formData.append("username", email.trim());
     formData.append("password", password);
 
-    const res = await fetch(`${baseUrl}/v1/auth/login`, {
+    const res = await fetch(`${API_BASE_URL}/v1/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: formData,
@@ -76,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: "Login failed" }));
-      throw new Error(err.detail || "Login failed");
+      throw new ApiError(apiErrorMessage(err, "Login failed"), res.status, err);
     }
 
     const data = await res.json();
@@ -84,11 +110,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(data.access_token);
     const userData = await apiGet<User>("/v1/auth/me");
     setUser(userData);
+    clearRegistrationContext();
+    setAuthError(false);
     return userData;
   };
 
   const register = async (data: RegisterData) => {
-    await apiPost("/v1/auth/register", data);
+    await apiPost("/v1/auth/register", data, analyticsAllowed() ? { headers: { "X-TaskMatch-Measurement": "allow" } } : undefined);
     await login(data.email, data.password);
   };
 
@@ -96,6 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("auth_token");
     setToken(null);
     setUser(null);
+    setAuthError(false);
   };
 
   return (
@@ -104,10 +133,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         token,
         isLoading,
+        authError,
         isAuthenticated: !!user && !!token,
         login,
         register,
         logout,
+        retrySession,
       }}
     >
       {children}

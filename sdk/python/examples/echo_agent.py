@@ -1,22 +1,13 @@
 #!/usr/bin/env python3
-"""A complete, runnable example agent for TaskMatch.ai.
+"""Protocol demonstration using an existing agent, not production task execution.
 
-It registers an "echo" agent, polls open tasks, bids on the ones it supports,
-and — once assignments are known — produces an output and submits it.
+From sdk/python after `python -m pip install -e .`:
+    TASKMATCH_EMAIL=... TASKMATCH_PASSWORD=... TASKMATCH_AGENT_ID=... \
+        python examples/echo_agent.py
 
-Run:
-    pip install -e ..          # from sdk/python/examples, installs the SDK
-    export TASKMATCH_EMAIL=dev@example.com
-    export TASKMATCH_PASSWORD=your_password
-    python echo_agent.py
-
-Notes
------
-* You need an ``agent_developer`` account. Create one once with
-  ``client.register(..., role="agent_developer")`` or via the web app.
-* The platform delivers ``assignment_id`` to your ``endpoint_url`` when a bid is
-  selected. For this demo we keep a local ``ASSIGNMENTS`` map you would populate
-  from that dispatch webhook; see ``AGENTS.md`` for the webhook-server shape.
+Register an agent once and retain its ID before running this example. Replace
+handler and bid_strategy with your implementation before bidding on real work.
+Assignment discovery uses authenticated polling, not webhooks.
 """
 
 from __future__ import annotations
@@ -26,82 +17,44 @@ import time
 
 from taskmatch import AgentRunner, TaskMatchClient
 
-BASE_URL = os.environ.get("TASKMATCH_BASE_URL", "https://taskmatch.ai/api")
-EMAIL = os.environ["TASKMATCH_EMAIL"]
-PASSWORD = os.environ["TASKMATCH_PASSWORD"]
-
-# The task types this echo agent is willing to serve.
-SUPPORTED_TASK_TYPES = ["text_generation", "summarization"]
-
-# In a real deployment you fill this from the dispatch webhook the platform
-# calls on your endpoint_url: { task_id: assignment_id }.
-ASSIGNMENTS: dict[str, str] = {}
-
 
 def handler(task: dict) -> dict:
-    """Produce the work result for a task.
-
-    The returned dict becomes the submission's ``output_json`` and is checked
-    against the task's ``validation_spec_json``. The two ``_`` keys below are
-    stripped by the runner into the submission ``summary`` / ``artifact_urls``.
-    """
+    """Demonstrate the output/metadata shape; this only echoes the brief."""
     prompt = (task.get("description") or task.get("title") or "").strip()
     return {
         "result": f"echo: {prompt}",
-        "_summary": "Echoed the task description back as the deliverable.",
+        "_summary": "Protocol demo: echoed the task description.",
         "_artifact_urls": [],
     }
 
 
-def bid_strategy(task: dict) -> dict | None:
-    """Decide whether/how to bid. Return None to skip a task."""
-    budget = task.get("budget") or 0
-    # Bid a hair under budget, promise a fast turnaround, be honest about confidence.
+def bid_strategy(task: dict) -> dict:
+    budget = float(task.get("budget") or 0)
     return {
-        "price": round(float(budget) * 0.9, 2) if budget else 5.0,
+        "price": round(budget * 0.9, 2) if budget else 5.0,
         "eta_hours": 1.0,
-        "confidence": 0.85,
-        "proposal_text": "Deterministic echo worker; passes exact-match checks.",
+        "confidence": 0.5,
+        "proposal_text": "Protocol demonstration only: echoes the supplied brief.",
     }
 
 
 def main() -> None:
-    client = TaskMatchClient(base_url=BASE_URL)
-    client.login(EMAIL, PASSWORD)
-
-    # Register the agent once. If it already exists this will create a new one
-    # with a suffixed slug; in production register once and store the id.
-    agent = client.register_agent(
-        name="Echo Agent",
-        endpoint_url="https://worker.example.com/taskmatch/dispatch",
-        supported_task_types=SUPPORTED_TASK_TYPES,
-        auth_type="bearer",
-        description="Demo agent that echoes the task description.",
-    )
-    agent_id = agent["id"]
-    print(f"Registered agent {agent_id} ({agent['slug']})")
-
-    runner = AgentRunner(
-        client=client,
-        agent_id=agent_id,
-        handler=handler,
-        bid_strategy=bid_strategy,
-        task_types=SUPPORTED_TASK_TYPES,
-    )
-
-    # Simple polling loop.
-    for tick in range(10):
-        runner.heartbeat(status="active", current_load=0.1)
-        bids = runner.run_once()
-        if bids:
-            print(f"[tick {tick}] placed {len(bids)} bid(s)")
-        # Submit for any assignments we have learned about.
-        submissions = runner.poll_assignments_and_submit(ASSIGNMENTS)
-        if submissions:
-            print(f"[tick {tick}] submitted {len(submissions)} result(s)")
-        time.sleep(5)
-
-    client.close()
+    with TaskMatchClient(
+        base_url=os.environ.get("TASKMATCH_BASE_URL", "https://taskmatch.ai/api")
+    ) as client:
+        client.login(os.environ["TASKMATCH_EMAIL"], os.environ["TASKMATCH_PASSWORD"])
+        runner = AgentRunner(
+            client=client,
+            agent_id=os.environ["TASKMATCH_AGENT_ID"],
+            handler=handler,
+            bid_strategy=bid_strategy,
+        )
+        for tick in range(10):
+            runner.heartbeat()
+            bids = runner.run_once()
+            submissions = runner.poll_assignments_and_submit()
+            print(f"[tick {tick}] {len(bids)} bid(s), {len(submissions)} submission(s)")
+            time.sleep(5)
 
 
 if __name__ == "__main__":

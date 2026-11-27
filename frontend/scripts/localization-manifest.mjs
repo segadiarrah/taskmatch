@@ -1,4 +1,4 @@
-export const LOCALES = ["en", "fr", "es", "zh"];
+export const LOCALES = ["en", "fr", "es", "zh", "pt"];
 
 const resourcesLegal = [
   "src/app/(public)/resources/documentation/page.tsx",
@@ -14,12 +14,14 @@ const resourcesLegal = [
   "src/app/(public)/legal/security/page.tsx",
   "src/app/(public)/legal/compliance/page.tsx",
   "src/components/public/legal-shell.tsx",
-  "src/content/blog.ts",
+
   "src/content/guides.ts",
+  "src/content/integration.ts",
+  "src/content/marketplace-payments.ts",
+  "src/content/protocol-summary.ts",
+  "src/content/security.ts",
   // Route layouts. Each one exists only to attach a server-rendered title,
-  // description and canonical URL to a client-rendered page; the copy itself
-  // lives in src/lib/page-metadata.ts, which is crawler-facing and
-  // single-locale by design.
+  // description and canonical URL to a client-rendered page using localized copy.
   "src/app/(public)/resources/documentation/layout.tsx",
   "src/app/(public)/resources/api-reference/layout.tsx",
   "src/app/(public)/resources/sdk/layout.tsx",
@@ -37,7 +39,7 @@ const resourcesLegal = [
 const publicAuth = [
   "src/app/page.tsx",
   "src/app/layout.tsx",
-  "src/app/loading.tsx",
+  "src/app/(dashboard)/loading.tsx",
   "src/app/not-found.tsx",
   "src/app/(public)/layout.tsx",
   "src/app/(public)/how-it-works/page.tsx",
@@ -45,23 +47,33 @@ const publicAuth = [
   "src/app/(public)/for-developers/page.tsx",
   "src/app/(public)/pricing/page.tsx",
   "src/app/(public)/changelog/page.tsx",
+
   "src/app/(public)/company/about/page.tsx",
   "src/app/(public)/company/careers/page.tsx",
   "src/app/(public)/company/contact/page.tsx",
   "src/app/(public)/company/press-kit/page.tsx",
   "src/app/(auth)/layout.tsx",
+  "src/app/(auth)/login/layout.tsx",
+  "src/app/(auth)/account-access/page.tsx",
+  "src/app/(auth)/account-access/layout.tsx",
+  "src/app/(auth)/register/layout.tsx",
+  "src/components/public/localized-link.tsx",
   "src/app/(auth)/login/page.tsx",
   "src/app/(auth)/register/page.tsx",
+  "src/app/(auth)/register/registration.tsx",
   "src/components/public/site-chrome.tsx",
+  "src/app/(public)/directory/page.tsx",
+  "src/app/(public)/directory/layout.tsx",
+  "src/app/(public)/directory/[publicId]/page.tsx",
+  "src/lib/directory-copy.ts",
+  "src/components/public/journey-page.tsx",
   "src/components/public/page-shell.tsx",
   "src/components/public/motion.tsx",
   "src/components/language-switcher.tsx",
   "src/components/gdpr/data-rights-panel.tsx",
   "src/lib/landing-copy.ts",
   // Route layouts. Each one exists only to attach a server-rendered title,
-  // description and canonical URL to a client-rendered page; the copy itself
-  // lives in src/lib/page-metadata.ts, which is crawler-facing and
-  // single-locale by design.
+  // description and canonical URL to a client-rendered page using localized copy.
   "src/app/(public)/how-it-works/layout.tsx",
   "src/app/(public)/for-clients/layout.tsx",
   "src/app/(public)/for-developers/layout.tsx",
@@ -74,17 +86,47 @@ const publicAuth = [
 ];
 
 const dashboardShared = [
+  "src/components/dashboard/connection-check.tsx",
+  "src/lib/dashboard-actions-copy.ts",
+  "src/components/dashboard/dashboard-actions.tsx",
+  "src/components/dashboard/weekly-registrations.tsx",
+  "src/components/dashboard/directory-settings.tsx",
+  "src/app/(dashboard)/activity/page.tsx",
+  "src/lib/activity-copy.ts",
+  "src/lib/locales.ts",
+  "src/lib/display-copy.ts",
+  "src/lib/admin-copy.ts",
+  "src/i18n/admin/copy.ts",
+  "src/components/localized-metadata.tsx",
+  "src/lib/localized-page-copy.ts",
+  "src/lib/api-error-copy.ts",
+  "src/lib/evidence-copy.ts",
+  "src/app/(dashboard)/human-tasks/components/evidence-field.tsx",
+  "src/lib/workflow-copy.ts",
+  "src/app/(dashboard)/human-tasks/components/workflow-tools.tsx",
+  "src/app/(dashboard)/human-tasks/page.tsx",
+  "src/lib/human-copy.ts",
+  "src/app/(dashboard)/human-tasks/components/shared.tsx",
+  "src/app/(dashboard)/human-tasks/components/request-form.tsx",
+  "src/app/(dashboard)/human-tasks/components/worker-profile.tsx",
+  "src/app/(dashboard)/human-tasks/components/worker-views.tsx",
+  "src/app/(dashboard)/human-tasks/components/mission-detail.tsx",
+  "src/app/(dashboard)/human-tasks/components/agents-panel.tsx",
+  "src/app/(dashboard)/human-tasks/components/webhooks-panel.tsx",
   "src/app/(dashboard)/layout.tsx",
   "src/app/(dashboard)/error.tsx",
   "src/app/(dashboard)/client/page.tsx",
   "src/app/(dashboard)/client/jobs/page.tsx",
   "src/app/(dashboard)/client/jobs/new/page.tsx",
+  "src/app/(dashboard)/referrals/page.tsx",
   "src/app/(dashboard)/client/jobs/[id]/page.tsx",
   "src/app/(dashboard)/client/jobs/[id]/execution-plan.tsx",
   "src/app/(dashboard)/client/jobs/[id]/quote-panel.tsx",
+  "src/app/(dashboard)/client/jobs/[id]/billing-panel.tsx",
   "src/app/(dashboard)/client/jobs/[id]/delivery-panel.tsx",
   "src/app/(dashboard)/developer/page.tsx",
   "src/app/(dashboard)/developer/earnings/page.tsx",
+  "src/app/(dashboard)/developer/earnings/connect-panel.tsx",
   "src/app/(dashboard)/developer/tasks/page.tsx",
   "src/app/(dashboard)/developer/tasks/[id]/page.tsx",
   "src/app/(dashboard)/developer/agents/page.tsx",
@@ -106,32 +148,15 @@ const dashboardShared = [
   "src/lib/utils.ts",
 ];
 
-/**
- * Admin console — deliberately English only.
- *
- * Only administrators can use these pages: every endpoint behind them is guarded
- * by require_role("admin") in the backend, and robots.txt keeps crawlers out of
- * /admin/. A non-admin can still reach the URL — the dashboard sidebar even
- * links some of them there — but the data never loads, so what they actually
- * see is the error panel, which is translated.
- *
- * Translating an internal console into four languages costs about 430 strings
- * for an audience of one team that already works in English, and every one of
- * those strings then has to be kept in step with the others forever.
- *
- * So they stay in the manifest — they are still checked for design commentary
- * leaking into the UI, and adding a new admin page without listing it here is
- * still an error — but the untranslated-copy rules do not apply to them.
- *
- * If the console is ever opened to customers, move these paths back into
- * dashboardShared and the contract will tell you exactly what needs translating.
- */
-const adminEnglishOnly = [
+// Every administration screen follows the selected interface language.
+const adminLocalized = [
   "src/app/(dashboard)/admin/page.tsx",
+  "src/app/(dashboard)/admin/growth/page.tsx",
   "src/app/(dashboard)/admin/providers/page.tsx",
   "src/app/(dashboard)/admin/audit/page.tsx",
   "src/app/(dashboard)/admin/learning/page.tsx",
   "src/app/(dashboard)/admin/payments/page.tsx",
+  "src/app/(dashboard)/admin/payments/billing-admin-panel.tsx",
   "src/app/(dashboard)/admin/validations/page.tsx",
   "src/app/(dashboard)/admin/tasks/page.tsx",
   "src/app/(dashboard)/admin/tasks/[id]/page.tsx",
@@ -141,11 +166,23 @@ const adminEnglishOnly = [
   "src/app/(dashboard)/admin/agents/[id]/page.tsx",
 ];
 
+// Editorial archives are translated in full, with stable slugs and publication dates.
+const editorialCatalogues = [
+  { path: "src/content/blog.ts", scope: "resources-legal", catalogue: "blog", locales: ["en"] },
+  { path: "src/content/blog-fr.ts", scope: "resources-legal", catalogue: "blog", locales: ["fr"] },
+  { path: "src/content/blog-es.ts", scope: "resources-legal", catalogue: "blog", locales: ["es"] },
+  { path: "src/content/blog-zh.ts", scope: "resources-legal", catalogue: "blog", locales: ["zh"] },
+  { path: "src/content/blog-pt.ts", scope: "resources-legal", catalogue: "blog", locales: ["pt"] },
+  { path: "src/content/changelog.ts", scope: "public-auth", catalogue: "changelog", locales: ["en"] },
+  { path: "src/content/changelog-translations.ts", scope: "public-auth", catalogue: "changelog", locales: ["fr", "es", "zh", "pt"] },
+];
+
 export const localizationManifest = [
+  ...editorialCatalogues.map(entry => ({ ...entry, localization: "catalogue" })),
   ...resourcesLegal.map((path) => ({ path, scope: "resources-legal", localization: "inline" })),
   ...publicAuth.map((path) => ({ path, scope: "public-auth", localization: "inline" })),
   ...dashboardShared.map((path) => ({ path, scope: "dashboard-shared", localization: "central" })),
-  ...adminEnglishOnly.map((path) => ({ path, scope: "dashboard-shared", localization: "english-only" })),
+  ...adminLocalized.map((path) => ({ path, scope: "dashboard-shared", localization: "central" })),
   ...LOCALES.map((locale) => ({
     path: `src/i18n/${locale}.ts`,
     scope: "dashboard-shared",
@@ -156,6 +193,19 @@ export const localizationManifest = [
 // Every exemption is deliberately narrow and records the kind of literal it protects.
 export const reviewedLiteralAllowlist = {
   productAndProtocols: new Set([
+    // Framework names and exact protocol client versions in the compatibility table.
+    "OpenAI Agents SDK", "n8n", "LangChain", "LangGraph", "CrewAI", "Google ADK",
+    "MCP · @modelcontextprotocol/client 2.4.0", "A2A · @a2a-js/sdk 0.3.14",
+    "TaskMatch · Python / JavaScript 0.1.0", "mcp", "a2a", "sdk",
+    "LinkedIn",
+    "Sega Diarrah",
+    "Manrope",
+    "DM Sans",
+    "Next.js",
+    "FastAPI",
+    "PostgreSQL",
+    "Redis",
+    "OpenRouter",
     "TaskMatch",
     "TaskMatch.ai",
     "API",
@@ -184,7 +234,7 @@ export const reviewedLiteralAllowlist = {
   // that translated them would show "Chinese" to someone who cannot read
   // English — the one string on the page that must not follow the current
   // locale is the name of the locale you are trying to switch to.
-  languageEndonyms: new Set(["English", "Fran\u00e7ais", "Espa\u00f1ol", "\u4e2d\u6587"]),
+  languageEndonyms: new Set(["English", "Fran\u00e7ais", "Espa\u00f1ol", "Português", "\u4e2d\u6587"]),
   // CSS selectors, e.g. the focus-trap query in the dialog. They look like prose
   // to a scanner and are read by querySelectorAll — translating "button" there
   // would stop the dialog trapping focus, which is an accessibility regression
@@ -193,10 +243,13 @@ export const reviewedLiteralAllowlist = {
   httpMethods: new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]),
   // Code, URLs, identifiers, status codes, and dynamic-data selectors are structural, not prose.
   patterns: [
+    /^\$\{title\} — TaskMatch\.ai$/, // Localized title plus invariant brand suffix.
+    /^image\/(?:jpeg|png|webp)$/, // Wire MIME types are never translated.
     /^(?:https?:\/\/|mailto:|tel:)/,
     /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
     /^\/?(?:api\/)?v\d+(?:\/|$)/i,
     /^\/[A-Za-z0-9_?&=./:[\]-]+$/,
+    /^#[0-9a-f]{6}$/i, // CSS color tokens in the downloadable brand palette.
     /^\d{3}$/,
     /^&(?:[A-Z]+|#\d+);$/i,
     /^[A-Z]{2,4}$/,

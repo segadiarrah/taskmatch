@@ -6,7 +6,7 @@ import { ArrowRight, Home } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 
 const COPY: Record<
-  "en" | "fr" | "es" | "zh",
+  "en" | "fr" | "es" | "zh" | "pt",
   { eyebrow: string; title: string; body: string; home: string; docs: string }
 > = {
   en: {
@@ -37,11 +37,18 @@ const COPY: Record<
     home: "返回首页",
     docs: "阅读文档",
   },
+  pt: {
+    eyebrow: "Erro 404",
+    title: "Esta página perdeu-se pelo caminho.",
+    body: "A página que procura não existe ou pode ter sido movida. Vamos levar você de volta a um lugar útil.",
+    home: "Voltar ao início",
+    docs: "Ler a documentação"
+  },
 };
 
 export default function NotFound() {
   const { locale } = useTranslation();
-  const c = COPY[locale] ?? COPY.en;
+  const c = COPY[locale];
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-ink-950 px-4 text-ink-50">

@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/public/localized-link";
 import { ArrowRight, CalendarDays, Clock3, Newspaper } from "lucide-react";
 import { PageHero } from "@/components/public/page-shell";
 import { Reveal } from "@/components/public/motion";
-import { blogPosts } from "@/content/blog";
+import { getBlogPosts } from "@/content/blog";
 import { useTranslation, type Locale } from "@/lib/i18n";
 
 type Copy = {
@@ -18,13 +18,13 @@ type Copy = {
   readArticle: string;
 };
 
-const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
+const COPY: Record<"en" | "fr" | "es" | "zh" | "pt", Copy> = {
   en: {
     eyebrow: "Blog",
     title: "Notes from building",
     accent: "dependable AI execution.",
     description:
-      "Technical essays and product thinking on task decomposition, explainable matching, validation, escrow payments, and making AI decisions auditable.",
+      "Technical essays and product thinking on task decomposition, explainable matching, validation, mission payments, and making AI decisions auditable.",
     featured: "Featured",
     featuredTagline: "The path from a sentence to shipped, validated work — explained by the people building it.",
     readArticle: "Read the article",
@@ -34,7 +34,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Notes de construction",
     accent: "d’une exécution IA fiable.",
     description:
-      "Essais techniques et réflexions produit sur la décomposition des tâches, le matching explicable, la validation, les paiements sous séquestre et l’auditabilité des décisions IA.",
+      "Essais techniques et réflexions produit sur la décomposition des tâches, le matching explicable, la validation, les paiements des missions et l’auditabilité des décisions IA.",
     featured: "À la une",
     featuredTagline: "Le chemin d’une phrase jusqu’à un travail livré et validé — expliqué par ceux qui le construisent.",
     readArticle: "Lire l’article",
@@ -44,7 +44,7 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "Notas sobre construir",
     accent: "una ejecución de IA fiable.",
     description:
-      "Ensayos técnicos y reflexiones de producto sobre descomposición de tareas, emparejamiento explicable, validación, pagos con depósito en garantía y auditabilidad de las decisiones de IA.",
+      "Ensayos técnicos y reflexiones de producto sobre descomposición de tareas, emparejamiento explicable, validación, pagos de misiones y auditabilidad de las decisiones de IA.",
     featured: "Destacado",
     featuredTagline: "El camino de una frase a un trabajo entregado y validado — explicado por quienes lo construyen.",
     readArticle: "Leer el artículo",
@@ -54,18 +54,27 @@ const COPY: Record<"en" | "fr" | "es" | "zh", Copy> = {
     title: "构建可靠 AI 执行的",
     accent: "手记。",
     description:
-      "关于任务拆解、可解释匹配、验证、托管付款，以及让 AI 决策可审计的技术随笔与产品思考。",
+      "关于任务拆解、可解释匹配、验证、项目付款，以及让 AI 决策可审计的技术随笔与产品思考。",
     featured: "精选",
     featuredTagline: "从一句话到交付并验证的工作——由正在构建它的人讲述。",
     readArticle: "阅读文章",
   },
+  pt: {
+    "eyebrow": "Blog",
+    "title": "Notas sobre a construção",
+    "accent": "de uma execução de IA confiável.",
+    "description": "Artigos técnicos e reflexões sobre decomposição de tarefas, correspondência explicável, validação, pagamentos de missões e auditoria de decisões de IA.",
+    "featured": "Em destaque",
+    "featuredTagline": "O caminho de uma frase a um trabalho entregue e validado, explicado por quem o está construindo.",
+    "readArticle": "Ler o artigo"
+  }
 };
 
-const dateLocales: Record<Locale, string> = { en: "en-US", fr: "fr-FR", es: "es-ES", zh: "zh-CN" };
+const dateLocales: Record<Locale, string> = { en: "en-US", fr: "fr-FR", es: "es-ES", zh: "zh-CN", pt: "pt-BR" };
 
 export default function BlogPage() {
   const { locale } = useTranslation();
-  const c = COPY[locale] ?? COPY.en;
+  const c = COPY[locale];
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString(dateLocales[locale] ?? "en-US", {
@@ -74,7 +83,7 @@ export default function BlogPage() {
       day: "numeric",
     });
 
-  const sorted = [...blogPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const sorted = [...getBlogPosts(locale)].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const [featured, ...rest] = sorted;
 
   return (
@@ -91,7 +100,7 @@ export default function BlogPage() {
         <div className="mx-auto max-w-6xl">
           <Reveal>
             <Link href={`/resources/blog/${featured.slug}`} className="group block">
-              <article className="hover-lift grid gap-8 rounded-lg border border-ink-700 bg-ink-900 p-8 hover:border-signal-500/40 lg:grid-cols-[1.1fr_0.9fr] lg:p-10">
+              <article lang={locale} className="hover-lift grid gap-8 rounded-lg border border-ink-700 bg-ink-900 p-8 hover:border-signal-500/40 lg:grid-cols-[1.1fr_0.9fr] lg:p-10">
                 <div>
                   <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
                     <span className="rounded-full border border-signal-500/30 bg-signal-500/10 px-3 py-1 eyebrow text-signal-400">
@@ -117,12 +126,12 @@ export default function BlogPage() {
                       <div className="text-ink-500">{featured.author.role}</div>
                     </div>
                   </div>
-                  <span className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-ink-50">
+                  <span lang={locale} className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-ink-50">
                     {c.readArticle}
                     <ArrowRight className="h-4 w-4 text-signal-400 transition-transform group-hover:translate-x-1" />
                   </span>
                 </div>
-                <div className="hidden rounded-md border border-ink-700 bg-ink-850 p-8 lg:flex lg:flex-col lg:justify-center">
+                <div lang={locale} className="hidden rounded-md border border-ink-700 bg-ink-850 p-8 lg:flex lg:flex-col lg:justify-center">
                   <div className="eyebrow text-signal-400">{c.featured}</div>
                   <p className="mt-4 font-display text-2xl font-medium leading-snug text-ink-50">{c.featuredTagline}</p>
                 </div>
@@ -132,7 +141,7 @@ export default function BlogPage() {
         </div>
       </section>
 
-      <section className="px-4 pb-24 sm:px-6 lg:px-8">
+      <section lang={locale} className="px-4 pb-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {rest.map((post, i) => (

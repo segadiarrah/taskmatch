@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import warnings
+from typing import Literal
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings
@@ -19,6 +20,9 @@ class Settings(BaseSettings):
     APP_NAME: str = "TaskMatch.ai"
     API_V1_PREFIX: str = "/api/v1"
     ENV: str = Field(default="development")  # development | staging | production
+    TRUSTED_HOSTS: list[str] = Field(default=[
+        "taskmatch.ai", "www.taskmatch.ai", "*.taskmatch.ai", "localhost", "127.0.0.1", "backend",
+    ])
 
     # -- Database -------------------------------------------------------------
     DATABASE_URL: str = "postgresql+asyncpg://taskmatch:taskmatch@postgres:5432/taskmatch"
@@ -37,13 +41,21 @@ class Settings(BaseSettings):
     # -- Third-party keys (optional) ------------------------------------------
     OPENAI_API_KEY: str | None = None
     STRIPE_SECRET_KEY: str | None = None
+    STRIPE_WEBHOOK_SECRET: str | None = None
+    STRIPE_CONNECT_WEBHOOK_SECRET: str | None = None
+    STRIPE_MODE: Literal["test", "live"] = "test"
+    STRIPE_API_VERSION: str = "2024-06-20"
+    PAYMENT_MODE: Literal["stripe", "legacy_manual"] = "stripe"
+    BILLING_SITE_URL: str = "https://taskmatch.ai"
+    BILLING_WORKER_POLL_SECONDS: float = 2.0
+    BILLING_OPERATION_LEASE_SECONDS: int = 600
 
     # -- LLM (OpenAI-compatible: OpenAI, OpenRouter, DeepSeek, …) --------------
     # When OPENAI_API_KEY is set, the MCP orchestration layer uses the LLM for
-    # the generative steps (job formatting & decomposition). Every LLM call has
-    # a deterministic fallback, so the platform works fully even without a key.
+    # generative steps. Planning has a deterministic fallback; task execution
+    # requires a real provider response or an external worker submission.
     OPENAI_BASE_URL: str | None = None  # e.g. https://openrouter.ai/api/v1
-    LLM_MODEL: str = "gpt-4o-mini"
+    LLM_MODEL: str = "gpt-6.1-sol"
     LLM_TIMEOUT_SECONDS: int = 30
     LLM_ENABLED: bool = True
 
@@ -62,9 +74,15 @@ class Settings(BaseSettings):
     # A quote is honoured for this long; beyond it, provider rates may have moved
     # and the job must be re-priced before execution.
     QUOTE_VALIDITY_DAYS: int = 14
-    # Model used to price LLM-routed tasks when no provider is enabled. Only
-    # affects the *estimate* — the executing agent may use a different model.
-    PRICING_DEFAULT_MODEL: str = "claude-sonnet-5"
+    # Legacy estimation only. Stripe quotes require an enabled provider.
+    # FX is an explicit quote conversion, frozen with each execution budget.
+    PRICING_DEFAULT_MODEL: str = "gpt-6.1-sol"
+    PRICING_USD_TO_EUR: float = Field(default=0.92, gt=0)
+    # New task quotes select only this provider; accepted quotes retain their route.
+    EXECUTION_PROVIDER: Literal["openai", "anthropic", "google", "mistral", "deepseek", "xai", "openrouter"] = "openai"
+    EXECUTION_MAX_INPUT_TOKENS: int = Field(default=32000, ge=1, le=64000)
+    EXECUTION_MAX_OUTPUT_TOKENS: int = Field(default=16000, ge=1, le=32000)
+    EXECUTION_MAX_ATTEMPTS: int = Field(default=3, ge=1, le=3)
 
     # -- Contact form email (SMTP, e.g. Brevo relay) --------------------------
     SMTP_HOST: str | None = None
@@ -72,8 +90,15 @@ class Settings(BaseSettings):
     SMTP_USER: str | None = None
     SMTP_PASSWORD: str | None = None
     SMTP_STARTTLS: bool = True
-    SMTP_FROM: str = "noreply@taskmatch.ai"
+    SMTP_FROM: str | None = None
+    SMTP_SSL: bool = False
+    SMTP_SENDMAIL_PATH: str | None = None
+    TASKMATCH_MAIL_ENABLED: bool = False
+    TASKMATCH_OPERATOR_FROM: str | None = None  # Internal notices to the monitored operator only.
+    REGISTRATION_TEST_EMAILS: list[str] = Field(default_factory=list)
     CONTACT_TO: str = "sega@tauraco.ai"
+
+    HUMAN_TASKS_ENABLED: bool = False
 
     # -- CORS -----------------------------------------------------------------
     CORS_ORIGINS: list[str] = Field(default=["http://localhost:3000"])
@@ -82,11 +107,16 @@ class Settings(BaseSettings):
         "env_file": ".env",
         "env_file_encoding": "utf-8",
         "case_sensitive": True,
+        "extra": "ignore",
     }
 
     @model_validator(mode="after")
     def _validate_production(self) -> "Settings":
         if self.ENV == "production":
+            if self.PAYMENT_MODE != "stripe":
+                raise ValueError("New production jobs require Stripe payments")
+            if not self.BILLING_SITE_URL.startswith("https://"):
+                raise ValueError("BILLING_SITE_URL must use HTTPS in production")
             if self.SECRET_KEY == "change-me-in-production" or len(self.SECRET_KEY) < 32:
                 raise ValueError(
                     "SECRET_KEY must be at least 32 characters and not the default value in production"

@@ -5,6 +5,8 @@ Quote *responses* are assembled as plain dicts (matching the existing
 that is more useful to the client verbatim than flattened through a model.
 """
 
+from uuid import UUID
+
 from pydantic import BaseModel, Field
 
 
@@ -29,3 +31,4 @@ class OfferAcceptRequest(BaseModel):
             "task — experts accept an arbitrated band, they do not bid freely."
         ),
     )
+    agent_id: UUID | None = Field(default=None, description="Your active agent or expert profile; optional when you have exactly one")

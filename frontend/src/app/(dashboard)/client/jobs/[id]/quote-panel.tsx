@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { apiGet, apiPost } from "@/lib/api";
+import { ApiError, apiGet, apiPost } from "@/lib/api";
+import { CheckoutSession, stripeUrl } from "@/lib/billing";
 import { useTranslation } from "@/lib/i18n";
+import { QuoteFeeWaiver } from "@/components/quote-fee-waiver";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -61,6 +63,7 @@ interface Quote {
   currency: string;
   subtotal: number;
   platform_fee: number;
+  platform_fee_waived?: number;
   total: number;
   human_equivalent: { low: number | null; high: number | null };
   savings_vs_human: number | null;
@@ -103,20 +106,27 @@ const ACTION_REJECT = "reject";
 
 export function QuotePanel({
   jobId,
+  billingMode,
   onAccepted,
+  onQuote,
 }: {
   jobId: string;
+  billingMode: "stripe" | "legacy_manual";
   /** Lets the parent restart its own polling once execution begins. */
   onAccepted?: () => void;
+  onQuote: (quoteId: string | undefined) => void;
 }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const isLegacy = billingMode === "legacy_manual";
   const [data, setData] = useState<QuoteResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState<"accept" | "reject" | null>(null);
+  const [busy, setBusy] = useState<"accept" | "reject" | "refresh" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showReject, setShowReject] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+
+  const [needsRequote, setNeedsRequote] = useState(false);
 
   const pollsRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -125,6 +135,7 @@ export function QuotePanel({
     try {
       const res = await apiGet<QuoteResponse>(`/v1/jobs/${jobId}/quote`);
       setData(res);
+      onQuote(res.quote?.id);
       setError(null);
 
       // The quote is produced by a background pricing pass; keep polling until
@@ -138,7 +149,7 @@ export function QuotePanel({
     } finally {
       setLoading(false);
     }
-  }, [jobId, t]);
+  }, [jobId, t, onQuote]);
 
   useEffect(() => {
     load();
@@ -147,15 +158,35 @@ export function QuotePanel({
     };
   }, [load]);
 
+  const refreshQuote = async () => {
+    setBusy("refresh");
+    try {
+      await apiPost(`/v1/jobs/${jobId}/quote/refresh`, {});
+      await load();
+      setNeedsRequote(false);
+    } catch (failure) {
+      setError(failure instanceof ApiError ? failure.message : t("quote.errorLoad"));
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const handleAccept = async () => {
+    if (!data?.quote) return;
     setBusy(ACTION_ACCEPT);
     setError(null);
     try {
-      await apiPost(`/v1/jobs/${jobId}/quote/accept`, {});
+      const result = await apiPost<CheckoutSession>(`/v1/jobs/${jobId}/quote/accept`, {}, { headers: { "X-TaskMatch-Quote-Id": data.quote.id } });
+      if (billingMode !== "legacy_manual") {
+        const url = stripeUrl(result.checkout_url);
+        if (url) { window.location.assign(url); return; }
+        if (result.status !== "paid") { setError(t("billing.invalidLink")); return; }
+      }
       await load();
       onAccepted?.();
-    } catch {
-      setError(t("quote.errorAccept", "Could not accept the quote. Please retry."));
+    } catch (failure) {
+      if (failure instanceof ApiError && failure.status === 409) setNeedsRequote(true);
+      setError(failure instanceof ApiError ? failure.message : t("quote.errorAccept"));
     } finally {
       setBusy(null);
     }
@@ -176,7 +207,7 @@ export function QuotePanel({
   };
 
   const money = (n: number, ccy: string) =>
-    new Intl.NumberFormat(undefined, {
+    new Intl.NumberFormat(locale, {
       style: "currency",
       currency: ccy || "EUR",
       maximumFractionDigits: 2,
@@ -248,10 +279,14 @@ export function QuotePanel({
 
       <CardContent className="space-y-6">
         {error && (
-          <p className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+          <p role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
             {error}
           </p>
         )}
+
+        {(needsRequote || expired) && <Button variant="outline" disabled={busy !== null} onClick={refreshQuote}>
+          {t("quote.reviewUpdatedQuote")}
+        </Button>}
 
         {/* ---- Headline total ---- */}
         <section className="rounded-lg border border-signal-500/30 bg-signal-500/5 p-4">
@@ -263,10 +298,14 @@ export function QuotePanel({
               <p className="mt-1 font-display text-3xl font-medium text-ink-50">
                 {money(quote.total, quote.currency)}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t("quote.totalBreakdown", "Includes")} {money(quote.platform_fee, quote.currency)}{" "}
-                {t("quote.platformFee", "platform fee")}
-              </p>
+              {quote.platform_fee_waived ? (
+                <QuoteFeeWaiver quote={quote} pending={quote.actionable} />
+              ) : (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t("quote.totalBreakdown", "Includes")} {money(quote.platform_fee, quote.currency)}{" "}
+                  {t("quote.platformFee", "platform fee")}
+                </p>
+              )}
             </div>
 
             {savingsPct != null && quote.human_equivalent.low != null && (
@@ -408,8 +447,8 @@ export function QuotePanel({
               <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-signal-400" />
               <p className="text-xs text-muted-foreground">
                 {t(
-                  "quote.gateNotice",
-                  "Approving releases the job for execution and places the amount in escrow. It is paid out only against validated delivery.",
+                  isLegacy ? "billing.legacyNotice" : "quote.gateNotice",
+                  "Approve this quote and pay through Stripe Checkout. Execution starts only after the server verifies payment. Developer transfers follow your acceptance of completed work.",
                 )}
               </p>
             </div>
@@ -425,7 +464,7 @@ export function QuotePanel({
               <Button onClick={handleAccept} disabled={busy !== null}>
                 {busy === ACTION_ACCEPT
                   ? t("quote.accepting", "Approving…")
-                  : t("quote.accept", "Approve & start")}
+                  : isLegacy ? t("quote.accept") : t("billing.quotePay")}
               </Button>
             </div>
 

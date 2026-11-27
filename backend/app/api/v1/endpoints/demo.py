@@ -15,11 +15,12 @@ from decimal import Decimal
 import structlog
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.agent import Agent, AgentStatus
+from app.models.agent import Agent
+from app.models.directory import DirectoryProfile
+from app.api.v1.endpoints.directory import visible_cards
 from app.models.job import Job
 from app.services import mcp_service
 
@@ -54,7 +55,7 @@ def _score_agent(agent: Agent, task_type: str) -> float:
 
 
 @router.post("/demo/plan", summary="Live homepage demo — structure & match a task (no auth, no persistence)")
-async def demo_plan(payload: DemoRequest, db: AsyncSession = Depends(get_db)) -> dict:
+async def demo_plan(payload: DemoRequest, db: AsyncSession = Depends(get_db, scope="function")) -> dict:
     desc = payload.description.strip()[:_MAX_DESC]
 
     # Detached, in-memory job — never added to the session.
@@ -97,15 +98,15 @@ async def demo_plan(payload: DemoRequest, db: AsyncSession = Depends(get_db)) ->
                 }
             ]
 
-    # 3) Match against real active agents (read-only).
-    agents = list(
-        (await db.execute(select(Agent).where(Agent.status == AgentStatus.active))).scalars().all()
-    )
+    # The anonymous preview may use only explicitly published executor profiles.
+    agents = (await db.execute(visible_cards().with_only_columns(DirectoryProfile.id,
+                              DirectoryProfile.display_name, Agent))).all()
     tasks_out = []
     for spec_item in specs[:6]:
         tt = spec_item.get("task_type", "general")
         ranked = sorted(
-            ({"name": a.name, "slug": a.slug, "score": _score_agent(a, tt)} for a in agents),
+            ({"name": name, "slug": str(public_id), "score": _score_agent(agent, tt)}
+             for public_id, name, agent in agents),
             key=lambda x: x["score"],
             reverse=True,
         )[:3]

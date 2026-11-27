@@ -7,7 +7,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -20,6 +20,7 @@ from app.models.payment import PaymentRecord, PaymentStatus
 from app.models.submission import Submission, SubmissionStatus
 from app.models.task import Task, TaskStatus
 from app.models.user import User
+from app.services.registration import weekly_registrations
 from app.schemas.dashboard import AgentMatchResult, DashboardOverview
 
 router = APIRouter()
@@ -45,7 +46,7 @@ class FeedbackNoteBody(BaseModel):
 )
 async def dashboard_overview(
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> DashboardOverview:
     """Return aggregated platform metrics for the admin dashboard."""
     # Total jobs.
@@ -87,75 +88,31 @@ async def dashboard_overview(
     # Failed tasks.
     failed_tasks = tasks_by_status.get(TaskStatus.cancelled.value, 0)
 
-    # Total pending payments.
-    pending_payments_result = await db.execute(
-        select(func.coalesce(func.sum(PaymentRecord.gross_amount), 0))
-        .where(PaymentRecord.payment_status == PaymentStatus.pending)
-    )
-    total_payments_pending = float(pending_payments_result.scalar() or 0)
-
-    # Total completed payments.
-    completed_payments_result = await db.execute(
-        select(func.coalesce(func.sum(PaymentRecord.gross_amount), 0))
-        .where(PaymentRecord.payment_status == PaymentStatus.paid)
-    )
-    total_payments_completed = float(completed_payments_result.scalar() or 0)
-
-    # --- Marketplace economics (what investors probe first) ---
-    # GMV = all payment volume that has cleared bidding into escrow or settled
-    # (i.e. every non-cancelled payment record). Platform revenue = fees on the
-    # settled (paid) portion; take rate is revenue over settled GMV.
-    settled_states = (PaymentStatus.paid,)
-    escrowed_or_settled = (
-        PaymentStatus.paid,
-        PaymentStatus.releasable,
-        PaymentStatus.authorized,
-        PaymentStatus.pending,
-    )
-    gmv = float(
-        (
-            await db.execute(
-                select(func.coalesce(func.sum(PaymentRecord.gross_amount), 0)).where(
-                    PaymentRecord.payment_status.in_(escrowed_or_settled)
-                )
-            )
-        ).scalar()
-        or 0
-    )
-    platform_revenue = float(
-        (
-            await db.execute(
-                select(func.coalesce(func.sum(PaymentRecord.platform_fee), 0)).where(
-                    PaymentRecord.payment_status.in_(settled_states)
-                )
-            )
-        ).scalar()
-        or 0
-    )
-    take_rate = round((platform_revenue / total_payments_completed) * 100, 1) if total_payments_completed else 0.0
-
+    # Monetary metrics have one explicit reporting currency. Never add USD,
+    # EUR, etc. as if they were equivalent; no exchange-rate source is configured.
+    currency_row = (await db.execute(
+        select(Job.currency, func.count()).group_by(Job.currency)
+        .order_by(func.count().desc(), Job.currency).limit(1)
+    )).first()
+    currency = currency_row[0] if currency_row and currency_row[0] else "EUR"
+    states = (PaymentStatus.paid, PaymentStatus.releasable, PaymentStatus.authorized, PaymentStatus.pending)
+    totals = (await db.execute(select(
+        func.coalesce(func.sum(case((PaymentRecord.payment_status == PaymentStatus.pending, PaymentRecord.gross_amount), else_=0)), 0).label("pending"),
+        func.coalesce(func.sum(case((PaymentRecord.payment_status == PaymentStatus.paid, PaymentRecord.gross_amount), else_=0)), 0).label("paid"),
+        func.coalesce(func.sum(case((PaymentRecord.payment_status == PaymentStatus.paid, PaymentRecord.platform_fee), else_=0)), 0).label("fees"),
+        func.coalesce(func.sum(PaymentRecord.gross_amount), 0).label("gross"),
+        func.count(func.distinct(PaymentRecord.job_id)).label("jobs"),
+    ).where(PaymentRecord.currency == currency, PaymentRecord.payment_status.in_(states)))).one()
+    total_payments_pending = float(totals.pending)
+    total_payments_completed = float(totals.paid)
+    gmv = float(totals.gross)
+    platform_revenue = float(totals.fees)
+    take_rate = round(platform_revenue / total_payments_completed * 100, 1) if total_payments_completed else 0.0
     completed_jobs = jobs_by_status.get(JobStatus.completed.value, 0)
-
-    payment_count = int(
-        (await db.execute(select(func.count()).select_from(PaymentRecord))).scalar() or 0
-    )
-    total_gross_all = float(
-        (
-            await db.execute(select(func.coalesce(func.sum(PaymentRecord.gross_amount), 0)))
-        ).scalar()
-        or 0
-    )
-    avg_job_value = round(total_gross_all / payment_count, 2) if payment_count else 0.0
-
-    # Reporting currency: the most common job currency, defaulting to EUR.
-    currency_row = (
-        await db.execute(
-            select(Job.currency, func.count()).group_by(Job.currency).order_by(func.count().desc()).limit(1)
-        )
-    ).first()
-    currency = (currency_row[0] if currency_row and currency_row[0] else "EUR")
+    avg_job_value = round(gmv / totals.jobs, 2) if totals.jobs else 0.0
 
     return DashboardOverview(
+        weekly_registrations=await weekly_registrations(db),
         total_jobs=total_jobs,
         jobs_by_status=jobs_by_status,
         total_tasks=total_tasks,
@@ -183,7 +140,7 @@ async def dashboard_overview(
 async def agent_matching(
     task_id: uuid.UUID,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[AgentMatchResult]:
     """Return a ranked list of agents suitable for a given task.
 
@@ -258,7 +215,7 @@ async def list_mcp_decisions(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[dict]:
     """Return a paginated list of MCP (AI orchestration) decisions."""
     query = select(MCPDecision)
@@ -313,7 +270,7 @@ async def list_audit_logs(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[dict]:
     """Return a paginated list of audit log entries with optional filters."""
     query = select(AuditLog)
@@ -355,7 +312,7 @@ async def list_feedback_notes(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[dict]:
     """Return a paginated list of feedback/learning notes."""
     query = select(FeedbackNote)
@@ -395,7 +352,7 @@ async def list_feedback_notes(
 async def create_feedback_note(
     payload: "FeedbackNoteBody" = Body(...),
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Create a new feedback/learning note.  Restricted to administrators."""
     # Accept either "category" or legacy "note_type"; either "note" or "content".

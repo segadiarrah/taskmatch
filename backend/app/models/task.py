@@ -2,6 +2,7 @@
 
 import enum
 import uuid
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from sqlalchemy import (
@@ -86,6 +87,9 @@ class Task(TimestampMixin, Base):
         Integer, nullable=False, default=0, server_default="0"
     )
 
+    human_contract_json: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
+    human_policy_status: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+
     # -- relationships ---------------------------------------------------------
 
     job: Mapped["Job"] = relationship(
@@ -144,3 +148,13 @@ class Task(TimestampMixin, Base):
 
     def __repr__(self) -> str:
         return f"<Task {self.title!r} status={self.status}>"
+
+    @property
+    def assigned_agent_id(self) -> Optional[uuid.UUID]:
+        """The current worker, or the worker who completed the latest delivery."""
+        eligible = [assignment for assignment in self.assignments if assignment.status in ("active", "completed")]
+        latest = max(eligible, key=lambda assignment: (
+            assignment.status == "active",
+            assignment.assigned_at or datetime.min.replace(tzinfo=timezone.utc),
+        ), default=None)
+        return latest.agent_id if latest else None

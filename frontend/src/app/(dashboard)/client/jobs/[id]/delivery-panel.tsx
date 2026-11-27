@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiGet, apiPost, apiPut } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
+import { formatDeliveryRequirement } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -73,7 +74,7 @@ const MODES = Object.keys(MODE_ICONS) as DeliveryMode[];
 /* -------------------------------------------------------------------------- */
 
 export function DeliveryPanel({ jobId }: { jobId: string }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [plan, setPlan] = useState<DeliveryPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -272,7 +273,7 @@ export function DeliveryPanel({ jobId }: { jobId: string }) {
               </p>
               <ul className="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
                 {plan.requirements.items?.map((item) => (
-                  <li key={item}>• {item}</li>
+                  <li key={item}>• {formatDeliveryRequirement(item, locale)}</li>
                 ))}
               </ul>
             </div>

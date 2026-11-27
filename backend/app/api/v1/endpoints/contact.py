@@ -1,78 +1,60 @@
-"""Public contact-form endpoint.
+"""Accept a contact message for private, asynchronous delivery."""
+from datetime import UTC, datetime, timedelta
+import hashlib
+import hmac
 
-Accepts a contact message from the marketing site and delivers it by email
-to ``settings.CONTACT_TO`` (sega@tauraco.ai) via the configured SMTP relay
-(Brevo). Falls back to a clear error if SMTP is not configured so the frontend
-can degrade gracefully.
-"""
-
-from __future__ import annotations
-
-import asyncio
-import smtplib
-import ssl
-from email.mime.text import MIMEText
-from email.utils import formataddr
-
-import structlog
-from fastapi import APIRouter, HTTPException, status
-from pydantic import BaseModel, EmailStr, Field
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from sqlalchemy import func, select, text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-
-logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
+from app.core.database import get_db
+from app.models.mail import MailOutbox
+from app.services.mail_worker import contact_transport_available
 
 router = APIRouter()
 
 
 class ContactMessage(BaseModel):
-    name: str = Field(..., min_length=1, max_length=200)
+    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+
+    name: str = Field(min_length=1, max_length=200)
     email: EmailStr
-    subject: str = Field(default="", max_length=300)
-    message: str = Field(..., min_length=1, max_length=8000)
+    subject: str = Field(min_length=1, max_length=300)
+    message: str = Field(min_length=1, max_length=8000)
+    website: str = Field(default="", max_length=0)  # Honeypot, hidden from people.
+
+    @field_validator("name", "subject")
+    @classmethod
+    def single_line(cls, value: str) -> str:
+        if not value.isprintable():
+            raise ValueError("Enter a single line of text")
+        return value
 
 
-def _send_email(payload: ContactMessage) -> None:
-    """Blocking SMTP send (run in a worker thread)."""
-    subject = f"[TaskMatch Contact] {payload.subject or 'New message'}"
-    body = (
-        f"New contact-form submission on taskmatch.ai\n\n"
-        f"Name:    {payload.name}\n"
-        f"Email:   {payload.email}\n"
-        f"Subject: {payload.subject or '(none)'}\n\n"
-        f"Message:\n{payload.message}\n"
-    )
-    msg = MIMEText(body, "plain", "utf-8")
-    msg["Subject"] = subject
-    msg["From"] = formataddr(("TaskMatch.ai", settings.SMTP_FROM))
-    msg["To"] = settings.CONTACT_TO
-    msg["Reply-To"] = formataddr((payload.name, str(payload.email)))
-
-    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=20) as server:
-        server.ehlo()
-        if settings.SMTP_STARTTLS:
-            server.starttls(context=ssl.create_default_context())
-            server.ehlo()
-        if settings.SMTP_USER and settings.SMTP_PASSWORD:
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-        server.sendmail(settings.SMTP_FROM, [settings.CONTACT_TO], msg.as_string())
+def _key(category: str, value: str) -> str:
+    return hmac.new(settings.SECRET_KEY.encode(), f"{category}:{value}".encode(), hashlib.sha256).hexdigest()
 
 
-@router.post("", summary="Send a contact-form message", status_code=status.HTTP_202_ACCEPTED)
-async def submit_contact(payload: ContactMessage) -> dict:
-    if not settings.SMTP_HOST:
-        logger.error("contact.smtp_not_configured")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Contact email is not configured.",
-        )
-    try:
-        await asyncio.to_thread(_send_email, payload)
-    except Exception as exc:  # noqa: BLE001
-        logger.exception("contact.send_failed", error=str(exc))
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Could not send your message right now. Please email sega@tauraco.ai directly.",
-        )
-    logger.info("contact.sent", to=settings.CONTACT_TO, from_email=str(payload.email))
-    return {"status": "sent", "to": settings.CONTACT_TO}
+@router.post("", summary="Queue a contact message", status_code=status.HTTP_202_ACCEPTED)
+async def submit_contact(payload: ContactMessage, request: Request,
+                         db: AsyncSession = Depends(get_db, scope="function")) -> dict:
+    if not contact_transport_available():
+        raise HTTPException(503, "Contact delivery is temporarily unavailable.")
+    sender_key = _key("sender", payload.email.lower())
+    peer_key = _key("peer", request.client.host if request.client else "unknown")
+    # A brief transaction lock prevents simultaneous requests bypassing the
+    # rolling limits. Use the actual connection peer, including shared proxies.
+    await db.execute(text("SELECT pg_advisory_xact_lock(29816031)"))
+    now = datetime.now(UTC)
+    hour = now - timedelta(hours=1)
+    counts = (await db.execute(select(
+        func.count(),
+        func.count().filter(MailOutbox.sender_key == sender_key),
+        func.count().filter(MailOutbox.peer_key == peer_key, MailOutbox.created_at >= now - timedelta(minutes=1)),
+    ).where(MailOutbox.kind == "contact", MailOutbox.created_at >= hour))).one()
+    if counts[0] >= 300 or counts[1] >= 3 or counts[2] >= 20:
+        raise HTTPException(429, "Too many contact messages. Please try again later.", headers={"Retry-After": "3600"})
+    db.add(MailOutbox(kind="contact", payload=payload.model_dump(exclude={"website"}), sender_key=sender_key, peer_key=peer_key))
+    return {"status": "queued"}

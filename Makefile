@@ -51,7 +51,24 @@ reset-db: ## Drop, recreate, migrate, and seed the database
 
 .PHONY: test
 test: ## Run the backend test suite
-	$(COMPOSE) exec backend python -m pytest tests/ -v --tb=short
+	$(COMPOSE) exec -T -e ENV=development backend python -m pytest tests/ -q -p no:cacheprovider
+
+.PHONY: test-integration
+test-integration: ## Run real API lifecycle tests against an isolated test database
+	$(COMPOSE) exec -T backend python -m scripts.test_integration
+
+.PHONY: check-frontend
+check-frontend: ## Typecheck, lint and check the web application
+	cd frontend && npm ci && npm run check && npm run build
+
+.PHONY: check-sdk
+check-sdk: ## Test and build both SDKs
+	cd sdk/js && npm ci && npm test
+	$(COMPOSE) run --rm --no-deps -v "$(CURDIR)/sdk/python:/sdk/python:ro" -e PYTHONPATH=/sdk/python backend python -m pytest /sdk/python/tests -q -p no:cacheprovider
+
+.PHONY: health
+health: ## Check database and Redis readiness via the reverse proxy
+	curl --fail --silent --show-error http://127.0.0.1:8091/health/ready
 
 # -----------------------------------------------------------------------------
 # Shells

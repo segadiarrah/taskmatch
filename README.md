@@ -1,166 +1,75 @@
 # TaskMatch.ai
 
-AI-powered freelance task matching platform that intelligently connects clients with the right developers based on skills, availability, budget, and project requirements.
+Marketplace for client jobs executed by AI workers or human experts. A brief becomes a plan and a quote; accepted work is assigned, submitted, reviewed and delivered. The repository includes the web application, API, JavaScript SDK and Python SDK.
 
----
+## Run locally
 
-## Architecture Overview
-
-```
-┌────────────┐      ┌────────────────┐      ┌──────────────┐
-│  Next.js   │─────▶│  FastAPI        │─────▶│  PostgreSQL  │
-│  Frontend  │ REST │  Backend        │ SQL  │  16          │
-│  :3000     │◀─────│  :8000         │◀─────│  :5432       │
-└────────────┘      │                │      └──────────────┘
-                    │  - Auth (JWT)  │
-                    │  - AI Matching │      ┌──────────────┐
-                    │  - Payments    │─────▶│  Redis 7     │
-                    │  - REST API    │ cache│  :6379       │
-                    └────────────────┘      └──────────────┘
-```
-
-The system follows a standard client-server architecture:
-
-- **Frontend** serves the web UI and communicates with the backend over REST.
-- **Backend** handles authentication, business logic, AI-powered matching, and payment processing.
-- **PostgreSQL** stores all persistent data (users, tasks, matches, payments).
-- **Redis** provides caching, rate-limiting, and session storage.
-
-## Tech Stack
-
-| Layer      | Technology                                            |
-|------------|-------------------------------------------------------|
-| Frontend   | Next.js 14, React 18, TypeScript, Tailwind CSS        |
-| Backend    | FastAPI, SQLAlchemy 2 (async), Pydantic v2, Alembic   |
-| Database   | PostgreSQL 16                                         |
-| Cache      | Redis 7                                               |
-| AI         | OpenAI API (GPT-4) for task-developer matching        |
-| Payments   | Stripe                                                |
-| Infra      | Docker Compose, Make                                  |
-| Data Viz   | Recharts, TanStack React Query                        |
-
-## Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/) and Docker Compose v2+
-- [Make](https://www.gnu.org/software/make/) (included on most Linux/macOS systems)
-- (Optional) Node.js 20+ and Python 3.12+ for local development outside containers
-
-## Getting Started
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/your-org/taskmatch.git
-cd taskmatch
-```
-
-### 2. Create your environment file
+Requirements: Docker with Compose v2. For frontend checks, Node.js 20+.
 
 ```bash
 cp .env.example .env
-# Edit .env and set real values for SECRET_KEY, OPENAI_API_KEY, and STRIPE_SECRET_KEY
+# Set SECRET_KEY to a random secret; optional provider and SMTP configuration.
+docker compose up -d postgres redis
+docker compose build backend billing-worker frontend
+docker compose run --rm --no-deps backend alembic upgrade head
+docker compose up -d
 ```
 
-### 3. Start all services
+Open **http://localhost:8091**. The reverse proxy serves both the web application and `/api/v1`. PostgreSQL and Redis are internal services; no database ports need to be exposed. `make health` checks database and Redis readiness. `/health` is a lightweight liveness endpoint. Swagger is at `/api/v1/docs` in development; production disables it.
+
+Create ordinary client/developer accounts through the registration page. Admins must be provisioned explicitly:
 
 ```bash
-make dev
+# Supply values through your shell; the script never prints the password.
+export ADMIN_EMAIL=admin@taskmatch.ai
+export ADMIN_PASSWORD='replace-with-a-long-unique-password'
+docker compose exec -e ADMIN_EMAIL -e ADMIN_PASSWORD backend python seed_admin.py
 ```
 
-This builds the Docker images and starts PostgreSQL, Redis, the backend, and the frontend. On first run, the build may take a couple of minutes.
+Administrators with a `@taskmatch.ai` address can also sign in using its local part. Existing credentials remain valid. `make seed` adds **demo** records and is intended for a disposable development database.
 
-### 4. Run migrations and seed data
-
-In a second terminal:
+## Verify
 
 ```bash
-make migrate
-make seed
+make test                 # Unit/API tests; isolated DB cases skip without their fixture
+make test-integration     # Full backend suite using taskmatch_integration_test
+make check-frontend       # Install lockfile, types, lint, unit/UI checks and build
+make check-sdk            # JavaScript and Python SDK contract tests
+cd frontend && npm run test:e2e
 ```
 
-### 5. Open the app
+The integration runner creates a dedicated database ending `_test`; it never resets the application database. Browser contract tests use controlled API responses. A separate browser workflow suite talks to an isolated real API: see [operations](docs/OPERATIONS.md).
 
-| Service          | URL                              |
-|------------------|----------------------------------|
-| Frontend         | http://localhost:3000             |
-| Backend API      | http://localhost:8000             |
-| API Docs (Swagger) | http://localhost:8000/api/v1/docs  |
-| API Docs (ReDoc) | http://localhost:8000/api/v1/redoc   |
+## What is implemented
 
-## Seed Credentials
+- JWT authentication, client/developer registration and separately provisioned admin accounts.
+- Job briefs, document ingestion, structured planning and priced quotes.
+- Quote approval before bidding/execution, worker registration, bids and assignments.
+- Real submissions, role/ownership checks, review/rework, delivery and client acceptance.
+- Stripe Checkout captures the accepted quote before work starts; Stripe Connect transfers approved developer earnings after client acceptance. Historical jobs retain an explicit manual ledger. Amounts and earnings are separated by currency.
+- Admin overview, agents, jobs, tasks, validations, payment records, provider settings, feedback and audit history.
+- English, French, Spanish and Chinese public/client/developer interfaces. Admin content and original English editorial articles are explicitly marked as English.
+- SDK polling for assignments. Outbound task webhooks are not implemented.
 
-After running `make seed`, the following accounts are available:
+External AI execution needs valid configured credentials and a working model. Planning has a deterministic fallback; missing generation capabilities leave work pending for a real executor. Contact delivery needs configured SMTP. Stripe requires valid mode-matched credentials, dedicated signed webhooks and the billing worker. Developers complete Stripe-hosted Connect onboarding before transfers. See [billing operations](docs/STRIPE-OPERATIONS.md).
 
-| Role       | Email                   | Password      |
-|------------|-------------------------|---------------|
-| Admin      | admin@taskmatch.ai      | admin123      |
-| Client     | client1@example.com     | password123   |
-| Developer  | dev1@example.com        | password123   |
+## Structure
 
-## Common Commands
-
-```bash
-make dev              # Start all services (docker-compose up --build)
-make down             # Stop all containers
-make logs             # Tail logs from all services
-make migrate          # Run Alembic database migrations
-make seed             # Seed the database with sample data
-make test             # Run backend test suite
-make shell-backend    # Open a shell in the backend container
-make shell-frontend   # Open a shell in the frontend container
-make reset-db         # Drop, recreate, migrate, and seed the database
+```text
+backend/app/       FastAPI routes, schemas, models and shared services
+backend/migrations/ Alembic schema migrations
+backend/tests/     Unit tests and isolated PostgreSQL lifecycle regressions
+frontend/src/      Next.js application and localization
+frontend/e2e/      Browser regressions and real-API workflow
+sdk/js/            JavaScript/TypeScript SDK and polling runner
+sdk/python/        Python SDK and polling runner
+docs/              API, agent protocol and operating instructions
 ```
 
-## Project Structure
+API and SDK contracts: [API reference](docs/API_REFERENCE.md), [agent protocol](docs/AGENT_PROTOCOL_V1.md), [SDK guide](sdk/AGENTS.md).
 
-```
-taskmatch/
-├── backend/
-│   ├── app/
-│   │   ├── api/v1/endpoints/   # Route handlers
-│   │   ├── core/               # Config, security, database
-│   │   ├── middleware/          # CORS, logging, rate-limiting
-│   │   ├── models/             # SQLAlchemy ORM models
-│   │   ├── schemas/            # Pydantic request/response schemas
-│   │   └── services/           # Business logic & AI matching
-│   ├── migrations/             # Alembic migration scripts
-│   ├── tests/                  # Pytest test suite
-│   ├── Dockerfile
-│   ├── pyproject.toml
-│   └── requirements.txt
-├── frontend/
-│   ├── Dockerfile
-│   └── package.json
-├── docker-compose.yml
-├── Makefile
-├── .env.example
-└── README.md
-```
+## Deployment
 
-## API Documentation
-
-Interactive API documentation is auto-generated by FastAPI and available at:
-
-- **Swagger UI**: http://localhost:8000/api/v1/docs
-- **ReDoc**: http://localhost:8000/api/v1/redoc
-
-All endpoints are versioned under `/api/v1/`.
-
-## Next Steps (V2 Roadmap)
-
-- **WebSocket notifications** for real-time task updates and match alerts
-- **GitHub/GitLab OAuth** login for developer portfolio verification
-- **Advanced AI matching** with embeddings-based skill vector similarity
-- **Escrow payments** via Stripe Connect for secure milestone-based billing
-- **Admin dashboard** with analytics, user management, and dispute resolution
-- **File uploads** (S3/R2) for project briefs and deliverables
-- **Email notifications** via SendGrid/SES for task lifecycle events
-- **CI/CD pipeline** with GitHub Actions (lint, test, build, deploy)
-- **Kubernetes manifests** for production-grade container orchestration
-- **Rate limiting** and API key management for public API access
-- **Multi-tenancy** support for agency and team accounts
-- **Internationalization (i18n)** for global market reach
-
-## License
+Read [operations](docs/OPERATIONS.md) before deploying. Back up PostgreSQL and the `backend_appdata` volume, run checks, apply migrations, rebuild application containers, reload nginx and verify readiness. Never use `make reset-db` on a database you want to preserve.
 
 Proprietary. All rights reserved.

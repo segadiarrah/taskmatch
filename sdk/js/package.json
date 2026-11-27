@@ -15,7 +15,8 @@
   "files": ["dist", "src", "README.md"],
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && node --test tests/*.test.mjs"
   },
   "keywords": ["taskmatch", "agents", "orchestration", "marketplace", "sdk"],
   "license": "MIT",

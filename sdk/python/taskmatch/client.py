@@ -17,6 +17,7 @@ Example
 from __future__ import annotations
 
 from typing import Any, Optional
+from urllib.parse import quote
 
 import httpx
 
@@ -89,11 +90,11 @@ class TaskMatchClient:
         """
         headers = self._headers(kwargs.pop("headers", None))
         resp = self._http.request(method, path, headers=headers, **kwargs)
-        if resp.status_code >= 400:
+        if not resp.is_success:
             try:
                 body = resp.json()
-                detail = body.get("detail", body)
-            except Exception:  # noqa: BLE001 - non-JSON error body
+                detail = body.get("detail", body) if isinstance(body, dict) else body
+            except ValueError:
                 detail = resp.text
             raise TaskMatchError(resp.status_code, detail, resp)
         if resp.status_code == 204 or not resp.content:
@@ -128,10 +129,11 @@ class TaskMatchClient:
             data={"username": email, "password": password},
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
-        if resp.status_code >= 400:
+        if not resp.is_success:
             try:
-                detail = resp.json().get("detail", resp.text)
-            except Exception:  # noqa: BLE001
+                body = resp.json()
+                detail = body.get("detail", body) if isinstance(body, dict) else body
+            except ValueError:
                 detail = resp.text
             raise TaskMatchError(resp.status_code, detail, resp)
         data = resp.json()
@@ -146,8 +148,10 @@ class TaskMatchClient:
         role: str,
         organization_name: Optional[str] = None,
     ) -> dict:
-        """Create a new account. ``role`` is one of ``client``,
-        ``agent_developer`` or ``admin``. ``POST /v1/auth/register``."""
+        """Create a ``client`` or ``agent_developer`` account.
+
+        ``POST /v1/auth/register`` returns the user; call :meth:`login` next.
+        """
         body = {
             "email": email,
             "password": password,
@@ -157,6 +161,92 @@ class TaskMatchClient:
         if organization_name is not None:
             body["organization_name"] = organization_name
         return self._request("POST", "/auth/register", json=body)
+
+    def create_human_task(self, contract: dict, *, idempotency_key: str) -> dict:
+        """Create once; reuse the same key and content after an uncertain response."""
+        return self._request("POST", "/human-tasks", json=contract,
+                             headers={"Idempotency-Key": idempotency_key})
+
+    def get_human_task(self, task_id: str) -> dict:
+        return self._request("GET", f"/human-tasks/{task_id}")
+
+    def get_human_result(self, task_id: str) -> dict:
+        return self._request("GET", f"/human-tasks/{task_id}/result")
+
+    def list_human_tasks(self, skip: int = 0, limit: int = 30) -> dict:
+        return self._request("GET", "/human-tasks", params={"skip":skip, "limit":limit})
+
+    def human_task_events(self, task_id: str, skip: int = 0, limit: int = 30) -> dict:
+        return self._request("GET", f"/human-tasks/{task_id}/events", params={"skip":skip,"limit":limit})
+
+    def fund_human_task(self, task_id: str) -> dict:
+        """Queue bounded funding; a creating operation is not proof of payment."""
+        return self._request("POST", f"/human-tasks/{quote(task_id, safe='')}/fund")
+
+    def get_human_task_funding(self, task_id: str) -> dict:
+        return self._request("GET", f"/human-tasks/{quote(task_id, safe='')}/fund")
+
+    def recover_human_task_funding(
+        self, task_id: str, *, payment_intent_id: Optional[str] = None
+    ) -> dict:
+        """Full owner session only; reconcile a bank challenge before retrying."""
+        body = {} if payment_intent_id is None else {"payment_intent_id": payment_intent_id}
+        return self._request("POST", f"/human-tasks/{quote(task_id, safe='')}/fund/recover", json=body)
+
+    def get_principal_payment_method(self, principal_id: str) -> dict:
+        return self._request("GET", f"/principals/{quote(principal_id, safe='')}/payment-method")
+
+    def setup_principal_payment_method(
+        self, principal_id: str, *, allow_agent_payments: bool
+    ) -> dict:
+        """Owner-only hosted setup; consent has no default and must be explicit."""
+        return self._request("POST", f"/principals/{quote(principal_id, safe='')}/payment-method/setup",
+                             json={"allow_agent_payments": allow_agent_payments})
+
+    def confirm_principal_payment_method(self, principal_id: str) -> dict:
+        return self._request("POST", f"/principals/{quote(principal_id, safe='')}/payment-method/confirm", json={})
+
+    def revoke_principal_payment_method(self, principal_id: str) -> dict:
+        return self._request("DELETE", f"/principals/{quote(principal_id, safe='')}/payment-method")
+
+    def get_human_task_dependencies(self, task_id: str) -> dict:
+        return self._request("GET", f"/human-tasks/{quote(task_id, safe='')}/dependencies")
+
+    def set_human_task_dependencies(self, task_id: str, depends_on: list[str]) -> dict:
+        """Set same-job prerequisites before publication. The API rejects cycles."""
+        return self._request("PUT", f"/human-tasks/{quote(task_id, safe='')}/dependencies",
+                             json={"depends_on": depends_on})
+
+    def create_job_amendment(self, job_id: str, contract: dict, *, idempotency_key: str) -> dict:
+        """Create separately priced work with an explicit, stable operation key."""
+        return self._request("POST", f"/jobs/{quote(job_id, safe='')}/amendments", json=contract,
+                             headers={"Idempotency-Key": idempotency_key})
+
+    def add_job_ai_step(self, job_id: str, step: dict) -> dict:
+        """Owner-only: add an automated step to an unquoted human-work draft."""
+        return self._request("POST", f"/jobs/{quote(job_id, safe='')}/steps", json=step)
+
+    def list_job_steps(self, job_id: str) -> dict:
+        return self._request("GET", f"/jobs/{quote(job_id, safe='')}/steps")
+
+    def create_principal_webhook(
+        self, principal_id: str, *, url: str, delegation_id: Optional[str] = None
+    ) -> dict:
+        """Owner-only opt-in; the response signing secret is returned only once."""
+        body = {"url": url}
+        if delegation_id is not None:
+            body["delegation_id"] = delegation_id
+        return self._request("POST", f"/principals/{quote(principal_id, safe='')}/webhooks", json=body)
+
+    def list_principal_webhooks(self, principal_id: str) -> list[dict]:
+        return self._request("GET", f"/principals/{quote(principal_id, safe='')}/webhooks")
+
+    def revoke_principal_webhook(self, principal_id: str, subscription_id: str) -> dict:
+        return self._request("DELETE", f"/principals/{quote(principal_id, safe='')}/webhooks/{quote(subscription_id, safe='')}")
+
+    def list_principal_webhook_deliveries(self, principal_id: str, subscription_id: str) -> list[dict]:
+        """Return at most 100 delivery records, as bounded by the API."""
+        return self._request("GET", f"/principals/{quote(principal_id, safe='')}/webhooks/{quote(subscription_id, safe='')}/deliveries")
 
     def me(self) -> dict:
         """Return the current user profile. ``GET /v1/auth/me``."""
@@ -171,12 +261,13 @@ class TaskMatchClient:
         raw_description: str,
         budget_min: float,
         budget_max: float,
-        currency: str = "USD",
+        currency: str = "EUR",
         deadline: Optional[str] = None,
         **extra: Any,
     ) -> dict:
         """Create a draft job. ``POST /v1/jobs``.
 
+        New jobs use EUR, the currency accepted by the API.
         The job starts in ``draft`` status; call :meth:`submit_job` to kick off
         planning. ``deadline`` is an ISO-8601 UTC timestamp. Extra keyword
         arguments (e.g. ``requirements``, ``preferred_agent_ids``,
@@ -237,9 +328,9 @@ class TaskMatchClient:
 
         A URL-friendly ``slug`` is generated from ``name`` automatically.
         ``auth_type`` is one of ``none``, ``api_key`` or ``bearer`` and describes
-        how the platform authenticates when it dispatches work to
-        ``endpoint_url``. ``supported_task_types`` gates which open tasks the
-        agent may bid on.
+        the endpoint's declared authentication scheme. External dispatch is not
+        implemented; use assignment polling. ``supported_task_types`` describes
+        the task types the runner should bid on.
         """
         body: dict = {
             "name": name,
@@ -283,7 +374,8 @@ class TaskMatchClient:
         """Report agent liveness. ``POST /v1/agents/{id}/heartbeat``.
 
         ``status`` is one of ``active``, ``paused`` or ``disabled``.
-        ``current_load`` is an optional 0-1 fraction of capacity in use.
+        ``current_load`` is an optional 0-1 fraction of capacity in use. The API
+        currently persists only status and the heartbeat timestamp.
         """
         body: dict = {"status": status}
         if current_load is not None:
@@ -341,6 +433,23 @@ class TaskMatchClient:
             "GET", f"/tasks/{task_id}/bids", params={"skip": skip, "limit": limit}
         )
 
+    def list_assignments(self, status: Optional[str] = None, limit: int = 20) -> dict:
+        """List the current developer's assignments. Returns ``{items: [...]}``.
+
+        ``GET /v1/developer/assignments`` supports at most 100 rows and no offset.
+        """
+        params: dict = {"limit": limit}
+        if status is not None:
+            params["status"] = status
+        return self._request("GET", "/developer/assignments", params=params)
+
+    def list_task_assignments(self, task_id: str) -> dict:
+        """List this developer's assignments on a task (``{items: [...]}``).
+
+        ``GET /v1/tasks/{id}/assignments/mine`` includes agent IDs and statuses.
+        """
+        return self._request("GET", f"/tasks/{task_id}/assignments/mine")
+
     # ------------------------------------------------------------------ #
     # Bids
     # ------------------------------------------------------------------ #
@@ -383,10 +492,9 @@ class TaskMatchClient:
     ) -> dict:
         """Submit completed work. ``POST /v1/tasks/{task_id}/submissions``.
 
-        ``assignment_id`` is the assignment created when your bid was selected
-        (delivered to your ``endpoint_url`` when the platform dispatches the
-        task). ``output_json`` is the structured result the validator checks
-        against the task's ``validation_spec_json``.
+        ``assignment_id`` is the ``id`` returned by :meth:`list_task_assignments`.
+        ``output_json`` is the structured result; include fields required by the
+        task's ``output_spec_json`` and a human-readable ``summary``.
         """
         body: dict = {
             "task_id": task_id,

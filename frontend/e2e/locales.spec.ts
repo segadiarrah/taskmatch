@@ -1,52 +1,60 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 
-type Locale = "en" | "fr" | "es" | "zh";
+type Locale = "en" | "fr" | "es" | "zh" | "pt";
 type Role = "client" | "agent_developer" | "admin";
 
 const localeCopy = {
   en: {
-    home: "Complex work,",
+    home: "Your project. The right skills.",
     docs: "Documentation,",
     login: "Welcome back",
     client: "My Jobs",
     developer: "My Agents",
     admin: "Real-time overview of your TaskMatch platform operations.",
-    cookies: "We use cookies to enhance your experience",
-    loading: "Loading TaskMatch...",
+    privacy: "Privacy Policy", language: "Select language", guide: "Client quickstart", article: "Why we decompose jobs into tasks before matching",
+    loading: "Loading TaskMatch…",
     retry: "Try Again",
   },
   fr: {
-    home: "Le travail complexe,",
+    home: "Votre projet. Les bonnes compétences.",
     docs: "La documentation,",
     login: "Bon retour",
     client: "Mes missions",
     developer: "Mes agents",
     admin: "Vue en temps réel des opérations de votre plateforme TaskMatch.",
-    cookies: "Nous utilisons des cookies pour améliorer votre expérience",
+    privacy: "Politique de confidentialité", language: "Choisir la langue", guide: "Démarrage rapide client", article: "Pourquoi nous décomposons les missions en tâches avant le matching",
     loading: "Chargement de TaskMatch…",
     retry: "Réessayer",
   },
   es: {
-    home: "El trabajo complejo,",
+    home: "Tu proyecto. Las habilidades adecuadas.",
     docs: "La documentación,",
     login: "Bienvenido de nuevo",
-    client: "Mis trabajos",
+    client: "Mis encargos",
     developer: "Mis agentes",
-    admin: "Resumen en tiempo real de las operaciones de tu plataforma TaskMatch.",
-    cookies: "Usamos cookies para mejorar tu experiencia",
+    admin: "Vista en tiempo real de las operaciones de tu plataforma TaskMatch.",
+    privacy: "Política de privacidad", language: "Elegir idioma", guide: "Inicio rápido para clientes", article: "Por qué dividimos los trabajos en tareas antes de asignarlos",
     loading: "Cargando TaskMatch…",
-    retry: "Intentar de nuevo",
+    retry: "Reintentar",
   },
   zh: {
-    home: "复杂的工作，",
+    home: "你的项目。合适的技能。",
     docs: "文档，",
     login: "欢迎回来",
-    client: "我的工作",
+    client: "我的任务",
     developer: "我的智能体",
-    admin: "实时查看 TaskMatch 平台的运行情况。",
-    cookies: "我们使用 Cookie 来改善你的体验",
+    admin: "实时概览 TaskMatch 平台的运营情况。",
+    privacy: "隐私政策", language: "选择语言", guide: "客户快速入门", article: "为什么我们先拆解任务，再匹配智能体",
     loading: "正在加载 TaskMatch…",
     retry: "重试",
+  },
+  pt: {
+    home: "Seu projeto. As competências certas.", docs: "Documentação,", login: "Bem-vindo de volta",
+    client: "Meus trabalhos", developer: "Meus agentes",
+    admin: "Visão em tempo real das operações da sua plataforma TaskMatch.",
+    privacy: "Política de Privacidade", language: "Selecionar idioma", guide: "Guia rápido para clientes",
+    article: "Porque dividimos as missões em tarefas antes da correspondência",
+    loading: "Carregando TaskMatch…", retry: "Tentar novamente",
   },
 } satisfies Record<Locale, Record<string, string>>;
 
@@ -85,7 +93,6 @@ async function seedLocale(page: Page, locale: Locale, authenticated = false) {
   await page.addInitScript(
     ({ selectedLocale, withAuth }) => {
       localStorage.setItem("taskmatch_locale", selectedLocale);
-      localStorage.setItem("tm_cookie_consent", JSON.stringify({ necessary: true, analytics: false, marketing: false, timestamp: "2026-01-01T00:00:00Z" }));
       if (withAuth) localStorage.setItem("auth_token", "playwright-token");
     },
     { selectedLocale: locale, withAuth: authenticated },
@@ -112,6 +119,8 @@ for (const locale of Object.keys(localeCopy) as Locale[]) {
       ["/", "home"],
       ["/resources/documentation", "docs"],
       ["/login", "login"],
+      ["/resources/guides/client-quickstart", "guide"],
+      ["/legal/privacy", "privacy"],
     ] as const) {
       test(`${path} uses selected locale`, async ({ page }) => {
         await seedLocale(page, locale);
@@ -126,22 +135,23 @@ for (const locale of Object.keys(localeCopy) as Locale[]) {
       ["/developer", "developer"],
       ["/admin", "admin"],
     ] as const) {
-      test(`${path} localizes authenticated content`, async ({ page }) => {
+      test(`${path} respects its supported content language`, async ({ page }) => {
         const role = rolesByPath[path];
         await seedLocale(page, locale, true);
         await page.route("**/api/**", (route) => fulfillDashboard(route, role));
         await page.goto(path);
         await expect(page.getByText(localeCopy[locale][copyKey], { exact: false }).first()).toBeVisible();
         await expect(page.locator("html")).toHaveAttribute("lang", locale);
+        await expect(page.locator("main")).toHaveAttribute("lang", locale);
       });
     }
 
-    test("localizes GDPR consent after consent is cleared", async ({ page }) => {
+    test("renders translated article content and navigation", async ({ page }) => {
       await seedLocale(page, locale);
-      await page.addInitScript(() => localStorage.removeItem("tm_cookie_consent"));
-      await page.goto("/");
-      await expect(page.getByText(localeCopy[locale].cookies, { exact: false })).toBeVisible({ timeout: 4_000 });
-      await expect(page.locator("html")).toHaveAttribute("lang", locale);
+      await page.goto("/resources/blog/why-we-decompose-jobs-into-tasks");
+      await expect(page.getByRole("heading", {level:1,name:localeCopy[locale].article})).toBeVisible();
+      await expect(page.locator("html")).toHaveAttribute("lang",locale);
+      await expect(page.getByRole("combobox", { name: localeCopy[locale].language })).toHaveValue(locale);
     });
 
     test("localizes the authenticated loading state", async ({ page }) => {
@@ -158,6 +168,40 @@ for (const locale of Object.keys(localeCopy) as Locale[]) {
       await page.goto("/client");
       await expect(page.getByRole("button", { name: localeCopy[locale].retry })).toBeVisible();
       await expect(page.locator("html")).toHaveAttribute("lang", locale);
+    });
+  });
+}
+
+
+test("changing language persists after reload and updates document language", async ({ page }) => {
+  await page.goto("/");
+  const selector = page.getByRole("combobox", { name: /Select language|Choisir la langue|Elegir idioma|选择语言|Selecionar idioma/ });
+  await Promise.all([
+    page.waitForURL(url => url.pathname === "/" && url.searchParams.get("lang") === "fr", { waitUntil: "load" }),
+    selector.selectOption("fr"),
+  ]);
+  await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+  await page.reload();
+  await expect(page.getByRole("combobox", { name: "Choisir la langue" })).toHaveValue("fr");
+  await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+});
+
+
+for (const browserLocale of ["pt-BR", "pt-PT"]) {
+  test.describe(`browser preference ${browserLocale}`, () => {
+    test.use({ locale: browserLocale });
+    test("detects Portuguese and respects an explicit subsequent language choice", async ({ page }) => {
+      await page.goto("/");
+      await expect(page.locator("html")).toHaveAttribute("lang","pt");
+      const selector=page.getByRole("combobox", {name:"Selecionar idioma"});
+      await expect(selector).toHaveValue("pt");
+      await Promise.all([
+        page.waitForURL(url => url.pathname === "/" && url.searchParams.get("lang") === "es", { waitUntil: "load" }),
+        selector.selectOption("es"),
+      ]);
+      await page.reload();
+      await expect(page.locator("html")).toHaveAttribute("lang","es");
+      await expect(page.getByRole("combobox",{name:"Elegir idioma"})).toHaveValue("es");
     });
   });
 }

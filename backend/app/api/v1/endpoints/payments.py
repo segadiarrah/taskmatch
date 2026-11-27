@@ -5,15 +5,18 @@ from __future__ import annotations
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import lazyload
 
 from app.core.database import get_db
 from app.core.deps import get_current_active_user, require_role
 from app.middleware.audit import log_audit
+from app.models.job import JobStatus
 from app.models.payment import PaymentRecord, PaymentStatus
 from app.models.user import User
 from app.schemas.payment import PaymentCreate, PaymentResponse
+from app.services.task_access import lock_job
 
 router = APIRouter()
 
@@ -27,7 +30,7 @@ async def list_payments(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[PaymentResponse]:
     """Return a paginated list of payments filtered by the caller's role.
 
@@ -35,7 +38,7 @@ async def list_payments(
     - Clients see payments where they are the payer.
     - Agent developers see payments where they are the recipient.
     """
-    query = select(PaymentRecord)
+    query = select(PaymentRecord).options(lazyload("*"))
 
     role = str(current_user.role)
     if role == "client":
@@ -60,13 +63,20 @@ async def list_payments(
 async def create_payment(
     body: PaymentCreate,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> PaymentResponse:
     """Create a new payment record.
 
     The platform fee and net amount are calculated from the ``gross_amount``
     and ``platform_fee_percent``.  Restricted to administrators.
     """
+    job = await lock_job(db, body.job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    if job.billing_mode != "legacy_manual":
+        raise HTTPException(status_code=409, detail="Stripe allocations are created by the funded workflow")
+
     platform_fee_amount = round(body.gross_amount * (body.platform_fee_percent / 100.0), 2)
     net_amount = round(body.gross_amount - platform_fee_amount, 2)
 
@@ -79,6 +89,8 @@ async def create_payment(
         gross_amount=body.gross_amount,
         platform_fee=platform_fee_amount,
         net_amount=net_amount,
+        currency=job.currency,
+        provider="manual",
         payment_status=PaymentStatus.pending,
     )
     db.add(payment)
@@ -110,7 +122,7 @@ async def create_payment(
 async def release_payment(
     payment_id: uuid.UUID,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> PaymentResponse:
     """Mark a payment as releasable, indicating the work has been approved
     and funds can be released to the developer.
@@ -124,6 +136,13 @@ async def release_payment(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Payment not found",
         )
+
+    job = await lock_job(db, payment.job_id)
+    if job.billing_mode != "legacy_manual" or payment.funding_id is not None:
+        raise HTTPException(status_code=409, detail="Stripe settlement must be confirmed by the billing worker")
+
+    if job.status != JobStatus.completed:
+        raise HTTPException(status_code=409, detail="The client must accept delivery before settlement")
 
     if payment.payment_status != PaymentStatus.pending and payment.payment_status != PaymentStatus.authorized:
         raise HTTPException(
@@ -155,7 +174,7 @@ async def release_payment(
 async def complete_payment(
     payment_id: uuid.UUID,
     current_user: User = Depends(require_role("admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> PaymentResponse:
     """Mark a payment as completed after funds have been transferred."""
     result = await db.execute(
@@ -168,11 +187,19 @@ async def complete_payment(
             detail="Payment not found",
         )
 
+    job = await lock_job(db, payment.job_id)
+    if job.billing_mode != "legacy_manual" or payment.funding_id is not None:
+        raise HTTPException(status_code=409, detail="Stripe settlement must be confirmed by the billing worker")
+
     if payment.payment_status != PaymentStatus.releasable:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Payment must be in 'releasable' status to be completed; current status is '{payment.payment_status}'",
         )
+
+    job = await lock_job(db, payment.job_id)
+    if job.status != JobStatus.completed:
+        raise HTTPException(status_code=409, detail="The client must accept delivery before settlement")
 
     payment.payment_status = PaymentStatus.paid
     await db.flush()
@@ -202,11 +229,17 @@ def _to_payment_response(payment: PaymentRecord) -> PaymentResponse:
         client_user_id=payment.client_user_id,
         developer_user_id=payment.developer_user_id,
         gross_amount=float(payment.gross_amount),
-        platform_fee_percent=0.0,  # Percentage not stored on model; derive if needed.
+        platform_fee_percent=round(float(payment.platform_fee) / float(payment.gross_amount) * 100, 2) if payment.gross_amount else 0.0,
         platform_fee_amount=float(payment.platform_fee),
         net_amount=float(payment.net_amount),
-        payment_status=str(payment.payment_status),
-        stripe_payment_intent_id=payment.provider_ref,
+        payment_status=getattr(payment.payment_status, "value", payment.payment_status),
+        currency=payment.currency,
+        provider=payment.provider,
+        provider_ref=payment.provider_ref,
+        funding_id=payment.funding_id,
+        transfer_id=payment.transfer_id,
+        payout_error=payment.payout_error,
+        stripe_payment_intent_id=payment.provider_ref if payment.provider == "stripe" else None,
         created_at=payment.created_at,
         updated_at=payment.updated_at,
     )

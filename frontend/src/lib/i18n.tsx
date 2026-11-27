@@ -11,19 +11,13 @@ import en from "@/i18n/en";
 import fr from "@/i18n/fr";
 import zh from "@/i18n/zh";
 import es from "@/i18n/es";
+import pt from "@/i18n/pt";
+import { resolveLocale, normalizeLocale, type Locale } from "@/lib/locales";
+export { LOCALES, type Locale } from "@/lib/locales";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
 /* -------------------------------------------------------------------------- */
-
-export type Locale = "en" | "fr" | "zh" | "es";
-
-export const LOCALES: { value: Locale; label: string; native: string; flag: string }[] = [
-  { value: "en", label: "EN", native: "English", flag: "🇬🇧" },
-  { value: "fr", label: "FR", native: "Français", flag: "🇫🇷" },
-  { value: "es", label: "ES", native: "Español", flag: "🇪🇸" },
-  { value: "zh", label: "中文", native: "中文", flag: "🇨🇳" },
-];
 
 /** Recursively extract dot-notation paths from a nested object type. */
 type NestedKeyOf<T, Prefix extends string = ""> = T extends object
@@ -45,22 +39,13 @@ export type TranslationKey = NestedKeyOf<typeof en>;
 /** Deep-readonly record type that allows any string values (not literal). */
 type DeepRecord = { readonly [key: string]: string | readonly any[] | DeepRecord };
 
-const dictionaries: Record<Locale, DeepRecord> = { en, fr, zh, es };
+const dictionaries: Record<Locale, DeepRecord> = { en, fr, zh, es, pt };
 
 /* -------------------------------------------------------------------------- */
 /*  Helpers                                                                   */
 /* -------------------------------------------------------------------------- */
 
 const STORAGE_KEY = "taskmatch_locale";
-
-/** Detect browser language and return a supported locale (defaults to "en"). */
-function detectBrowserLocale(): Locale {
-  if (typeof navigator === "undefined") return "en";
-  const lang = navigator.language || (navigator as any).userLanguage || "en";
-  const prefix = lang.slice(0, 2).toLowerCase();
-  const supported: Locale[] = ["en", "fr", "zh", "es"];
-  return (supported as string[]).includes(prefix) ? (prefix as Locale) : "en";
-}
 
 /**
  * Resolve a dot-notation key against a nested dictionary.
@@ -99,8 +84,8 @@ const LanguageContext = createContext<LanguageContextValue>({
 /*  Provider                                                                  */
 /* -------------------------------------------------------------------------- */
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+export function LanguageProvider({ children, initialLocale, explicit }: { children: React.ReactNode; initialLocale: Locale; explicit: boolean }) {
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
   /* Initialise locale from localStorage or browser detection (client only). */
   useEffect(() => {
@@ -110,30 +95,30 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     } catch {
       /* localStorage unavailable (SSR or privacy mode) */
     }
-    if (stored === "en" || stored === "fr" || stored === "es" || stored === "zh") {
-      setLocaleState(stored);
-    } else {
-      const detected = detectBrowserLocale();
-      setLocaleState(detected);
-      try {
-        localStorage.setItem(STORAGE_KEY, detected);
-      } catch {
-        /* noop */
-      }
-    }
-  }, []);
+    const preferences = navigator.languages?.length ? navigator.languages : [navigator.language];
+    const detected = explicit ? initialLocale : resolveLocale(stored, preferences);
+    setLocaleState(detected);
+    try { localStorage.setItem(STORAGE_KEY, detected); } catch { /* Storage may be disabled. */ }
+  }, [initialLocale, explicit]);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   /* Persist locale changes. */
   const setLocale = useCallback((next: Locale) => {
-    setLocaleState(next);
+    const valid = normalizeLocale(next);
+    if (!valid) return;
+    setLocaleState(valid);
     try {
-      localStorage.setItem(STORAGE_KEY, next);
+      localStorage.setItem(STORAGE_KEY, valid);
     } catch {
       /* noop */
     }
     /* Update the html lang attribute so assistive tech picks up the change. */
     if (typeof document !== "undefined") {
-      document.documentElement.lang = next;
+      document.documentElement.lang = valid;
+      document.cookie = `taskmatch_locale=${valid}; Path=/; Max-Age=31536000; SameSite=Lax`;
     }
   }, []);
 
@@ -180,23 +165,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     [locale],
   );
 
-  /*
-   * Render on the server with the default locale rather than withholding the
-   * tree until mount.
-   *
-   * This used to `return null` while `mounted` was false, to avoid a hydration
-   * mismatch. The mismatch it guarded against cannot happen: `locale` starts at
-   * "en" and only changes inside an effect, so the server render and the first
-   * client render agree by construction — the stored or detected locale is
-   * applied afterwards, in a normal re-render.
-   *
-   * What the guard did instead was ship every page with an empty <body>. The
-   * markup existed only after JavaScript ran, which costs nothing for a browser
-   * and everything for anything that reads HTML without executing it: link
-   * previews, non-rendering crawlers, reader modes, and a mandatory legal notice
-   * that has to be readable to be worth publishing. A site whose pages are blank
-   * until hydration is exactly a site that looks like it was never published.
-   */
   return (
     <LanguageContext.Provider value={{ locale, setLocale, t }}>
       {children}

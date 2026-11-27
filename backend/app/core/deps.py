@@ -4,16 +4,19 @@ from __future__ import annotations
 
 from collections.abc import Callable, Coroutine
 from typing import Any
+from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError
+from jwt import InvalidTokenError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import lazyload
 
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import verify_token
+from app.services.registration import fixture_access_disabled
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_PREFIX}/auth/login",
@@ -22,7 +25,7 @@ oauth2_scheme = OAuth2PasswordBearer(
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> Any:
     """Extract and return the current user from a valid JWT.
 
@@ -37,18 +40,19 @@ async def get_current_user(
 
     try:
         payload = verify_token(token)
-        user_id: str | None = payload.get("sub")
-        if user_id is None:
+        if payload.get("scope") is not None:
             raise credentials_exception
-    except JWTError:
+        user_id = UUID(payload["sub"])
+    except (InvalidTokenError, KeyError, ValueError, TypeError, AttributeError):
         raise credentials_exception
 
     # Late import to avoid circular dependency with models package.
     from app.models.user import User  # noqa: WPS433
 
-    result = await db.execute(select(User).where(User.id == user_id))
+    # Authentication needs only account fields, not the entire marketplace graph.
+    result = await db.execute(select(User).options(lazyload("*")).where(User.id == user_id))
     user = result.scalar_one_or_none()
-    if user is None:
+    if user is None or fixture_access_disabled(user) or payload.get("sv", 0) != user.session_version:
         raise credentials_exception
     return user
 

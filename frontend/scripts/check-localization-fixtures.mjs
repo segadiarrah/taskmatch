@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { pathToFileURL } from "node:url";
 
-const locales = ["en", "fr", "es", "zh"];
+const locales = ["en", "fr", "es", "zh", "pt"];
 const entry = (path, source, localization = "inline") => ({
   path,
   scope: "public-auth",
@@ -129,6 +129,11 @@ export function runLocalizationFixtures(inspectLocalizationSources, findLocaliza
     entry("src/app/page.tsx", `export default ({ open }) => <button aria-label={open ? "Close" : "Open"} />`),
   ]).filter((issue) => issue.rule === "untranslated-attribute");
   assert.equal(conditionalAttribute.length, 2, "both branches of a conditional visible attribute must be inspected");
+
+  assert.deepEqual(issuesFor([
+    ...dictionaryFiles,
+    entry("src/app/page.tsx", `const formats = new Set(["image/jpeg", "image/png", "image/webp"]); export default () => null;`),
+  ]), [], "binary MIME values are protocol data");
 
   const structuralJsx = issuesFor([
     ...dictionaryFiles,
@@ -261,14 +266,34 @@ export function runLocalizationFixtures(inspectLocalizationSources, findLocaliza
     "new routes and designated shared/content sources must require manifest entries",
   );
 
+  const catalogueFiles = locales.map(locale => ({ ...entry(`src/content/posts-${locale}.ts`, `export const posts = [{title: "Editorial prose"}];`), localization: "catalogue", catalogue: "posts", locales: [locale] }));
+  assert.deepEqual(issuesFor(catalogueFiles), [], "per-language catalogues require full declared coverage");
+  expectRule(inspectLocalizationSources, "partial editorial catalogue", catalogueFiles.slice(0, -1), "catalogue-locale-coverage");
+  expectRule(inspectLocalizationSources, "English-only exemption", [{ ...entry("src/app/admin/page.tsx", `export default () => null;`), localization: "english-only" }], "english-only-exemption");
+
   const localized = issuesFor([
     ...dictionaryFiles,
     entry(
       "src/app/page.tsx",
-      `const COPY = { en: { title: "Hello" }, fr: { title: "Bonjour" }, es: { title: "Hola" }, zh: { title: "你好" } }; export default () => <h1>{COPY.en.title}</h1>`,
+      `const COPY = { en: { title: "Hello" }, fr: { title: "Bonjour" }, es: { title: "Hola" }, zh: { title: "你好" }, pt: { title: "Olá" } }; export default () => <h1>{COPY.en.title}</h1>`,
     ),
   ]);
   assert.deepEqual(localized, [], "complete inline locale copy should pass");
+
+  const referenced = issuesFor([
+    ...dictionaryFiles,
+    entry("src/lib/human-copy.ts", `const en = { title: "Hello" }; const fr = { title: "Bonjour" }; const es = { title: "Hola" }; const zh = { title: "你好" }; const pt = { title: "Olá" }; export const copy = { en, fr, es, zh, pt };`),
+  ]);
+  assert.deepEqual(referenced, [], "local locale object references should preserve localization checks");
+  const nativeFields = issuesFor([
+    ...dictionaryFiles,
+    entry("src/app/page.tsx", `export default () => <><input name="summary" /><Input name="summary" /><Textarea name="notes" /><select name="language" /><Widget name={labels.name} />{["submitted", "review"].includes(status) && <p>{labels.message}</p>}</>; const payload = { title: form.get("title") };`),
+  ]);
+  assert.deepEqual(nativeFields, [], "native form identifiers and state comparisons are not visible prose");
+  expectRule(inspectLocalizationSources, "referenced locale shape parity", [
+    ...dictionaryFiles,
+    entry("src/lib/human-copy.ts", `const en = { title: "Hello", intro: "Welcome" }; const fr = { title: "Bonjour" }; const es = { title: "Hola", intro: "Bienvenido" }; const zh = { title: "你好", intro: "欢迎" }; const pt = { title: "Olá", intro: "Bem-vindo" }; export const copy = { en, fr, es, zh, pt };`),
+  ], "inline-parity");
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

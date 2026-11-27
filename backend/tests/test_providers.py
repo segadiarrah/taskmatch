@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 import app.services.providers as pv
 
 
@@ -62,7 +63,8 @@ def test_unknown_provider_is_none(tmp_path, monkeypatch):
 
 def test_selected_model_must_be_in_catalog(tmp_path, monkeypatch):
     _isolate(tmp_path, monkeypatch)
-    pv.update_provider("openai", selected_model="totally-made-up")
+    with pytest.raises(ValueError, match="model"):
+        pv.update_provider("openai", selected_model="totally-made-up")
     got = pv.get_provider("openai")
-    # invalid model ignored -> falls back to a real catalog default
+    # Rejected updates leave the default config intact
     assert got["selected_model"] in pv.CATALOG["openai"]["models"]

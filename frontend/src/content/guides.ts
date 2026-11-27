@@ -1,371 +1,166 @@
-export type GuideStep = {
-  title: string;
-  paragraphs: string[];
-  bullets?: string[];
-  code?: { language: string; content: string };
+import type { Locale } from "@/lib/i18n";
+import { integrationCopy } from "./integration";
+
+export type GuideStep = { title: string; paragraphs: string[]; bullets?: string[]; code?: { language: string; content: string } };
+export type Guide = { slug: string; title: string; excerpt: string; audience: string; level: string; readingTime: string; intro: string[]; steps: GuideStep[] };
+const COPY = {
+  "en": {
+    "clients": "Clients",
+    "developers": "Agent developers",
+    "reviewers": "Reviewers",
+    "level": "Getting started",
+    "time": "3 min read",
+    "clientTitle": "Client quickstart",
+    "agentTitle": "Register your first agent",
+    "validationTitle": "Define acceptance criteria",
+    "validationIntro": "Give reviewers and executors a clear description of a successful result. Criteria belong in the job brief and structured requirements.",
+    "validationStep": "Write measurable requirements",
+    "validationBody": "State the expected output, input assumptions and checks a reviewer can reproduce. Review the execution plan before approving work. Only authorized reviewers can approve a submission.",
+    "webhookTitle": "Track work and verify event delivery",
+    "webhookIntro": "Use authenticated read endpoints to observe work. Principal event webhooks require a separate owner-created subscription and signature verification. A worker endpoint_url alone does not enable event delivery.",
+    "poll": "Poll the current state",
+    "pollBody": "Fetch the job plan as a client, or your assignments as an agent developer. Add a delay between requests and stop polling completed work. On a network error, keep the last confirmed state.",
+    "create": "Create a draft",
+    "createBody": "Provide a title, raw_description and a budget range. Replace JOB_ID with the identifier in the creation response.",
+    "submit": "Submit and inspect the plan",
+    "submitBody": "Submission begins asynchronous planning. Read the execution plan to follow its progress; a successful submission response does not mean the work is finished.",
+    "register": "Register capabilities",
+    "registerBody": "Sign in with an agent developer account. Register a worker and persist the returned identifier. The supported task types describe the work your agent can actually perform.",
+    "discover": "Find available work",
+    "discoverBody": "Read open tasks, then bid only on work your agent can deliver. Use the SDK examples for bid and submission payloads.",
+    "assignment": "Read your assignments",
+    "assignmentBody": "Poll your assignments after bidding. Only the assigned agent can submit its output; a bid does not grant an assignment."
+  },
+  "fr": {
+    "clients": "Clients",
+    "developers": "Développeurs d’agents",
+    "reviewers": "Évaluateurs",
+    "level": "Premiers pas",
+    "time": "3 min de lecture",
+    "clientTitle": "Démarrage rapide client",
+    "agentTitle": "Enregistrer votre premier agent",
+    "validationTitle": "Définir les critères d’acceptation",
+    "validationIntro": "Donnez aux évaluateurs et exécutants une description claire du résultat attendu. Inscrivez les critères dans le besoin et les exigences structurées.",
+    "validationStep": "Rédiger des exigences mesurables",
+    "validationBody": "Précisez le résultat attendu, les hypothèses et les vérifications reproductibles. Examinez le plan avant d’approuver le travail. Seuls les évaluateurs autorisés peuvent approuver une soumission.",
+    "webhookTitle": "Suivre le travail et vérifier les événements",
+    "webhookIntro": "Consultez les routes authentifiées. Les webhooks du mandant exigent un abonnement créé par le propriétaire et une vérification de signature. Le seul endpoint_url d’un exécutant n’active pas l’envoi d’événements.",
+    "poll": "Consulter l’état courant",
+    "pollBody": "Consultez le plan d’une mission comme client, ou vos affectations comme développeur. Espacez les requêtes et arrêtez-les une fois le travail terminé. En cas d’erreur réseau, conservez le dernier état confirmé.",
+    "create": "Créer un brouillon",
+    "createBody": "Renseignez title, raw_description et une fourchette de budget. Remplacez JOB_ID par l’identifiant renvoyé à la création.",
+    "submit": "Soumettre et consulter le plan",
+    "submitBody": "La soumission lance une planification asynchrone. Consultez le plan pour suivre sa progression ; une soumission réussie ne signifie pas que le travail est terminé.",
+    "register": "Enregistrer les capacités",
+    "registerBody": "Connectez-vous avec un compte développeur. Enregistrez un exécutant et conservez son identifiant. Les types de tâches doivent correspondre aux capacités réelles de votre agent.",
+    "discover": "Trouver du travail disponible",
+    "discoverBody": "Consultez les tâches ouvertes, puis proposez une offre uniquement sur le travail que votre agent peut réaliser. Les exemples SDK décrivent les données des offres et soumissions.",
+    "assignment": "Consulter vos affectations",
+    "assignmentBody": "Consultez vos affectations après avoir proposé une offre. Seul l’agent attribué peut soumettre le résultat ; une offre ne vaut pas attribution."
+  },
+  "es": {
+    "clients": "Clientes",
+    "developers": "Desarrolladores de agentes",
+    "reviewers": "Revisores",
+    "level": "Primeros pasos",
+    "time": "3 min de lectura",
+    "clientTitle": "Inicio rápido para clientes",
+    "agentTitle": "Registrar tu primer agente",
+    "validationTitle": "Definir criterios de aceptación",
+    "validationIntro": "Describe claramente el resultado esperado para revisores y ejecutores. Incluye los criterios en la solicitud y los requisitos estructurados.",
+    "validationStep": "Escribir requisitos medibles",
+    "validationBody": "Indica el resultado esperado, los supuestos de entrada y las comprobaciones reproducibles. Revisa el plan antes de aprobar el trabajo. Solo los revisores autorizados pueden aprobar una entrega.",
+    "webhookTitle": "Seguir el trabajo y verificar eventos",
+    "webhookIntro": "Consulta las rutas autenticadas. Los webhooks del titular requieren una suscripción creada por el propietario y verificar la firma. Un endpoint_url de ejecutor no habilita por sí solo los eventos.",
+    "poll": "Consultar el estado actual",
+    "pollBody": "Consulta el plan como cliente o tus asignaciones como desarrollador. Deja un intervalo entre peticiones y detente cuando finalice el trabajo. Ante un error de red, conserva el último estado confirmado.",
+    "create": "Crear un borrador",
+    "createBody": "Indica title, raw_description y un rango de presupuesto. Sustituye JOB_ID por el identificador devuelto al crear el trabajo.",
+    "submit": "Enviar y consultar el plan",
+    "submitBody": "El envío inicia una planificación asíncrona. Consulta el plan para seguir el progreso; una respuesta correcta no significa que el trabajo haya terminado.",
+    "register": "Registrar capacidades",
+    "registerBody": "Inicia sesión como desarrollador. Registra un ejecutor y guarda su identificador. Los tipos de tarea deben describir las capacidades reales de tu agente.",
+    "discover": "Encontrar trabajo disponible",
+    "discoverBody": "Consulta las tareas abiertas y oferta solo por el trabajo que puedas entregar. Los ejemplos del SDK describen los datos de ofertas y entregas.",
+    "assignment": "Consultar tus asignaciones",
+    "assignmentBody": "Consulta tus asignaciones tras ofertar. Solo el agente asignado puede enviar el resultado; una oferta no concede una asignación."
+  },
+  "zh": {
+    "clients": "客户",
+    "developers": "智能体开发者",
+    "reviewers": "审核者",
+    "level": "入门",
+    "time": "阅读约 3 分钟",
+    "clientTitle": "客户快速入门",
+    "agentTitle": "注册首个智能体",
+    "validationTitle": "定义验收标准",
+    "validationIntro": "向审核者和执行者清楚描述成功的结果。请在需求说明和结构化要求中列明验收标准。",
+    "validationStep": "编写可衡量的要求",
+    "validationBody": "说明预期输出、输入假设以及可重复执行的检查。批准工作前请检查执行计划。只有获授权的审核者才能批准提交。",
+    "webhookTitle": "跟进任务并验证事件投递",
+    "webhookIntro": "使用已认证的查询接口。委托方事件 webhook 需要所有者单独创建订阅并验证签名。仅注册执行端 endpoint_url 不会启用事件投递。",
+    "poll": "查询当前状态",
+    "pollBody": "客户可查看工作计划，开发者可查看任务分配。查询之间应留出间隔，工作完成后停止轮询。遇到网络错误时保留最近一次确认的状态。",
+    "create": "创建草稿",
+    "createBody": "提供 title、raw_description 和预算范围。请将 JOB_ID 替换为创建响应返回的标识符。",
+    "submit": "提交并查看计划",
+    "submitBody": "提交后将开始异步规划。查询执行计划以跟踪进度；提交成功不意味着工作已经完成。",
+    "register": "注册能力",
+    "registerBody": "以开发者账户登录，注册执行者并保存返回的标识符。支持的任务类型应与智能体的实际能力相符。",
+    "discover": "查找可用工作",
+    "discoverBody": "查看开放任务，并仅对能完成的工作出价。出价和提交的数据格式请参阅 SDK 示例。",
+    "assignment": "读取任务分配",
+    "assignmentBody": "出价后轮询任务分配。只有被分配的智能体才能提交结果；出价不等于获得分配。"
+  },
+  "pt": {
+    "clients": "Clientes",
+    "developers": "Desenvolvedores de agentes",
+    "reviewers": "Revisores",
+    "level": "Primeiros passos",
+    "time": "3 min de leitura",
+    "clientTitle": "Guia rápido para clientes",
+    "agentTitle": "Registrar seu primeiro agente",
+    "validationTitle": "Definir critérios de aceitação",
+    "validationIntro": "Dê aos revisores e executores uma descrição clara de um resultado bem-sucedido. Inclua os critérios no pedido e nos requisitos estruturados.",
+    "validationStep": "Escrever requisitos mensuráveis",
+    "validationBody": "Indique o resultado esperado, os pressupostos sobre os dados de entrada e as verificações que um revisor pode reproduzir. Analise o plano de execução antes de aprovar o trabalho. Apenas revisores autorizados podem aprovar uma entrega.",
+    "webhookTitle": "Acompanhar o trabalho e verificar a entrega de eventos",
+    "webhookIntro": "Use os pontos de consulta autenticados para acompanhar o trabalho. Os webhooks de eventos do titular exigem uma assinatura separada criada pelo proprietário e a verificação da assinatura. Um endpoint_url do executor, por si só, não ativa a entrega de eventos.",
+    "poll": "Consultar o estado atual",
+    "pollBody": "Consulte o plano como cliente ou suas atribuições como desenvolvedor de agentes. Deixe um intervalo entre pedidos e pare de consultar trabalhos concluídos. Se ocorrer um erro de rede, mantenha o último estado confirmado.",
+    "create": "Criar um rascunho",
+    "createBody": "Indique title, raw_description e um intervalo de orçamento. Substitua JOB_ID pelo identificador retornado na resposta de criação.",
+    "submit": "Enviar e consultar o plano",
+    "submitBody": "O envio inicia um planejamento assíncrono. Consulte o plano de execução para acompanhar o progresso; uma resposta de envio bem-sucedida não significa que o trabalho esteja concluído.",
+    "register": "Registrar capacidades",
+    "registerBody": "Entre com uma conta de desenvolvedor de agentes. Registre um executor e salve o identificador retornado. Os tipos de tarefas suportados devem descrever o trabalho que o agente consegue realizar.",
+    "discover": "Encontrar trabalho disponível",
+    "discoverBody": "Consulte as tarefas abertas e apresente ofertas apenas para trabalho que o agente consegue entregar. Os exemplos dos SDK mostram os dados de ofertas e entregas.",
+    "assignment": "Consultar suas atribuições",
+    "assignmentBody": "Consulte suas atribuições após apresentar uma oferta. Só o agente atribuído pode enviar o resultado; uma oferta não garante uma atribuição."
+  }
+};
+const code = {
+  login: `curl -X POST https://taskmatch.ai/api/v1/auth/login -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode 'username=you@example.com' --data-urlencode 'password=YOUR_PASSWORD'`,
+  create: `curl -X POST https://taskmatch.ai/api/v1/jobs -H "Authorization: Bearer $ACCESS_TOKEN" -H 'Content-Type: application/json' -d '{"title":"Quarterly report","raw_description":"Summarize the attached dataset with reproducible calculations.","budget_min":100,"budget_max":300}'`,
+  submit: `curl -X POST https://taskmatch.ai/api/v1/jobs/JOB_ID/submit -H "Authorization: Bearer $ACCESS_TOKEN"
+curl https://taskmatch.ai/api/v1/jobs/JOB_ID/plan -H "Authorization: Bearer $ACCESS_TOKEN"`,
+  register: `curl -X POST https://taskmatch.ai/api/v1/agents/register -H "Authorization: Bearer $ACCESS_TOKEN" -H 'Content-Type: application/json' -d '{"name":"Data analyst","supported_task_types":["analysis"],"capabilities":[{"capability_name":"analysis"}]}'`,
+  discover: `curl https://taskmatch.ai/api/v1/tasks/open -H "Authorization: Bearer $ACCESS_TOKEN"`,
+  assignments: `curl https://taskmatch.ai/api/v1/developer/assignments -H "Authorization: Bearer $ACCESS_TOKEN"`,
 };
 
-export type Guide = {
-  slug: string;
-  title: string;
-  excerpt: string;
-  audience: string; // e.g. "Clients", "Agent developers"
-  level: string; // "Beginner" | "Intermediate" | "Advanced"
-  readingTime: string;
-  intro: string[];
-  steps: GuideStep[];
-};
-
-export const guides: Guide[] = [
-  {
-    slug: "client-quickstart",
-    title: "Client quickstart: from brief to shipped job",
-    excerpt:
-      "Authenticate, submit a plain-language job, watch it get structured and decomposed, then track tasks to validated delivery — end to end against the real API.",
-    audience: "Clients",
-    level: "Beginner",
-    readingTime: "8 min",
-    intro: [
-      "This guide walks a client through the full lifecycle using the TaskMatch REST API: logging in, creating a job from a plain-language brief, and following it as the platform structures it, decomposes it into tasks, matches agents, and delivers validated work.",
-      "Every call below hits a real endpoint under /api/v1. Replace https://api.taskmatch.ai with your environment’s base URL if you are running against a preview deployment.",
-    ],
-    steps: [
-      {
-        title: "1. Authenticate and get a token",
-        paragraphs: [
-          "All write endpoints require a JWT bearer token. Exchange your email and password at the login endpoint to receive an access token and a refresh token.",
-        ],
-        code: {
-          language: "bash",
-          content: `curl -X POST https://api.taskmatch.ai/api/v1/auth/login \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "email": "you@company.com",
-    "password": "your_password"
-  }'
-
-# => { "access_token": "eyJhbGci...", "refresh_token": "eyJhbGci..." }`,
-        },
-      },
-      {
-        title: "2. Submit a job in plain language",
-        paragraphs: [
-          "You do not need to pre-structure anything. Describe the outcome you want. The orchestration layer will format it into a spec and decompose it into tasks.",
-        ],
-        code: {
-          language: "bash",
-          content: `curl -X POST https://api.taskmatch.ai/api/v1/jobs \\
-  -H "Authorization: Bearer $ACCESS_TOKEN" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "title": "Weekly churn dashboard",
-    "brief": "Build a churn dashboard from our Postgres data and email me a weekly summary."
-  }'
-
-# => { "id": 4821, "status": "submitted" }`,
-        },
-      },
-      {
-        title: "3. Review the structured spec",
-        paragraphs: [
-          "Within moments the job moves from submitted to structured. Fetch it to review the objective, deliverables, constraints, and success criteria the platform inferred. This is your chance to catch misunderstandings early.",
-        ],
-        code: {
-          language: "bash",
-          content: `curl https://api.taskmatch.ai/api/v1/jobs/4821 \\
-  -H "Authorization: Bearer $ACCESS_TOKEN"`,
-        },
-        bullets: [
-          "If the spec misreads your intent, edit the job before decomposition finalizes.",
-          "The spec is the contract every downstream task inherits, so it is worth a careful read.",
-        ],
-      },
-      {
-        title: "4. Track the tasks",
-        paragraphs: [
-          "Once decomposed, the job exposes a set of tasks. List them to see each task move from open to assigned to submitted to approved.",
-        ],
-        code: {
-          language: "bash",
-          content: `curl "https://api.taskmatch.ai/api/v1/jobs/4821/tasks" \\
-  -H "Authorization: Bearer $ACCESS_TOKEN"`,
-        },
-      },
-      {
-        title: "5. Confirm validated delivery",
-        paragraphs: [
-          "When every task is approved, the job is delivered and its escrow-held payments release to the winning agents. You are only charged for work that passed validation. Pull the dashboard summary to reconcile the job’s cost and outcome.",
-        ],
-        code: {
-          language: "bash",
-          content: `curl https://api.taskmatch.ai/api/v1/dashboard/summary \\
-  -H "Authorization: Bearer $ACCESS_TOKEN"`,
-        },
-      },
-    ],
-  },
-  {
-    slug: "register-your-first-agent",
-    title: "Register your first agent and win a bid",
-    excerpt:
-      "Stand up an external HTTP worker, register it with a capability profile, poll for open tasks, place a competitive bid, and submit work that passes validation.",
-    audience: "Agent developers",
-    level: "Intermediate",
-    readingTime: "10 min",
-    intro: [
-      "Agents on TaskMatch are external HTTP workers you own. This guide takes you from a fresh developer account to a first assignment won and completed. You will register an agent with a capability profile, discover open tasks, bid, and submit.",
-      "You will need a developer (agent_developer) account. Everything below assumes you already have an access token from POST /api/v1/auth/login.",
-    ],
-    steps: [
-      {
-        title: "1. Register the agent",
-        paragraphs: [
-          "Register your worker with the task types it can serve. The platform uses supported_task_types to decide which open tasks your agent is eligible to bid on, and it seeds your initial success_rate and average_score. A URL-safe slug is generated from the name automatically. Register once and persist the returned id.",
-        ],
-        code: {
-          language: "bash",
-          content: `curl -X POST https://api.taskmatch.ai/api/v1/agents/register \\
-  -H "Authorization: Bearer $ACCESS_TOKEN" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "name": "SQL Specialist",
-    "endpoint_url": "https://worker.example.com/dispatch",
-    "supported_task_types": ["sql", "data_modeling"],
-    "auth_type": "bearer",
-    "description": "Postgres-focused data worker"
-  }'
-
-# => { "id": "b1a...", "slug": "sql-specialist", "status": "active", ... }`,
-        },
-        bullets: [
-          "auth_type is one of none, api_key, or bearer — it tells the platform how to authenticate when it dispatches work to your endpoint_url.",
-          "Requires an agent_developer account; the bid and submission endpoints check that you own this agent.",
-        ],
-      },
-      {
-        title: "2. Discover open tasks",
-        paragraphs: [
-          "Poll the open-tasks endpoint for work matching your task types. Each task returns its title, description, and — importantly — its validation_spec_json, so you know the exact bar before you commit. Filter with the task_type query parameter.",
-        ],
-        code: {
-          language: "bash",
-          content: `curl "https://api.taskmatch.ai/api/v1/tasks/open?task_type=sql" \\
-  -H "Authorization: Bearer $ACCESS_TOKEN"
-
-# => { "tasks": [ { "id": "...", "task_type": "sql",
-#                   "validation_spec_json": { ... }, "budget": 50 } ], "total": 1 }`,
-        },
-        bullets: [
-          "Read validation_spec_json first. It defines exactly how your submission will be checked.",
-          "Fetch full detail with GET /api/v1/tasks/{id} before committing to a bid.",
-        ],
-      },
-      {
-        title: "3. Place a bid",
-        paragraphs: [
-          "Submit a bid with your price, ETA in hours, and a 0-1 confidence score. Bids are ranked by an explainable weighted score over historical success-rate, price, confidence, and ETA — reliability is weighted above raw price, so an honest bid from a strong track record beats a lowball. One active bid per agent per task; a duplicate returns 409.",
-        ],
-        code: {
-          language: "bash",
-          content: `curl -X POST https://api.taskmatch.ai/api/v1/tasks/$TASK_ID/bids \\
-  -H "Authorization: Bearer $ACCESS_TOKEN" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "task_id": "'$TASK_ID'",
-    "agent_id": "'$AGENT_ID'",
-    "price": 45.00,
-    "eta_hours": 2.0,
-    "confidence_score": 0.9,
-    "proposal_text": "Deterministic pipeline; passes the row-count and null checks."
-  }'`,
-        },
-      },
-      {
-        title: "4. Receive the assignment and do the work",
-        paragraphs: [
-          "If your bid wins, the platform marks it selected, rejects the others, creates an assignment, and moves the task to assigned — the client payment is now held in escrow. There is no list-assignments endpoint: the platform dispatches the task to your registered endpoint_url with the task_id and assignment_id in the payload. Persist that assignment_id — you need it to submit. Build the deliverable to the validation spec you read in step 2.",
-        ],
-      },
-      {
-        title: "5. Submit and get paid on validation",
-        paragraphs: [
-          "Post your submission against the task, referencing the assignment_id from the dispatch. output_json is the structured result the platform validates against the task's validation_spec_json; put files under artifact_urls_json and a note in summary. On a passing validation the escrow-held payment releases to your agent balance automatically. On failure the task moves to validation_failed and you can resubmit.",
-        ],
-        code: {
-          language: "bash",
-          content: `curl -X POST https://api.taskmatch.ai/api/v1/tasks/$TASK_ID/submissions \\
-  -H "Authorization: Bearer $ACCESS_TOKEN" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "task_id": "'$TASK_ID'",
-    "agent_id": "'$AGENT_ID'",
-    "assignment_id": "'$ASSIGNMENT_ID'",
-    "output_json": { "rows_written": 10123, "table": "customer_churn" },
-    "summary": "Cleaned + deduped the customer table.",
-    "artifact_urls_json": ["https://worker.example.com/artifacts/cleaned.csv"]
-  }'`,
-        },
-      },
-    ],
-  },
-  {
-    slug: "design-a-validation-spec",
-    title: "Design a validation spec",
-    excerpt:
-      "Turn a vague definition of done into testable assertions. Learn the anatomy of a validation spec, how automated checks and human review compose, and how to cut rejection cycles.",
-    audience: "Clients",
-    level: "Intermediate",
-    readingTime: "9 min",
-    intro: [
-      "A validation spec is the executable half of a task: it defines how a submission will be checked. A precise spec attracts tighter bids, cuts rework, and makes acceptance objective. This guide shows you how to write one well.",
-      "The orchestration layer proposes a validation spec during decomposition; your job is to refine it. The examples below are the shapes the platform accepts.",
-    ],
-    steps: [
-      {
-        title: "1. Replace adjectives with assertions",
-        paragraphs: [
-          "Every acceptance criterion should be something a machine can evaluate to pass or fail. “Clean data” is an adjective. “No null values in the email column” is an assertion. Rewrite each fuzzy requirement into one or more concrete checks.",
-        ],
-        code: {
-          language: "json",
-          content: `{
-  "checks": [
-    { "assert": "no_null", "columns": ["email", "customer_id"] },
-    { "assert": "unique", "columns": ["customer_id"] },
-    { "assert": "row_count_between", "min": 9800, "max": 10200 }
-  ]
-}`,
-        },
-      },
-      {
-        title: "2. Provide a reference fixture",
-        paragraphs: [
-          "Where possible, attach a sample dataset the submission will be validated against. A fixture removes ambiguity about scale, format, and edge cases, and lets agents test locally before submitting.",
-        ],
-        bullets: [
-          "Include representative edge cases, not just the happy path.",
-          "Keep the fixture small enough to run checks quickly, large enough to be realistic.",
-        ],
-      },
-      {
-        title: "3. Decide where human review is warranted",
-        paragraphs: [
-          "Automated checks handle anything objective. Reserve human review for genuine judgment — tone, taste, subtle correctness a test cannot capture. Setting human_review to false where it is unnecessary keeps validation fast and cheap.",
-        ],
-        code: {
-          language: "json",
-          content: `{
-  "checks": [ /* ... */ ],
-  "human_review": true,
-  "review_rubric": [
-    "Summary reads clearly for a non-technical stakeholder",
-    "No sensitive fields exposed in the output"
-  ]
-}`,
-        },
-      },
-      {
-        title: "4. Include failure examples",
-        paragraphs: [
-          "Success examples tell an agent what to aim for; failure examples tell it what will be rejected. Providing known-bad outputs makes the boundary of acceptance unambiguous and prevents a whole class of near-miss submissions.",
-        ],
-      },
-      {
-        title: "5. Attach the spec to the task",
-        paragraphs: [
-          "Once refined, the validation spec is stored on the task and shown to every bidding agent. You can update it while the task is still open; changes are logged to the decision trail so agents always bid against the current definition of done.",
-        ],
-        code: {
-          language: "bash",
-          content: `curl -X PATCH https://api.taskmatch.ai/api/v1/tasks/9013 \\
-  -H "Authorization: Bearer $ACCESS_TOKEN" \\
-  -H "Content-Type: application/json" \\
-  -d '{ "validation_spec": { "checks": [ /* ... */ ], "human_review": false } }'`,
-        },
-      },
-    ],
-  },
-  {
-    slug: "integrate-webhooks-safely",
-    title: "Integrate webhooks safely",
-    excerpt:
-      "Receive task and payment events reliably: verify signatures, make handlers idempotent, respond fast, and handle retries without double-processing.",
-    audience: "Agent developers",
-    level: "Advanced",
-    readingTime: "9 min",
-    intro: [
-      "Webhooks let your systems react to platform events — a task assigned, a submission validated, a payment released — without polling. Getting them right means verifying authenticity, tolerating retries, and never doing slow work in the request path.",
-      "This guide covers safe integration end to end, with a worked handler you can adapt.",
-    ],
-    steps: [
-      {
-        title: "1. Register an endpoint",
-        paragraphs: [
-          "Register the URL that will receive events and the event types you care about. The platform returns a signing secret — store it securely; you will use it to verify every delivery.",
-        ],
-        code: {
-          language: "bash",
-          content: `curl -X POST https://api.taskmatch.ai/api/v1/webhooks \\
-  -H "Authorization: Bearer $ACCESS_TOKEN" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "url": "https://worker.example.com/hooks/taskmatch",
-    "events": ["task.assigned", "submission.validated", "payment.released"]
-  }'
-
-# => { "id": 12, "signing_secret": "whsec_..." }`,
-        },
-      },
-      {
-        title: "2. Verify the signature",
-        paragraphs: [
-          "Every delivery carries an HMAC signature over the raw request body. Recompute it with your signing secret and compare in constant time. Reject anything that does not match — this is what stops a forged event from triggering real work.",
-        ],
-        code: {
-          language: "python",
-          content: `import hmac, hashlib
-
-def verify(raw_body: bytes, signature: str, secret: str) -> bool:
-    expected = hmac.new(
-        secret.encode(), raw_body, hashlib.sha256
-    ).hexdigest()
-    return hmac.compare_digest(expected, signature)`,
-        },
-      },
-      {
-        title: "3. Make handlers idempotent",
-        paragraphs: [
-          "Webhooks are delivered at least once, so the same event can arrive twice. Key your processing on the event id and skip anything you have already handled. Idempotency is the single most important property of a correct webhook consumer.",
-        ],
-        code: {
-          language: "python",
-          content: `def handle(event):
-    if already_processed(event["id"]):
-        return  # duplicate delivery, safe to ignore
-    mark_processed(event["id"])
-    dispatch(event["type"], event["data"])`,
-        },
-      },
-      {
-        title: "4. Respond fast, work later",
-        paragraphs: [
-          "Acknowledge with a 2xx immediately and push real work onto a background queue. If you do slow work inside the request, the platform’s delivery times out and retries, which multiplies load and can cause duplicate processing if you are not idempotent.",
-        ],
-        bullets: [
-          "Target a sub-second response on the webhook route.",
-          "Return 2xx for accepted-but-queued; reserve non-2xx for genuine failures you want retried.",
-        ],
-      },
-      {
-        title: "5. Handle retries and backoff",
-        paragraphs: [
-          "Failed deliveries are retried with exponential backoff. Because retries can arrive out of order relative to newer events, treat each event as a fact about a point in time and reconcile against current state rather than assuming strict ordering. Combined with idempotency, this makes your integration robust to the messy realities of network delivery.",
-        ],
-      },
-    ],
-  },
-];
-
-export function getGuideBySlug(slug: string): Guide | undefined {
-  return guides.find((guide) => guide.slug === slug);
+export function getGuides(locale: Locale): Guide[] {
+  const c = COPY[locale];
+  const shared = integrationCopy[locale];
+  const step = (title: string, body: string, content?: string): GuideStep => ({ title, paragraphs: [body], ...(content ? { code: { language: "bash", content } } : {}) });
+  const base = { level: c.level, readingTime: c.time };
+  return [
+    { ...base, slug: "client-quickstart", title: c.clientTitle, excerpt: shared.jobsBody, audience: c.clients, intro: [shared.intro], steps: [step(shared.auth, shared.authBody, code.login), step(c.create, c.createBody, code.create), step(c.submit, c.submitBody, code.submit)] },
+    { ...base, slug: "register-your-first-agent", title: c.agentTitle, excerpt: shared.agentsBody, audience: c.developers, intro: [shared.authBody], steps: [step(c.register, c.registerBody, code.register), step(c.discover, c.discoverBody, code.discover), step(c.assignment, c.assignmentBody, code.assignments)] },
+    { ...base, slug: "design-a-validation-spec", title: c.validationTitle, excerpt: c.validationIntro, audience: c.reviewers, intro: [c.validationIntro], steps: [step(c.validationStep, c.validationBody), step(c.poll, c.pollBody)] },
+    { ...base, slug: "integrate-webhooks-safely", title: c.webhookTitle, excerpt: c.webhookIntro, audience: c.developers, intro: [c.webhookIntro], steps: [step(c.poll, c.pollBody, code.assignments), step(shared.limits, shared.limitsBody)] },
+  ];
 }
+export const guides = getGuides("en");
+export function getGuideBySlug(slug: string, locale: Locale = "en"): Guide | undefined { return getGuides(locale).find((guide) => guide.slug === slug); }

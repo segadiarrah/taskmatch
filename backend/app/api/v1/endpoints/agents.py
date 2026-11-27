@@ -2,14 +2,19 @@
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import secrets
 import re
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import lazyload, selectinload
 
 from app.core.database import get_db
 from app.core.deps import get_current_active_user, require_role
@@ -23,9 +28,94 @@ from app.schemas.agent import (
     AgentListResponse,
     AgentResponse,
     AgentUpdate,
+    CapabilityCreate,
+    CapabilityResponse,
 )
 
 router = APIRouter()
+
+
+async def _capability_agent(agent_id: uuid.UUID, user: User, db: AsyncSession) -> Agent:
+    result = await db.execute(select(Agent).options(lazyload("*"), selectinload(Agent.capabilities))
+                              .where(Agent.id == agent_id).with_for_update())
+    agent = result.scalar_one_or_none()
+    if agent is None:
+        raise HTTPException(404, "Agent not found")
+    if str(user.role) != "admin" and agent.developer_user_id != user.id:
+        raise HTTPException(403, "You can only update your own agents")
+    if "/experts/" in agent.endpoint_url or agent.slug.startswith("llm-"):
+        raise HTTPException(409, "Capabilities are managed through worker verification or the provider registry")
+    return agent
+
+
+class ConnectionProof(BaseModel):
+    challenge: str = Field(min_length=40, max_length=64)
+
+
+@router.post("/{agent_id}/connection/challenge")
+async def issue_challenge(agent_id: uuid.UUID, response: Response,
+                          user: User = Depends(require_role("agent_developer")),
+                          db: AsyncSession = Depends(get_db, scope="function")):
+    agent = await _capability_agent(agent_id, user, db)
+    value = secrets.token_urlsafe(32)
+    agent.connection_challenge_hash = hashlib.sha256(value.encode()).hexdigest()
+    agent.connection_challenge_until = datetime.now(timezone.utc) + timedelta(minutes=10)
+    response.headers["Cache-Control"] = "no-store"
+    return {"challenge": value, "expires_at": agent.connection_challenge_until}
+
+
+@router.post("/{agent_id}/connection/confirm")
+async def confirm_connection(agent_id: uuid.UUID, body: ConnectionProof,
+                             db: AsyncSession = Depends(get_db, scope="function")):
+    agent = await db.scalar(select(Agent).options(lazyload("*")).where(Agent.id == agent_id).with_for_update())
+    now = datetime.now(timezone.utc)
+    digest = hashlib.sha256(body.challenge.encode()).hexdigest()
+    if (not agent or not agent.connection_challenge_until or agent.connection_challenge_until <= now
+            or not hmac.compare_digest(agent.connection_challenge_hash or "", digest)):
+        raise HTTPException(400, "Invalid or expired connection challenge")
+    agent.connection_challenge_hash = agent.connection_challenge_until = None
+    agent.connection_verified_at = now
+    await log_audit(db, actor_type="agent", actor_id=str(agent.id), entity_type="agent", entity_id=str(agent.id),
+                    action="agent_connection_verified", payload={})
+    return {"connection_verified_at": now}
+
+
+@router.post("/{agent_id}/capabilities", status_code=201, response_model=CapabilityResponse)
+async def add_capability(agent_id: uuid.UUID, body: CapabilityCreate,
+                         current_user: User = Depends(require_role("agent_developer", "admin")),
+                         db: AsyncSession = Depends(get_db, scope="function")):
+    agent = await _capability_agent(agent_id, current_user, db)
+    name, version = body.capability_name.strip(), body.version.strip() or "1.0"
+    if not name:
+        raise HTTPException(422, "A capability name is required")
+    if any(c.capability_name.casefold() == name.casefold() and c.version == version
+           for c in agent.capabilities):
+        raise HTTPException(409, "This capability version is already registered")
+    cap = AgentCapability(agent_id=agent.id, capability_name=name, version=version,
+                          metadata_json=body.metadata_json)
+    db.add(cap)
+    await db.flush()
+    await log_audit(db, actor_type="user", actor_id=str(current_user.id),
+                    action="add_agent_capability", entity_type="agent", entity_id=str(agent.id),
+                    payload={"capability_id": str(cap.id), "capability_name": name, "version": version})
+    response = CapabilityResponse.model_validate(cap)
+    return response
+
+
+@router.post("/{agent_id}/capabilities/{capability_id}/remove")
+async def remove_capability(agent_id: uuid.UUID, capability_id: uuid.UUID,
+                            current_user: User = Depends(require_role("agent_developer", "admin")),
+                            db: AsyncSession = Depends(get_db, scope="function")):
+    agent = await _capability_agent(agent_id, current_user, db)
+    cap = next((c for c in agent.capabilities if c.id == capability_id), None)
+    if cap is None:
+        raise HTTPException(404, "Capability not found on this agent")
+    await db.delete(cap)
+    await log_audit(db, actor_type="user", actor_id=str(current_user.id),
+                    action="remove_agent_capability", entity_type="agent", entity_id=str(agent.id),
+                    payload={"capability_id": str(cap.id), "capability_name": cap.capability_name,
+                             "version": cap.version})
+    return {"removed": True}
 
 
 def _slugify(name: str) -> str:
@@ -46,7 +136,7 @@ def _slugify(name: str) -> str:
 async def register_agent(
     body: AgentCreate,
     current_user: User = Depends(require_role("agent_developer")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> AgentResponse:
     """Register a new AI agent on the platform.
 
@@ -54,6 +144,11 @@ async def register_agent(
     generated from the agent name automatically.
     """
     base_slug = _slugify(body.name)
+    if not base_slug or base_slug == "llm" or base_slug.startswith("llm-"):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Choose a non-empty name outside the reserved platform LLM namespace",
+        )
     slug = base_slug
     counter = 1
     while True:
@@ -112,7 +207,8 @@ async def register_agent(
         payload={"name": body.name, "slug": slug},
     )
 
-    return AgentResponse.model_validate(agent)
+    response = AgentResponse.model_validate(agent)
+    return response
 
 
 @router.get(
@@ -133,10 +229,10 @@ async def list_agents(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> AgentListResponse:
     """Return a paginated list of agents with optional filters."""
-    query = select(Agent)
+    query = select(Agent).options(lazyload("*"), selectinload(Agent.capabilities))
 
     if status_filter:
         query = query.where(Agent.status == status_filter)
@@ -175,10 +271,10 @@ async def list_agents(
 async def get_agent(
     agent_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> AgentResponse:
     """Return full details for a single agent, including its capabilities."""
-    result = await db.execute(select(Agent).where(Agent.id == agent_id))
+    result = await db.execute(select(Agent).options(lazyload("*"), selectinload(Agent.capabilities)).where(Agent.id == agent_id))
     agent = result.scalar_one_or_none()
     if agent is None:
         raise HTTPException(
@@ -197,7 +293,7 @@ async def update_agent(
     agent_id: uuid.UUID,
     body: AgentUpdate,
     current_user: User = Depends(require_role("agent_developer", "admin")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> AgentResponse:
     """Update an existing agent's metadata.
 
@@ -225,6 +321,8 @@ async def update_agent(
     if "endpoint_url" in update_data and update_data["endpoint_url"] is not None:
         update_data["endpoint_url"] = str(update_data["endpoint_url"])
 
+    if set(update_data) & {"endpoint_url", "auth_type", "auth_credentials"}:
+        agent.connection_verified_at = agent.connection_challenge_hash = agent.connection_challenge_until = None
     for field, value in update_data.items():
         setattr(agent, field, value)
 
@@ -241,7 +339,8 @@ async def update_agent(
         payload=update_data,
     )
 
-    return AgentResponse.model_validate(agent)
+    response = AgentResponse.model_validate(agent)
+    return response
 
 
 @router.post(
@@ -253,7 +352,7 @@ async def agent_heartbeat(
     agent_id: uuid.UUID,
     body: AgentHeartbeat,
     current_user: User = Depends(require_role("agent_developer")),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> AgentResponse:
     """Record a heartbeat from an agent, updating its status and timestamp."""
     result = await db.execute(select(Agent).where(Agent.id == agent_id))
@@ -276,7 +375,8 @@ async def agent_heartbeat(
     await db.flush()
     await db.refresh(agent)
 
-    return AgentResponse.model_validate(agent)
+    response = AgentResponse.model_validate(agent)
+    return response
 
 
 @router.get(
@@ -286,10 +386,10 @@ async def agent_heartbeat(
 async def get_agent_stats(
     agent_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> dict:
     """Return performance statistics for a specific agent."""
-    result = await db.execute(select(Agent).where(Agent.id == agent_id))
+    result = await db.execute(select(Agent).options(lazyload("*")).where(Agent.id == agent_id))
     agent = result.scalar_one_or_none()
     if agent is None:
         raise HTTPException(

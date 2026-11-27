@@ -1,9 +1,18 @@
 "use client";
+import { activityCopy } from "@/lib/activity-copy";
 
-import React, { useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { growthCopy } from "@/lib/growth-copy";
+import React, { Suspense, useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useTranslation } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { displayCopy } from "@/lib/display-copy";
+import type { Locale } from "@/lib/locales";
+import { dashboardActionsCopy } from "@/lib/dashboard-actions-copy";
+import { authIntentHref } from "@/lib/public-intent";
+import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +34,8 @@ import {
   LogOut,
   ChevronLeft,
   Layers,
+  Handshake,
+  UserRound,
 } from "lucide-react";
 
 interface NavItem {
@@ -32,22 +43,35 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   roles: string[];
+  human?: boolean;
 }
 
 /* Les libellés suivent la langue courante : la liste ne peut pas être figée
    au chargement du module. */
-const buildNavItems = (t: (key: string) => string): NavItem[] => [
+const buildNavItems = (t: (key: string) => string, locale: Locale): NavItem[] => [
+  { label: t("dashboard.overview"), href: "/client", icon: LayoutDashboard, roles: ["client"] },
+  { label: t("dashboard.jobs"), href: "/client/jobs", icon: Briefcase, roles: ["client"] },
+  { label: t("dashboard.overview"), href: "/developer", icon: LayoutDashboard, roles: ["agent_developer"] },
+  { label: t("dashboard.agents"), href: "/developer/agents", icon: Bot, roles: ["agent_developer"] },
+  { label: t("dashboard.tasks"), href: "/developer/tasks", icon: ListChecks, roles: ["agent_developer"] },
+  { label: t("dashboard.payments"), href: "/developer/earnings", icon: CreditCard, roles: ["agent_developer"] },
   { label: t("dashboard.overview"), href: "/admin", icon: LayoutDashboard, roles: ["admin"] },
-  { label: t("dashboard.jobs"), href: "/admin/jobs", icon: Briefcase, roles: ["admin", "client"] },
-  { label: t("dashboard.tasks"), href: "/admin/tasks", icon: ListChecks, roles: ["admin", "client", "agent_developer"] },
-  { label: t("dashboard.agents"), href: "/admin/agents", icon: Bot, roles: ["admin", "agent_developer"] },
-  { label: t("dashboard.bids"), href: "/admin/tasks", icon: Gavel, roles: ["agent_developer"] },
-  { label: t("dashboard.submissions"), href: "/admin/validations", icon: FileCheck, roles: ["agent_developer"] },
+  { label: t("dashboard.jobs"), href: "/admin/jobs", icon: Briefcase, roles: ["admin"] },
+  { label: t("dashboard.tasks"), href: "/admin/tasks", icon: ListChecks, roles: ["admin"] },
+  { label: t("dashboard.agents"), href: "/admin/agents", icon: Bot, roles: ["admin"] },
   { label: t("dashboard.validations"), href: "/admin/validations", icon: ShieldCheck, roles: ["admin"] },
-  { label: t("dashboard.payments"), href: "/admin/payments", icon: CreditCard, roles: ["admin", "client", "agent_developer"] },
+  { label: t("dashboard.payments"), href: "/admin/payments", icon: CreditCard, roles: ["admin"] },
   { label: t("dashboard.learning"), href: "/admin/learning", icon: GraduationCap, roles: ["admin"] },
   { label: t("dashboard.providers"), href: "/admin/providers", icon: Plug, roles: ["admin"] },
+  { label: growthCopy[locale].title, href:"/admin/growth", icon:Layers, roles:["admin"] },
+  { label: growthCopy[locale].invite, href:"/referrals", icon:Handshake, roles:["client","agent_developer"] },
+  { label: activityCopy[locale].title, href: "/activity", icon: ListChecks, roles: ["client", "agent_developer", "admin"] },
   { label: t("dashboard.audit"), href: "/admin/audit", icon: ScrollText, roles: ["admin"] },
+  { label: dashboardActionsCopy[locale].humanTasks, href: "/human-tasks", icon: Handshake, roles: ["client", "agent_developer", "admin"], human: true },
+  { label: dashboardActionsCopy[locale].humanRequest, href: "/human-tasks?view=request", icon: Briefcase, roles: ["client"], human: true },
+  { label: dashboardActionsCopy[locale].delegation, href: "/human-tasks?view=agents", icon: Bot, roles: ["agent_developer"], human: true },
+  { label: dashboardActionsCopy[locale].humanWork, href: "/human-tasks?view=work", icon: UserRound, roles: ["client", "agent_developer"], human: true },
+  { label: dashboardActionsCopy[locale].reviewHumanMissions, href: "/human-tasks?view=review", icon: ShieldCheck, roles: ["admin"], human: true },
 ];
 
 function getInitials(name: string): string {
@@ -72,36 +96,38 @@ function getRoleBadgeVariant(role: string): "default" | "info" | "purple" {
   }
 }
 
-function getRoleLabel(role: string): string {
+function getRoleLabel(role: string, locale: Locale): string {
   switch (role) {
     case "admin":
-      return "Admin";
+      return displayCopy[locale].roleAdmin;
     case "client":
-      return "Client";
+      return displayCopy[locale].roleClient;
     case "agent_developer":
-      return "Developer";
+      return displayCopy[locale].roleDeveloper;
     default:
       return role;
   }
 }
 
-export default function DashboardLayout({
+function DashboardLayoutContent({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { t } = useTranslation();
-  const { user, isLoading, isAuthenticated, logout } = useAuth();
+  const { t, locale } = useTranslation();
+  const { user, isLoading, isAuthenticated, authError, retrySession, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push("/login");
+    if (!isLoading && !isAuthenticated && !authError) {
+      const view = new URLSearchParams(window.location.search).get("view");
+      router.push(pathname.startsWith("/human-tasks") ? authIntentHref("login", view === "work" ? "work" : view === "agents" ? "agent" : "mission") : "/login");
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, authError, router, pathname]);
 
   if (isLoading) {
     return (
@@ -114,16 +140,24 @@ export default function DashboardLayout({
     );
   }
 
+  if (authError) {
+    return <main className="mx-auto max-w-2xl px-6 py-20"><DataLoadError onRetry={retrySession} /></main>;
+  }
+
   if (!isAuthenticated || !user) {
     return null;
   }
 
-  const filteredNavItems = buildNavItems(t).filter((item) =>
+  const filteredNavItems = buildNavItems(t, locale).filter((item) =>
     item.roles.includes(user.role)
   );
 
   const isActive = (href: string) => {
-    if (href === "/admin") return pathname === "/admin";
+    if (href.startsWith("/human-tasks")) {
+      const view = href.split("?view=")[1];
+      return pathname === "/human-tasks" && (view ? searchParams.get("view") === view : !searchParams.get("view"));
+    }
+    if (href === "/admin" || href === "/client" || href === "/developer") return pathname === href;
     return pathname.startsWith(href);
   };
 
@@ -156,7 +190,7 @@ export default function DashboardLayout({
                 <Layers className="h-4 w-4 text-ink-950" />
               </div>
               <div>
-                <h1 className="text-sm font-bold tracking-tight text-ink-50">TaskMatch</h1>
+                <span className="text-sm font-bold tracking-tight text-ink-50">TaskMatch</span>
                 <p className="font-mono text-[9px] uppercase tracking-wider text-ink-500">{t("dashboard.console")}</p>
               </div>
             </div>
@@ -190,24 +224,27 @@ export default function DashboardLayout({
             const active = isActive(item.href);
             const Icon = item.icon;
             return (
-              <button
-                key={item.label}
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
                 onClick={() => {
-                  router.push(item.href);
                   setSidebarOpen(false);
                 }}
                 className={cn(
                   "relative flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+                  item.href === "/human-tasks" && "!mt-4 border-t border-t-ink-800",
                   active
                     ? "border-ink-800 bg-ink-950 text-ink-50 shadow-sm"
                     : "border-transparent text-ink-400 hover:bg-ink-900 hover:text-ink-100",
                   sidebarCollapsed && "justify-center px-2"
                 )}
+                aria-label={sidebarCollapsed ? item.label : undefined}
                 title={sidebarCollapsed ? item.label : undefined}
               >
                 <Icon className={cn("h-4 w-4 shrink-0", active && "text-signal-400")} />
-                {!sidebarCollapsed && <span>{item.label}</span>}
-              </button>
+                {!sidebarCollapsed && <span className={cn("min-w-0 break-words text-left", item.human && item.href !== "/human-tasks" && "text-xs")}>{item.label}</span>}
+              </Link>
             );
           })}
         </nav>
@@ -229,7 +266,7 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main content area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {/* Top bar */}
         <header className="flex h-14 items-center justify-between border-b border-ink-800 bg-white/90 px-4 backdrop-blur-xl lg:px-6">
           <div className="flex items-center gap-3">
@@ -243,7 +280,7 @@ export default function DashboardLayout({
             </button>
             <div className="hidden items-center gap-2 text-sm lg:flex">
               <span className="font-mono text-[11px] uppercase tracking-wider text-ink-500">
-                {getRoleLabel(user.role)}
+                {getRoleLabel(user.role, locale)}
               </span>
               <span className="text-ink-700">/</span>
               <span className="font-medium text-ink-50">
@@ -252,9 +289,10 @@ export default function DashboardLayout({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <LanguageSwitcher />
             <Badge variant={getRoleBadgeVariant(user.role)}>
-              {getRoleLabel(user.role)}
+              {getRoleLabel(user.role, locale)}
             </Badge>
             <div className="hidden items-center gap-2 sm:flex">
               <Avatar size="sm">
@@ -270,10 +308,14 @@ export default function DashboardLayout({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto bg-ink-950 p-4 lg:p-7">
+        <main lang={locale} className="min-w-0 flex-1 overflow-y-auto bg-ink-950 p-4 lg:p-7">
           {children}
         </main>
       </div>
     </div>
   );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={null}><DashboardLayoutContent>{children}</DashboardLayoutContent></Suspense>;
 }

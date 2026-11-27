@@ -1,10 +1,10 @@
 """Job-related Pydantic schemas."""
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 # ---------------------------------------------------------------------------
@@ -47,8 +47,15 @@ class JobCreate(BaseModel):
         ..., ge=0, description="Maximum budget in the specified currency"
     )
     currency: Optional[str] = Field(
-        "USD", max_length=8, description="ISO 4217 currency code"
+        "EUR", max_length=8, description="ISO 4217 currency code"
     )
+    @field_validator("currency")
+    @classmethod
+    def eur_for_new_jobs(cls, value: str | None) -> str:
+        if value not in (None, "EUR"):
+            raise ValueError("New jobs must use EUR")
+        return "EUR"
+
     deadline: Optional[datetime] = Field(
         None, description="Desired completion deadline (UTC)"
     )
@@ -100,7 +107,8 @@ class JobResponse(BaseModel):
     formatted_summary: Optional[str] = None
     budget_min: float
     budget_max: float
-    currency: str = "USD"
+    currency: str = "EUR"
+    billing_mode: Literal["stripe", "legacy_manual"] = "stripe"
     deadline: Optional[datetime] = None
     status: str
     preferred_agent_ids: Optional[List[UUID]] = None

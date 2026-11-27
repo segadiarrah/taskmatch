@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/lib/i18n";
 import React, { useEffect, useRef, useState } from "react";
 
 /**
@@ -67,6 +68,7 @@ export function Counter({
   duration?: number;
   className?: string;
 }) {
+  const { locale } = useTranslation();
   const ref = useRef<HTMLSpanElement | null>(null);
   const [display, setDisplay] = useState(0);
 
@@ -110,7 +112,7 @@ export function Counter({
   return (
     <span ref={ref} className={className}>
       {prefix}
-      {display.toLocaleString(undefined, {
+      {display.toLocaleString(locale, {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals,
       })}

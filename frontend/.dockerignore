@@ -8,8 +8,10 @@ node_modules
 # Build output and test artefacts. Regenerated inside the image, and copying
 # them in only makes the context larger and the layer staler.
 .next
+.next-e2e
 out
 test-results
+test-results-*
 playwright-report
 tsconfig.tsbuildinfo
 
@@ -24,3 +26,5 @@ npm-debug.log*
 # where a secret survives every later deletion.
 .env
 .env.*
+
+.next-*

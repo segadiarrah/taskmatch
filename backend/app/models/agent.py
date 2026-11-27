@@ -85,6 +85,9 @@ class Agent(TimestampMixin, Base):
     completed_tasks_count: Mapped[int] = mapped_column(
         Integer, nullable=False, default=0, server_default="0"
     )
+    connection_challenge_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    connection_challenge_until: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    connection_verified_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     last_heartbeat_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True
     )

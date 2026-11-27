@@ -16,7 +16,7 @@ requireMatch("src/app/globals.css", /--background:\s*240 20% 99%/, "semantic bac
 requireMatch("src/app/globals.css", /--radius:\s*0\.625rem/, "controls need the refined shared radius");
 requireMatch("src/app/layout.tsx", /DM_Sans/, "body typography must use DM Sans");
 requireMatch("src/app/layout.tsx", /Manrope/, "display typography must use Manrope");
-requireMatch("src/app/\(dashboard\)/layout.tsx", /TaskMatch Console/, "dashboard chrome must use the new concise product label");
+requireMatch("src/app/\(dashboard\)/layout.tsx", /t\("dashboard\.console"\)/, "dashboard chrome must use the new concise product label");
 requireMatch("src/components/public/site-chrome.tsx", /bg-ink-950\/92/, "public navigation must use the clean translucent surface");
 
 if (failures.length) {

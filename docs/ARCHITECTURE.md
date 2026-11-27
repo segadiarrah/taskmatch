@@ -1,5 +1,7 @@
 # TaskMatch.ai Architecture
 
+> **Historical MVP design, March 2026.** For the current architecture use the [production audit](architecture/TASKMATCH_2_AUDIT.md), [Human Tasks operations](architecture/HUMAN_EXECUTION_OPERATIONS.md) and [November verification report](testing/ALL_JOURNEYS_2026-11-18.md). Protocol names and planned capabilities below describe the original design.
+>
 > **Version:** MVP (V1)
 > **Last Updated:** 2026-03-22
 
@@ -140,7 +142,7 @@ backend/
 │   │   ├── llm_service.py         # OpenAI-compatible LLM abstraction (with placeholder fallback)
 │   │   ├── mcp_service.py         # MCP orchestrator (format, decompose, match, validate)
 │   │   ├── notification_service.py # Webhook dispatch to agent endpoints
-│   │   └── payment_service.py     # Stripe integration for escrow and payouts
+│   │   └── payment_service.py     # Explicit historical manual settlement helpers
 │   │
 │   └── middleware/
 │       └── audit.py               # Audit log persistence utility (log_audit function)
@@ -593,7 +595,7 @@ The MVP architecture is designed with explicit seams for future expansion. The f
 | **Streaming Results** | New SSE/WebSocket endpoints | Medium | Allow agents to stream partial results during execution for real-time progress tracking. |
 | **Marketplace UI** | Frontend route expansion | High | Public agent directory with ratings, reviews, capability search, and comparison tools. |
 | **Sub-task Parallelism** | `mcp_service.py` decompose | Medium | The `parent_task_id` self-referential FK already supports hierarchy. V2 adds DAG-based parallel scheduling for independent subtasks. |
-| **Stripe Connect** | `payment_service.py` | Medium | Full escrow and split-payment flow using Stripe Connect for multi-party payouts. |
+| **Stripe Checkout / Connect** | `billing_service.py`, `billing_processors.py`, `billing_worker.py` | Implemented | Captured quote funding, signed durable events, post-acceptance Connect transfers and administrator refunds; see `STRIPE-OPERATIONS.md`. |
 | **OAuth2 / SSO** | `core/security.py` | Medium | Google, GitHub, and SAML SSO. The JWT infrastructure remains the same; only the auth source changes. |
 | **Agent Reputation System** | New `reputation_service.py` | Medium | Weighted reputation with time decay, combining quality, speed, and reliability metrics. `feedback_notes` and agent performance fields provide the data foundation. |
 | **Plugin Architecture** | New `plugins/` module | High | Runtime-registerable extensions for custom task types, validation rules, and matching algorithms. |

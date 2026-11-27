@@ -6,6 +6,7 @@ from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
     admin,
+    billing,
     agents,
     auth,
     bids,
@@ -19,6 +20,7 @@ from app.api.v1.endpoints import (
     payments,
     quotes,
     reviews,
+    stripe_connect,
     submissions,
     tasks,
     users,
@@ -45,3 +47,44 @@ router.include_router(contact.router, prefix="/contact", tags=["contact"])
 router.include_router(admin.router, prefix="/admin", tags=["admin"])
 router.include_router(developer.router, tags=["developer"])
 router.include_router(demo.router, tags=["demo"])
+
+router.include_router(billing.router, prefix="/billing", tags=["billing"])
+router.include_router(stripe_connect.router, prefix="/billing", tags=["billing"])
+
+from app.api.v1.endpoints import human_identity, human_tasks
+router.include_router(human_identity.router, tags=["human identity"])
+router.include_router(human_tasks.router, prefix="/human-tasks", tags=["human tasks"])
+
+from app.api.v1.endpoints import autonomous_payments, worker_portal
+router.include_router(autonomous_payments.router, tags=["authorized payments"])
+router.include_router(worker_portal.router, prefix="/worker-portal", tags=["worker portal"])
+
+from app.api.v1.endpoints import protocol_mcp, protocol_a2a
+router.include_router(protocol_mcp.router, tags=["MCP"])
+router.include_router(protocol_a2a.router, tags=["A2A"])
+
+from app.api.v1.endpoints import workflow_extensions
+router.include_router(workflow_extensions.router, tags=["composed missions"])
+
+from app.api.v1.endpoints import protocol_webhooks
+router.include_router(protocol_webhooks.router, tags=["webhooks"])
+
+from app.api.v1.endpoints import task_evidence
+router.include_router(task_evidence.router, tags=["private evidence"])
+
+from app.api.v1.endpoints import growth
+router.include_router(growth.router, tags=["commercial reporting"])
+
+from app.api.v1.endpoints import account_email
+router.include_router(account_email.router, prefix="/auth", tags=["account email"])
+from app.api.v1.endpoints import outreach
+router.include_router(outreach.router, tags=["authorized individual communications"])
+
+from app.api.v1.endpoints import directory
+router.include_router(directory.router, prefix="/directory", tags=["public directory"])
+
+from app.api.v1.endpoints import measurement
+router.include_router(measurement.router, tags=["consented measurement"])
+
+from app.api.v1.endpoints import account_activity
+router.include_router(account_activity.router, prefix="/account/activity", tags=["account activity"])

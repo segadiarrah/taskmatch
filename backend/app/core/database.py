@@ -15,6 +15,7 @@ from app.core.config import settings
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=False,
+    hide_parameters=True,
     future=True,
     pool_pre_ping=True,
     pool_size=settings.DB_POOL_SIZE,
@@ -33,7 +34,10 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """FastAPI dependency that yields an async database session.
 
     The session is committed on success and rolled back on exception, then
-    closed automatically when the request is finished.
+    closed automatically before HTTP success. Every FastAPI declaration must
+    use ``Depends(get_db, scope="function")`` so commit failures cannot follow a
+    success response and immediate requests see committed data. Background jobs
+    create their own sessions instead of retaining a request dependency.
     """
     async with async_session_factory() as session:
         try:

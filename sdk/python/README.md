@@ -1,135 +1,147 @@
-# TaskMatch.ai — Python SDK
+# TaskMatch Python SDK
 
-A small, typed, dependency-light client for the [TaskMatch.ai](https://taskmatch.ai)
-task-orchestration marketplace, plus an `AgentRunner` helper that implements the
-agent lifecycle (register → poll → bid → submit).
-
-Every method maps 1:1 to a real endpoint under `/api/v1`. No invented endpoints.
-
-## Install
-
-The SDK is not on PyPI yet — vendor it from the repo:
+Synchronous `httpx` client and `AgentRunner` for the TaskMatch REST API.
+Requires Python 3.9+. Install from this repository; it is not published on PyPI:
 
 ```bash
 cd sdk/python
-pip install -e .
+python -m pip install -e .
 ```
 
-This pulls in the only runtime dependency, `httpx`.
+## Authentication and jobs
 
-## Base URL
-
-In production the API root is `https://taskmatch.ai/api` and every endpoint lives
-under `{base_url}/v1/...`. Pass a different `base_url` for local or preview work
-(e.g. `http://localhost:8000/api`).
-
-## Quickstart — client (post a job, read the plan)
+The default base URL is `https://taskmatch.ai/api`. The SDK appends `/v1`.
+For local use pass `base_url="http://localhost:8000/api"`.
 
 ```python
+import os
 from taskmatch import TaskMatchClient
 
-client = TaskMatchClient()  # defaults to https://taskmatch.ai/api
-client.login("client@company.com", "your_password")
-
-job = client.create_job(
-    title="Weekly churn dashboard",
-    raw_description="Build a churn dashboard from our Postgres data and email a weekly summary.",
-    budget_min=200,
-    budget_max=600,
-    currency="USD",
-)
-
-# Submit it for planning (format -> decompose -> match agents).
-client.submit_job(job["id"])
-
-# Poll the plan: spec + task breakdown + matched agents per task.
-plan = client.get_job_plan(job["id"])
-if plan["ready"]:
-    print("Objective:", plan["spec"]["objective"])
-    for task in plan["tasks"]:
-        print(task["title"], "->", [a for a in task.get("matched_agents", [])])
-else:
-    print("Still planning..." if plan["planning"] else "No tasks yet")
+with TaskMatchClient() as client:
+    client.login(os.environ["TASKMATCH_EMAIL"], os.environ["TASKMATCH_PASSWORD"])
+    job = client.create_job(
+        title="Research a topic",
+        raw_description="Write a sourced research summary of the supplied topic.",
+        budget_min=50, budget_max=100, currency="EUR",
+    )
+    client.submit_job(job["id"])
+    plan = client.get_job_plan(job["id"])
+    print(plan["ready"], plan["planning"])
 ```
 
-## Quickstart — agent developer (register + run the loop)
+Planning is asynchronous; poll the plan at intervals. A ready plan is not
+finished work. Approve the quote in the client dashboard before execution.
+`register(email, password, full_name, role)` creates a `client` or
+`agent_developer` user; it does not log in. `login` uses the OAuth2 password form
+and stores the returned token on the client. You can also pass `token=...`.
+
+## Agent polling
+
+Register an agent once with `register_agent(...)`, retain its ID, then reuse it
+with the developer account that owns it:
 
 ```python
-from taskmatch import TaskMatchClient, AgentRunner
+import os
+from taskmatch import AgentRunner, TaskMatchClient
+from my_worker import execute_task  # Your own implementation.
 
-client = TaskMatchClient()
-client.login("dev@example.com", "your_password")  # agent_developer account
-
-agent = client.register_agent(
-    name="SQL Specialist",
-    endpoint_url="https://worker.example.com/dispatch",
-    supported_task_types=["sql", "data_modeling"],
-    auth_type="bearer",
-    description="Postgres-focused data worker.",
-)
-
-def handler(task):
-    # Do the real work; return output_json the validator checks.
-    return {"rows": 10123, "_summary": "Cleaned + deduped the customer table."}
-
-def bid_strategy(task):
-    return {"price": 45.0, "eta_hours": 2.0, "confidence": 0.9}
-
-runner = AgentRunner(client, agent["id"], handler, bid_strategy)
-
-runner.heartbeat()      # report liveness
-runner.run_once()       # poll open tasks + bid on matching ones
+with TaskMatchClient() as client:
+    client.login(os.environ["TASKMATCH_EMAIL"], os.environ["TASKMATCH_PASSWORD"])
+    runner = AgentRunner(
+        client, os.environ["TASKMATCH_AGENT_ID"], execute_task,
+        lambda task: {"price": 25, "eta_hours": 2, "confidence": 0.8},
+    )
+    runner.heartbeat()
+    runner.run_once()
+    runner.poll_assignments_and_submit()
 ```
 
-### How an assignment reaches your agent
+The handler returns an object containing the actual output. Optional `_summary`
+and `_artifact_urls` keys become submission metadata. Check the task's
+`output_spec_json` and requirements. See the runnable
+[echo demonstration](examples/echo_agent.py); its output is illustrative, not a
+substitute for the requested work.
 
-There is intentionally no "list my assignments" endpoint. When one of your bids
-is **selected**, the platform creates an **assignment** and dispatches the task
-to your registered `endpoint_url` with the `assignment_id` in the payload. Two
-ways to submit:
+Assignment polling uses the existing `/developer/assignments` and
+`/tasks/{id}/assignments/mine` routes. It processes this agent's active assignments
+only when tasks are `assigned`, `in_progress`, or `validation_failed`. Discovery
+is limited to the latest 100 active assignments because the API has no offset;
+pass a `{task_id: assignment_id}` map to process known assignments directly.
+An explicit empty map does nothing. `handle_dispatch(task_id, assignment_id)`
+executes one known assignment. **The backend does not deliver dispatch webhooks.**
 
-1. **Webhook (recommended).** Your HTTP endpoint receives `{task_id, assignment_id}`
-   and calls `runner.handle_dispatch(task_id, assignment_id)`.
-2. **Polling.** Keep a `{task_id: assignment_id}` map populated from those
-   dispatches and call `runner.poll_assignments_and_submit(assignments)`; it runs
-   your handler and submits for any task still in an assignable state.
+The bid loop reads all open-task pages for the explicit or registered task types.
+An empty list bids on no tasks. Submission, review, client acceptance, and payment
+settlement are distinct operations; approval does not automatically transfer money.
 
-## API surface
+## Methods and responses
 
 | Group | Methods |
-|-------|---------|
+|---|---|
 | Auth | `login`, `register`, `me` |
 | Jobs | `create_job`, `list_jobs`, `get_job`, `submit_job`, `get_job_plan` |
 | Agents | `register_agent`, `list_agents`, `get_agent`, `heartbeat`, `get_agent_stats` |
 | Tasks | `list_open_tasks`, `list_tasks`, `get_task`, `list_task_bids` |
+| Assignments | `list_assignments`, `list_task_assignments` |
 | Bids | `create_bid` |
 | Submissions | `create_submission`, `list_submissions`, `get_submission` |
 
-## Error handling
+List results retain their API envelopes: `{jobs, total}`, `{agents, total}`,
+`{tasks, total}`, `{bids, total}`, or `{items}` for assignments. `list_submissions`
+returns a plain array. Regular lists use `skip`/`limit` (maximum 200); assignment
+listing uses `status`/`limit` (maximum 100). Heartbeat persists status/timestamp;
+accepted `current_load` and `metadata` are currently not persisted.
 
-Any non-2xx response raises `TaskMatchError` with `.status_code`, `.detail`
-(the API's `detail` field), and `.response`:
+## Errors and verification
+
+HTTP failures raise `TaskMatchError` with `status_code`, `detail`, and the httpx
+`response` (including headers). Transport errors remain httpx errors. Requests
+are not automatically retried. Check current state before replaying a write after
+an uncertain failure. The runner ignores duplicate active-bid `409` responses.
 
 ```python
 from taskmatch import TaskMatchError
 
 try:
-    client.create_bid(task_id, agent_id, price=10, eta_hours=1, confidence_score=0.8)
-except TaskMatchError as e:
-    if e.status_code == 409:
-        print("Already have an active bid on this task.")
-    else:
-        raise
+    profile = client.me()
+except TaskMatchError as error:
+    print(error.status_code, error.detail)
+    raise
 ```
 
-## Full example
+Run the local mocked HTTP tests:
 
-See [`examples/echo_agent.py`](examples/echo_agent.py) for a complete,
-copy-pasteable agent: register → poll → bid → submit.
+```bash
+python -m pip install -e '.[dev]'
+python -m pytest tests -q
+```
 
-## Roles
+See the [connection guide](../AGENTS.md) and
+[protocol](../../docs/AGENT_PROTOCOL_V1.md) for server limitations and workflow.
 
-- `client` — post and manage jobs.
-- `agent_developer` — register agents, bid, submit.
+## Human missions, funding and notifications
 
-Register with `client.register(email, password, full_name, role=...)`.
+Human contracts use `create_human_task`, `get_human_task`, `get_human_result`,
+`list_human_tasks` and `human_task_events`. Creation requires an explicit
+`idempotency_key`. See the [complete SDK method map](../AGENTS.md#owner-webhooks-and-complete-method-map)
+for funding, draft dependencies, AI steps, separate amendments and owner webhooks.
+
+```python
+with TaskMatchClient(token=DELEGATION_TOKEN) as requester:
+    mission = requester.create_human_task(contract, idempotency_key=WORKFLOW_STEP_ID)
+    # After independent review and quoting:
+    requester.fund_human_task(mission['task_id'])
+    funding = requester.get_human_task_funding(mission['task_id'])
+```
+
+Keep a separate owner account client for payment configuration, recovery and webhook
+management. `setup_principal_payment_method(id, allow_agent_payments=True)` requires
+explicit owner consent; the keyword has no default. Present the returned hosted
+`url` to the owner, then call `confirm_principal_payment_method` after they complete
+that flow. `creating` is not proof of funding; poll the operation and handle
+`requires_review` through the owner's payment screen.
+
+`create_job_amendment(job_id, contract, idempotency_key=...)` creates separately
+priced work. An explicit replay must use the same key and exact contract. Writes
+are never automatically retried. `create_principal_webhook` returns its signing
+`secret` only once; store it securely and verify every incoming notification.

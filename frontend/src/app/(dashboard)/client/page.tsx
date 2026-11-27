@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { useTranslation } from "@/lib/i18n";
 import { apiGet } from "@/lib/api";
+import { DashboardActions } from "@/components/dashboard/dashboard-actions";
 import { formatCurrency, formatDate, formatStatus } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,7 +54,7 @@ const statusBadgeVariant = (status: string) => {
 
 export default function ClientDashboardPage() {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentJobs, setRecentJobs] = useState<RecentJob[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,27 +78,7 @@ export default function ClientDashboardPage() {
       }
     }
     fetchDashboard();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <AlertCircle className="h-12 w-12 text-destructive" />
-        <p className="text-lg text-muted-foreground">{error}</p>
-        <Button onClick={() => window.location.reload()} variant="outline">
-          {t("client.tryAgain")}
-        </Button>
-      </div>
-    );
-  }
+  }, [t]);
 
   const kpiCards = [
     { label: t("client.kpi.myJobs"), value: stats?.my_jobs ?? 0, icon: Briefcase, color: "text-info" },
@@ -105,7 +86,7 @@ export default function ClientDashboardPage() {
     { label: t("client.kpi.pendingReviews"), value: stats?.pending_reviews ?? 0, icon: ClipboardCheck, color: "text-warning" },
     {
       label: t("client.kpi.totalSpent"),
-      value: formatCurrency(stats?.total_spent ?? 0),
+      value: formatCurrency(stats?.total_spent ?? 0, "EUR", locale),
       icon: DollarSign,
       color: "text-success",
     },
@@ -133,8 +114,21 @@ export default function ClientDashboardPage() {
         </Link>
       </div>
 
+      <DashboardActions role="client" />
+
+      {loading ? (
+        <div className="flex min-h-48 items-center justify-center" role="status">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-label={t("dashboard.loadingApp")} />
+        </div>
+      ) : error ? (
+        <div className="flex min-h-48 flex-col items-center justify-center gap-4" role="alert">
+          <AlertCircle className="h-8 w-8 text-destructive" aria-hidden="true" />
+          <p className="text-muted-foreground">{error}</p>
+          <Button onClick={() => window.location.reload()} variant="outline">{t("client.tryAgain")}</Button>
+        </div>
+      ) : <>
       {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div data-testid="client-original-metrics" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpiCards.map((kpi) => (
           <Card key={kpi.label}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -189,15 +183,15 @@ export default function ClientDashboardPage() {
                     <div className="flex items-center gap-3">
                       <p className="font-medium truncate text-ink-100">{job.title}</p>
                       <Badge variant={statusBadgeVariant(job.status)}>
-                        {formatStatus(job.status)}
+                        {formatStatus(job.status, locale)}
                       </Badge>
                     </div>
                     <div className="mt-1 flex items-center gap-4 font-mono text-xs text-muted-foreground">
                       <span>
-                        {formatCurrency(job.budget_min, job.currency)} - {formatCurrency(job.budget_max, job.currency)}
+                        {formatCurrency(job.budget_min, job.currency, locale)} - {formatCurrency(job.budget_max, job.currency, locale)}
                       </span>
                       <span>{t("client.recent.taskCount", { count: job.task_count })}</span>
-                      <span>{formatDate(job.created_at)}</span>
+                      <span>{formatDate(job.created_at, locale)}</span>
                     </div>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0 ml-4" />
@@ -207,6 +201,7 @@ export default function ClientDashboardPage() {
           )}
         </CardContent>
       </Card>
+      </>}
     </div>
   );
 }

@@ -3,21 +3,22 @@
 from __future__ import annotations
 
 import uuid
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import lazyload
 
 from app.core.database import get_db
 from app.core.deps import get_current_active_user, require_role
 from app.middleware.audit import log_audit
 from app.models.agent import Agent
-from app.models.assignment import Assignment
+from app.models.assignment import Assignment, AssignmentStatus
 from app.models.submission import Submission, SubmissionStatus
 from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.submission import SubmissionCreate, SubmissionResponse
+from app.services.task_access import load_execution_task, require_task_access
 
 router = APIRouter()
 
@@ -31,8 +32,8 @@ router = APIRouter()
 async def create_submission(
     task_id: uuid.UUID,
     body: SubmissionCreate,
-    current_user: User = Depends(require_role("agent_developer")),
-    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> SubmissionResponse:
     """Submit a work result for a task.
 
@@ -40,13 +41,7 @@ async def create_submission(
     assignment must exist and be active.
     """
     # Validate task exists.
-    task_result = await db.execute(select(Task).where(Task.id == task_id))
-    task = task_result.scalar_one_or_none()
-    if task is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found",
-        )
+    _, task = await load_execution_task(db, task_id)
 
     if task.status not in (TaskStatus.assigned, TaskStatus.in_progress, TaskStatus.validation_failed):
         raise HTTPException(
@@ -68,6 +63,21 @@ async def create_submission(
             detail="You can only submit work from your own agents",
         )
 
+    if current_user.role == "admin" and "/experts/" not in (agent.endpoint_url or ""):
+        raise HTTPException(status_code=403, detail="Administrators may submit only their own human work")
+
+    from app.services.human_workers import require_eligible_executor
+    await require_eligible_executor(db, task, agent.id, accepting=False)
+    if task.human_contract_json:
+        from app.schemas.human import HumanResult
+        from pydantic import ValidationError
+        try:
+            HumanResult(summary=body.summary, evidence=body.output_json)
+        except ValidationError:
+            raise HTTPException(422, 'Human delivery requires a summary and nonempty textual evidence') from None
+    if task.human_contract_json and not set(task.human_contract_json['evidence_requirements']).issubset(body.output_json or {}):
+        raise HTTPException(422, 'Required Human Task evidence is missing')
+
     # Validate assignment exists.
     assignment_result = await db.execute(
         select(Assignment).where(Assignment.id == body.assignment_id)
@@ -83,6 +93,9 @@ async def create_submission(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Assignment does not match the task and agent",
         )
+
+    if assignment.status != AssignmentStatus.active:
+        raise HTTPException(status_code=409, detail="Assignment is no longer active")
 
     submission = Submission(
         id=uuid.uuid4(),
@@ -124,19 +137,21 @@ async def list_submissions(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Max records to return"),
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> list[SubmissionResponse]:
     """Return a paginated list of submissions for a specific task."""
     # Verify task exists.
-    task_result = await db.execute(select(Task).where(Task.id == task_id))
-    if task_result.scalar_one_or_none() is None:
+    task_result = await db.execute(select(Task).options(lazyload("*")).where(Task.id == task_id))
+    task = task_result.scalar_one_or_none()
+    if task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found",
         )
 
+    await require_task_access(db, task, current_user)
     query = (
-        select(Submission)
+        select(Submission).options(lazyload("*"))
         .where(Submission.task_id == task_id)
         .order_by(Submission.created_at.desc())
         .offset(skip)
@@ -156,11 +171,11 @@ async def list_submissions(
 async def get_submission(
     submission_id: uuid.UUID,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db, scope="function"),
 ) -> SubmissionResponse:
     """Return full details for a single submission."""
     result = await db.execute(
-        select(Submission).where(Submission.id == submission_id)
+        select(Submission).options(lazyload("*")).where(Submission.id == submission_id)
     )
     submission = result.scalar_one_or_none()
     if submission is None:
@@ -168,4 +183,6 @@ async def get_submission(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Submission not found",
         )
+    task = await db.get(Task, submission.task_id, options=[lazyload("*")])
+    await require_task_access(db, task, current_user)
     return SubmissionResponse.model_validate(submission)

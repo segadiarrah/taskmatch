@@ -1,10 +1,12 @@
 "use client";
 
+import { useAdminCopy, adminSource } from "@/lib/admin-copy";
+
 import React, { useState, useEffect } from "react";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { useRouter } from "next/navigation";
 import { apiGet, apiPost } from "@/lib/api";
-import { cn, formatStatus, formatDate, timeAgo } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,9 +60,11 @@ interface ValidationCheck {
 }
 
 export default function ValidationsPage() {
+  const { a, formatNumber } = useAdminCopy();
   const router = useRouter();
   const [submissions, setSubmissions] = useState<SubmissionForReview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [activeTab, setActiveTab] = useState("pending");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -85,6 +89,7 @@ export default function ValidationsPage() {
   }
 
   async function handleReview(submissionId: string, result: "approved" | "rejected" | "rework_requested") {
+    setActionError(null);
     setActionLoading(submissionId);
     const notes = reviewNotes[submissionId] || "";
     try {
@@ -94,40 +99,30 @@ export default function ValidationsPage() {
         notes: notes || null,
       });
       await fetchSubmissions();
-    } catch {
-      setSubmissions((prev) =>
-        prev.map((s) =>
-          s.id === submissionId
-            ? {
-                ...s,
-                status: result === "rework_requested" ? "rework_requested" : result,
-                review_result: result,
-                review_notes: notes || `Submission ${result} by admin.`,
-                reviewed_at: new Date().toISOString(),
-                reviewer: "Admin",
-              }
-            : s
-        )
-      );
-    } finally {
-      setActionLoading(null);
       setReviewNotes((prev) => {
         const updated = { ...prev };
         delete updated[submissionId];
         return updated;
       });
+    } catch {
+      setActionError(adminSource("The request failed. No change was saved. Please try again."));
+      return;
+    } finally {
+      setActionLoading(null);
+
     }
   }
 
   const pendingSubmissions = submissions.filter(
-    (s) => s.status === "pending_review"
+    (s) => s.status === "submitted"
   );
   const reviewedSubmissions = submissions.filter(
-    (s) => s.status !== "pending_review"
+    (s) => s.status !== "submitted"
   );
 
   function SubmissionCard({ submission }: { submission: SubmissionForReview }) {
-    const isPending = submission.status === "pending_review";
+  const { a, formatStatus, formatDate, formatNumber, timeAgo } = useAdminCopy();
+    const isPending = submission.status === "submitted";
     const mcpVal = submission.mcp_auto_validation;
 
     return (
@@ -161,7 +156,7 @@ export default function ValidationsPage() {
               <p className="mt-0.5 text-sm text-muted-foreground">{submission.job_title}</p>
             </div>
             <div className="shrink-0 text-right">
-              <p className="text-xs text-ink-500">Submitted</p>
+              <p className="text-xs text-ink-500">{a("Submitted")}</p>
               <p className="font-mono text-sm font-medium text-ink-300">{timeAgo(submission.submitted_at)}</p>
             </div>
           </div>
@@ -172,7 +167,7 @@ export default function ValidationsPage() {
               {submission.agent_name.slice(0, 2).toUpperCase()}
             </div>
             <span className="text-sm font-medium text-ink-200">{submission.agent_name}</span>
-            <span className="text-xs text-ink-500">by {submission.developer_name}</span>
+            <span className="text-xs text-ink-500">{a("by")}  {submission.developer_name}</span>
           </div>
 
           {/* Summary */}
@@ -185,9 +180,7 @@ export default function ValidationsPage() {
               rel="noopener noreferrer"
               className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-info hover:text-info/80"
             >
-              <ExternalLink className="h-3 w-3" />
-              View Deliverable
-            </a>
+              <ExternalLink className="h-3 w-3" />{a("View Deliverable")}</a>
           )}
 
           {/* MCP Auto-Validation */}
@@ -199,7 +192,7 @@ export default function ValidationsPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Brain className="h-4 w-4 text-[#b49aff]" />
-                  <span className="text-sm font-semibold text-ink-200">MCP Auto-Validation</span>
+                  <span className="text-sm font-semibold text-ink-200">{a("MCP Auto-Validation")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   {mcpVal.passed ? (
@@ -213,11 +206,11 @@ export default function ValidationsPage() {
                     mcpVal.score >= 60 ? "text-warning" :
                     "text-danger"
                   )}>
-                    {mcpVal.score}/100
+                    {formatNumber(mcpVal.score)}/100
                   </span>
                 </div>
               </div>
-              <p className="mt-2 text-sm text-ink-300">{mcpVal.notes}</p>
+              <p className="mt-2 text-sm text-ink-300">{a(mcpVal.notes)}</p>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {mcpVal.checks.map((check) => (
                   <div
@@ -233,8 +226,8 @@ export default function ValidationsPage() {
                       <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-danger" />
                     )}
                     <div>
-                      <p className="font-medium text-ink-200">{check.name}</p>
-                      <p className="text-ink-400">{check.detail}</p>
+                      <p className="font-medium text-ink-200">{formatStatus(check.name)}</p>
+                      <p className="text-ink-400">{a(check.detail)}</p>
                     </div>
                   </div>
                 ))}
@@ -248,8 +241,7 @@ export default function ValidationsPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="h-4 w-4 text-ink-400" />
-                  <span className="text-sm font-medium text-ink-200">
-                    Reviewed by {submission.reviewer}
+                  <span className="text-sm font-medium text-ink-200">{a("Reviewed by")} {submission.reviewer}
                   </span>
                 </div>
                 <span className="font-mono text-xs text-ink-500">{formatDate(submission.reviewed_at)}</span>
@@ -264,7 +256,7 @@ export default function ValidationsPage() {
           {isPending && (
             <div className="mt-4 space-y-3">
               <Textarea
-                placeholder="Review notes (optional)..."
+                placeholder={a("Review notes (optional)...")}
                 value={reviewNotes[submission.id] || ""}
                 onChange={(e) =>
                   setReviewNotes((prev) => ({ ...prev, [submission.id]: e.target.value }))
@@ -279,7 +271,7 @@ export default function ValidationsPage() {
                   disabled={actionLoading === submission.id}
                 >
                   <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-                  {actionLoading === submission.id ? "..." : "Approve"}
+                  {actionLoading === submission.id ? "..." : a("Approve")}
                 </Button>
                 <Button
                   size="sm"
@@ -288,7 +280,7 @@ export default function ValidationsPage() {
                   disabled={actionLoading === submission.id}
                 >
                   <XCircle className="mr-1 h-3.5 w-3.5" />
-                  {actionLoading === submission.id ? "..." : "Reject"}
+                  {actionLoading === submission.id ? "..." : a("Reject")}
                 </Button>
                 <Button
                   size="sm"
@@ -297,7 +289,7 @@ export default function ValidationsPage() {
                   disabled={actionLoading === submission.id}
                 >
                   <RotateCcw className="mr-1 h-3.5 w-3.5" />
-                  {actionLoading === submission.id ? "..." : "Request Rework"}
+                  {actionLoading === submission.id ? "..." : a("Request Rework")}
                 </Button>
               </div>
             </div>
@@ -309,12 +301,11 @@ export default function ValidationsPage() {
 
   return (
     <div className="space-y-6">
+      {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{a(actionError)}</p>}
       {/* Header */}
       <div>
-        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Validation Center</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Review agent submissions, validate deliverables, and manage quality assurance.
-        </p>
+        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">{a("Validation Center")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{a("Review agent submissions, validate deliverables, and manage quality assurance.")}</p>
       </div>
 
       {/* Summary Cards */}
@@ -326,8 +317,8 @@ export default function ValidationsPage() {
                 <Clock className="h-4 w-4 text-[#b49aff]" />
               </div>
               <div>
-                <p className="font-display text-2xl font-medium text-ink-50">{pendingSubmissions.length}</p>
-                <p className="text-xs text-muted-foreground">Pending Review</p>
+                <p className="font-display text-2xl font-medium text-ink-50">{formatNumber(pendingSubmissions.length)}</p>
+                <p className="text-xs text-muted-foreground">{a("Pending Review")}</p>
               </div>
             </div>
           </CardContent>
@@ -340,9 +331,9 @@ export default function ValidationsPage() {
               </div>
               <div>
                 <p className="font-display text-2xl font-medium text-ink-50">
-                  {submissions.filter((s) => s.review_result === "approved").length}
+                  {formatNumber(submissions.filter((s) => s.review_result === "approved").length)}
                 </p>
-                <p className="text-xs text-muted-foreground">Approved</p>
+                <p className="text-xs text-muted-foreground">{a("Approved")}</p>
               </div>
             </div>
           </CardContent>
@@ -355,9 +346,9 @@ export default function ValidationsPage() {
               </div>
               <div>
                 <p className="font-display text-2xl font-medium text-ink-50">
-                  {submissions.filter((s) => s.review_result === "rejected").length}
+                  {formatNumber(submissions.filter((s) => s.review_result === "rejected").length)}
                 </p>
-                <p className="text-xs text-muted-foreground">Rejected</p>
+                <p className="text-xs text-muted-foreground">{a("Rejected")}</p>
               </div>
             </div>
           </CardContent>
@@ -370,9 +361,9 @@ export default function ValidationsPage() {
               </div>
               <div>
                 <p className="font-display text-2xl font-medium text-ink-50">
-                  {submissions.filter((s) => s.review_result === "rework_requested").length}
+                  {formatNumber(submissions.filter((s) => s.review_result === "rework_requested").length)}
                 </p>
-                <p className="text-xs text-muted-foreground">Rework Requested</p>
+                <p className="text-xs text-muted-foreground">{a("Rework Requested")}</p>
               </div>
             </div>
           </CardContent>
@@ -382,11 +373,9 @@ export default function ValidationsPage() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="pending">
-            Pending Review ({pendingSubmissions.length})
+          <TabsTrigger value="pending">{a("Pending Review ({count})", { count: pendingSubmissions.length })}
           </TabsTrigger>
-          <TabsTrigger value="reviewed">
-            Reviewed ({reviewedSubmissions.length})
+          <TabsTrigger value="reviewed">{a("Reviewed ({count})", { count: reviewedSubmissions.length })}
           </TabsTrigger>
         </TabsList>
 
@@ -395,7 +384,7 @@ export default function ValidationsPage() {
             <div className="flex h-48 items-center justify-center">
               <div className="flex flex-col items-center gap-3">
                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
-                <p className="text-sm text-muted-foreground">Loading submissions...</p>
+                <p className="text-sm text-muted-foreground">{a("Loading submissions...")}</p>
               </div>
             </div>
           ) : loadError ? (
@@ -403,8 +392,8 @@ export default function ValidationsPage() {
           ) : pendingSubmissions.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
               <Inbox className="h-10 w-10 text-ink-600" />
-              <p className="mt-3 text-sm font-medium text-muted-foreground">All caught up!</p>
-              <p className="text-xs text-ink-500">No submissions pending review right now.</p>
+              <p className="mt-3 text-sm font-medium text-muted-foreground">{a("All caught up!")}</p>
+              <p className="text-xs text-ink-500">{a("No submissions pending review right now.")}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -425,8 +414,8 @@ export default function ValidationsPage() {
           ) : reviewedSubmissions.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
               <ShieldCheck className="h-10 w-10 text-ink-600" />
-              <p className="mt-3 text-sm font-medium text-muted-foreground">No reviewed submissions yet</p>
-              <p className="text-xs text-ink-500">Submissions will appear here after review.</p>
+              <p className="mt-3 text-sm font-medium text-muted-foreground">{a("No reviewed submissions yet")}</p>
+              <p className="text-xs text-ink-500">{a("Submissions will appear here after review.")}</p>
             </div>
           ) : (
             <div className="space-y-4">

@@ -28,6 +28,7 @@ from app.models.review import ReviewDecision, ReviewerType, ValidationReview
 from app.models.submission import Submission, SubmissionStatus
 from app.models.task import Task, TaskStatus
 from app.services import llm_service
+from app.services.workflow_service import apply_review
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 
@@ -396,6 +397,8 @@ async def decompose_job(db: AsyncSession, job_id: UUID) -> list[dict[str, Any]]:
     ValueError
         If the job does not exist or is not in the ``formatted`` state.
     """
+    if await db.scalar(select(Task.id).where(Task.job_id == job_id, Task.human_contract_json.is_not(None)).limit(1)):
+        raise ValueError('Human Task contracts cannot be decomposed again')
     result = await db.execute(select(Job).where(Job.id == job_id))
     job = result.scalar_one_or_none()
     if job is None:
@@ -501,7 +504,7 @@ async def decompose_job(db: AsyncSession, job_id: UUID) -> list[dict[str, Any]]:
             task_type=spec["task_type"],
             budget=Decimal(str(per_task_budget)) if per_task_budget else None,
             priority=spec["priority"],
-            status=TaskStatus.open_for_bids,
+            status=TaskStatus.pending,
             output_spec_json=output_spec,
         )
         db.add(task)
@@ -613,10 +616,8 @@ async def match_agents(
     ValueError
         If the task does not exist.
     """
-    result = await db.execute(select(Task).where(Task.id == task_id))
-    task = result.scalar_one_or_none()
-    if task is None:
-        raise ValueError(f"Task {task_id} not found")
+    from app.services.task_access import load_execution_task
+    _, task = await load_execution_task(db, task_id)
 
     task_type = task.task_type or "general"
 
@@ -633,6 +634,13 @@ async def match_agents(
     scored_agents: list[dict[str, Any]] = []
 
     for agent in agents:
+        if task.human_contract_json:
+            from app.services.human_workers import require_eligible_executor
+            from fastapi import HTTPException
+            try:
+                await require_eligible_executor(db, task, agent.id)
+            except HTTPException:
+                continue
         # --- capability_match (0-100, weight 40%) ---
         cap_score = 0.0
         if agent.capabilities:
@@ -780,10 +788,8 @@ async def rank_bids(
     ValueError
         If the task does not exist or has no bids.
     """
-    result = await db.execute(select(Task).where(Task.id == task_id))
-    task = result.scalar_one_or_none()
-    if task is None:
-        raise ValueError(f"Task {task_id} not found")
+    from app.services.task_access import load_execution_task
+    _, task = await load_execution_task(db, task_id)
 
     bids_result = await db.execute(
         select(Bid).where(
@@ -945,12 +951,21 @@ async def validate_submission(
     ValueError
         If the submission does not exist.
     """
+    from app.services.task_access import load_execution_task
+
+    task_id = await db.scalar(select(Submission.task_id).where(Submission.id == submission_id))
+    if task_id is None:
+        raise ValueError(f"Submission {submission_id} not found")
+    await load_execution_task(db, task_id)
     result = await db.execute(
-        select(Submission).where(Submission.id == submission_id)
+        select(Submission).where(Submission.id == submission_id).with_for_update().execution_options(populate_existing=True)
     )
     submission = result.scalar_one_or_none()
     if submission is None:
         raise ValueError(f"Submission {submission_id} not found")
+
+    if submission.status not in (SubmissionStatus.submitted, SubmissionStatus.under_review):
+        raise ValueError("Submission has already been reviewed")
 
     task_result = await db.execute(
         select(Task).where(Task.id == submission.task_id)
@@ -1003,6 +1018,20 @@ async def validate_submission(
         verdict = "approved"
         score = 95.0
 
+    # Structural correctness is not evidence of human completion or hybrid review.
+    from app.services.task_execution import accepted_line, active_assignment
+    line = await accepted_line(db, task.id) if task else None
+    assignment = await active_assignment(db, task.id) if task else None
+    producer = await db.get(Agent, assignment.agent_id) if assignment else None
+    human_work = producer and '/experts/' in (producer.endpoint_url or '')
+    if verdict == "approved" and (human_work or (line and line.route in ("human", "hybrid"))):
+        submission.status = SubmissionStatus.under_review
+        task.status = TaskStatus.submitted
+        await db.flush()
+        return {"submission_id": str(submission.id), "task_id": str(task.id),
+                "verdict": "human_review_required", "score": None, "issues": [],
+                "checklist": checklist, "review_id": None}
+
     # Create ValidationReview record
     review = ValidationReview(
         task_id=submission.task_id,
@@ -1019,20 +1048,8 @@ async def validate_submission(
     )
     db.add(review)
 
-    # Update submission status
-    status_map = {
-        "approved": SubmissionStatus.approved,
-        "rejected": SubmissionStatus.rejected,
-        "rework_requested": SubmissionStatus.rework_requested,
-    }
-    submission.status = status_map[verdict]
-
-    # Update task status if approved
-    if task and verdict == "approved":
-        task.status = TaskStatus.approved
-    elif task and verdict == "rejected":
-        task.status = TaskStatus.validation_failed
-
+    if task is not None:
+        await apply_review(db, task, submission, verdict)
     await db.flush()
 
     validation_result = {

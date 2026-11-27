@@ -25,6 +25,10 @@ class PaymentStatus(str, enum.Enum):
     paid = "paid"
     refunded = "refunded"
     cancelled = "cancelled"
+    processing = "processing"
+    blocked = "blocked"
+    failed = "failed"
+    reversed = "reversed"
 
 
 class PaymentRecord(TimestampMixin, Base):
@@ -72,6 +76,11 @@ class PaymentRecord(TimestampMixin, Base):
     )
     provider_ref: Mapped[Optional[str]] = mapped_column(String(256), nullable=True)
 
+    funding_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("job_fundings.id", ondelete="RESTRICT"), nullable=True, index=True)
+    transfer_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, unique=True)
+    reversal_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    payout_error: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+
     # -- relationships ---------------------------------------------------------
 
     job: Mapped["Job"] = relationship(
@@ -96,6 +105,7 @@ class PaymentRecord(TimestampMixin, Base):
     )
 
     __table_args__ = (
+        Index("uq_payment_funding_task", "funding_id", "task_id", unique=True),
         Index("ix_payment_records_job_id", "job_id"),
         Index("ix_payment_records_task_id", "task_id"),
         Index("ix_payment_records_client_user_id", "client_user_id"),

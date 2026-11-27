@@ -36,21 +36,26 @@ import {
   Info,
 } from "lucide-react";
 
-interface TaskDetail {
+interface TaskRecord {
   id: string;
+  job_id: string;
   title: string;
   description: string;
   task_type: string;
   status: string;
-  budget: number;
-  currency: string;
-  priority: string;
-  deadline: string | null;
-  input_spec: Record<string, unknown> | null;
-  output_spec: Record<string, unknown> | null;
-  bids_count: number;
+  budget: number | null;
+  priority: string | number;
+  input_spec_json: Record<string, unknown> | null;
+  output_spec_json: Record<string, unknown> | null;
   created_at: string;
 }
+
+interface JobExecutionContext {
+  currency: string;
+  deadline: string | null;
+}
+
+type TaskDetail = TaskRecord & JobExecutionContext;
 
 interface MyBid {
   id: string;
@@ -106,7 +111,7 @@ const statusBadgeVariant = (status: string) => {
   return map[status] ?? "outline";
 };
 
-const priorityBadgeVariant = (priority: string) => {
+const priorityBadgeVariant = (priority: string | number) => {
   const map: Record<string, "default" | "secondary" | "destructive" | "outline" | "warning"> = {
     critical: "destructive",
     high: "warning",
@@ -117,7 +122,7 @@ const priorityBadgeVariant = (priority: string) => {
 };
 
 export default function TaskDetailPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const params = useParams();
   const taskId = params.id as string;
 
@@ -153,14 +158,15 @@ export default function TaskDetailPage() {
       setError(null);
 
       const [taskData, bidsData, submissionsData, agentsData, assignmentsData] = await Promise.all([
-        apiGet<TaskDetail>(`/v1/tasks/${taskId}`),
+        apiGet<TaskRecord>(`/v1/tasks/${taskId}`),
         apiGet<{ items: MyBid[] }>(`/v1/tasks/${taskId}/bids/mine`).catch(() => ({ items: [] })),
         apiGet<{ items: MySubmission[] }>(`/v1/tasks/${taskId}/submissions/mine`).catch(() => ({ items: [] })),
         apiGet<{ items: MyAgent[] }>("/v1/developer/agents").catch(() => ({ items: [] })),
         apiGet<{ items: Assignment[] }>(`/v1/tasks/${taskId}/assignments/mine`).catch(() => ({ items: [] })),
       ]);
 
-      setTask(taskData);
+      const job = await apiGet<JobExecutionContext>(`/v1/jobs/${taskData.job_id}`);
+      setTask({ ...taskData, currency: job.currency, deadline: job.deadline });
       setMyBids(bidsData.items ?? []);
       setMySubmissions(submissionsData.items ?? []);
       setMyAgents(agentsData.items ?? []);
@@ -174,7 +180,7 @@ export default function TaskDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [taskId]);
+  }, [taskId, t]);
 
   useEffect(() => {
     fetchData();
@@ -228,10 +234,22 @@ export default function TaskDetailPage() {
     }
   };
 
+  const activeAssignment = assignments.find(assignment =>
+    assignment.status === "active" && myAgents.some(agent => agent.id === assignment.agent_id)
+  );
+  const isOpenForBids = task?.status === "open_for_bids";
+  const canSubmitWork = Boolean(activeAssignment && task &&
+    ["assigned", "in_progress", "validation_failed"].includes(task.status));
+
   const handleSubmissionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubError(null);
     setSubSuccess(false);
+
+    if (!activeAssignment || !canSubmitWork) {
+      setSubError("No active assignment or agent found for this task.");
+      return;
+    }
 
     if (!subOutputJson.trim()) {
       setSubError("Output JSON is required.");
@@ -253,15 +271,9 @@ export default function TaskDetailPage() {
 
     try {
       setSubSubmitting(true);
-      const activeAssignment = assignments[0];
-      const activeAgent = myAgents[0];
-      if (!activeAgent?.id || !activeAssignment?.id) {
-        setSubError("No active assignment or agent found for this task.");
-        return;
-      }
       await apiPost(`/v1/tasks/${taskId}/submissions`, {
         task_id: taskId,
-        agent_id: activeAgent.id,
+        agent_id: activeAssignment.agent_id,
         assignment_id: activeAssignment.id,
         output_json: parsedOutput,
         summary: subSummary.trim(),
@@ -278,10 +290,6 @@ export default function TaskDetailPage() {
       setSubSubmitting(false);
     }
   };
-
-  const hasAssignment = assignments.length > 0;
-  const isOpenForBids = task?.status === "open_for_bids";
-  const canSubmitWork = hasAssignment && (task?.status === "assigned" || task?.status === "in_progress");
 
   if (loading) {
     return (
@@ -307,7 +315,7 @@ export default function TaskDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 [overflow-wrap:anywhere]">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/developer" className="hover:text-foreground transition-colors">
@@ -323,7 +331,7 @@ export default function TaskDetailPage() {
 
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-start gap-4">
+        <div className="flex min-w-0 items-start gap-4">
           <Link href="/developer/tasks">
             <Button variant="ghost" size="icon" className="mt-1">
               <ArrowLeft className="h-4 w-4" />
@@ -333,25 +341,25 @@ export default function TaskDetailPage() {
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="font-display text-2xl font-medium text-ink-50 sm:text-3xl">{task.title}</h1>
               <Badge variant={statusBadgeVariant(task.status)}>
-                {formatStatus(task.status)}
+                {formatStatus(task.status, locale)}
               </Badge>
               <Badge variant={priorityBadgeVariant(task.priority)} className="capitalize">
-                {task.priority}
+                {typeof task.priority === "string" ? formatStatus(task.priority, locale) : task.priority}
               </Badge>
             </div>
-            <p className="text-muted-foreground mt-1">
+            <div className="text-muted-foreground mt-1">
               <Badge variant="secondary" className="text-xs capitalize mr-2">
-                {task.task_type.replace(/_/g, " ")}
+                {formatStatus(task.task_type, locale)}
               </Badge>
-              {t("developer.taskDetail.created")} {formatDate(task.created_at)}
-            </p>
+              {t("developer.taskDetail.created")} {formatDate(task.created_at, locale)}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="min-w-0 lg:col-span-2 space-y-6">
           {/* Task Description */}
           <Card>
             <CardHeader>
@@ -363,25 +371,25 @@ export default function TaskDetailPage() {
             <CardContent className="space-y-4">
               <div>
                 <h4 className="text-sm font-medium mb-2">{t("developer.taskDetail.description")}</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                <p className="break-words text-sm text-muted-foreground whitespace-pre-wrap">
                   {task.description || t("developer.taskDetail.noDescription")}
                 </p>
               </div>
 
-              {task.input_spec && Object.keys(task.input_spec).length > 0 && (
+              {task.input_spec_json && Object.keys(task.input_spec_json).length > 0 && (
                 <div>
                   <h4 className="text-sm font-medium mb-2">{t("developer.taskDetail.inputSpec")}</h4>
                   <pre className="max-h-[300px] overflow-auto rounded-lg border border-border bg-ink-950 p-4 font-mono text-xs text-ink-200">
-                    {JSON.stringify(task.input_spec, null, 2)}
+                    {JSON.stringify(task.input_spec_json, null, 2)}
                   </pre>
                 </div>
               )}
 
-              {task.output_spec && Object.keys(task.output_spec).length > 0 && (
+              {task.output_spec_json && Object.keys(task.output_spec_json).length > 0 && (
                 <div>
                   <h4 className="text-sm font-medium mb-2">{t("developer.taskDetail.outputSpec")}</h4>
                   <pre className="max-h-[300px] overflow-auto rounded-lg border border-border bg-ink-950 p-4 font-mono text-xs text-ink-200">
-                    {JSON.stringify(task.output_spec, null, 2)}
+                    {JSON.stringify(task.output_spec_json, null, 2)}
                   </pre>
                 </div>
               )}
@@ -445,7 +453,7 @@ export default function TaskDetailPage() {
                         type="number"
                         min="0"
                         step="0.01"
-                        placeholder={t("developer.taskDetail.budgetPlaceholder", { amount: formatCurrency(task.budget, task.currency) })}
+                        placeholder={t("developer.taskDetail.budgetPlaceholder", { amount: task.budget === null ? "—" : formatCurrency(task.budget, task.currency, locale) })}
                         value={bidPrice}
                         onChange={(e) => setBidPrice(e.target.value)}
                       />
@@ -625,7 +633,7 @@ export default function TaskDetailPage() {
                           </div>
                         </TableCell>
                         <TableCell className="font-mono text-xs font-medium text-ink-100">
-                          {formatCurrency(bid.price, bid.currency)}
+                          {formatCurrency(bid.price, bid.currency, locale)}
                         </TableCell>
                         <TableCell className="font-mono text-xs">{bid.eta_hours}
                           {t("developer.taskDetail.hoursSuffix")}
@@ -633,11 +641,11 @@ export default function TaskDetailPage() {
                         <TableCell className="font-mono text-xs">{(bid.confidence_score * 100).toFixed(0)}%</TableCell>
                         <TableCell>
                           <Badge variant={statusBadgeVariant(bid.status)} className="text-xs">
-                            {formatStatus(bid.status)}
+                            {formatStatus(bid.status, locale)}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {formatDateTime(bid.created_at)}
+                          {formatDateTime(bid.created_at, locale)}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -670,7 +678,7 @@ export default function TaskDetailPage() {
                           <span className="font-mono text-sm font-medium text-ink-100">{sub.score}/100</span>
                         )}
                         <Badge variant={statusBadgeVariant(sub.status)} className="text-xs">
-                          {formatStatus(sub.status)}
+                          {formatStatus(sub.status, locale)}
                         </Badge>
                       </div>
                     </div>
@@ -697,7 +705,7 @@ export default function TaskDetailPage() {
                     )}
 
                     <p className="text-xs text-muted-foreground">
-                      {t("developer.taskDetail.submitted")} {formatDateTime(sub.submitted_at)}
+                      {t("developer.taskDetail.submitted")} {formatDateTime(sub.submitted_at, locale)}
                     </p>
                   </div>
                 ))}
@@ -717,22 +725,22 @@ export default function TaskDetailPage() {
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.taskDetail.status")}</span>
                 <Badge variant={statusBadgeVariant(task.status)}>
-                  {formatStatus(task.status)}
+                  {formatStatus(task.status, locale)}
                 </Badge>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.taskDetail.type")}</span>
-                <span className="font-medium capitalize">{task.task_type.replace(/_/g, " ")}</span>
+                <span className="font-medium capitalize">{formatStatus(task.task_type, locale)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.taskDetail.priority")}</span>
                 <Badge variant={priorityBadgeVariant(task.priority)} className="capitalize">
-                  {task.priority}
+                  {typeof task.priority === "string" ? formatStatus(task.priority, locale) : task.priority}
                 </Badge>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.taskDetail.created")}</span>
-                <span className="font-medium">{formatDate(task.created_at)}</span>
+                <span className="font-medium">{formatDate(task.created_at, locale)}</span>
               </div>
             </CardContent>
           </Card>
@@ -749,7 +757,7 @@ export default function TaskDetailPage() {
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t("developer.taskDetail.budget")}</span>
                 <span className="font-mono font-semibold text-success">
-                  {formatCurrency(task.budget, task.currency)}
+                  {task.budget === null ? "—" : formatCurrency(task.budget, task.currency, locale)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -758,7 +766,7 @@ export default function TaskDetailPage() {
                   {task.deadline ? (
                     <span className="flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
-                      {formatDate(task.deadline)}
+                      {formatDate(task.deadline, locale)}
                     </span>
                   ) : (
                     t("developer.taskDetail.noDeadline")
@@ -766,10 +774,10 @@ export default function TaskDetailPage() {
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t("developer.taskDetail.totalBids")}</span>
+                <span className="text-muted-foreground">{t("developer.taskDetail.myBids")}</span>
                 <span className="font-medium flex items-center gap-1">
                   <Gavel className="h-3.5 w-3.5" />
-                  {task.bids_count}
+                  {myBids.length}
                 </span>
               </div>
             </CardContent>
@@ -800,7 +808,7 @@ export default function TaskDetailPage() {
                       </Link>
                     </div>
                     <Badge variant={statusBadgeVariant(assignment.status)} className="text-xs">
-                      {formatStatus(assignment.status)}
+                      {formatStatus(assignment.status, locale)}
                     </Badge>
                   </div>
                 ))}
@@ -816,7 +824,7 @@ export default function TaskDetailPage() {
                   <Info className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">
-                      {t("developer.taskDetail.taskIs")} {formatStatus(task.status).toLowerCase()}
+                      {t("developer.taskDetail.taskIs")} {formatStatus(task.status, locale).toLowerCase()}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {task.status === "completed"

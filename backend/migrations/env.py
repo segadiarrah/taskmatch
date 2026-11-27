@@ -14,6 +14,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.models.base import Base
+from app.core.config import settings
 
 # Import every model so that Base.metadata is fully populated.
 from app.models.user import User  # noqa: F401
@@ -29,6 +30,9 @@ from app.models.audit import AuditLog, MCPDecision, FeedbackNote  # noqa: F401
 
 # This is the Alembic Config object, which provides access to the .ini values.
 config = context.config
+# Use the same database as the application, including isolated test instances.
+# ConfigParser treats percent signs as interpolation, so escape encoded URLs.
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URL.replace("%", "%%"))
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:

@@ -1,10 +1,14 @@
 "use client";
 
+import { allStatuses } from "@/lib/admin-vocabulary";
+
+import { useAdminCopy, adminSource } from "@/lib/admin-copy";
+
 import React, { useState, useEffect } from "react";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { useRouter } from "next/navigation";
 import { apiGet, apiPost } from "@/lib/api";
-import { cn, formatCurrency, formatDate, formatStatus } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +29,6 @@ import {
   Network,
   ExternalLink,
   Filter,
-  Plus,
 } from "lucide-react";
 
 interface Job {
@@ -51,21 +54,14 @@ const statusBadgeVariant: Record<string, "secondary" | "info" | "default" | "war
   cancelled: "destructive",
 };
 
-const allStatuses = [
-  "draft",
-  "submitted",
-  "formatted",
-  "bidding",
-  "in_progress",
-  "under_review",
-  "completed",
-  "cancelled",
-];
+
 
 export default function JobsPage() {
+  const { a, formatStatus, formatDate, formatCurrency } = useAdminCopy();
   const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -90,31 +86,28 @@ export default function JobsPage() {
   }
 
   async function handleFormat(jobId: string) {
+    setActionError(null);
     setActionLoading(jobId);
     try {
-      await apiPost(`/v1/jobs/${jobId}/format`);
+      await apiPost(`/v1/mcp/format-job/${jobId}`);
       await fetchJobs();
     } catch {
-      // Simulate status change for demo
-      setJobs((prev) =>
-        prev.map((j) => (j.id === jobId ? { ...j, status: "formatted" } : j))
-      );
+      setActionError(adminSource("The request failed. No change was saved. Please try again."));
+      return;
     } finally {
       setActionLoading(null);
     }
   }
 
   async function handleDecompose(jobId: string) {
+    setActionError(null);
     setActionLoading(jobId);
     try {
-      await apiPost(`/v1/jobs/${jobId}/decompose`);
+      await apiPost(`/v1/mcp/decompose-job/${jobId}`);
       await fetchJobs();
     } catch {
-      setJobs((prev) =>
-        prev.map((j) =>
-          j.id === jobId ? { ...j, status: "bidding", task_count: Math.floor(Math.random() * 5) + 3 } : j
-        )
-      );
+      setActionError(adminSource("The request failed. No change was saved. Please try again."));
+      return;
     } finally {
       setActionLoading(null);
     }
@@ -131,18 +124,13 @@ export default function JobsPage() {
 
   return (
     <div className="space-y-6">
+      {actionError && <p role="alert" className="rounded-lg border border-danger/40 bg-danger/10 p-4 text-sm text-danger">{a(actionError)}</p>}
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Job Intake</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Manage incoming jobs through the intake pipeline.
-          </p>
+          <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">{a("Job Intake")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{a("Manage incoming jobs through the intake pipeline.")}</p>
         </div>
-        <Button onClick={() => router.push("/admin/jobs/new")} className="shrink-0">
-          <Plus className="mr-2 h-4 w-4" />
-          New Job
-        </Button>
       </div>
 
       {/* Filters */}
@@ -152,7 +140,7 @@ export default function JobsPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-500" />
               <Input
-                placeholder="Search by title or client..."
+                placeholder={a("Search by title or client...")}
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -165,7 +153,7 @@ export default function JobsPage() {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="w-44"
               >
-                <option value="all">All Statuses</option>
+                <option value="all">{a("All Statuses")}</option>
                 {allStatuses.map((s) => (
                   <option key={s} value={s}>
                     {formatStatus(s)}
@@ -189,20 +177,20 @@ export default function JobsPage() {
           ) : filteredJobs.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
               <Briefcase className="h-10 w-10 text-ink-600" />
-              <p className="mt-3 text-sm font-medium text-muted-foreground">No jobs found</p>
-              <p className="text-xs text-ink-500">Try adjusting your filters</p>
+              <p className="mt-3 text-sm font-medium text-muted-foreground">{a("No jobs found")}</p>
+              <p className="text-xs text-ink-500">{a("Try adjusting your filters")}</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Budget</TableHead>
-                  <TableHead>Deadline</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{a("Title")}</TableHead>
+                  <TableHead>{a("Client")}</TableHead>
+                  <TableHead>{a("Status")}</TableHead>
+                  <TableHead className="text-right">{a("Budget")}</TableHead>
+                  <TableHead>{a("Deadline")}</TableHead>
+                  <TableHead>{a("Created")} </TableHead>
+                  <TableHead className="text-right">{a("Actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -217,8 +205,7 @@ export default function JobsPage() {
                         <span className="font-medium text-foreground">{job.title}</span>
                         {job.task_count > 0 && (
                           <span className="font-mono text-xs text-ink-500">
-                            {job.task_count} tasks
-                          </span>
+                            {a("{count} tasks", { count: job.task_count })}</span>
                         )}
                       </div>
                     </TableCell>
@@ -243,7 +230,7 @@ export default function JobsPage() {
                             disabled={actionLoading === job.id}
                           >
                             <Sparkles className="mr-1 h-3 w-3" />
-                            {actionLoading === job.id ? "..." : "Format"}
+                            {actionLoading === job.id ? "..." : a("Format")}
                           </Button>
                         )}
                         {job.status === "formatted" && (
@@ -254,7 +241,7 @@ export default function JobsPage() {
                             disabled={actionLoading === job.id}
                           >
                             <Network className="mr-1 h-3 w-3" />
-                            {actionLoading === job.id ? "..." : "Decompose"}
+                            {actionLoading === job.id ? "..." : a("Decompose")}
                           </Button>
                         )}
                         <Button

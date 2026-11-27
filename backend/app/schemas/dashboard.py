@@ -1,14 +1,25 @@
 """Dashboard and analytics Pydantic schemas."""
 
+from datetime import datetime
 from typing import Dict, List
 
 from pydantic import BaseModel, Field
 from uuid import UUID
 
 
+class WeeklyRegistrations(BaseModel):
+    start: datetime
+    end: datetime
+    total: int
+    by_role: dict[str, int]
+    by_intent: dict[str, int]
+    excluded: dict[str, int]
+
+
 class DashboardOverview(BaseModel):
     """Aggregated platform metrics for the admin dashboard."""
 
+    weekly_registrations: WeeklyRegistrations | None = None
     total_jobs: int = Field(..., description="Total number of jobs on the platform")
     jobs_by_status: Dict[str, int] = Field(
         ..., description="Job counts keyed by status (e.g. open, in_progress)"

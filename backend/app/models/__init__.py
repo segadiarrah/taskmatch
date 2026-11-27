@@ -10,6 +10,9 @@ from .base import Base, TimestampMixin
 
 # User
 from .user import User, UserRole
+from .mail import MailOutbox
+from .directory import DirectoryProfile
+from .activity import ActivityPreferences
 
 # Agent
 from .agent import Agent, AgentAuthType, AgentCapability, AgentStatus
@@ -34,6 +37,9 @@ from .review import ReviewDecision, ReviewerType, ValidationReview
 
 # Payment
 from .payment import PaymentRecord, PaymentStatus
+
+# Stripe billing
+from .billing import JobFunding, StripeConnectAccount, StripeEvent, BillingOperation
 
 # Quote / pricing
 from .quote import ExecutionRoute, Quote, QuoteStatus, TaskQuote
@@ -65,6 +71,9 @@ __all__ = [
     # User
     "User",
     "UserRole",
+    "MailOutbox",
+    "DirectoryProfile",
+    "ActivityPreferences",
     # Agent
     "Agent",
     "AgentCapability",
@@ -113,3 +122,17 @@ __all__ = [
     "FeedbackNote",
     "FeedbackCategory",
 ]
+
+from .human import Principal, Delegation, WorkerProfile, HumanTaskRequest
+
+from .payment_authorization import PaymentAuthorization
+
+from .workflow_extension import TaskDependency
+
+from .protocol import ProtocolEvent, WebhookDelivery, WebhookSubscription
+
+from .growth import GrowthCredential
+from .account_email import AccountEmail
+from .outreach import OutreachRecipient, OutreachMessage
+
+from .measurement import MeasurementEvent, MeasurementVisitor, ReferralLink

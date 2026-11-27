@@ -1,9 +1,13 @@
 "use client";
 
+import { actorTypes, entityTypes } from "@/lib/admin-vocabulary";
+
+import { useAdminCopy } from "@/lib/admin-copy";
+
 import React, { useState, useEffect } from "react";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { apiGet } from "@/lib/api";
-import { cn, formatStatus, formatDateTime } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,8 +49,8 @@ interface AuditEntry {
   created_at: string;
 }
 
-const actorTypes = ["Admin", "Client", "Agent", "MCP", "System"];
-const entityTypes = ["Job", "Task", "Agent", "Submission", "Payment", "Bid", "User"];
+
+
 
 const actorIcons: Record<string, React.ElementType> = {
   Admin: Shield,
@@ -88,6 +92,7 @@ const actionColors: Record<string, string> = {
 };
 
 export default function AuditLogPage() {
+  const { a, formatStatus, formatDateTime, formatNumber } = useAdminCopy();
   const [entries, setEntries] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -127,10 +132,8 @@ export default function AuditLogPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Audit Log</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Chronological record of all platform actions and events.
-        </p>
+        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">{a("Audit Log")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{a("Chronological record of all platform actions and events.")}</p>
       </div>
 
       {/* Stats */}
@@ -146,8 +149,8 @@ export default function AuditLogPage() {
                     <Icon className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="font-display text-xl font-medium text-ink-50">{count}</p>
-                    <p className="text-xs text-muted-foreground">{type}</p>
+                    <p className="font-display text-xl font-medium text-ink-50">{formatNumber(count)}</p>
+                    <p className="text-xs text-muted-foreground">{formatStatus(type)}</p>
                   </div>
                 </div>
               </CardContent>
@@ -162,16 +165,16 @@ export default function AuditLogPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-ink-500" />
-              <span className="text-sm text-muted-foreground">Filter by:</span>
+              <span className="text-sm text-muted-foreground">{a("Filter by:")}</span>
             </div>
             <Select
               value={actorTypeFilter}
               onChange={(e) => setActorTypeFilter(e.target.value)}
               className="w-40"
             >
-              <option value="all">All Actors</option>
+              <option value="all">{a("All Actors")}</option>
               {actorTypes.map((t) => (
-                <option key={t} value={t}>{t}</option>
+                <option key={t} value={t}>{formatStatus(t)}</option>
               ))}
             </Select>
             <Select
@@ -179,14 +182,13 @@ export default function AuditLogPage() {
               onChange={(e) => setEntityTypeFilter(e.target.value)}
               className="w-40"
             >
-              <option value="all">All Entities</option>
+              <option value="all">{a("All Entities")}</option>
               {entityTypes.map((t) => (
-                <option key={t} value={t}>{t}</option>
+                <option key={t} value={t}>{formatStatus(t)}</option>
               ))}
             </Select>
             <span className="font-mono text-sm text-ink-500">
-              {filteredEntries.length} of {entries.length} events
-            </span>
+              {a("{count} events out of {total}", { count: filteredEntries.length, total: formatNumber(entries.length) })}</span>
           </div>
         </CardContent>
       </Card>
@@ -198,7 +200,7 @@ export default function AuditLogPage() {
             <div className="flex h-48 items-center justify-center">
               <div className="flex flex-col items-center gap-3">
                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink-700 border-t-signal-500" />
-                <p className="text-sm text-muted-foreground">Loading audit log...</p>
+                <p className="text-sm text-muted-foreground">{a("Loading audit log...")}</p>
               </div>
             </div>
           ) : loadError ? (
@@ -206,19 +208,19 @@ export default function AuditLogPage() {
           ) : filteredEntries.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
               <ScrollText className="h-10 w-10 text-ink-600" />
-              <p className="mt-3 text-sm font-medium text-muted-foreground">No audit entries found</p>
-              <p className="text-xs text-ink-500">Try adjusting the filters</p>
+              <p className="mt-3 text-sm font-medium text-muted-foreground">{a("No audit entries found")}</p>
+              <p className="text-xs text-ink-500">{a("Try adjusting the filters")}</p>
             </div>
           ) : (
             <Table className="font-mono text-xs">
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10"></TableHead>
-                  <TableHead className="w-44">Timestamp</TableHead>
-                  <TableHead className="w-36">Actor</TableHead>
-                  <TableHead className="w-36">Action</TableHead>
-                  <TableHead className="w-36">Entity</TableHead>
-                  <TableHead>Details</TableHead>
+                  <TableHead className="w-44">{a("Timestamp")}</TableHead>
+                  <TableHead className="w-36">{a("Actor")}</TableHead>
+                  <TableHead className="w-36">{a("Action")}</TableHead>
+                  <TableHead className="w-36">{a("Entity")}</TableHead>
+                  <TableHead>{a("Details")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -258,7 +260,7 @@ export default function AuditLogPage() {
                           <div className="flex items-center gap-2">
                             <Badge variant={actorColors[entry.actor_type]?.variant || "secondary"} className="text-[10px]">
                               <ActorIcon className="mr-1 h-2.5 w-2.5" />
-                              {entry.actor_type}
+                              {formatStatus(entry.actor_type)}
                             </Badge>
                           </div>
                         </TableCell>
@@ -273,7 +275,7 @@ export default function AuditLogPage() {
                         <TableCell>
                           <div className="flex items-center gap-1.5">
                             <Badge variant="outline" className="text-[10px]">
-                              {entry.entity_type}
+                              {formatStatus(entry.entity_type)}
                             </Badge>
                             <span className="text-xs text-ink-500">{entry.entity_id}</span>
                           </div>
@@ -290,9 +292,7 @@ export default function AuditLogPage() {
                             <div className="px-4 py-3">
                               <div className="mb-2 flex items-center gap-2">
                                 <Code className="h-3.5 w-3.5 text-ink-500" />
-                                <span className="eyebrow text-ink-500">
-                                  Payload
-                                </span>
+                                <span className="eyebrow text-ink-500">{a("Payload")}</span>
                               </div>
                               <pre className="overflow-x-auto rounded-md border border-ink-800 bg-ink-950 p-4 text-xs text-ink-300">
                                 {JSON.stringify((entry.payload_json ?? entry.payload), null, 2)}

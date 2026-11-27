@@ -186,3 +186,8 @@
   }
   .reveal { opacity: 1 !important; transform: none !important; }
 }
+
+/* With scripting disabled the observer never runs. Keep every section visible. */
+@media (scripting: none) {
+  .reveal { opacity: 1; transform: none; }
+}

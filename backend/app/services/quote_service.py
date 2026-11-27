@@ -15,15 +15,16 @@ from decimal import Decimal
 from typing import Any, Optional
 
 import structlog
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import lazyload
 
 from app.core.config import settings
 from app.models.delivery import DeliveryMode, DeliveryPlan, DeliveryStatus
 from app.models.job import Job, JobStatus
 from app.models.quote import ExecutionRoute, Quote, QuoteStatus, TaskQuote
-from app.models.task import Task
-from app.services import pricing_service, providers
+from app.models.task import Task, TaskStatus
+from app.services import first_project_offer, pricing_service, providers
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
 
@@ -44,17 +45,26 @@ def _parse_spec(job: Job) -> dict[str, Any]:
     return parsed if isinstance(parsed, dict) else {}
 
 
-def pricing_model() -> str:
-    """Which model's rates to price against.
+def pricing_provider() -> dict:
+    """Freeze the explicitly configured execution route, never another provider."""
+    provider = settings.EXECUTION_PROVIDER
+    cfg = providers.get_provider(provider)
+    if (cfg and cfg.get("enabled") and cfg.get("api_key")
+            and cfg.get("selected_model_available")
+            and cfg.get("refresh_status") not in ("error", "unverified")):
+        return cfg
+    # Historical manual-ledger workflows can still produce an offline estimate
+    # before any OpenAI key is configured. This is not executable authorization.
+    if (settings.PAYMENT_MODE == "legacy_manual" and provider == "openai"
+            and cfg and not cfg.get("api_key")
+            and cfg.get("refresh_status") == "catalog"):
+        return {"provider": "openai", "selected_model": settings.PRICING_DEFAULT_MODEL,
+                "base_url": providers.CATALOG["openai"]["base_url"]}
+    raise ValueError("The configured execution provider must be an enabled provider with a key and an available priced model; repair or refresh its configuration")
 
-    Prefers a provider the admin has actually enabled, so the quote reflects what
-    will really execute the work; falls back to the configured default.
-    """
-    for provider in providers.enabled_providers():
-        cfg = providers.get_provider(provider)
-        if cfg and cfg.get("selected_model"):
-            return str(cfg["selected_model"])
-    return settings.PRICING_DEFAULT_MODEL
+
+def pricing_model() -> str:
+    return str(pricing_provider()["selected_model"])
 
 
 #: Words in a brief that mean the client expects the thing to be *running*, not
@@ -70,7 +80,7 @@ _INSTALLATION_SIGNALS = re.compile(
 )
 
 _REPOSITORY_SIGNALS = re.compile(
-    r"\b(code source|source code|repo\w*|d[ée]p[ôo]t git|pull request|github|gitlab)\b",
+    r"\b(code source|source code|repos?|repositor(?:y|ies)|d[ée]p[ôo]t git|pull request|github|gitlab)\b",
     re.IGNORECASE,
 )
 
@@ -113,9 +123,12 @@ async def create_quote_for_job(
     """
     now = now or datetime.now(timezone.utc)
 
-    job = (await db.execute(select(Job).where(Job.id == job_id))).scalar_one_or_none()
+    job = (await db.execute(select(Job).options(lazyload("*")).where(Job.id == job_id).with_for_update().execution_options(populate_existing=True))).scalar_one_or_none()
     if job is None:
         raise ValueError(f"Job {job_id} not found")
+
+    from app.services.billing_service import assert_quote_editable
+    await assert_quote_editable(db,job)
 
     tasks = list(
         (
@@ -126,28 +139,66 @@ async def create_quote_for_job(
         .scalars()
         .all()
     )
+    if tasks and all(t.human_contract_json for t in tasks):
+        from app.services.human_tasks import create_human_quote
+        return await create_human_quote(db, job)
     if not tasks:
         raise ValueError(f"Job {job_id} has no tasks to price")
 
+    if (job.currency or pricing_service.BASE_CURRENCY) != "EUR":
+        raise ValueError("New quotes must use EUR")
+    from app.services.human_tasks import require_approved_job
+    await require_approved_job(db,job)
     spec = _parse_spec(job)
-    model = pricing_model()
+    plan = await ensure_delivery_plan(db, job, spec)
+    needs_human_delivery = plan.mode in (DeliveryMode.installation, DeliveryMode.hosted)
+    task_specs = [
+        {"title": t.title, "description": t.description, "task_type": t.task_type,
+         "requires_human": bool(t.human_contract_json) or bool((t.input_spec_json or {}).get("requires_human")) or (needs_human_delivery and not (t.input_spec_json or {}).get("explicit_ai_step"))}
+        for t in tasks
+    ]
+    needs_llm = any(
+        pricing_service.route_for_task(task_type=t["task_type"], description=t["description"],
+                                       requires_human=t["requires_human"]) is not pricing_service.ExecutionRoute.human
+        for t in task_specs
+    )
+    execution = None
+    model = None
+    if needs_llm:
+        provider_config = pricing_provider()
+        model = str(provider_config["selected_model"])
+        execution = pricing_service.execution_snapshot(
+            provider=provider_config["provider"], model=model,
+            base_url=provider_config["base_url"],
+            max_input_tokens=settings.EXECUTION_MAX_INPUT_TOKENS,
+            max_output_tokens=settings.EXECUTION_MAX_OUTPUT_TOKENS,
+            max_attempts=settings.EXECUTION_MAX_ATTEMPTS,
+            fx_usd_to_eur=settings.PRICING_USD_TO_EUR,
+        )
 
     quote_result = pricing_service.price_job(
-        tasks=[
-            {
-                "title": t.title,
-                "description": t.description,
-                "task_type": t.task_type,
-                "requires_human": bool(
-                    (t.input_spec_json or {}).get("requires_human")
-                ),
-            }
-            for t in tasks
-        ],
-        model=model,
-        spec=spec,
+        tasks=task_specs, model=model, execution=execution, spec=spec,
         currency=job.currency or pricing_service.BASE_CURRENCY,
     )
+
+    if any(t.human_contract_json for t in tasks):
+        from app.services.human_tasks import worker_amount
+        for task,line in zip(tasks,quote_result.task_prices):
+            if task.human_contract_json:
+                amount=float(worker_amount(task.human_contract_json['budget']['amount_minor']))
+                line.route=pricing_service.ExecutionRoute.human
+                line.price=line.human_price_low=line.human_price_high=amount
+                line.human_hours=task.human_contract_json['expected_duration']/60
+                line.rationale='Fixed human intervention within the approved task contract'
+        subtotal=sum((Decimal(str(pricing_service.billed_amount(line))) for line in quote_result.task_prices),Decimal(0))
+        fee=(subtotal*Decimal('.10')).quantize(Decimal('.01'))
+        quote_result.subtotal=float(subtotal)
+        quote_result.platform_fee=float(fee)
+        quote_result.total=float(subtotal+fee)
+        quote_result.requires_human=True
+        quote_result.human_equivalent_low=sum(line.human_price_low for line in quote_result.task_prices)
+        quote_result.human_equivalent_high=sum(line.human_price_high for line in quote_result.task_prices)
+        quote_result.savings_vs_human=0
 
     # Retire whatever the client was previously looking at.
     for previous in list(
@@ -164,8 +215,11 @@ async def create_quote_for_job(
     ):
         previous.status = QuoteStatus.superseded
 
+    # Transaction start order can differ from job-lock order. Stamp the insert
+    # itself so a new quote always sorts after the quote it just superseded.
     quote = Quote(
         id=uuid.uuid4(),
+        created_at=func.clock_timestamp(),
         job_id=job_id,
         status=QuoteStatus.pending_client,
         currency=quote_result.currency,
@@ -175,10 +229,11 @@ async def create_quote_for_job(
         human_equivalent_low=Decimal(str(quote_result.human_equivalent_low)),
         human_equivalent_high=Decimal(str(quote_result.human_equivalent_high)),
         savings_vs_human=quote_result.savings_vs_human,
-        valid_until=now + timedelta(days=settings.QUOTE_VALIDITY_DAYS),
+        valid_until=min([now + timedelta(days=settings.QUOTE_VALIDITY_DAYS)] + [datetime.fromisoformat(t.human_contract_json["deadline"]) for t in tasks if t.human_contract_json]),
         pricing_version=quote_result.pricing_version,
         breakdown_json=quote_result.to_dict(),
     )
+    await first_project_offer.price_new_quote(db, job, quote)
     db.add(quote)
     await db.flush()
 
@@ -186,12 +241,13 @@ async def create_quote_for_job(
         db.add(
             TaskQuote(
                 id=uuid.uuid4(),
+                created_at=func.clock_timestamp(),
                 quote_id=quote.id,
                 task_id=task.id,
                 route=ExecutionRoute(task_price.route.value),
                 complexity=task_price.complexity.value,
                 task_type=task_price.task_type,
-                model_slug=task_price.model,
+                model_slug=task_price.model if task_price.route is not pricing_service.ExecutionRoute.human else None,
                 est_input_tokens=task_price.est_input_tokens,
                 est_output_tokens=task_price.est_output_tokens,
                 token_cost=Decimal(str(task_price.token_cost)),
@@ -205,7 +261,9 @@ async def create_quote_for_job(
                 discipline=task_price.discipline,
                 seniority=task_price.seniority,
                 rationale=task_price.rationale,
-                breakdown_json=task_price.to_dict(),
+                breakdown_json={**task_price.to_dict(), "execution": (
+                    execution if task_price.route is not pricing_service.ExecutionRoute.human else None
+                )},
             )
         )
 
@@ -295,8 +353,10 @@ async def current_quote(db: AsyncSession, job_id: uuid.UUID) -> Optional[Quote]:
     return (
         await db.execute(
             select(Quote)
+            .options(lazyload("*"))
+            .execution_options(populate_existing=True)
             .where(Quote.job_id == job_id)
-            .order_by(Quote.created_at.desc())
+            .order_by(Quote.created_at.desc(), Quote.id.desc())
             .limit(1)
         )
     ).scalar_one_or_none()
@@ -324,6 +384,9 @@ async def accept_quote(
 ) -> None:
     """Record the client's acceptance and open the job for execution."""
     now = now or datetime.now(timezone.utc)
+    from app.services.human_tasks import require_approved_job
+    owned_job = await db.get(Job, quote.job_id, options=[lazyload('*')])
+    await require_approved_job(db, owned_job)
     quote.status = QuoteStatus.accepted
     quote.decided_at = now
 
@@ -332,6 +395,10 @@ async def accept_quote(
     ).scalar_one_or_none()
     if job is not None:
         job.status = JobStatus.bidding
+        tasks = (await db.execute(select(Task).where(Task.job_id == job.id))).scalars()
+        for task in tasks:
+            if task.status == TaskStatus.pending:
+                task.status = TaskStatus.open_for_bids
     await db.flush()
 
 

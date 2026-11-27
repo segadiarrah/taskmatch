@@ -63,7 +63,7 @@ const COPY: Record<Locale, Copy> = {
     title: "Privacy Policy",
     summary:
       "Who controls your personal data on TaskMatch.ai, what we process and why, on which legal basis, for how long, who else sees it, and the rights you can exercise — including over decisions the platform makes automatically.",
-    updatedAt: "Last updated: 13 August 2026",
+    updatedAt: "Last updated: 24 November 2026",
     controllerIntro: "The controller for the processing described below is",
     sections: {
       controller: {
@@ -114,7 +114,7 @@ const COPY: Record<Locale, Copy> = {
         ],
         bullets: [
           "Other platform users, to the extent the work requires it — a client sees the profile and submissions of the executor assigned to their task.",
-          "Stripe, our payment processor, for payments and payouts.",
+          "External payment providers, when enabled, for payments and payouts.",
           "OVH SAS, which hosts the servers in France, and Cloudflare, Inc., which terminates public traffic. Both are named in the legal notice.",
           "Public authorities, where the law requires it and to the extent it requires.",
         ],
@@ -131,14 +131,14 @@ const COPY: Record<Locale, Copy> = {
         title: "7. Where the data is",
         paragraphs: [
           "The application, its database and its object storage run on servers located in France, in the European Union.",
-          "Cloudflare, which fronts public traffic, is established outside the European Union. That transfer is covered by the European Commission's standard contractual clauses. Stripe processes payment data under its own European entity.",
+          "Cloudflare, which fronts public traffic, is established outside the European Union. That transfer is covered by the European Commission's standard contractual clauses. Information about an enabled payment provider is available from the privacy team.",
         ],
       },
       rights: {
         title: "8. Your rights",
         paragraphs: [
           "Under the GDPR you may request access to your data, correction of inaccurate data, erasure, restriction of processing, portability, and you may object to processing based on our legitimate interest. Where processing rests on consent, you may withdraw it at any time without affecting what was done before.",
-          "Write to privacy@tauraco.ai, or use the data rights panel in your account settings. We answer within one month. We may ask you to confirm your identity first, and we may have to limit a request where it would expose another user's data or where the law requires us to keep the record.",
+          "Write to privacy@tauraco.ai. We answer within one month. We may ask you to confirm your identity first, and we may have to limit a request where it would expose another user's data or where the law requires us to keep the record.",
           "If our answer does not satisfy you, you may lodge a complaint with the French supervisory authority: " +
             CNIL_EN +
             ". If you live in another EU country, you may complain to your own supervisory authority instead.",
@@ -147,8 +147,8 @@ const COPY: Record<Locale, Copy> = {
       cookies: {
         title: "9. Cookies and local storage",
         paragraphs: [
-          "The site sets no cookies at all. Your session token and your language preference are kept in your browser's local storage, which never leaves your device except when you send the token back to authenticate a request. Both are strictly necessary to operate the service, and neither requires consent. There is no analytics, no advertising and no third-party tracker on this site.",
-          "If that changes, consent will be requested before anything is stored, and this section will say what and why.",
+          "Your sign-in token is stored in your browser. A language cookie remembers the language you choose. Usage measurement is off by default. If you allow it in the footer, TaskMatch sets its own random, pseudonymous cookie, tm_usage_consent, which expires after 366 days.",
+          "With your consent, TaskMatch records daily visits and account activity, signup clicks, campaign and invitation tags. When you register, the identifier can be linked to your account so aggregate reports can measure onboarding, confirmed payments and returns. You can withdraw in Usage measurement in the footer to stop collection and delete the measurement history linked to this browser. Expired measurement records are removed daily.",
         ],
       },
       contact: {
@@ -166,7 +166,7 @@ const COPY: Record<Locale, Copy> = {
     title: "Politique de confidentialité",
     summary:
       "Qui est responsable de vos données personnelles sur TaskMatch.ai, ce que nous traitons et pourquoi, sur quelle base légale, combien de temps, qui d’autre y accède, et les droits que vous pouvez exercer — y compris sur les décisions que la plateforme prend automatiquement.",
-    updatedAt: "Dernière mise à jour : 13 août 2026",
+    updatedAt: "Dernière mise à jour : 24 novembre 2026",
     controllerIntro: "Le responsable du traitement décrit ci-dessous est",
     sections: {
       controller: {
@@ -217,7 +217,7 @@ const COPY: Record<Locale, Copy> = {
         ],
         bullets: [
           "Les autres utilisateurs, dans la mesure où le travail l’exige — un client voit le profil et les remises de l’exécutant affecté à sa tâche.",
-          "Stripe, notre prestataire de paiement, pour les encaissements et les versements.",
+          "Les prestataires de paiement externes, lorsqu’ils sont activés, pour les encaissements et les versements.",
           "OVH SAS, qui héberge les serveurs en France, et Cloudflare, Inc., qui assure la terminaison du trafic public. Tous deux sont nommés dans les mentions légales.",
           "Les autorités publiques, lorsque la loi l’impose et dans la mesure où elle l’impose.",
         ],
@@ -234,14 +234,14 @@ const COPY: Record<Locale, Copy> = {
         title: "7. Où sont les données",
         paragraphs: [
           "L’application, sa base de données et son stockage objet fonctionnent sur des serveurs situés en France, dans l’Union européenne.",
-          "Cloudflare, qui assure la façade du trafic public, est établi hors de l’Union européenne. Ce transfert est encadré par les clauses contractuelles types de la Commission européenne. Stripe traite les données de paiement via son entité européenne.",
+          "Cloudflare, qui assure la façade du trafic public, est établi hors de l’Union européenne. Ce transfert est encadré par les clauses contractuelles types de la Commission européenne. L’équipe de confidentialité peut préciser les prestataires de paiement activés.",
         ],
       },
       rights: {
         title: "8. Vos droits",
         paragraphs: [
           "Le RGPD vous permet de demander l’accès à vos données, la rectification des données inexactes, leur effacement, la limitation du traitement, leur portabilité, et de vous opposer aux traitements fondés sur notre intérêt légitime. Lorsqu’un traitement repose sur le consentement, vous pouvez le retirer à tout moment sans remettre en cause ce qui a été fait avant.",
-          "Écrivez à privacy@tauraco.ai ou utilisez le panneau de gestion des droits dans les réglages de votre compte. Nous répondons dans le mois. Nous pouvons vous demander de confirmer votre identité, et devoir limiter une demande lorsqu’elle exposerait les données d’un autre utilisateur ou lorsque la loi nous impose de conserver la trace.",
+          "Écrivez à privacy@tauraco.ai. Nous répondons dans le mois. Nous pouvons vous demander de confirmer votre identité, et devoir limiter une demande lorsqu’elle exposerait les données d’un autre utilisateur ou lorsque la loi nous impose de conserver la trace.",
           "Si notre réponse ne vous satisfait pas, vous pouvez introduire une réclamation auprès de l’autorité de contrôle française : " +
             CNIL_EN +
             ". Si vous résidez dans un autre pays de l’Union, vous pouvez saisir votre propre autorité de contrôle.",
@@ -250,8 +250,8 @@ const COPY: Record<Locale, Copy> = {
       cookies: {
         title: "9. Cookies et stockage local",
         paragraphs: [
-          "Le site ne dépose aucun cookie. Votre jeton de session et votre préférence de langue sont conservés dans le stockage local de votre navigateur, qui ne quitte jamais votre appareil, sauf lorsque vous renvoyez le jeton pour authentifier une requête. L’un et l’autre sont strictement nécessaires au fonctionnement du service et ne requièrent donc pas de consentement. Aucune mesure d’audience, aucune publicité, aucun traceur tiers sur ce site.",
-          "Si cela change, le consentement sera recueilli avant tout enregistrement, et cette section dira quoi et pourquoi.",
+          "Votre jeton de connexion est enregistré dans votre navigateur. Un cookie mémorise la langue choisie. La mesure d’audience est désactivée par défaut. Si vous l’autorisez en pied de page, TaskMatch dépose son propre cookie aléatoire et pseudonyme, tm_usage_consent, qui expire au bout de 366 jours.",
+          "Avec votre accord, TaskMatch enregistre les visites et activités quotidiennes du compte, les clics vers l’inscription et les paramètres de campagne et d’invitation. Lors de l’inscription, cet identifiant peut être associé à votre compte pour mesurer le démarrage, les paiements confirmés et les retours dans des rapports agrégés. Vous pouvez retirer votre accord dans « Mesure d’audience » en pied de page pour arrêter la collecte et effacer l’historique de mesure associé à ce navigateur. Les enregistrements expirés sont supprimés chaque jour.",
         ],
       },
       contact: {
@@ -269,7 +269,7 @@ const COPY: Record<Locale, Copy> = {
     title: "Política de privacidad",
     summary:
       "Quién es el responsable de tus datos personales en TaskMatch.ai, qué tratamos y por qué, con qué base jurídica, durante cuánto tiempo, quién más accede y qué derechos puedes ejercer — incluidas las decisiones que la plataforma toma automáticamente.",
-    updatedAt: "Última actualización: 13 de agosto de 2026",
+    updatedAt: "Última actualización: 24 de noviembre de 2026",
     controllerIntro: "El responsable del tratamiento descrito a continuación es",
     sections: {
       controller: {
@@ -320,7 +320,7 @@ const COPY: Record<Locale, Copy> = {
         ],
         bullets: [
           "Otros usuarios, en la medida en que el trabajo lo exija — un cliente ve el perfil y las entregas del ejecutor asignado a su tarea.",
-          "Stripe, nuestro procesador de pagos, para cobros y pagos.",
+          "Proveedores de pago externos, cuando estén habilitados, para cobros y pagos.",
           "OVH SAS, que aloja los servidores en Francia, y Cloudflare, Inc., que termina el tráfico público. Ambos figuran en el aviso legal.",
           "Autoridades públicas, cuando la ley lo exige y en la medida en que lo exige.",
         ],
@@ -337,14 +337,14 @@ const COPY: Record<Locale, Copy> = {
         title: "7. Dónde están los datos",
         paragraphs: [
           "La aplicación, su base de datos y su almacenamiento de objetos funcionan en servidores situados en Francia, en la Unión Europea.",
-          "Cloudflare, que actúa como fachada del tráfico público, está establecida fuera de la Unión Europea. Esa transferencia se ampara en las cláusulas contractuales tipo de la Comisión Europea. Stripe trata los datos de pago a través de su entidad europea.",
+          "Cloudflare, que actúa como fachada del tráfico público, está establecida fuera de la Unión Europea. Esa transferencia se ampara en las cláusulas contractuales tipo de la Comisión Europea. El equipo de privacidad puede informar sobre los proveedores de pago habilitados.",
         ],
       },
       rights: {
         title: "8. Tus derechos",
         paragraphs: [
           "El RGPD te permite solicitar el acceso a tus datos, la rectificación de los inexactos, su supresión, la limitación del tratamiento, su portabilidad, y oponerte a los tratamientos basados en nuestro interés legítimo. Cuando un tratamiento se basa en el consentimiento, puedes retirarlo en cualquier momento sin afectar a lo ya realizado.",
-          "Escribe a privacy@tauraco.ai o usa el panel de derechos en los ajustes de tu cuenta. Respondemos en el plazo de un mes. Podemos pedirte que confirmes tu identidad, y podemos tener que limitar una solicitud cuando expondría datos de otro usuario o cuando la ley nos obliga a conservar el registro.",
+          "Escribe a privacy@tauraco.ai. Respondemos en el plazo de un mes. Podemos pedirte que confirmes tu identidad, y podemos tener que limitar una solicitud cuando expondría datos de otro usuario o cuando la ley nos obliga a conservar el registro.",
           "Si nuestra respuesta no te satisface, puedes presentar una reclamación ante la autoridad de control francesa: " +
             CNIL_EN +
             ". Si resides en otro país de la Unión, puedes dirigirte a tu propia autoridad de control.",
@@ -353,8 +353,8 @@ const COPY: Record<Locale, Copy> = {
       cookies: {
         title: "9. Cookies y almacenamiento local",
         paragraphs: [
-          "El sitio no instala ninguna cookie. Tu token de sesión y tu preferencia de idioma se guardan en el almacenamiento local del navegador, que nunca sale de tu dispositivo salvo cuando reenvías el token para autenticar una petición. Ambos son estrictamente necesarios para operar el servicio y no requieren consentimiento. No hay analítica, ni publicidad, ni rastreadores de terceros en este sitio.",
-          "Si eso cambia, se pedirá el consentimiento antes de instalar nada, y esta sección dirá qué y por qué.",
+          "El navegador almacena tu token de acceso. Una cookie recuerda el idioma que elijas. La medición de uso está desactivada de forma predeterminada. Si la autorizas en el pie de página, TaskMatch establece su propia cookie aleatoria y seudónima, tm_usage_consent, que vence a los 366 días.",
+          "Con tu permiso, TaskMatch registra las visitas y la actividad diaria de la cuenta, los clics que llevan al registro y las etiquetas de campaña e invitación. Al registrarte, el identificador puede vincularse a tu cuenta para medir en informes agregados la incorporación, los pagos confirmados y el regreso de los usuarios. Puedes retirar el permiso en «Medición de uso» al pie de página para detener la recopilación y borrar el historial de medición asociado a este navegador. Los registros caducados se eliminan a diario.",
         ],
       },
       contact: {
@@ -372,7 +372,7 @@ const COPY: Record<Locale, Copy> = {
     title: "隐私政策",
     summary:
       "谁是 TaskMatch.ai 上你个人数据的控制者，我们处理什么、为何处理、依据哪项合法性基础、保存多久、还有谁能看到，以及你可以行使的权利——包括针对平台自动作出的决定。",
-    updatedAt: "最后更新：2026 年 8 月 13 日",
+    updatedAt: "最后更新：2026 年 11 月 24 日",
     controllerIntro: "以下所述处理活动的数据控制者为",
     sections: {
       controller: {
@@ -421,7 +421,7 @@ const COPY: Record<Locale, Copy> = {
         paragraphs: ["我们不出售个人数据，也不为他人的广告目的共享数据。数据仅会到达："],
         bullets: [
           "其他平台用户，且以工作所需为限——客户可以看到被指派执行方的资料与提交内容。",
-          "我们的支付服务商 Stripe，用于收款与付款。",
+          "启用外部支付服务商时，由其处理收款与付款。",
           "在法国托管服务器的 OVH SAS，以及负责终止公共流量的 Cloudflare, Inc.。两者均已在法律声明中列明。",
           "公共机关，在法律要求时并以其要求为限。",
         ],
@@ -438,14 +438,14 @@ const COPY: Record<Locale, Copy> = {
         title: "7. 数据存放在哪里",
         paragraphs: [
           "应用程序、数据库与对象存储运行在位于法国（欧盟境内）的服务器上。",
-          "承担公共流量前端的 Cloudflare 设立于欧盟境外，该传输受欧盟委员会标准合同条款保护。Stripe 通过其欧洲实体处理支付数据。",
+          "承担公共流量前端的 Cloudflare 设立于欧盟境外，该传输受欧盟委员会标准合同条款保护。有关已启用支付服务商的信息，请联系隐私团队。",
         ],
       },
       rights: {
         title: "8. 你的权利",
         paragraphs: [
           "根据 GDPR，你可以请求访问你的数据、更正不准确的数据、删除数据、限制处理、获取数据可携副本，并可对基于我们合法利益的处理提出反对。若处理以同意为基础，你可随时撤回，且不影响撤回前已进行的处理。",
-          "请写信至 privacy@tauraco.ai，或使用账户设置中的数据权利面板。我们会在一个月内答复。我们可能要求你先确认身份；当请求会暴露其他用户的数据、或法律要求我们保留记录时，我们可能不得不作出限制。",
+          "请写信至 privacy@tauraco.ai。我们会在一个月内答复。我们可能要求你先确认身份；当请求会暴露其他用户的数据、或法律要求我们保留记录时，我们可能不得不作出限制。",
           "如果你对我们的答复不满意，可以向法国监管机构投诉：" +
             CNIL_EN +
             "。如果你居住在欧盟其他国家，也可以向所在国的监管机构投诉。",
@@ -454,8 +454,8 @@ const COPY: Record<Locale, Copy> = {
       cookies: {
         title: "9. Cookie 与本地存储",
         paragraphs: [
-          "本站不设置任何 cookie。你的会话令牌与语言偏好保存在浏览器的本地存储中，除非你回传令牌以认证请求，否则它们不会离开你的设备。两者都是运行本服务所必需的，因此无需征得同意。本站没有任何分析、广告或第三方追踪器。",
-          "若情况发生变化，我们会在设置任何 cookie 之前征求同意，并在本节说明内容与原因。",
+          "登录令牌存储在浏览器内。语言 Cookie 会记住您选择的语言。使用情况统计默认关闭。如果您在页脚允许统计，TaskMatch 会设置自有的随机假名 Cookie（tm_usage_consent），该 Cookie 在 366 天后到期。",
+          "经您同意，TaskMatch 会记录每日访问和账户活动、注册链接点击以及推广活动与邀请标签。注册时，此标识符可以关联至您的账户，以便在汇总报告中统计入门流程、确认付款和回访。您可在页脚的“使用情况统计”中撤回同意，以停止收集并删除与本浏览器关联的统计记录。系统每天删除已过期的统计记录。",
         ],
       },
       contact: {
@@ -467,24 +467,114 @@ const COPY: Record<Locale, Copy> = {
       },
     },
   },
+  pt: {
+    eyebrow: "Legal / Privacidade",
+    title: "Política de Privacidade",
+    summary: "Quem é responsável pelos seus dados pessoais no TaskMatch.ai, o que tratamos e por quê, com que fundamento jurídico, durante quanto tempo, quem mais lhes acede e os direitos que pode exercer — incluindo sobre decisões tomadas automaticamente pela plataforma.",
+    updatedAt: "Última atualização: 24 de novembro de 2026",
+    controllerIntro: "O responsável pelo tratamento descrito abaixo é",
+    sections: {
+      controller: {
+        title: "1. Responsável pelo tratamento e âmbito",
+        paragraphs: [
+          "Esta política abrange a plataforma TaskMatch.ai, o seu site, a sua API e os canais de suporte associados. Aplica-se aos clientes, aos desenvolvedores de agentes e aos especialistas humanos que executam trabalho através da plataforma.",
+          "Não foi designado um encarregado da proteção de dados: o tratamento não preenche os critérios do artigo 37.º do RGPD. Os pedidos de privacidade são tratados diretamente pelo editor através de privacy@tauraco.ai.",
+          "O conteúdo que um cliente carrega em uma missão — documentos, conjuntos de dados e instruções — é tratado de acordo com as instruções desse cliente. Para esse conteúdo, o TaskMatch atua como subcontratante e o cliente continua como responsável pelo tratamento."
+        ]
+      },
+      data: {
+        title: "2. O que tratamos",
+        paragraphs: [
+          "Tratamos as seguintes categorias:"
+        ],
+        bullets: [
+          "Dados da conta: nome, endereço de e-mail, senha em formato hash, função e organização.",
+          "Dados do perfil dos desenvolvedores de agentes: capacidades, competências, histórico e dados de recebimento.",
+          "Dados de missões e tarefas: instruções, especificações, entregas, propostas, resultados de validação e registros de entrega.",
+          "Dados de faturamento: faturas, registros de pagamentos a profissionais e o token de pagamento conservado pelo nosso processador de pagamentos — os números dos cartões nunca chegam aos nossos servidores.",
+          "Dados técnicos: endereço IP, navegador, metadados de sessão e autenticação e registro de auditoria da plataforma.",
+          "Dados de suporte: as mensagens que nos envia e as nossas respostas."
+        ]
+      },
+      purposes: {
+        title: "3. Finalidades e fundamentos jurídicos",
+        paragraphs: [
+          "Cada finalidade tem um fundamento previsto no artigo 6.º do RGPD. Quando o tratamento depende do consentimento, a sua recusa não afeta a utilização das restantes funcionalidades da plataforma."
+        ],
+        bullets: [
+          "Funcionamento da plataforma — criação de contas, estruturação de missões, correspondência, execução e validação de tarefas e entrega do trabalho: execução do contrato (art. 6.º, n.º 1, alínea b)).",
+          "Faturamento, pagamentos a profissionais e registros contábeis: obrigação legal (art. 6.º, n.º 1, alínea c)).",
+          "Segurança da plataforma, prevenção de fraude, investigação de abusos e registro de auditoria: o nosso interesse legítimo em uma plataforma de confiança, ponderado com os seus direitos (art. 6.º, n.º 1, alínea f)).",
+          "Melhoria da qualidade da correspondência e da validação a partir dos registros operacionais: o nosso interesse legítimo (art. 6.º, n.º 1, alínea f)). Você pode se opor a qualquer momento.",
+          "Comunicações opcionais sobre o produto: o seu consentimento (art. 6.º, n.º 1, alínea a)), que pode retirar a qualquer momento."
+        ]
+      },
+      automated: {
+        title: "4. Decisões automatizadas",
+        paragraphs: [
+          "A plataforma toma decisões automatizadas e queremos indicá-lo claramente. Os pedidos são divididos automaticamente em tarefas, os candidatos à execução são avaliados e ordenados automaticamente e as entregas são verificadas automaticamente face aos critérios de aceitação.",
+          "Quando o executor é um especialista humano, a classificação influencia a atribuição de trabalho remunerado. Trata-se de uma decisão com um efeito significativo em uma pessoa, nos termos do artigo 22.º do RGPD. O processo é supervisionado: os dados usados na avaliação ficam registrados em cada decisão, a classificação pode ser revista por uma pessoa mediante pedido e pode contestar o resultado e pedir a sua reavaliação.",
+          "Para exercer este direito, escreva para privacy@tauraco.ai com a referência da tarefa ou da proposta. Indicaremos os fatores que determinaram a decisão."
+        ]
+      },
+      recipients: {
+        title: "5. Quem recebe os dados",
+        paragraphs: [
+          "Não vendemos dados pessoais nem os compartilhamos para publicidade de terceiros. Os dados chegam apenas a:"
+        ],
+        bullets: [
+          "Outros usuários da plataforma, na medida necessária ao trabalho — o cliente vê o perfil e as entregas do executor atribuído à sua tarefa.",
+          "Fornecedores externos de pagamento, quando ativados, para pagamentos e recebimentos.",
+          "OVH SAS, que aloja os servidores em França, e Cloudflare, Inc., que recebe o tráfego público. Ambos são identificados no aviso legal.",
+          "Autoridades públicas, quando e na medida em que a lei o exija."
+        ]
+      },
+      retention: {
+        title: "6. Durante quanto tempo conservamos os dados",
+        paragraphs: [
+          "Os registros contábeis e de faturamento são conservados durante dez anos a partir do encerramento do exercício, conforme exige o artigo L123-22 do Código Comercial francês. Não podemos reduzir esse prazo.",
+          "Para as restantes categorias, conservamos os dados enquanto a conta estiver aberta e a finalidade subsistir, e depois pelo período necessário para resolver litígios, cumprir uma obrigação legal ou preservar provas de uma entrega. Quando nenhum destes motivos se aplicar, os dados são eliminados ou anonimizados.",
+          "Existe um limite relevante: o registro de auditoria da plataforma permite apenas acrescentar entradas, para manter um histórico verificável das decisões. Um pedido de apagamento relativo a decisões já registradas não pode ser satisfeito através da sua reescrita. Explicaremos o que pode e o que não pode ser removido."
+        ]
+      },
+      transfers: {
+        title: "7. Onde se encontram os dados",
+        paragraphs: [
+          "A aplicação, a base de dados e o armazenamento de objetos funcionam em servidores situados em França, na União Europeia.",
+          "A Cloudflare, que recebe o tráfego público, está estabelecida fora da União Europeia. Essa transferência é abrangida pelas cláusulas contratuais-tipo da Comissão Europeia. A equipe de privacidade disponibiliza informações sobre o fornecedor de pagamento que estiver ativado."
+        ]
+      },
+      rights: {
+        title: "8. Os seus direitos",
+        paragraphs: [
+          "Ao abrigo do RGPD, pode pedir acesso aos seus dados, retificação de dados inexatos, apagamento, limitação do tratamento e portabilidade, e pode opor-se ao tratamento baseado no nosso interesse legítimo. Quando o tratamento depende do consentimento, pode retirá-lo a qualquer momento, sem afetar o tratamento anterior.",
+          "Escreva para privacy@tauraco.ai. Respondemos no prazo de um mês. Podemos pedir primeiro a confirmação da sua identidade e poderemos ter de limitar um pedido caso exponha dados de outro usuário ou a lei nos obrigue a conservar o registro.",
+          "Se você não ficar satisfeito com a nossa resposta, pode apresentar uma reclamação à autoridade de controle francesa: Commission Nationale de l’Informatique et des Libertés (CNIL), 3 place de Fontenoy, TSA 80715, 75334 Paris Cedex 07, France — cnil.fr. Se você residir em outro país da UE, pode dirigir-se à autoridade de controle desse país."
+        ]
+      },
+      cookies: {
+        title: "9. Cookies e armazenamento local",
+        paragraphs: [
+          "O navegador guarda o seu token de acesso. Um cookie memoriza o idioma escolhido. A medição de utilização está desativada por predefinição. Se a autorizar no rodapé, a TaskMatch define um cookie próprio, aleatório e pseudónimo, tm_usage_consent, que expira ao fim de 366 dias.",
+          "Com o seu consentimento, a TaskMatch regista visitas e atividade diária da conta, cliques para o registo e etiquetas de campanhas e convites. No registo, o identificador pode ser associado à sua conta para medir, em relatórios agregados, a adesão, os pagamentos confirmados e os regressos. Pode retirar o consentimento em «Medição de utilização» no rodapé para parar a recolha e eliminar o histórico de medição associado a este navegador. Os registos expirados são eliminados diariamente."
+        ]
+      },
+      contact: {
+        title: "10. Contato",
+        paragraphs: [
+          "Questões de privacidade e pedidos de exercício de direitos: privacy@tauraco.ai. Comunicação de problemas de segurança: security@tauraco.ai. Outras questões legais: legal@tauraco.ai.",
+          "As alterações substanciais a esta política são anunciadas com pelo menos 30 dias de antecedência, por e-mail e no produto."
+        ]
+      }
+    }
+  },
 };
 
-const SECTION_ORDER = [
-  "controller",
-  "data",
-  "purposes",
-  "automated",
-  "recipients",
-  "retention",
-  "transfers",
-  "rights",
-  "cookies",
-  "contact",
-] as const;
+const SECTION_ORDER = Object.keys(COPY.en.sections) as Array<keyof Copy["sections"]>;
 
 export default function PrivacyPolicyPage() {
   const { locale } = useTranslation();
-  const c = COPY[locale] ?? COPY.en;
+  const c = COPY[locale];
 
   const toc = SECTION_ORDER.map((id) => ({ id, label: c.sections[id].title }));
 
@@ -505,7 +595,7 @@ export default function PrivacyPolicyPage() {
             {id === "controller" ? (
               <p>
                 {c.controllerIntro} <strong>{publisherLine()}</strong>
-                {LEGAL_ENTITY.address ? `, ${LEGAL_ENTITY.address.join(", ")}` : ""}.
+                {LEGAL_ENTITY.address ? <>{", "}{LEGAL_ENTITY.address.join(", ")}</> : null}.
               </p>
             ) : null}
             {section.paragraphs.map((paragraph) => (

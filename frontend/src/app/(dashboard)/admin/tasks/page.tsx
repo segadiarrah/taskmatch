@@ -1,10 +1,14 @@
 "use client";
 
+import { taskStatuses } from "@/lib/admin-vocabulary";
+
+import { useAdminCopy } from "@/lib/admin-copy";
+
 import React, { useState, useEffect } from "react";
 import { DataLoadError } from "@/components/dashboard/data-load-error";
 import { useRouter } from "next/navigation";
 import { apiGet } from "@/lib/api";
-import { cn, formatCurrency, formatStatus } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,8 +27,6 @@ import {
   Search,
   Filter,
   ExternalLink,
-  CheckSquare,
-  MoreHorizontal,
 } from "lucide-react";
 
 interface Task {
@@ -41,21 +43,22 @@ interface Task {
 }
 
 const statusBadgeVariant: Record<string, "secondary" | "info" | "default" | "warning" | "purple" | "success" | "destructive"> = {
-  open: "info",
-  bidding: "warning",
+  pending: "secondary",
+  open_for_bids: "info",
   assigned: "default",
   in_progress: "warning",
-  pending_validation: "purple",
-  completed: "success",
+  submitted: "purple",
   approved: "success",
-  rejected: "destructive",
+  validation_failed: "destructive",
+  reassigned: "warning",
   cancelled: "destructive",
 };
 
-const taskStatuses = ["open", "bidding", "assigned", "in_progress", "pending_validation", "completed", "approved", "rejected", "cancelled"];
-const taskTypes = ["development", "design", "testing", "integration", "documentation", "devops", "research"];
+
+
 
 export default function TasksPage() {
+  const { a, formatStatus, formatCurrency, formatNumber } = useAdminCopy();
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,7 +66,6 @@ export default function TasksPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchTasks();
@@ -83,6 +85,8 @@ export default function TasksPage() {
     }
   }
 
+  const taskTypes = Array.from(new Set(tasks.map((task) => task.task_type))).sort();
+
   const filteredTasks = tasks.filter((task) => {
     const matchesStatus = statusFilter === "all" || task.status === statusFilter;
     const matchesType = typeFilter === "all" || task.task_type === typeFilter;
@@ -93,31 +97,12 @@ export default function TasksPage() {
     return matchesStatus && matchesType && matchesSearch;
   });
 
-  function toggleTask(id: string) {
-    setSelectedTasks((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  function toggleAll() {
-    if (selectedTasks.size === filteredTasks.length) {
-      setSelectedTasks(new Set());
-    } else {
-      setSelectedTasks(new Set(filteredTasks.map((t) => t.id)));
-    }
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">Task Management</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Track and manage all decomposed tasks across jobs.
-        </p>
+        <h1 className="font-display text-3xl font-medium tracking-tight text-ink-50">{a("Task Management")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{a("Track and manage all decomposed tasks across jobs.")}</p>
       </div>
 
       {/* Filters */}
@@ -127,7 +112,7 @@ export default function TasksPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-500" />
               <Input
-                placeholder="Search by task or job title..."
+                placeholder={a("Search by task or job title...")}
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -140,7 +125,7 @@ export default function TasksPage() {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="w-40"
               >
-                <option value="all">All Statuses</option>
+                <option value="all">{a("All Statuses")}</option>
                 {taskStatuses.map((s) => (
                   <option key={s} value={s}>{formatStatus(s)}</option>
                 ))}
@@ -150,7 +135,7 @@ export default function TasksPage() {
                 onChange={(e) => setTypeFilter(e.target.value)}
                 className="w-40"
               >
-                <option value="all">All Types</option>
+                <option value="all">{a("All Types")}</option>
                 {taskTypes.map((t) => (
                   <option key={t} value={t}>{formatStatus(t)}</option>
                 ))}
@@ -159,24 +144,6 @@ export default function TasksPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Bulk actions */}
-      {selectedTasks.size > 0 && (
-        <Card className="border-signal-500/30 bg-signal-500/5">
-          <CardContent className="flex items-center gap-3 py-3 pt-3">
-            <span className="text-sm font-medium text-ink-200">
-              {selectedTasks.size} task{selectedTasks.size > 1 ? "s" : ""} selected
-            </span>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline">Match Agents</Button>
-              <Button size="sm" variant="outline">Update Status</Button>
-              <Button size="sm" variant="ghost" onClick={() => setSelectedTasks(new Set())}>
-                Clear
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Table */}
       <Card>
@@ -190,29 +157,21 @@ export default function TasksPage() {
           ) : filteredTasks.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center">
               <ListChecks className="h-10 w-10 text-ink-600" />
-              <p className="mt-3 text-sm font-medium text-muted-foreground">No tasks found</p>
-              <p className="text-xs text-ink-500">Try adjusting your filters</p>
+              <p className="mt-3 text-sm font-medium text-muted-foreground">{a("No tasks found")}</p>
+              <p className="text-xs text-ink-500">{a("Try adjusting your filters")}</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-10">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-ink-600 bg-ink-800 accent-signal-500"
-                      checked={selectedTasks.size === filteredTasks.length && filteredTasks.length > 0}
-                      onChange={toggleAll}
-                    />
-                  </TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Job</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Budget</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Agent</TableHead>
-                  <TableHead className="text-right">Bids</TableHead>
+                  <TableHead>{a("Title")}</TableHead>
+                  <TableHead>{a("Job")}</TableHead>
+                  <TableHead>{a("Type")}</TableHead>
+                  <TableHead>{a("Status")}</TableHead>
+                  <TableHead className="text-right">{a("Budget")}</TableHead>
+                  <TableHead>{a("Priority")}</TableHead>
+                  <TableHead>{a("Agent")}</TableHead>
+                  <TableHead className="text-right">{a("Bids")}</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -223,14 +182,6 @@ export default function TasksPage() {
                     className="cursor-pointer"
                     onClick={() => router.push(`/admin/tasks/${task.id}`)}
                   >
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 rounded border-ink-600 bg-ink-800 accent-signal-500"
-                        checked={selectedTasks.has(task.id)}
-                        onChange={() => toggleTask(task.id)}
-                      />
-                    </TableCell>
                     <TableCell className="font-medium text-foreground">{task.title}</TableCell>
                     <TableCell className="max-w-[160px] truncate text-ink-400">{task.job_title}</TableCell>
                     <TableCell>
@@ -248,7 +199,7 @@ export default function TasksPage() {
                         task.priority === 1 ? "text-danger" :
                         task.priority === 2 ? "text-warning" : "text-ink-500"
                       )}>
-                        P{task.priority}
+                        {a("Priority")} {formatNumber(task.priority)}
                       </span>
                     </TableCell>
                     <TableCell className="text-ink-300">
@@ -259,7 +210,7 @@ export default function TasksPage() {
                     <TableCell className="text-right">
                       {task.bids_count > 0 ? (
                         <span className="rounded-sm border border-info/40 bg-info/10 px-1.5 py-0.5 font-mono text-[11px] font-medium text-info">
-                          {task.bids_count}
+                          {formatNumber(task.bids_count)}
                         </span>
                       ) : (
                         <span className="text-ink-600">0</span>

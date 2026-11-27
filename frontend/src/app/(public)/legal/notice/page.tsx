@@ -23,6 +23,14 @@ import {
  * outcome than an acknowledged gap.
  */
 
+const REGISTRY = {
+  en: { register: "French business register", capital: "Share capital recorded on 14 May 2025" },
+  fr: { register: "Annuaire des entreprises", capital: "Capital social inscrit au 14 mai 2025" },
+  es: { register: "Registro francés de empresas", capital: "Capital social inscrito el 14 de mayo de 2025" },
+  pt: { register: "Registro francês de empresas", capital: "Capital social registrado em 14 de maio de 2025" },
+  zh: { register: "法国企业名录", capital: "2025 年 5 月 14 日登记的注册资本" },
+};
+
 type Copy = {
   eyebrow: string;
   title: string;
@@ -47,6 +55,7 @@ type Copy = {
     mediationIntro: string;
     mediationPending: string;
     phone: string;
+    vat: string;
     role: { infrastructure: string; proxy: string };
   };
 };
@@ -57,7 +66,7 @@ const COPY: Record<Locale, Copy> = {
     title: "Legal notice",
     summary:
       "Who publishes TaskMatch.ai, under which registration, where it is hosted, and how to reach the people responsible.",
-    updatedAt: "Last updated: August 2026",
+    updatedAt: "Last updated: 24 November 2026",
     s: {
       publisher: "1. Publisher",
       registration: "2. Registration",
@@ -83,6 +92,7 @@ const COPY: Record<Locale, Copy> = {
       mediationPending:
         "Because the service contracts only with professionals, the consumer mediation scheme of article L612-1 of the French Consumer Code does not apply. Disputes are first addressed directly with us; failing an amicable resolution, the competent French courts have jurisdiction.",
       phone: "Telephone:",
+      vat: "VAT",
       role: {
         infrastructure: "infrastructure and data storage",
         proxy: "proxy and traffic delivery",
@@ -94,7 +104,7 @@ const COPY: Record<Locale, Copy> = {
     title: "Mentions légales",
     summary:
       "Qui édite TaskMatch.ai, sous quelle immatriculation, où le service est hébergé, et comment joindre les responsables.",
-    updatedAt: "Dernière mise à jour : août 2026",
+    updatedAt: "Dernière mise à jour : 24 novembre 2026",
     s: {
       publisher: "1. Éditeur",
       registration: "2. Immatriculation",
@@ -120,6 +130,7 @@ const COPY: Record<Locale, Copy> = {
       mediationPending:
         "Le service ne contractant qu’avec des professionnels, le dispositif de médiation de la consommation prévu à l’article L612-1 du Code de la consommation ne s’applique pas. Les litiges sont d’abord traités directement avec nous ; à défaut de résolution amiable, les tribunaux français compétents sont saisis.",
       phone: "Téléphone :",
+      vat: "TVA",
       role: {
         infrastructure: "infrastructure et stockage des données",
         proxy: "proxy et acheminement du trafic",
@@ -131,7 +142,7 @@ const COPY: Record<Locale, Copy> = {
     title: "Aviso legal",
     summary:
       "Quién publica TaskMatch.ai, bajo qué registro, dónde está alojado y cómo contactar con los responsables.",
-    updatedAt: "Última actualización: agosto de 2026",
+    updatedAt: "Última actualización: 24 de noviembre de 2026",
     s: {
       publisher: "1. Editor",
       registration: "2. Registro",
@@ -157,6 +168,7 @@ const COPY: Record<Locale, Copy> = {
       mediationPending:
         "Dado que el servicio solo contrata con profesionales, el régimen de mediación de consumo del artículo L612-1 del Código de Consumo francés no resulta aplicable. Los litigios se tratan primero directamente con nosotros; a falta de acuerdo amistoso, son competentes los tribunales franceses.",
       phone: "Teléfono:",
+      vat: "IVA",
       role: {
         infrastructure: "infraestructura y almacenamiento de datos",
         proxy: "proxy y entrega de tráfico",
@@ -167,7 +179,7 @@ const COPY: Record<Locale, Copy> = {
     eyebrow: "法律 / 声明",
     title: "法律声明",
     summary: "TaskMatch.ai 由谁发布、注册信息、托管地点，以及如何联系责任人。",
-    updatedAt: "最后更新：2026 年 8 月",
+    updatedAt: "最后更新：2026 年 11 月 24 日",
     s: {
       publisher: "1. 发布方",
       registration: "2. 注册信息",
@@ -192,17 +204,50 @@ const COPY: Record<Locale, Copy> = {
       mediationPending:
         "由于本服务仅与专业主体订约，法国《消费法典》第 L612-1 条的消费者调解机制不适用。争议应先与我们直接处理；协商不成的，由法国有管辖权的法院管辖。",
       phone: "电话：",
+      vat: "增值税号码",
       role: {
         infrastructure: "基础设施与数据存储",
         proxy: "代理与流量分发",
       },
     },
   },
+  pt: {
+    eyebrow: "Legal / Aviso",
+    title: "Aviso legal",
+    summary: "Quem publica o TaskMatch.ai, com que registro, onde está hospedado e como contatar os responsáveis.",
+    updatedAt: "Última atualização: 24 de novembro de 2026",
+    s: {
+      publisher: "1. Editor",
+      registration: "2. Registro",
+      host: "3. Alojamento",
+      contact: "4. Contato",
+      property: "5. Propriedade intelectual",
+      mediation: "6. Utilização profissional e litígios"
+    },
+    body: {
+      publishedBy: "O TaskMatch.ai é publicado por",
+      director: "Diretor da publicação:",
+      registrationPending: "Os dados de registro da entidade editora estão sendo finalizados e serão publicados aqui assim que entrarem em vigor. Preferimos declarar esta situação a apresentar dados que não correspondam a uma entidade registrada.",
+      hostIntro: "O serviço é hospedado por:",
+      hostPending: "O serviço funciona em uma infraestrutura dedicada situada na União Europeia. Os dados completos do fornecedor de hospedagem serão publicados aqui em breve.",
+      contactIntro: "Para questões legais ou contratuais e para qualquer notificação relativa a conteúdos publicados neste site:",
+      property: "O nome TaskMatch.ai, a interface da plataforma, o seu código-fonte e a documentação são propriedade do editor. Os resultados produzidos através da plataforma pertencem ao cliente que os encomendou, de acordo com os Termos de Serviço.",
+      mediationIntro: "O TaskMatch.ai destina-se exclusivamente a profissionais — empresas, empresários em nome individual e entidades públicas que atuem para fins profissionais. Não é disponibilizado a consumidores e não é celebrado qualquer contrato de consumo.",
+      mediationPending: "Como o serviço contrata apenas com profissionais, não se aplica o regime de mediação de consumo do artigo L612-1 do Código do Consumo francês. Os litígios são primeiro tratados diretamente conosco; na falta de uma resolução amigável, são competentes os tribunais franceses.",
+      phone: "Telefone:",
+      vat: "IVA",
+      role: {
+        infrastructure: "infraestrutura e armazenamento de dados",
+        proxy: "proxy e distribuição de tráfego"
+      }
+    }
+  },
 };
 
 export default function LegalNoticePage() {
   const { locale } = useTranslation();
-  const c = COPY[locale] ?? COPY.en;
+  const capital = new Intl.NumberFormat(locale, { style: "currency", currency: "EUR" }).format(LEGAL_ENTITY.shareCapital ?? 0);
+  const c = COPY[locale];
   const entity = LEGAL_ENTITY;
   const registered = isRegistrationPublished(entity);
   const hosted = isHostPublished(entity);
@@ -246,7 +291,8 @@ export default function LegalNoticePage() {
       <LegalSection id="registration" title={c.s.registration}>
         {registered ? (
           <ul className="list-disc space-y-1 pl-5">
-            {entity.legalForm && <li>{entity.legalForm}</li>}
+            {entity.legalForm && <li>{entity.legalForm} · <a href="https://annuaire-entreprises.data.gouv.fr/entreprise/tauraco-879829646">{REGISTRY[locale].register}</a></li>}
+            {entity.shareCapital !== null && <li>{REGISTRY[locale].capital} · {capital}</li>}
             {entity.siren && <li>SIREN {formatSiren(entity.siren)}</li>}
             {entity.siret && <li>SIRET {formatSiret(entity.siret)}</li>}
             {entity.rcsCity && entity.siren && (
@@ -254,7 +300,7 @@ export default function LegalNoticePage() {
                 RCS {entity.rcsCity} {formatSiren(entity.siren)}
               </li>
             )}
-            {entity.vatNumber && <li>TVA {entity.vatNumber}</li>}
+            {entity.vatNumber && <li>{c.body.vat} {entity.vatNumber}</li>}
           </ul>
         ) : (
           <p>{c.body.registrationPending}</p>

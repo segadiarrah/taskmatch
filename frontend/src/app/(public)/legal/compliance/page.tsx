@@ -1,5 +1,6 @@
 "use client";
 
+import { securityCopy } from "@/content/security";
 import React from "react";
 import { LegalPageShell, LegalSection } from "@/components/public/legal-shell";
 import { useTranslation, type Locale } from "@/lib/i18n";
@@ -74,11 +75,24 @@ const COPY: Record<Locale, Copy> = {
       requests: "5. 请求与升级",
     },
   },
+  pt: {
+    eyebrow: "Legal / Conformidade",
+    title: "Conformidade e proteção de dados",
+    summary: "A abordagem do TaskMatch à proteção de dados e à conformidade regulamentar — os princípios do tratamento, os direitos dos titulares dos dados e o modo como os pedidos são tratados.",
+    updatedAt: "Última atualização: 1 de março de 2026",
+    s: {
+      overview: "1. Visão geral da conformidade",
+      principles: "2. Princípios do tratamento",
+      rights: "3. Direitos dos titulares dos dados",
+      operations: "4. Práticas operacionais",
+      requests: "5. Pedidos e encaminhamento"
+    }
+  },
 };
 
 export default function CompliancePage() {
   const { locale } = useTranslation();
-  const c = COPY[locale] ?? COPY.en;
+  const c = COPY[locale];
   const toc = [
     { id: "overview", label: c.s.overview },
     { id: "principles", label: c.s.principles },
@@ -95,65 +109,10 @@ export default function CompliancePage() {
       updatedAt={c.updatedAt}
       toc={toc}
     >
-      <LegalSection id="overview" title={c.s.overview}>
-        <p>TaskMatch.ai is operated by Tauraco and positions compliance as an operating discipline that spans platform design, data handling, access control, and review processes.</p>
-        <p>
-          Processing of personal data is aligned with the EU General Data Protection Regulation
-          (GDPR / RGPD) and comparable regimes. TaskMatch designs its controls around the SOC 2 Type II
-          framework — certification is an objective on our roadmap, and no audit has been
-          completed to date — and makes a Data Processing Agreement (DPA) available to
-          enterprise customers.
-        </p>
-        <p>
-          Compliance posture is strongest when legal, technical, and operational controls are
-          aligned instead of being treated as separate workstreams.
-        </p>
-      </LegalSection>
-
-      <LegalSection id="principles" title={c.s.principles}>
-        <p>Core principles include lawful use, purpose limitation, minimization, accuracy, storage limitation, confidentiality, and accountability.</p>
-        <p>These principles should inform both product behavior and internal decision-making around data processing.</p>
-        <ul className="list-disc pl-6">
-          <li>Only collect what the product and legal posture require</li>
-          <li>Preserve clear reasons for processing and retention</li>
-          <li>Apply review discipline to high-impact workflows</li>
-        </ul>
-      </LegalSection>
-
-      <LegalSection id="rights" title={c.s.rights}>
-        <p>Users may be entitled to access, correction, deletion, portability, restriction, objection, or related rights depending on applicable law.</p>
-        <p>Support for these rights should combine platform tooling with manual escalation paths where needed.</p>
-        <p>
-          Where a request cannot be fully satisfied — for example, because of legal retention
-          duties or the rights of others — we explain the reason for the limitation.
-        </p>
-      </LegalSection>
-
-      <LegalSection id="operations" title={c.s.operations}>
-        <p>Compliance also depends on records of processing, internal controls, documented retention, and secure operational boundaries.</p>
-        <p>Because trust is core to the platform, we keep these controls documented and available for review by clients and partners.</p>
-        <p>
-          Reviewability, traceability, and documented control ownership are all part of the
-          broader compliance posture presented by the platform.
-        </p>
-        <ul className="list-disc pl-6">
-          <li>Role-scoped access and account boundaries</li>
-          <li>Operational logs and auditable state transitions</li>
-          <li>Controls designed against the SOC 2 Type II framework (certification is an objective; no audit completed to date)</li>
-          <li>Vetted sub-processors under data-processing agreements, with data hosted in the EU</li>
-          <li>Encryption of briefs and uploaded documents at rest and in transit</li>
-          <li>Retention and rights-handling process discipline</li>
-        </ul>
-        <p>
-          Sensitive material submitted in briefs is scoped to the assigned executor for the
-          duration of a task, is never used to train models, and can be redacted or deleted on
-          request.
-        </p>
-      </LegalSection>
-
-      <LegalSection id="requests" title={c.s.requests}>
-        <p>Data-subject and privacy requests (access, correction, deletion, portability, restriction, and objection under GDPR / RGPD and comparable laws) can be sent to <a href="mailto:privacy@tauraco.ai" className="text-signal-600 hover:underline">privacy@tauraco.ai</a>. Enterprise customers can request the DPA, sub-processor list, and security questionnaire responses through the same channel.</p>
-      </LegalSection>
+      {toc.map((section, index) => <LegalSection key={section.id} id={section.id} title={section.label}>
+        <p>{securityCopy[locale].compliance[index]}</p>
+        {section.id === "requests" && <a href="mailto:privacy@tauraco.ai" className="text-signal-600 underline">privacy@tauraco.ai</a>}
+      </LegalSection>)}
     </LegalPageShell>
   );
 }
